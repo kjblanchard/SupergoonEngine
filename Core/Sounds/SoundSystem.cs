@@ -40,7 +40,7 @@ namespace SgEngine.Core.Sounds
         BankfileList ReadMusicJsonFile(string fileName)
         {
             using var streamreader =
-                Utils.Utils.CreateJsonStreamReader(fileName, Utils.Utils.ConfigFileToRead.MusicFile);
+                Utils.Helpers.CreateJsonStreamReader(fileName, Utils.Helpers.ConfigFileToRead.MusicFile);
             try
             {
                 var data = streamreader.ReadToEnd();
