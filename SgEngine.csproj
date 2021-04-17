@@ -22,4 +22,9 @@
     <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.0.1641" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Core\BaseClasses\" />
+    <Folder Include="Tilemap\" />
+  </ItemGroup>
+
 </Project>

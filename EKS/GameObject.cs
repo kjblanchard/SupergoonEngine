@@ -3,33 +3,32 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using SgEngine.Components;
 using SgEngine.Interfaces;
-using Vector2 = System.Numerics.Vector2;
 
 namespace SgEngine.EKS
 {
 
     public class GameObject : IUpdate
     {
+        #region State
+
         /// <summary>
         /// The position of this game object, relative to its parent in the game-object hierachy.
         /// </summary>
         public Vector2 LocalPosition
         {
-            get => localPosition;
-            set => localPosition = value;
+            get => _localPosition;
+            set => _localPosition = value;
+
         }
-        protected Vector2 localPosition;
+        protected Vector2 _localPosition = Vector2.Zero;
+
 
         /// <summary>
-        /// The current velocity of this game object, in units per second.
+        /// Whether or not this game object is currently active.
         /// </summary>
-        protected Vector2 velocity;
-
-        /// <summary>
-        /// Whether or not this game object is currently visible.
-        /// </summary>
-        public bool Visible { get; set; }
+        public bool IsActive { get; set; } = true;
 
         /// <summary>
         /// The (optional) parent of this object in the game-object hierarchy.
@@ -37,62 +36,6 @@ namespace SgEngine.EKS
         /// </summary>
         public GameObject Parent { get; set; }
 
-        /// <summary>
-        /// Creates a new GameObject.
-        /// </summary>
-        public GameObject()
-        {
-            LocalPosition = Vector2.Zero;
-            velocity = Vector2.Zero;
-            Visible = true;
-        }
-
-        /// <summary>
-        /// Performs input handling for this GameObject. 
-        /// By default, this method does nothing, but you can override it.
-        /// </summary>
-        /// <param name="inputHelper">An object with information about player input.</param>
-        //public virtual void HandleInput(InputHelper inputHelper)
-        //{
-        //}
-
-        //public virtual void HandleInput(GameController gameController)
-        //{
-        //}
-
-        /// <summary>
-        /// Updates this GameObject by one frame. 
-        /// By default, this method updates the object's position according to its velocity.
-        /// You can override this method to create your own custom behavior.
-        /// </summary>
-        /// <param name="gameTime">An object containing information about the time that has passed.</param>
-        public virtual void Update(GameTime gameTime)
-        {
-            LocalPosition += velocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
-        }
-
-        /// <summary>
-        /// Draws this GameObject. By default, nothing happens, but other classes can override this method.
-        /// </summary>
-        /// <param name="gameTime">An object containing information about the time that has passed.</param>
-        /// <param name="spriteBatch">The sprite batch to use.</param>
-        public virtual void Draw(GameTime gameTime, SpriteBatch spriteBatch)
-        {
-        }
-
-        /// <summary>
-        /// Resets this game object to an initial state.
-        /// For example, this can be useful for restarting a level of the game.
-        /// Override this method so that it resets everything it needs to.
-        /// </summary>
-        public virtual void Reset()
-        {
-            velocity = Vector2.Zero;
-        }
-
-        /// <summary>
-        /// Gets this object's global position in the game world, by adding its local position to the global position of its parent.
-        /// </summary>
         public Vector2 GlobalPosition
         {
             get
@@ -102,5 +45,73 @@ namespace SgEngine.EKS
                 return LocalPosition + Parent.GlobalPosition;
             }
         }
+
+        public List<Component> Components = new List<Component>();
+
+        #endregion
+        
+
+        #region Constructor
+
+        /// <summary>
+        /// Gameobject base class for everything (mostly)
+        /// </summary>
+        /// <param name="location">The location OR the offset of the gameobject, if it doesn't have a parent, its probably  </param>
+        public GameObject()
+        {
+        }
+
+        public GameObject(Vector2 location)
+        {
+            _localPosition = location;
+        }
+
+        public GameObject(GameObject parent, Vector2 offset)
+        {
+            _localPosition = offset;
+            Parent = parent;
+        }
+        
+
+        #endregion
+
+        #region Functions
+
+        public virtual void Initialize(){}
+
+        public virtual void LoadContent(){}
+
+        /// <summary>
+        /// Updates this GameObject by one frame. 
+        /// By default, this method updates the object's position according to its velocity.
+        /// You can override this method to create your own custom behavior.
+        /// </summary>
+        /// <param name="gameTime">An object containing information about the time that has passed.</param>
+        public virtual void Update(GameTime gameTime){}
+
+        /// <summary>
+        /// Draws this GameObject. By default, nothing happens, but other classes can override this method.
+        /// </summary>
+        /// <param name="gameTime">An object containing information about the time that has passed.</param>
+        /// <param name="spriteBatch">The sprite batch to use.</param>
+        public virtual void Draw(GameTime gameTime, SpriteBatch spriteBatch){}
+
+        /// <summary>
+        /// Resets this game object to an initial state.
+        /// For example, this can be useful for restarting a level of the game.
+        /// Override this method so that it resets everything it needs to.
+        /// </summary>
+        public virtual void Reset(){}
+
+
+        public void AddComponent(Component componentToAdd)
+        {
+            Components.Add(componentToAdd);
+        }
+
     }
+        
+
+        #endregion
+
 }

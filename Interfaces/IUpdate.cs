@@ -6,13 +6,13 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace SgEngine.Interfaces
 {
-    interface IUpdate
+    public interface IUpdate
     {
-        virtual void Startup(){}
-
-        virtual void Update(GameTime gameTime){}
-        virtual void HandleInput (){}
-
-        virtual void Draw(SpriteBatch spriteBatch){}
+        public virtual void Initialize(){}
+        public virtual void LoadContent(){}
+        public virtual void BeginRun(){}
+        public virtual void Update(GameTime gameTime){}
+        protected virtual void HandleInput (){}
+        public virtual void Draw(GameTime gameTime, SpriteBatch spriteBatch){}
     }
 }
