@@ -3,6 +3,9 @@ using SgEngine.Models;
 
 namespace SgEngine.Core.Sounds
 {
+    /// <summary>
+    /// The FMOD sound system that SG engine uses
+    /// </summary>
     public class SoundSystem
     {
         private FMOD.Studio.System _fmodStudioSystem;
@@ -10,13 +13,10 @@ namespace SgEngine.Core.Sounds
         private EventFile _currentPlayingInstance;
         private EventFile _previousPlayingInstance;
 
-
-        public SoundSystem()
-        {
-
-        }
-
-        public  void Startup()
+        /// <summary>
+        /// Initializes FMOD and loads the music banks
+        /// </summary>
+        public void Startup()
         {
             InitializeFmodStudio();
             var deserializedBanks = ReadMusicJsonFile("music");
@@ -24,19 +24,27 @@ namespace SgEngine.Core.Sounds
             for (int i = 0; i < deserializedBanks.Bankfiles.Count; i++)
             {
                 var bankFileModel = deserializedBanks.Bankfiles[i];
-                var soundFile = new SoundFile(bankFileModel,_fmodStudioSystem);
+                var soundFile = new SoundFile(bankFileModel, _fmodStudioSystem);
                 _soundFileArray[i] = soundFile;
             }
 
         }
 
 
+        /// <summary>
+        /// Creates the fmod studio system, and initializes the system
+        /// </summary>
         private void InitializeFmodStudio()
         {
             FMOD.Studio.System.create(out _fmodStudioSystem);
             _fmodStudioSystem.initialize(512, FMOD.Studio.INITFLAGS.NORMAL, FMOD.INITFLAGS.NORMAL, IntPtr.Zero);
         }
 
+        /// <summary>
+        /// Reads the music json file to get the sound banks
+        /// </summary>
+        /// <param name="fileName">This is the filename that shoud be searched for</param>
+        /// <returns>Returns all of the banks in a bankfilelist</returns>
         BankfileList ReadMusicJsonFile(string fileName)
         {
             using var streamreader =
@@ -53,6 +61,11 @@ namespace SgEngine.Core.Sounds
             }
         }
 
+        /// <summary>
+        /// This converts the enum to a value, and then plays that song from the banklist.  You should probably use a more specific enum and abstract from this to not allow
+        /// for this to be taking an y enum
+        /// </summary>
+        /// <param name="enumValue">This is the bankfile number that will be played from the loaded sound files</param>
         public void PlayBgm(Enum enumValue)
         {
             if (_currentPlayingInstance != null)
@@ -66,8 +79,11 @@ namespace SgEngine.Core.Sounds
             _currentPlayingInstance = chosenSoundFile;
             _previousPlayingInstance?.Instance.release();
         }
-        
-        public  void Update()
+
+        /// <summary>
+        /// This method must be called every update so that fmod can function properly
+        /// </summary>
+        public void Update()
         {
             _fmodStudioSystem.update();
         }

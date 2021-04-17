@@ -27,14 +27,14 @@ namespace SgEngine.Components
 
         #region Constructor
 
-        public SpriteComponent(GameObject parent,string assetToLoad):base(parent)
+        public SpriteComponent(GameObject parent, string assetToLoad) : base(parent)
         {
             _componentType = EngineComponentTypes.SpriteComponent;
             _parent = parent;
             _loadedTexture = ContentLoader.LoadSprite(assetToLoad);
-            
+
         }
-        public SpriteComponent(GameObject parent, string assetToLoad, Point size) : this(parent,assetToLoad)
+        public SpriteComponent(GameObject parent, string assetToLoad, Point size) : this(parent, assetToLoad)
         {
             _size = size;
             _isWholeTexture = false;
@@ -65,10 +65,14 @@ namespace SgEngine.Components
 
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
-            if(_isWholeTexture)
-                spriteBatch.Draw(_loadedTexture,(_localPosition + _parent.LocalPosition),Color.White);
+            if (_isWholeTexture)
+                spriteBatch.Draw(_loadedTexture, (_localPosition + _parent.LocalPosition), Color.White);
             else
-                spriteBatch.Draw(_loadedTexture,_offsetAndSize,Color.White);
+            {
+                var temp = _offsetAndSize;
+                temp.Location += _parent.LocalPosition.ToPoint();
+                spriteBatch.Draw(_loadedTexture, temp, Color.White);
+            }
         }
 
         #endregion
