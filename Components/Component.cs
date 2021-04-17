@@ -19,7 +19,7 @@ namespace SgEngine.Components
         protected GameObject _parent;
         protected Vector2 _localPosition;
         protected Vector2 _ownerOffset;
-        protected Enum _componentType;
+        public Enum _componentType;
 
         public Component(GameObject parent)
         {

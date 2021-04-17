@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -49,7 +50,7 @@ namespace SgEngine.EKS
         public List<Component> Components = new List<Component>();
 
         #endregion
-        
+
 
         #region Constructor
 
@@ -71,37 +72,37 @@ namespace SgEngine.EKS
             _localPosition = offset;
             Parent = parent;
         }
-        
+
 
         #endregion
 
         #region Functions
 
-        public virtual void Initialize(){}
+        public virtual void Initialize() { }
 
-        public virtual void LoadContent(){}
+        public virtual void LoadContent() { }
 
         /// <summary>
-        /// Updates this GameObject by one frame. 
+        /// Updates this GameObject by one frame.
         /// By default, this method updates the object's position according to its velocity.
         /// You can override this method to create your own custom behavior.
         /// </summary>
         /// <param name="gameTime">An object containing information about the time that has passed.</param>
-        public virtual void Update(GameTime gameTime){}
+        public virtual void Update(GameTime gameTime) { }
 
         /// <summary>
         /// Draws this GameObject. By default, nothing happens, but other classes can override this method.
         /// </summary>
         /// <param name="gameTime">An object containing information about the time that has passed.</param>
         /// <param name="spriteBatch">The sprite batch to use.</param>
-        public virtual void Draw(GameTime gameTime, SpriteBatch spriteBatch){}
+        public virtual void Draw(GameTime gameTime, SpriteBatch spriteBatch) { }
 
         /// <summary>
         /// Resets this game object to an initial state.
         /// For example, this can be useful for restarting a level of the game.
         /// Override this method so that it resets everything it needs to.
         /// </summary>
-        public virtual void Reset(){}
+        public virtual void Reset() { }
 
 
         public void AddComponent(Component componentToAdd)
@@ -109,9 +110,13 @@ namespace SgEngine.EKS
             Components.Add(componentToAdd);
         }
 
+        public Component GetComponent(Enum componentToGet)
+        {
+            return Components.FirstOrDefault(component => Equals(component._componentType, componentToGet));
+        }
     }
-        
 
-        #endregion
+
+    #endregion
 
 }

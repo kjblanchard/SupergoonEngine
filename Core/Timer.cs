@@ -13,24 +13,26 @@ namespace SgEngine.Core
     public class Timer
     {
 
-        
+
         private int msLeftToWait;
         private Action _theActionToPerform;
-        public Timer(int msTowait,Action funcToUse)
+        private bool _timerCompleted;
+        public Timer(int msTowait, Action funcToUse)
         {
-
             msLeftToWait = msTowait;
             _theActionToPerform = funcToUse;
         }
 
+
         public void Update(GameTime gameTime)
         {
-            msLeftToWait -= gameTime.ElapsedGameTime.Milliseconds;
+            if (!_timerCompleted)
+                msLeftToWait -= gameTime.ElapsedGameTime.Milliseconds;
             if (msLeftToWait <= 0)
             {
                 _theActionToPerform();
             }
-
         }
+
     }
 }

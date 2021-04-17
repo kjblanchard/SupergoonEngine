@@ -22,6 +22,7 @@ namespace SgEngine.Components
         bool _isWholeTexture = true;
         private Point _size;
         private Rectangle _offsetAndSize;
+        public float Opacity { get; set; } = 1f;
 
         #endregion
 
@@ -65,17 +66,20 @@ namespace SgEngine.Components
 
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
+            //_drawColor.A = _drawOpacity;
             if (_isWholeTexture)
-                spriteBatch.Draw(_loadedTexture, (_localPosition + _parent.LocalPosition), Color.White);
+                spriteBatch.Draw(_loadedTexture, (_localPosition + _parent.LocalPosition), Color.White * Opacity);
             else
             {
                 var temp = _offsetAndSize;
                 temp.Location += _parent.LocalPosition.ToPoint();
-                spriteBatch.Draw(_loadedTexture, temp, Color.White);
+                spriteBatch.Draw(_loadedTexture, temp, Color.White * Opacity);
+
             }
         }
 
-        #endregion
 
+
+        #endregion
     }
 }
