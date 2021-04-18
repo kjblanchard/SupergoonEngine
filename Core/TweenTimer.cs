@@ -37,10 +37,10 @@ namespace SgEngine.Core
                 return;
             }
             _totalMsWaited = gameTime.ElapsedGameTime.Milliseconds + _totalMsWaited;
-            _theOtherActiontoPerform(calculateValue());
+            _theOtherActiontoPerform(CalculateValue());
         }
 
-        private float calculateValue()
+        private float CalculateValue()
         {
 
             if (_totalMsWaited == 0)
