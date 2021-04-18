@@ -15,22 +15,28 @@ namespace SgEngine.Core
         private readonly float _startingValue;
         private readonly float _endingValue;
         private readonly float _diff;
-       public TweenTimer(float startingValue, float endingValue, int msTowait, Action<float> funcToUse) : base(msTowait, funcToUse)
+        private readonly Action _afterFunction;
+       public TweenTimer(float startingValue, float endingValue, int msTowait, Action<float> funcToUse, Action afterFunc = null) : base(msTowait, funcToUse)
         {
             _startingValue = startingValue;
             _endingValue = endingValue;
             _diff = _endingValue - _startingValue;
-            
+            _afterFunction = afterFunc;
         }
 
 
 
         public override void Update(GameTime gameTime)
         {
-
-            if(_totalMsWaited > _msStartingTime)
+            if(_timerCompleted)
                 return;
-            _totalMsWaited += gameTime.ElapsedGameTime.Milliseconds;
+            if (_totalMsWaited > _msStartingTime) 
+            {
+                _timerCompleted = true;
+                _afterFunction?.Invoke();
+                return;
+            }
+            _totalMsWaited = gameTime.ElapsedGameTime.Milliseconds + _totalMsWaited;
             _theOtherActiontoPerform(calculateValue());
         }
 

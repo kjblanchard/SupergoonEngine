@@ -19,7 +19,7 @@ namespace SgEngine.Core
         protected readonly Action _theActionToPerform;
         protected readonly Action<float> _theOtherActiontoPerform;
 
-        private bool _timerCompleted = false;
+        protected bool _timerCompleted = false;
         //TODO move this implementation as abstract, and then make two timers
         public Timer(int msTowait, Action funcToUse)
         {
@@ -37,11 +37,16 @@ namespace SgEngine.Core
 
         public virtual void Update(GameTime gameTime)
         {
+            if(_timerCompleted)
+                return;
             if (!_timerCompleted)
+            {
                 _totalMsWaited += gameTime.ElapsedGameTime.Milliseconds;
+            }
             if (_totalMsWaited >= _msStartingTime)
             {
                 _theActionToPerform();
+                _timerCompleted = true;
             }
         }
 

@@ -26,6 +26,10 @@ namespace SgEngine.Interfaces
         public virtual void LoadContent(){}
 
         /// <summary>
+        /// This is called only once, right before update.
+        /// </summary>
+        public virtual void BeginRun(){}
+        /// <summary>
         /// This will be called every frame
         /// </summary>
         /// <param name="gameTime">This is the gametime that is going to be passed in, to know the time passed</param>
