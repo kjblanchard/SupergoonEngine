@@ -33,11 +33,11 @@ namespace SgEngine.Components
             _componentType = EngineComponentTypes.SpriteComponent;
             _parent = parent;
             _loadedTexture = ContentLoader.LoadSprite(assetToLoad);
-
         }
         public SpriteComponent(GameObject parent, string assetToLoad, Point size) : this(parent, assetToLoad)
         {
             _size = size;
+            _offsetAndSize = new Rectangle(new Point(0, 0), size);
             _isWholeTexture = false;
         }
 
@@ -55,7 +55,7 @@ namespace SgEngine.Components
 
         public override void Initialize()
         {
-            _offsetAndSize = new Rectangle(_localPosition.ToPoint() + _parent.LocalPosition.ToPoint(), _offsetAndSize.Size);
+            //_offsetAndSize = new Rectangle(_localPosition.ToPoint() + _parent.LocalPosition.ToPoint(), _offsetAndSize.Size);
         }
 
 
@@ -66,13 +66,13 @@ namespace SgEngine.Components
 
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
-            //_drawColor.A = _drawOpacity;
             if (_isWholeTexture)
                 spriteBatch.Draw(_loadedTexture, (_localPosition + _parent.LocalPosition), Color.White * Opacity);
             else
             {
                 var temp = _offsetAndSize;
                 temp.Location += _parent.LocalPosition.ToPoint();
+
                 spriteBatch.Draw(_loadedTexture, temp, Color.White * Opacity);
 
             }

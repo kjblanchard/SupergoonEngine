@@ -20,7 +20,7 @@ namespace SgEngine.EKS
         protected GraphicsDeviceManager _graphics;
         protected SpriteBatch _spriteBatch;
         protected ContentLoader _contentLoader;
-        protected BaseConfig _baseConfig;
+        public static BaseConfig _baseConfig;
 
         public static GameWorld GetWorld => _instance;
         protected static GameWorld _instance;
@@ -59,7 +59,7 @@ namespace SgEngine.EKS
             _graphics.PreferredBackBufferHeight = _baseConfig.Window.Y;
             _graphics.ApplyChanges();
         }
-        
+
         protected override void LoadContent()
         {
             base.LoadContent();
