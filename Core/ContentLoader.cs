@@ -7,6 +7,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -30,7 +31,10 @@ namespace SgEngine.Core
             if (!spriteSheet.IsLoaded)
             {
                 spriteSheet._texture = LoadSprite(spriteSheet._fileName);
+                spriteSheet.Height = spriteSheet._texture.Height;
+                spriteSheet.Width = spriteSheet._texture.Width;
                 spriteSheet.IsLoaded = true;
+                Debug.WriteLine(spriteSheet.Width.ToString());
             }
 
             return spriteSheet;

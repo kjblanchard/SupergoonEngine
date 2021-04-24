@@ -18,7 +18,6 @@ namespace SgEngine.Components
 
         #region State
 
-        //private Texture2D _loadedTexture;
         bool _isWholeTexture = true;
         private Point _size;
         private Rectangle _offsetAndSize;
@@ -33,7 +32,6 @@ namespace SgEngine.Components
         {
             _componentType = EngineComponentTypes.SpriteComponent;
             _parent = parent;
-            //_loadedTexture = ContentLoader.LoadSprite(assetToLoad);
             _spritesheet = ContentLoader.GetSpriteSheet(objectLoLoad);
         }
         public SpriteComponent(GameObject parent, Enum assetToLoad, Point size) : this(parent, assetToLoad)
@@ -57,7 +55,6 @@ namespace SgEngine.Components
 
         public override void Initialize()
         {
-            //_offsetAndSize = new Rectangle(_localPosition.ToPoint() + _parent.LocalPosition.ToPoint(), _offsetAndSize.Size);
         }
 
 
@@ -75,7 +72,8 @@ namespace SgEngine.Components
                 var temp = _offsetAndSize;
                 temp.Location += _parent.LocalPosition.ToPoint();
 
-                spriteBatch.Draw(_spritesheet._texture, temp, Color.White * Opacity);
+                spriteBatch.Draw(_spritesheet._texture, temp, null, Color.White, 0.0f, _spritesheet.Center(),
+                    SpriteEffects.None, 0.0f);
 
             }
         }
