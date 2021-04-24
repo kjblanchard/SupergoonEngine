@@ -18,30 +18,32 @@ namespace SgEngine.Components
 
         #region State
 
-        private Texture2D _loadedTexture;
+        //private Texture2D _loadedTexture;
         bool _isWholeTexture = true;
         private Point _size;
         private Rectangle _offsetAndSize;
         public float Opacity { get; set; } = 1f;
+        public Spritesheet _spritesheet;
 
         #endregion
 
         #region Constructor
 
-        public SpriteComponent(GameObject parent, string assetToLoad) : base(parent)
+        public SpriteComponent(GameObject parent, Enum objectLoLoad) : base(parent)
         {
             _componentType = EngineComponentTypes.SpriteComponent;
             _parent = parent;
-            _loadedTexture = ContentLoader.LoadSprite(assetToLoad);
+            //_loadedTexture = ContentLoader.LoadSprite(assetToLoad);
+            _spritesheet = ContentLoader.GetSpriteSheet(objectLoLoad);
         }
-        public SpriteComponent(GameObject parent, string assetToLoad, Point size) : this(parent, assetToLoad)
+        public SpriteComponent(GameObject parent, Enum assetToLoad, Point size) : this(parent, assetToLoad)
         {
             _size = size;
             _offsetAndSize = new Rectangle(new Point(0, 0), size);
             _isWholeTexture = false;
         }
 
-        public SpriteComponent(GameObject parent, string assetToLoad, Rectangle offsetAndSize) : this(parent,
+        public SpriteComponent(GameObject parent, Enum assetToLoad, Rectangle offsetAndSize) : this(parent,
             assetToLoad)
         {
             _offsetAndSize = offsetAndSize;
@@ -67,13 +69,13 @@ namespace SgEngine.Components
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
             if (_isWholeTexture)
-                spriteBatch.Draw(_loadedTexture, (_localPosition + _parent.LocalPosition), Color.White * Opacity);
+                spriteBatch.Draw(_spritesheet._texture, (_localPosition + _parent.LocalPosition), Color.White * Opacity);
             else
             {
                 var temp = _offsetAndSize;
                 temp.Location += _parent.LocalPosition.ToPoint();
 
-                spriteBatch.Draw(_loadedTexture, temp, Color.White * Opacity);
+                spriteBatch.Draw(_spritesheet._texture, temp, Color.White * Opacity);
 
             }
         }

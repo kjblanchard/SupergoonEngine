@@ -5,6 +5,8 @@
 //
 ////////////////////////////////////////////////////////////
 
+using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -13,12 +15,26 @@ namespace SgEngine.Core
     public class ContentLoader
     {
         static ContentManager _contentManager;
-
-        public ContentLoader(ContentManager content)
+        private static Spritesheet[] _spriteSheets;
+        public ContentLoader(ContentManager content, Spritesheet[] spriteSheetDictionary)
         {
             _contentManager = content;
+            _spriteSheets = spriteSheetDictionary;
         }
 
+        public static Spritesheet GetSpriteSheet(Enum fileToLoad)
+        {
+
+            var maybeInt = Convert.ToInt32(fileToLoad);
+            var spriteSheet = _spriteSheets[maybeInt];
+            if (!spriteSheet.IsLoaded)
+            {
+                spriteSheet._texture = LoadSprite(spriteSheet._fileName);
+                spriteSheet.IsLoaded = true;
+            }
+
+            return spriteSheet;
+        }
         /// <summary>
         /// Loads and returns the sprite with the given asset name.
         /// </summary>

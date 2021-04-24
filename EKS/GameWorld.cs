@@ -32,7 +32,7 @@ namespace SgEngine.EKS
 
             IsMouseVisible = true;
             _instance ??= this;
-            _contentLoader = new ContentLoader(Content);
+            //_contentLoader = new ContentLoader(Content);
 
         }
 
