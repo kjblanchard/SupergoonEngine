@@ -97,6 +97,11 @@ namespace SgEngine.EKS
             {
                 Timers[i].Update(gameTime);
             }
+
+            for (int i = 0; i < Components.Count; i++)
+            {
+                Components[i].Update(gameTime);
+            }
         }
 
         /// <summary>
@@ -114,6 +119,7 @@ namespace SgEngine.EKS
         public virtual void Reset() { }
 
 
+        //TODO add in some documentation here
         public void AddComponent(Component componentToAdd)
         {
             Components.Add(componentToAdd);
@@ -122,6 +128,13 @@ namespace SgEngine.EKS
         public Component GetComponent(Enum componentToGet)
         {
             return Components.FirstOrDefault(component => Equals(component._componentType, componentToGet));
+        }
+
+        public T GetComponent<T>(Enum componentToGet) where T:Component
+        {
+            var component = Components.FirstOrDefault(component => Equals(component._componentType, componentToGet));
+            var convertedComponent = (T) (component);
+            return convertedComponent;
         }
 
         public void AddTimer(Timer timerToAdd)
