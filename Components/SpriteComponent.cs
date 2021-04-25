@@ -13,16 +13,19 @@ using SgEngine.EKS;
 
 namespace SgEngine.Components
 {
+    /// <summary>
+    /// The component that should be used for all gameobjects that need to draw to the screen
+    /// </summary>
     public class SpriteComponent : Component
     {
 
         #region State
 
-        bool _isWholeTexture = true;
+        private readonly bool _isWholeTexture = true;
         private Point _size;
-        private Rectangle _offsetAndSize;
+        private readonly Rectangle _offsetAndSize;
         public float Opacity { get; set; } = 1f;
-        public Spritesheet _spritesheet;
+        private readonly Spritesheet _spriteSheet;
 
         #endregion
 
@@ -32,7 +35,7 @@ namespace SgEngine.Components
         {
             _componentType = EngineComponentTypes.SpriteComponent;
             _parent = parent;
-            _spritesheet = ContentLoader.GetSpriteSheet(objectLoLoad);
+            _spriteSheet = ContentLoader.GetSpriteSheet(objectLoLoad);
         }
         public SpriteComponent(GameObject parent, Enum assetToLoad, Point size) : this(parent, assetToLoad)
         {
@@ -66,13 +69,13 @@ namespace SgEngine.Components
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
             if (_isWholeTexture)
-                spriteBatch.Draw(_spritesheet._texture, (_localPosition + _parent.LocalPosition), Color.White * Opacity);
+                spriteBatch.Draw(_spriteSheet._texture, (_localPosition + _parent.LocalPosition), Color.White * Opacity);
             else
             {
                 var temp = _offsetAndSize;
                 temp.Location += _parent.LocalPosition.ToPoint();
 
-                spriteBatch.Draw(_spritesheet._texture, temp, null, Color.White, 0.0f, _spritesheet.Center(),
+                spriteBatch.Draw(_spriteSheet._texture, temp, null, Color.White*Opacity, 0.0f, _spriteSheet.Center(),
                     SpriteEffects.None, 0.0f);
 
             }

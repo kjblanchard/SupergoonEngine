@@ -14,13 +14,16 @@ namespace SgEngine.Core
     {
 
 
-        protected int _totalMsWaited = 0;
+        protected int _totalMsWaited;
         protected int _msFullWaitTime;
         protected bool _timerCompleted;
 
+        /// <summary>
+        /// The base class for all types of timers
+        /// </summary>
+        /// <param name="msToWait">The amount of time to wait</param>
         protected Timer(int msToWait)
         {
-
             _msFullWaitTime = msToWait;
         }
 

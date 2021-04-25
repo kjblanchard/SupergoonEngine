@@ -5,6 +5,7 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using SgEngine.Components;
+using SgEngine.Core;
 using SgEngine.Interfaces;
 
 namespace SgEngine.EKS
@@ -49,6 +50,7 @@ namespace SgEngine.EKS
 
         public List<Component> Components = new List<Component>();
 
+        public List<Timer> Timers = new List<Timer>();
         #endregion
 
 
@@ -88,7 +90,14 @@ namespace SgEngine.EKS
         /// You can override this method to create your own custom behavior.
         /// </summary>
         /// <param name="gameTime">An object containing information about the time that has passed.</param>
-        public virtual void Update(GameTime gameTime) { }
+
+        public virtual void Update(GameTime gameTime)
+        {
+            for (int i = 0; i < Timers.Count; i++)
+            {
+                Timers[i].Update(gameTime);
+            }
+        }
 
         /// <summary>
         /// Draws this GameObject. By default, nothing happens, but other classes can override this method.
@@ -113,6 +122,11 @@ namespace SgEngine.EKS
         public Component GetComponent(Enum componentToGet)
         {
             return Components.FirstOrDefault(component => Equals(component._componentType, componentToGet));
+        }
+
+        public void AddTimer(Timer timerToAdd)
+        {
+            Timers.Add(timerToAdd);
         }
     }
 

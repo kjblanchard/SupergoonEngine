@@ -19,11 +19,11 @@ namespace SgEngine.Core
             _theActionToPerform = funcToUse;
         }
 
-        public virtual void Update(GameTime gameTime)
+        public override void Update(GameTime gameTime)
         {
-            base.Update(gameTime);
-            if(_timerCompleted)
+            if (_timerCompleted)
                 return;
+            base.Update(gameTime);
             if (_totalMsWaited >= _msFullWaitTime)
             {
                 _timerCompleted = true;
