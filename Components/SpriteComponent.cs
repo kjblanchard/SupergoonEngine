@@ -69,20 +69,18 @@ namespace SgEngine.Components
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
             if (_isWholeTexture)
-                spriteBatch.Draw(_spriteSheet._texture, (_localPosition + _parent.LocalPosition), Color.White * Opacity);
+                spriteBatch.Draw(_spriteSheet._texture, (_localPosition + _parent.LocalPosition),
+                    Color.White * Opacity);
             else
             {
                 var temp = _offsetAndSize;
                 temp.Location += _parent.LocalPosition.ToPoint();
 
-                spriteBatch.Draw(_spriteSheet._texture, temp, null, Color.White*Opacity, 0.0f, _spriteSheet.Center(),
+                spriteBatch.Draw(_spriteSheet._texture, temp, null, Color.White * Opacity, 0.0f, _spriteSheet.Center(),
                     SpriteEffects.None, 0.0f);
 
             }
         }
-
-
-
         #endregion
     }
 }

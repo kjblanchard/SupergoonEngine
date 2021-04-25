@@ -9,7 +9,8 @@ namespace SgEngine.Components
 {
     public enum EngineComponentTypes
     {
-        SpriteComponent = 1000
+        SpriteComponent = 1000,
+        TweeningComponent,
     }
 
 }
