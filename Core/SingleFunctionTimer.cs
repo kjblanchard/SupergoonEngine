@@ -6,6 +6,7 @@
 ////////////////////////////////////////////////////////////
 
 using System;
+using System.Linq.Expressions;
 using Microsoft.Xna.Framework;
 using SgEngine.EKS;
 
@@ -34,16 +35,18 @@ namespace SgEngine.Core
             }
         }
     }
-
-    public class SingleFunctionTimer <T>: Timer
+    public class MultiPurposeTimer : Timer
     {
-        protected readonly Action <T>_theActionToPerform;
-        protected readonly T _thingDoDoItTo;
-        public SingleFunctionTimer(int msToWait, T thingToDoItTo,Action <T>funcToUse) : base(msToWait)
-        {
+        private Action<GameObject,float> _expression;
 
-            _theActionToPerform = funcToUse;
-            _thingDoDoItTo = thingToDoItTo;
+        private GameObject gameObject;
+        private float floatToUse;
+        public MultiPurposeTimer(int msToWait, Action<GameObject,float> expression, GameObject go, float floatToPassIn) : base(msToWait)
+        {
+            _expression = expression;
+            gameObject = go;
+            floatToUse = floatToPassIn;
+
         }
 
         public override void Update(GameTime gameTime)
@@ -54,7 +57,7 @@ namespace SgEngine.Core
             if (_totalMsWaited >= _msFullWaitTime)
             {
                 _timerCompleted = true;
-                _theActionToPerform(_thingDoDoItTo);
+                _expression(gameObject, floatToUse);
             }
         }
     }
