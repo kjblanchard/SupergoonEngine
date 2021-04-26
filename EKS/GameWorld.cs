@@ -14,14 +14,16 @@ using SgEngine.Utils;
 
 namespace SgEngine.EKS
 {
-   public class GameWorld : Game
-   {
-       public static SoundSystem SoundSystem { get; set; } = new SoundSystem();
+    public class GameWorld : Game
+    {
+        public static SoundSystem SoundSystem { get; set; } = new SoundSystem();
         protected GraphicsDeviceManager _graphics;
         protected SpriteBatch _spriteBatch;
         protected ContentLoader _contentLoader;
         public static BaseConfig _baseConfig;
 
+        public static Point ScreenSize => new Point(_baseConfig.Window.X, _baseConfig.Window.Y);
+        public static Point WindowCenter => new Point(_baseConfig.Window.X / 2, _baseConfig.Window.Y / 2);
         public static GameWorld GetWorld => _instance;
         protected static GameWorld _instance;
 
@@ -77,5 +79,5 @@ namespace SgEngine.EKS
             base.Draw(gameTime);
 
         }
-   }
+    }
 }

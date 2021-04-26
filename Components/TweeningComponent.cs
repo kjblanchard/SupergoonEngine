@@ -15,6 +15,7 @@ namespace SgEngine.Components
 {
     public class TweeningComponent : Component
     {
+        public List<Tweener> NewTweens = new List<Tweener>();
         public List<Tweener> CurrentTweens = new List<Tweener>();
         public List<Tweener> EndedTweens = new List<Tweener>();
         public List<Tweener> OldTweens = new List<Tweener>();
@@ -37,18 +38,27 @@ namespace SgEngine.Components
 
         public void AddTween(Tweener tweenToAdd)
         {
-            CurrentTweens.Add(tweenToAdd);
+            NewTweens.Add(tweenToAdd);
         }
 
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
-            foreach (var tween in CurrentTweens)
+            if (NewTweens.Count > 0)
             {
-                tween.Update(gameTime.GetElapsedSeconds());
+                CurrentTweens.AddRange(NewTweens);
+                NewTweens.Clear();
             }
-            if (EndedTweens.Count > 0)
-                CompleteTweens();
+
+            if (CurrentTweens.Count > 0)
+            {
+                foreach (var tween in CurrentTweens)
+                {
+                    tween.Update(gameTime.GetElapsedSeconds());
+                }
+                if (EndedTweens.Count > 0)
+                    CompleteTweens();
+            }
         }
     }
 }
