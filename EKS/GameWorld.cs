@@ -8,6 +8,7 @@ using FMOD.Studio;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using SgEngine.Core;
+using SgEngine.Core.Input;
 using SgEngine.Core.Sounds;
 using SgEngine.Models;
 using SgEngine.Utils;
@@ -17,6 +18,7 @@ namespace SgEngine.EKS
     public class GameWorld : Game
     {
         public static SoundSystem SoundSystem { get; set; } = new SoundSystem();
+        public static InputSg Input { get; } = new InputSg();
         protected GraphicsDeviceManager _graphics;
         protected SpriteBatch _spriteBatch;
         protected ContentLoader _contentLoader;
@@ -72,6 +74,7 @@ namespace SgEngine.EKS
         {
             base.Update(gameTime);
             SoundSystem.Update();
+            Input.Update();
         }
 
         protected override void Draw(GameTime gameTime)
