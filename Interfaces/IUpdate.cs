@@ -12,7 +12,9 @@ namespace SgEngine.Interfaces
         public virtual void LoadContent(){}
         public virtual void BeginRun(){}
         public virtual void Update(GameTime gameTime){}
-        protected virtual void HandleInput (){}
+        public virtual void HandleInput (){}
         public virtual void Draw(GameTime gameTime, SpriteBatch spriteBatch){}
+        public virtual void OnActivate() { }
+        public virtual void OnDeactivate() { }
     }
 }
