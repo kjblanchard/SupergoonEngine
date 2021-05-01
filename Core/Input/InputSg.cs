@@ -5,32 +5,40 @@
 //
 ////////////////////////////////////////////////////////////
 
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using SgEngine.EKS;
 
 namespace SgEngine.Core.Input
 {
+    /// <summary>
+    /// The main input class for the supergoon engine, should be inside of the gameworld
+    /// </summary>
     public class InputSg
     {
         private KeyboardState _currentKeyboardState, _previousKeyboardState;
-        private GamePadState _playerOneCurrentJoystickState, _playerOnePreviousJoystickState;
+        private readonly GamePadState[] _previousGamePadStates = new GamePadState[4];
+        private readonly GamePadState[] _currentGamePadStates = new GamePadState[4];
+        public PlayerController[] PlayerControllers = new PlayerController[4];
 
-        private GamePadState[] _previousGamePadStates = new GamePadState[4];
-        private GamePadState[] _currentGamepadStates = new GamePadState[4];
 
-        public InputSg()
+        public void Initialize()
         {
+            CreatePlayerControllers();
         }
 
+        /// <summary>
+        /// Updates the controller and joystick states
+        /// </summary>
         public void Update()
         {
             _previousKeyboardState = _currentKeyboardState;
             _currentKeyboardState = Keyboard.GetState();
-            _currentGamepadStates.CopyTo(_previousGamePadStates, 0);
-            for (int i = 0; i < _currentGamepadStates.Length; i++)
+            _currentGamePadStates.CopyTo(_previousGamePadStates, 0);
+            for (int i = 0; i < _currentGamePadStates.Length; i++)
             {
-                _currentGamepadStates[i] = GamePad.GetState((PlayerIndex)(i));
+                _currentGamePadStates[i] = GamePad.GetState((PlayerIndex)(i));
             }
         }
         /// <summary>
@@ -42,10 +50,14 @@ namespace SgEngine.Core.Input
         {
             return _currentKeyboardState.IsKeyDown(k) && _previousKeyboardState.IsKeyUp(k);
         }
-
+        /// <summary>
+        /// Checks and returns whether the player has started pressing a certain joystick key in the last frame of the game loop.
+        /// </summary>
+        /// <param name="k">The key to check.</param>
+        /// <returns>true if the given key is now pressed and was not yet pressed in the previous frame; false otherwise.</returns>
         public bool KeyPressed(int playerNumber, Buttons button)
         {
-            return _currentGamepadStates[playerNumber].IsButtonDown(button) &&
+            return _currentGamePadStates[playerNumber].IsButtonDown(button) &&
                    _previousGamePadStates[playerNumber].IsButtonUp(button);
         }
 
@@ -58,6 +70,15 @@ namespace SgEngine.Core.Input
         {
             return _currentKeyboardState.IsKeyUp(k) && _previousKeyboardState.IsKeyDown(k);
         }
+        /// <summary>
+        /// Checks and returns whether the player has stopped pressing a certain joystick button in the last frame of the game loop.
+        /// </summary>
+        /// <param name="k">The key to check.</param>
+        /// <returns>true if the given key is no longer pressed but was still pressed in the previous frame; false otherwise.</returns>
+        public bool KeyReleased(int playerNumber, Buttons button)
+        {
+            return _currentGamePadStates[playerNumber].IsButtonUp(button) && _previousGamePadStates[playerNumber].IsButtonDown(button);
+        }
 
         /// <summary>
         /// Checks and returns whether the player is currently holding a certain keyboard key down.
@@ -67,6 +88,28 @@ namespace SgEngine.Core.Input
         public bool KeyDown(Keys k)
         {
             return _currentKeyboardState.IsKeyDown(k);
+        }
+        /// <summary>
+        /// Checks and returns whether the player is holding a joystick button down
+        /// </summary>
+        /// <param name="playerNumber">The current joystick to check</param>
+        /// <param name="button">The button to check</param>
+        /// <returns>Returns if the button is held or not</returns>
+        public bool KeyDown(int playerNumber, Buttons button)
+        {
+            return _currentGamePadStates[playerNumber].IsButtonDown(button);
+        }
+        /// <summary>
+        /// This is ran during the initialization stage, so that the Controllers can properly get their input set.
+        /// These controllers are used for all of the players
+        /// </summary>
+        private void CreatePlayerControllers()
+        {
+            for (int i = 0; i < PlayerControllers.Length; i++)
+            {
+                PlayerControllers[i] = new PlayerController(i);
+            }
+
         }
     }
 }

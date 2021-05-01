@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net.Mime;
-using System.Text;
-using FMOD;
-using FMOD.Studio;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using SgEngine.Core;
 using SgEngine.Core.Input;
@@ -18,7 +11,7 @@ namespace SgEngine.EKS
     public class GameWorld : Game
     {
         public static SoundSystem SoundSystem { get; set; } = new SoundSystem();
-        public static InputSg Input { get; } = new InputSg();
+        public static InputSg Input { get; private set; } = new InputSg();
         protected GraphicsDeviceManager _graphics;
         protected SpriteBatch _spriteBatch;
         protected ContentLoader _contentLoader;
@@ -28,15 +21,20 @@ namespace SgEngine.EKS
         public static Point WindowCenter => new Point(_baseConfig.Window.X / 2, _baseConfig.Window.Y / 2);
         public static GameWorld GetWorld => _instance;
         protected static GameWorld _instance;
+        /// <summary>
+        /// Gets the current playerController
+        /// </summary>
+        /// <param name="playerControllerToGet">What controller to get</param>
+        /// <returns>The playercontroller at the spot that you want</returns>
+        public static PlayerController GetPlayerController(int playerControllerToGet) =>
+            Input.PlayerControllers[playerControllerToGet];
 
         public GameWorld()
         {
             _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
-
             IsMouseVisible = true;
             _instance ??= this;
-            //_contentLoader = new ContentLoader(Content);
 
         }
 
@@ -45,6 +43,7 @@ namespace SgEngine.EKS
             base.Initialize();
             LoadBaseConfig();
             ConfigureGraphics();
+            Input.Initialize();
             SoundSystem.Startup();
 
         }
@@ -82,5 +81,6 @@ namespace SgEngine.EKS
             base.Draw(gameTime);
 
         }
+
     }
 }

@@ -10,9 +10,19 @@ using SgEngine.EKS;
 
 namespace SgEngine.Core.Input
 {
+    /// <summary>
+    /// Base class used for AI controllers and for player controllers
+    /// </summary>
     public abstract class Controller
     {
-        protected static KeyMapping<Keys> DefaultKeyboardMap = new KeyMapping<Keys>()
+        protected Controller()
+        {
+            _input ??= GameWorld.Input;
+        }
+        /// <summary>
+        /// Default keyboard mapping for player 1
+        /// </summary>
+        protected static KeyMapping<Keys> _defaultKeyboardMap = new KeyMapping<Keys>()
         {
             UpButton = Keys.W,
             RightButton = Keys.D,
@@ -26,7 +36,10 @@ namespace SgEngine.Core.Input
             SelectButton = Keys.Apps
         };
 
-        protected static KeyMapping<Buttons> DefaultJoystickMap = new KeyMapping<Buttons>
+        /// <summary>
+        /// The default button mapping in the game
+        /// </summary>
+        protected static KeyMapping<Buttons> _defaultJoystickMap = new KeyMapping<Buttons>
         {
             UpButton = Buttons.DPadUp,
             RightButton = Buttons.DPadRight,
@@ -40,7 +53,10 @@ namespace SgEngine.Core.Input
             SelectButton = Buttons.Back
         };
 
-        protected InputSg _input = GameWorld.Input;
+        /// <summary>
+        /// The input to check if buttons are pressed
+        /// </summary>
+        protected static InputSg _input;
 
         public abstract bool IsButtonPressed(ControllerButtons button);
         public abstract bool IsButtonHeld(ControllerButtons button);
@@ -48,6 +64,9 @@ namespace SgEngine.Core.Input
 
     }
 
+    /// <summary>
+    /// All of the controller buttons in the game
+    /// </summary>
     public enum ControllerButtons
     {
         Default = 0,
@@ -63,6 +82,10 @@ namespace SgEngine.Core.Input
         Select = 10,
     }
 
+    /// <summary>
+    /// The key mappings used in the game, this is used to set the appropriate keys for keymapping
+    /// </summary>
+    /// <typeparam name="T">The type of keymapping, should be a button or a Key</typeparam>
     public class KeyMapping<T>
     {
         public T UpButton;
