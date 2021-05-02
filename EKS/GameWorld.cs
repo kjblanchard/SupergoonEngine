@@ -12,6 +12,11 @@ namespace SgEngine.EKS
     {
         public static SoundSystem SoundSystem { get; set; } = new SoundSystem();
         public static InputSg Input { get; private set; } = new InputSg();
+
+        public static GraphicsDevice GetGraphicsDevice()
+        {
+            return _instance.GraphicsDevice;
+        }
         protected GraphicsDeviceManager _graphics;
         protected SpriteBatch _spriteBatch;
         protected ContentLoader _contentLoader;

@@ -18,6 +18,7 @@ namespace SgEngine.Core.Input
     public class InputSg
     {
         private KeyboardState _currentKeyboardState, _previousKeyboardState;
+        private MouseState _currentMouseState, _previouMouseState;
         private readonly GamePadState[] _previousGamePadStates = new GamePadState[4];
         private readonly GamePadState[] _currentGamePadStates = new GamePadState[4];
         public PlayerController[] PlayerControllers = new PlayerController[4];
@@ -33,8 +34,10 @@ namespace SgEngine.Core.Input
         /// </summary>
         public void Update()
         {
+            _previouMouseState = _currentMouseState;
             _previousKeyboardState = _currentKeyboardState;
             _currentKeyboardState = Keyboard.GetState();
+            _currentMouseState = Mouse.GetState();
             _currentGamePadStates.CopyTo(_previousGamePadStates, 0);
             for (int i = 0; i < _currentGamePadStates.Length; i++)
             {
@@ -110,6 +113,19 @@ namespace SgEngine.Core.Input
                 PlayerControllers[i] = new PlayerController(i);
             }
 
+        }
+
+        public Vector2 MousePosition()
+        {
+            return _currentMouseState.Position.ToVector2();
+        }
+        private bool LeftMouseButtonClicked()
+        {
+            return _currentMouseState.LeftButton == ButtonState.Pressed && _previouMouseState.LeftButton == ButtonState.Released;
+        }
+        private bool RightMouseButtonClicked()
+        {
+            return _currentMouseState.RightButton == ButtonState.Pressed && _previouMouseState.RightButton == ButtonState.Released;
         }
     }
 }

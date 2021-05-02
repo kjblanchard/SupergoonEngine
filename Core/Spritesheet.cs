@@ -13,7 +13,6 @@ namespace SgEngine.Core
     public class Spritesheet
     {
         public Texture2D _texture;
-        public Point origin;
         public Rectangle SpriteRectangle;
         public int currentSheetIndex;
         private readonly int sheetColumn;
