@@ -5,10 +5,10 @@ using SgEngine.Interfaces;
 
 namespace SgEngine.EKS
 {
-    class GameLevel : IUpdate
+    public class GameLevel : IUpdate
     {
 
-        private static GameLevel _instance;
+        public static GameLevel _instance;
 
         public GameLevel()
         {
