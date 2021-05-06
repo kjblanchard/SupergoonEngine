@@ -7,6 +7,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using IUpdate = SgEngine.Interfaces.IUpdate;
@@ -25,19 +26,30 @@ namespace SgEngine.UI
             }
         }
 
+        public Rectangle BoundingBoxAfterOrigin
+        {
+            get
+            {
+                var tempValue = GlobalPosition.ToPoint();
+                tempValue -= new Point(_size.X / 2, _size.Y / 2);
+                return new Rectangle(tempValue, _size);
+
+            }
+        }
+
+        public Point _size;
+
         public Vector2 LocalPosition = Vector2.Zero;
         public bool IsActive;
         protected UIComponent _parent;
         protected Enum ComponentType;
         public bool _debugMode;
         public bool _isSelected;
-        protected UIComponent(UIComponent parent = null)
+        protected UIComponent(Vector2 localPosition, Point size = new Point(), UIComponent parent = null)
         {
             _parent = parent;
-        }
-        protected UIComponent(Vector2 localPosition, UIComponent parent = null) : this(parent)
-        {
             LocalPosition = localPosition;
+            _size = size;
         }
 
         public virtual void Initialize()

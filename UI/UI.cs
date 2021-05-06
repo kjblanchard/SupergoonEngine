@@ -12,6 +12,10 @@ namespace SgEngine.UI
 {
     public class UI : UIComponent
     {
+        public UI(): base(new Vector2(), new Point())
+        {
+            
+        }
         private List<Canvas> AllCanvasList = new List<Canvas>();
         public Canvas MasterCanvas = new Canvas(new Rectangle());
         public void AddPanel(Canvas panelToAdd)

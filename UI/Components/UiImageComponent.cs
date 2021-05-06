@@ -6,6 +6,7 @@
 ////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
@@ -18,10 +19,9 @@ namespace SgEngine.UI.Components
     {
         private GraphicsDevice _graphics;
         private readonly Spritesheet _spriteSheet;
-        private Point _size;
         private float _opacity = 1.0f;
 
-        public UiImageComponent(UIComponent parent, Enum spriteSheetToLoad, Point size, Vector2 location = new Vector2()) : base(location, parent)
+        public UiImageComponent(UIComponent parent, Enum spriteSheetToLoad, Point size, Vector2 offset = new Vector2()) : base(offset, size, parent)
         {
             ComponentType = EngineComponentTypes.UiComponents.ImageComponent;
             _spriteSheet = ContentLoader.GetSpriteSheet(spriteSheetToLoad);
@@ -32,11 +32,12 @@ namespace SgEngine.UI.Components
         {
             base.Draw(gameTime, spriteBatch);
             var rectToDraw = new Rectangle(GlobalPosition.ToPoint(), _size);
-                spriteBatch.Draw(_spriteSheet._texture,rectToDraw, null,
-                    Color.White * _opacity, 0.0f, _spriteSheet.Center(),
-                    SpriteEffects.None, 0.0f);
-                if (_debugMode)
-                    DrawDebugBox(spriteBatch, rectToDraw);
+            Debug.WriteLine(rectToDraw.Location + "Rect Image rectDraw");
+            spriteBatch.Draw(_spriteSheet._texture, rectToDraw, null,
+                Color.White * _opacity, 0.0f, _spriteSheet.Center(),
+               SpriteEffects.None, 0.0f);
+            if (!_debugMode)
+                DrawDebugBox(spriteBatch, rectToDraw);
         }
         private void DrawDebugBox(SpriteBatch spriteBatch, Rectangle positionToDraw)
         {

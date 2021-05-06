@@ -5,12 +5,17 @@
 //
 ////////////////////////////////////////////////////////////
 
+using Microsoft.Xna.Framework;
 using SgEngine.Core.Input;
 
 namespace SgEngine.UI.Components
 {
     public class UiInputComponent : UIComponent
     {
+        public UiInputComponent() : base(new Vector2(), new Point())
+        {
+            
+        }
         private Controller _currentController;
 
         public void TakeControl(Controller controller)

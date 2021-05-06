@@ -16,9 +16,9 @@ namespace SgEngine.UI
     {
         private UiImageComponent _uiImageComponent;
 
-        public UiImage(Enum spriteSheetToLoad, Point size, Vector2 location = new Vector2()) : base(location)
+        public UiImage(Enum spriteSheetToLoad, Point size, Vector2 location = new Vector2()) : base(location,size)
         {
-            _uiImageComponent = new UiImageComponent(this, spriteSheetToLoad, size, location);
+            _uiImageComponent = new UiImageComponent(this, spriteSheetToLoad, size);
         }
         public override void Initialize()
         {
