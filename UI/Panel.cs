@@ -13,11 +13,16 @@ namespace SgEngine.UI
 {
     public class Panel : UIComponent
     {
-        private Rectangle _locationAndSize;
         private List<UIComponent> allComponents = new List<UIComponent>();
-        public Panel(Rectangle locationAndSize) : base(locationAndSize.Location.ToVector2())
+        public Panel() : base()
         {
-            _locationAndSize = locationAndSize;
+        }
+
+        public void AddUiObject(UIComponent uiObject)
+        {
+            uiObject.Initialize();
+            uiObject.LoadContent();
+            allComponents.Add(uiObject);
         }
         public override void Update(GameTime gameTime)
         {

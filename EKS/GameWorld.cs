@@ -12,7 +12,6 @@ namespace SgEngine.EKS
     {
         public static SoundSystem SoundSystem { get; set; } = new SoundSystem();
         public static InputSg Input { get; private set; } = new InputSg();
-
         public static UI.UI Ui { get; } = new UI.UI();
 
         public static GraphicsDevice GetGraphicsDevice()

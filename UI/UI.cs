@@ -5,7 +5,6 @@
 //
 ////////////////////////////////////////////////////////////
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -30,6 +29,7 @@ namespace SgEngine.UI
             AllCanvasList.Add(MasterCanvas);
             foreach (var canvas in AllCanvasList)
             {
+                canvas.Initialize();
             }
         }
 
@@ -37,6 +37,7 @@ namespace SgEngine.UI
         {
             foreach (var canvas in AllCanvasList)
             {
+                canvas.LoadContent();
             }
         }
         
@@ -44,6 +45,7 @@ namespace SgEngine.UI
         {
             foreach (var canvas in AllCanvasList)
             {
+                canvas.Update(gameTime);
             }
         }
 
@@ -51,6 +53,7 @@ namespace SgEngine.UI
         {
             foreach (var canvas in AllCanvasList)
             {
+                canvas.Draw(gameTime,spriteBatch);
             }
         }
     }
