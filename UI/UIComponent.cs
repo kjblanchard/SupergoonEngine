@@ -5,6 +5,7 @@
 //
 ////////////////////////////////////////////////////////////
 
+using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -14,14 +15,29 @@ namespace SgEngine.UI
 {
     public abstract class UIComponent : IUpdate
     {
-        public Vector2 Location;
-        public bool isActive; 
-        public UIComponent Parent;
-        private List<UIComponent> OwnedComponents;
-
-        protected UIComponent(Vector2 location = new Vector2())
+        public Vector2 GlobalPosition
         {
-            Location = location;
+            get
+            {
+                if (_parent == null)
+                    return LocalPosition;
+                return _parent.GlobalPosition + LocalPosition;
+            }
+        }
+
+        public Vector2 LocalPosition = Vector2.Zero;
+        public bool IsActive;
+        protected UIComponent _parent;
+        protected Enum ComponentType;
+        public bool _debugMode;
+        public bool _isSelected;
+        protected UIComponent(UIComponent parent = null)
+        {
+            _parent = parent;
+        }
+        protected UIComponent(Vector2 localPosition, UIComponent parent = null) : this(parent)
+        {
+            LocalPosition = localPosition;
         }
 
         public virtual void Initialize()
@@ -34,7 +50,7 @@ namespace SgEngine.UI
 
         public void BeginRun()
         {
-            isActive = true;
+            IsActive = true;
             OnActivate();
         }
 
@@ -60,13 +76,13 @@ namespace SgEngine.UI
 
         public void Activate()
         {
-            isActive = true;
+            IsActive = true;
             OnActivate();
         }
 
         public void Deactivate()
         {
-            isActive = false;
+            IsActive = false;
             OnDeactivate();
         }
     }

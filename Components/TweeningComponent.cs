@@ -22,7 +22,7 @@ namespace SgEngine.Components
 
         public TweeningComponent(GameObject parent) : base(parent)
         {
-            _componentType = EngineComponentTypes.TweeningComponent;
+            _componentType = EngineComponentTypes.GameObjectComponents.TweeningComponent;
         }
 
         public void TweenEnd(Tweener tweenThatEnded)

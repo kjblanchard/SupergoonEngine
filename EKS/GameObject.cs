@@ -24,6 +24,9 @@ namespace SgEngine.EKS
             set => _localPosition = value;
 
         }
+
+        public static int id;
+        protected int Id;
         protected Vector2 _localPosition = Vector2.Zero;
 
 
@@ -62,6 +65,8 @@ namespace SgEngine.EKS
         /// <param name="location">The location OR the offset of the gameobject, if it doesn't have a parent, its probably  </param>
         public GameObject()
         {
+            Id = id;
+            id++;
         }
 
         public GameObject(Vector2 location)

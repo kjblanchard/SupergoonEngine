@@ -7,10 +7,19 @@
 
 namespace SgEngine.Components
 {
-    public enum EngineComponentTypes
+    public struct EngineComponentTypes
     {
-        SpriteComponent = 1000,
-        TweeningComponent,
+
+        public enum GameObjectComponents
+        {
+            SpriteComponent = 1000,
+            TweeningComponent,
+        }
+
+        public enum UiComponents
+        {
+            ImageComponent = 1000,
+        }
     }
 
 }

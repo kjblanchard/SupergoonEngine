@@ -119,11 +119,11 @@ namespace SgEngine.Core.Input
         {
             return _currentMouseState.Position.ToVector2();
         }
-        private bool LeftMouseButtonClicked()
+        public bool LeftMouseButtonClicked()
         {
             return _currentMouseState.LeftButton == ButtonState.Pressed && _previouMouseState.LeftButton == ButtonState.Released;
         }
-        private bool RightMouseButtonClicked()
+        public bool RightMouseButtonClicked()
         {
             return _currentMouseState.RightButton == ButtonState.Pressed && _previouMouseState.RightButton == ButtonState.Released;
         }

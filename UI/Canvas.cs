@@ -29,22 +29,32 @@ namespace SgEngine.UI
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
             base.Draw(gameTime, spriteBatch);
-                
+            foreach (var _allPanel in AllPanels)
+            {
+                _allPanel.Draw(gameTime,spriteBatch);
+            }
         }
 
         public override void Update(GameTime gameTime)
         {
-            base.Update(gameTime);
+            foreach (var _panel in AllPanels)
+            {
+                _panel.Update(gameTime);
+            }
         }
 
 
         public void AddPanel(Panel panelToAdd)
         {
             AllPanels.Add(panelToAdd);
+            panelToAdd.Initialize();
+            panelToAdd.LoadContent();
+            panelToAdd.BeginRun();
         }
 
         public void RemovePanel(Panel panelToRemove)
         {
+            panelToRemove.Deactivate();
             AllPanels.Remove(panelToRemove);
         }
     }

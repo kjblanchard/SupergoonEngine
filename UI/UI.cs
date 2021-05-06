@@ -14,7 +14,7 @@ namespace SgEngine.UI
     public class UI : UIComponent
     {
         private List<Canvas> AllCanvasList = new List<Canvas>();
-        //public Canvas MasterCanvas = new Canvas(new Rectangle())
+        public Canvas MasterCanvas = new Canvas(new Rectangle());
         public void AddPanel(Canvas panelToAdd)
         {
             AllCanvasList.Add(panelToAdd);
@@ -27,7 +27,7 @@ namespace SgEngine.UI
 
         public override void Initialize()
         {
-            //AllCanvasList.Add(MasterCanvas);
+            AllCanvasList.Add(MasterCanvas);
             foreach (var canvas in AllCanvasList)
             {
             }

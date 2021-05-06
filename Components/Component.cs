@@ -15,6 +15,10 @@ namespace SgEngine.Components
 {
     public class Component : IUpdate
     {
+        public Vector2 GlobalPosition
+        {
+            get => _parent.GlobalPosition + _localPosition;
+        }
         protected bool _isActive = true;
         protected GameObject _parent;
         protected Vector2 _localPosition;

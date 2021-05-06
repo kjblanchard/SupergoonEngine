@@ -25,7 +25,6 @@
 
   <ItemGroup>
     <Folder Include="Core\BaseClasses\" />
-    <Folder Include="UI\" />
     <Folder Include="Tilemap\" />
   </ItemGroup>
 

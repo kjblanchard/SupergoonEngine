@@ -13,6 +13,8 @@ namespace SgEngine.EKS
         public static SoundSystem SoundSystem { get; set; } = new SoundSystem();
         public static InputSg Input { get; private set; } = new InputSg();
 
+        public static UI.UI Ui { get; } = new UI.UI();
+
         public static GraphicsDevice GetGraphicsDevice()
         {
             return _instance.GraphicsDevice;
@@ -26,6 +28,7 @@ namespace SgEngine.EKS
         public static Point WindowCenter => new Point(_baseConfig.Window.X / 2, _baseConfig.Window.Y / 2);
         public static GameWorld GetWorld => _instance;
         protected static GameWorld _instance;
+
         /// <summary>
         /// Gets the current playerController
         /// </summary>

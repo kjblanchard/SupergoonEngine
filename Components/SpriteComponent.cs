@@ -22,8 +22,16 @@ namespace SgEngine.Components
 
         #region State
 
+
         private GraphicsDevice _graphics;
-        private bool _debugMode = true;
+
+        public bool DebugMode
+        {
+            get => _debugMode;
+            set => _debugMode = value;
+        }
+
+        private bool _debugMode;
         private readonly bool _isWholeTexture = true;
         private Point _size;
         private readonly Rectangle _offsetAndSize;
@@ -36,16 +44,10 @@ namespace SgEngine.Components
 
         public SpriteComponent(GameObject parent, Enum objectLoLoad) : base(parent)
         {
-            _componentType = EngineComponentTypes.SpriteComponent;
+            _componentType = EngineComponentTypes.GameObjectComponents.SpriteComponent;
             _parent = parent;
             _spriteSheet = ContentLoader.GetSpriteSheet(objectLoLoad);
             _graphics ??= GameWorld.GetGraphicsDevice();
-        }
-        public SpriteComponent(GameObject parent, Enum assetToLoad, Point size) : this(parent, assetToLoad)
-        {
-            _size = size;
-            _offsetAndSize = new Rectangle(new Point(0, 0), size);
-            _isWholeTexture = false;
         }
 
         public SpriteComponent(GameObject parent, Enum assetToLoad, Rectangle offsetAndSize) : this(parent,
@@ -96,6 +98,17 @@ namespace SgEngine.Components
             positionToDraw.X -= size.X / 2;
             positionToDraw.Y -= size.Y / 2;
             spriteBatch.DrawRectangle(positionToDraw, Color.Aqua);
+
+        }
+
+        public Rectangle GetCurrentSpriteRect()
+        {
+            var temp = _offsetAndSize;
+            temp.Location += _parent.LocalPosition.ToPoint();
+            var size = temp.Size;
+            temp.X -= size.X / 2;
+            temp.Y -= size.Y / 2;
+            return temp;
 
         }
         #endregion
