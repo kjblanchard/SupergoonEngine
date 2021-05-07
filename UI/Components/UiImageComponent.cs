@@ -32,7 +32,6 @@ namespace SgEngine.UI.Components
         {
             base.Draw(gameTime, spriteBatch);
             var rectToDraw = new Rectangle(GlobalPosition.ToPoint(), _size);
-            Debug.WriteLine(rectToDraw.Location + "Rect Image rectDraw");
             spriteBatch.Draw(_spriteSheet._texture, rectToDraw, null,
                 Color.White * _opacity, 0.0f, _spriteSheet.Center(),
                SpriteEffects.None, 0.0f);

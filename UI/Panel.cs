@@ -55,10 +55,15 @@ namespace SgEngine.UI
 
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
-            var controllerRect = controller.MousePosition().ToPoint();
-            var realControllerRect = new Rectangle(controllerRect, new Point(25, 25));
+            var mousePosition = controller.MousePosition();
+            var cameraLocOffset = GameWorld.mainCamera.Location;
+            mousePosition.X -= cameraLocOffset.X;
+            mousePosition.Y -= cameraLocOffset.Y;
+            var controllerRect = GameWorld.GetWorld.ScreenToWorld(mousePosition);
+            var realControllerRect = new RectangleF(controllerRect, new Vector2(16, 16));
 
             spriteBatch.DrawRectangle(realControllerRect, Color.White);
+            Debug.WriteLine($"{controllerRect.X} : {mousePosition.Y}");
 
             base.Draw(gameTime, spriteBatch);
             foreach (var _allComponent in allComponents)
