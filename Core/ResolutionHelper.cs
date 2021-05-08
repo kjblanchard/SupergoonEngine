@@ -8,6 +8,7 @@
 using FMOD;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MonoGame.Extended.Sprites;
 using SgEngine.EKS;
 
 namespace SgEngine.Core
@@ -16,77 +17,73 @@ namespace SgEngine.Core
     {
         public static Point windowSize;
         public static Point worldSize;
-        public static GraphicsDeviceManager graphics;
-        public static GraphicsDevice graphicsDevice;
+        public static GraphicsDeviceManager _graphics;
+        public static GraphicsDevice _graphicsDevice;
         public static Matrix SpriteScale;
 
-        public static void GetScalingMatrix()
+        public ResolutionHelper(GraphicsDeviceManager graphicsDeviceManager, GraphicsDevice GraphicsDevice)
         {
-            var spriteScale = Matrix.CreateScale(
-                (float) graphicsDevice.Viewport.Width / worldSize.X,
-                (float) graphicsDevice.Viewport.Height / worldSize.Y, 1);
-            SpriteScale = spriteScale;
-        }
-        public static void Init(GraphicsDeviceManager graphicsboi, GraphicsDevice graphicsDev)
-        {
-            graphics = graphicsboi;
-            graphicsDevice = graphicsDev;
-            ApplyResolutionSettings();
+            _graphicsDevice = GraphicsDevice;
+            _graphics = graphicsDeviceManager;
 
         }
-
-        public static void ToggleFullScreen()
+        public void ApplyResolutionSettings(bool fullScreen)
         {
-            graphics.IsFullScreen = !graphics.IsFullScreen;
-            ApplyResolutionSettings();
-        }
-
-        public static void ApplyResolutionSettings()
-        {
-            var screenSize = new Point();
-            if (graphics.IsFullScreen)
-            {
-                screenSize = new Point(GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width,
-                    GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height);
-            }
+            _graphics.IsFullScreen = fullScreen;
+            Point screenSize;
+            if (fullScreen)
+                screenSize = new Point(GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width, GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height);
             else
-            {
-                var windowSize = new Point();
-                windowSize.X = GameWorld._baseConfig.Window.X;
-                windowSize.Y = GameWorld._baseConfig.Window.Y;
                 screenSize = windowSize;
 
-            }
+            // scale the window to the desired size
+            _graphics.PreferredBackBufferWidth = screenSize.X;
+            _graphics.PreferredBackBufferHeight = screenSize.Y;
 
-            graphics.PreferredBackBufferWidth = screenSize.X;
-            graphics.PreferredBackBufferHeight = screenSize.Y;
-            windowSize = screenSize;
-            graphicsDevice.Viewport = CalculateViewport(screenSize);
-            GetScalingMatrix();
-            graphics.ApplyChanges();
+            _graphics.ApplyChanges();
+
+            // calculate and set the viewport to use
+            _graphicsDevice.Viewport = CalculateViewport(screenSize);
+
+            // calculate how the graphics should be scaled, so that the game world fits inside the window
+            SpriteScale = Matrix.CreateScale((float)_graphicsDevice.Viewport.Width / worldSize.X, (float)_graphicsDevice.Viewport.Height / worldSize.Y, 1);
+            //spriteScale.Translation = (new Vector3(100,0,0));
         }
 
-        static Viewport CalculateViewport(Point windowsize)
+        /// <summary>
+        /// Calculates and returns the viewport to use, so that the game world fits on the screen while preserving its aspect ratio.
+        /// </summary>
+        /// <param name="windowSize">The size of the screen on which the world should be drawn.</param>
+        /// <returns>A Viewport object that will show the game world as large as possible while preserving its aspect ratio.</returns>
+        Viewport CalculateViewport(Point windowSize)
         {
-            var viewport = new Viewport();
-            float gameAspectRatio = (float) worldSize.X / worldSize.Y;
-            float windowAspectRatio = (float) windowsize.X / windowsize.Y;
+            // create a Viewport object
+            Viewport viewport = new Viewport();
 
+            // calculate the two aspect ratios
+            float gameAspectRatio = (float)worldSize.X / worldSize.Y;
+            float windowAspectRatio = (float)windowSize.X / windowSize.Y;
+
+            // if the window is relatively wide, use the full window height
             if (windowAspectRatio > gameAspectRatio)
             {
-                viewport.Width = (int) (windowsize.Y * gameAspectRatio);
-                viewport.Height = windowsize.Y;
+                viewport.Width = (int)(windowSize.Y * gameAspectRatio);
+                viewport.Height = windowSize.Y;
             }
+            // if the window is relatively high, use the full window width
             else
             {
-                viewport.Width = windowsize.X;
-                viewport.Height = (int) (windowsize.X / gameAspectRatio);
+                viewport.Width = windowSize.X;
+                viewport.Height = (int)(windowSize.X / gameAspectRatio);
             }
 
-            viewport.X = (windowsize.X - viewport.Width) / 2;
-            viewport.Y = (windowsize.Y - viewport.Height) / 2;
+            // calculate and store the top-left corner of the viewport
+            viewport.X = (windowSize.X - viewport.Width) / 2;
+            viewport.Y = (windowSize.Y - viewport.Height) / 2;
+
             return viewport;
-        } 
+        }
+
 
     }
 }

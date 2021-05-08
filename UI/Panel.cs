@@ -10,6 +10,7 @@ using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
+using SgEngine.Core.Camera;
 using SgEngine.Core.Input;
 using SgEngine.EKS;
 
@@ -56,10 +57,7 @@ namespace SgEngine.UI
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
             var mousePosition = controller.MousePosition();
-            var cameraLocOffset = GameWorld.mainCamera.Location;
-            mousePosition.X -= cameraLocOffset.X;
-            mousePosition.Y -= cameraLocOffset.Y;
-            var controllerRect = GameWorld.GetWorld.ScreenToWorld(mousePosition);
+            var controllerRect = Camera.ScreenToWorldAndCamOffset(mousePosition);
             var realControllerRect = new RectangleF(controllerRect, new Vector2(16, 16));
 
             spriteBatch.DrawRectangle(realControllerRect, Color.White);
