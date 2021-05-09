@@ -9,9 +9,9 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace SgEngine.UI
+namespace SgEngine.GUI
 {
-    public class Canvas : UIComponent
+    public class Canvas : GuiUiComponent
     {
         private List<Panel> AllPanels = new List<Panel>();
         private Rectangle _locationAndSize;

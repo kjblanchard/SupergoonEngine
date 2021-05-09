@@ -6,22 +6,21 @@
 ////////////////////////////////////////////////////////////
 
 using System;
-using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
 using SgEngine.Components;
 using SgEngine.Core;
 
-namespace SgEngine.UI.Components
+namespace SgEngine.GUI.Components
 {
-    public class UiImageComponent : UIComponent
+    public class GuiUiImageComponent : GuiUiComponent
     {
         private GraphicsDevice _graphics;
         private readonly Spritesheet _spriteSheet;
         private float _opacity = 1.0f;
 
-        public UiImageComponent(UIComponent parent, Enum spriteSheetToLoad, Point size, Vector2 offset = new Vector2()) : base(offset, size, parent)
+        public GuiUiImageComponent(GuiUiComponent parent, Enum spriteSheetToLoad, Point size, Vector2 offset = new Vector2()) : base(offset, size, parent)
         {
             ComponentType = EngineComponentTypes.UiComponents.ImageComponent;
             _spriteSheet = ContentLoader.GetSpriteSheet(spriteSheetToLoad);

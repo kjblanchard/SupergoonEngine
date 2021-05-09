@@ -6,15 +6,13 @@
 ////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using IUpdate = SgEngine.Interfaces.IUpdate;
 
-namespace SgEngine.UI
+namespace SgEngine.GUI
 {
-    public abstract class UIComponent : IUpdate
+    public abstract class GuiUiComponent : IUpdate
     {
         public Vector2 GlobalPosition
         {
@@ -41,11 +39,11 @@ namespace SgEngine.UI
 
         public Vector2 LocalPosition = Vector2.Zero;
         public bool IsActive;
-        protected UIComponent _parent;
+        protected GuiUiComponent _parent;
         protected Enum ComponentType;
         public bool _debugMode;
         public bool _isSelected;
-        protected UIComponent(Vector2 localPosition, Point size = new Point(), UIComponent parent = null)
+        protected GuiUiComponent(Vector2 localPosition, Point size = new Point(), GuiUiComponent parent = null)
         {
             _parent = parent;
             LocalPosition = localPosition;

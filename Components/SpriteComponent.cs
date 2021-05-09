@@ -47,7 +47,7 @@ namespace SgEngine.Components
             _componentType = EngineComponentTypes.GameObjectComponents.SpriteComponent;
             _parent = parent;
             _spriteSheet = ContentLoader.GetSpriteSheet(objectLoLoad);
-            _graphics ??= GameWorld.GetGraphicsDevice();
+            _graphics ??= GameWorld.GetGraphicsDevice;
         }
 
         public SpriteComponent(GameObject parent, Enum assetToLoad, Rectangle offsetAndSize) : this(parent,

@@ -114,7 +114,6 @@ namespace SgEngine.Core.Input
             }
 
         }
-
         public Vector2 MousePosition()
         {
             return _currentMouseState.Position.ToVector2();
@@ -125,7 +124,8 @@ namespace SgEngine.Core.Input
         }
         public bool RightMouseButtonClicked()
         {
-            return _currentMouseState.RightButton == ButtonState.Pressed && _previouMouseState.RightButton == ButtonState.Released;
+            return _currentMouseState.RightButton == ButtonState.Pressed &&_previouMouseState.RightButton == ButtonState.Released;
         }
+
     }
 }

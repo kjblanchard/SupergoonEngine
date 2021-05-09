@@ -4,6 +4,7 @@ using SgEngine.Core;
 using SgEngine.Core.Camera;
 using SgEngine.Core.Input;
 using SgEngine.Core.Sounds;
+using SgEngine.GUI;
 using SgEngine.Models;
 using SgEngine.Utils;
 
@@ -11,26 +12,25 @@ namespace SgEngine.EKS
 {
     public class GameWorld : Game
     {
-        public static SoundSystem SoundSystem { get; set; } = new SoundSystem();
-        public static InputSg Input { get; private set; } = new InputSg();
-        public static UI.UI Ui { get; } = new UI.UI();
+        public static SoundSystem SoundSystem => _instance._soundSystem;
+        public static InputSg Input => _instance._input;
+        public static Gui Gui => _instance._gui;
 
-        public static GraphicsDevice GetGraphicsDevice()
-        {
-            return _instance.GraphicsDevice;
-        }
-        protected GraphicsDeviceManager _graphics;
-        protected SpriteBatch _spriteBatch;
-        protected ContentLoader _contentLoader;
-        public static BaseConfig _baseConfig;
-
-        public static Point ScreenSize => new Point(_baseConfig.Window.X, _baseConfig.Window.Y);
-        public static Point WindowCenter => new Point(_baseConfig.World.X / 2, _baseConfig.World.Y / 2);
+        public static GraphicsDevice GetGraphicsDevice => _instance.GraphicsDevice;
+        public static Point WindowSize => new Point(_instance._baseConfig.Window.X, _instance._baseConfig.Window.Y);
+        public static Point WindowCenter => new Point(_instance._baseConfig.World.X / 2, _instance._baseConfig.World.Y / 2);
         public static GameWorld GetWorld => _instance;
         protected static GameWorld _instance;
-
-        public ResolutionHelper ResolutionHelper;
-        public Camera mainCamera;
+        public static Camera MainCamera => _instance._mainCamera;
+        protected GraphicsDeviceManager _graphicsDeviceManager;
+        protected SpriteBatch _spriteBatch;
+        protected ContentLoader _contentLoader;
+        protected ResolutionHelper _resolutionHelper;
+        protected Camera _mainCamera;
+        protected Gui _gui;
+        protected SoundSystem _soundSystem;
+        protected InputSg _input;
+        protected BaseConfig _baseConfig;
 
         /// <summary>
         /// Gets the current playerController
@@ -39,29 +39,37 @@ namespace SgEngine.EKS
         /// <returns>The playercontroller at the spot that you want</returns>
         public static PlayerController GetPlayerController(int playerControllerToGet) =>
             Input.PlayerControllers[playerControllerToGet];
-
+        /// <summary>
+        /// The full game world, this holds all the important things like graphics, UI, soundsystem, input, etc
+        /// </summary>
         public GameWorld()
         {
-            _graphics = new GraphicsDeviceManager(this);
+            _graphicsDeviceManager = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
             _instance ??= this;
-
+            _gui = new Gui();
+            _soundSystem = new SoundSystem();
+            _input = new InputSg();
         }
 
         protected override void Initialize()
         {
             base.Initialize();
+            _resolutionHelper = new ResolutionHelper(_graphicsDeviceManager, GraphicsDevice);
             LoadBaseConfig();
             ConfigureGraphics();
-            ResolutionHelper = new ResolutionHelper(_graphics, GraphicsDevice);
-            mainCamera = new Camera(ResolutionHelper);
-            ResolutionHelper.ApplyResolutionSettings(false);
+
+            _mainCamera = new Camera(_resolutionHelper);
+            _resolutionHelper.ApplyResolutionSettings(false);
             Input.Initialize();
             SoundSystem.Startup();
 
         }
 
+        /// <summary>
+        /// Load the base configuration file from json, and store it as a local variable;
+        /// </summary>
         private void LoadBaseConfig()
         {
             using var streamreader =
@@ -70,13 +78,16 @@ namespace SgEngine.EKS
             _baseConfig = System.Text.Json.JsonSerializer.Deserialize<BaseConfig>(data);
         }
 
+        /// <summary>
+        /// Load the base config into the resolutionHelper
+        /// </summary>
         private void ConfigureGraphics()
         {
-            _graphics.PreferredBackBufferWidth = _baseConfig.Window.X;
-            _graphics.PreferredBackBufferHeight = _baseConfig.Window.Y;
+            //_graphicsDeviceManager.PreferredBackBufferWidth = _baseConfig.Window.X;
+            //_graphicsDeviceManager.PreferredBackBufferHeight = _baseConfig.Window.Y;
             ResolutionHelper.windowSize = new Point(_baseConfig.Window.X, _baseConfig.Window.Y);
             ResolutionHelper.worldSize = new Point(_baseConfig.World.X, _baseConfig.World.Y);
-            _graphics.ApplyChanges();
+            //_graphicsDeviceManager.ApplyChanges();
         }
 
         protected override void LoadContent()
@@ -90,8 +101,8 @@ namespace SgEngine.EKS
             base.Update(gameTime);
             SoundSystem.Update();
             Input.Update();
-            mainCamera.SetPlayerController(GetPlayerController(0));
-            mainCamera.Update();
+            MainCamera.SetPlayerController(GetPlayerController(0));
+            MainCamera.Update();
         }
 
         protected override void Draw(GameTime gameTime)

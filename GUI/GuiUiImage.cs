@@ -8,34 +8,34 @@
 using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using SgEngine.UI.Components;
+using SgEngine.GUI.Components;
 
-namespace SgEngine.UI
+namespace SgEngine.GUI
 {
-    public class UiImage : UIComponent
+    public class GuiUiImage : GuiUiComponent
     {
-        private UiImageComponent _uiImageComponent;
+        private GuiUiImageComponent _guiUiImageComponent;
 
-        public UiImage(Enum spriteSheetToLoad, Point size, Vector2 location = new Vector2()) : base(location,size)
+        public GuiUiImage(Enum spriteSheetToLoad, Point size, Vector2 location = new Vector2()) : base(location,size)
         {
-            _uiImageComponent = new UiImageComponent(this, spriteSheetToLoad, size);
+            _guiUiImageComponent = new GuiUiImageComponent(this, spriteSheetToLoad, size);
         }
         public override void Initialize()
         {
             base.Initialize();
-            _uiImageComponent.Initialize();
+            _guiUiImageComponent.Initialize();
         }
 
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
-            _uiImageComponent.Update(gameTime);
+            _guiUiImageComponent.Update(gameTime);
         }
 
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
             base.Draw(gameTime, spriteBatch);
-            _uiImageComponent.Draw(gameTime,spriteBatch);
+            _guiUiImageComponent.Draw(gameTime,spriteBatch);
         }
     }
 }

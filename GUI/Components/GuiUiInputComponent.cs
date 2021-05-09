@@ -8,11 +8,11 @@
 using Microsoft.Xna.Framework;
 using SgEngine.Core.Input;
 
-namespace SgEngine.UI.Components
+namespace SgEngine.GUI.Components
 {
-    public class UiInputComponent : UIComponent
+    public class GuiUiInputComponent : GuiUiComponent
     {
-        public UiInputComponent() : base(new Vector2(), new Point())
+        public GuiUiInputComponent() : base(new Vector2(), new Point())
         {
             
         }

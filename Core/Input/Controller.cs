@@ -5,6 +5,7 @@
 //
 ////////////////////////////////////////////////////////////
 
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using SgEngine.EKS;
 
@@ -61,6 +62,30 @@ namespace SgEngine.Core.Input
         public abstract bool IsButtonPressed(ControllerButtons button);
         public abstract bool IsButtonHeld(ControllerButtons button);
         public abstract bool IsButtonReleased(ControllerButtons button);
+
+        public static Vector2 MousePosition()
+        {
+            return _input.MousePosition();
+        }
+        public static Vector2 MouseScreenPosition()
+        {
+            return Camera.Camera.ScreenToWorld(_input.MousePosition());
+        }
+        public static Vector2 MouseScreenCameraPosition()
+        {
+
+            return Camera.Camera.ScreenToWorldAndCamOffset(_input.MousePosition());
+         }
+
+        public static bool LeftMouseButtonClicked()
+        {
+            return _input.LeftMouseButtonClicked();
+        }
+
+        public bool RightMouseButtonClicked()
+        {
+            return _input.RightMouseButtonClicked();
+        }
 
     }
 

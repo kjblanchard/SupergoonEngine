@@ -10,39 +10,38 @@ using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
-using SgEngine.Core.Camera;
 using SgEngine.Core.Input;
 using SgEngine.EKS;
 
-namespace SgEngine.UI
+namespace SgEngine.GUI
 {
-    public class Panel : UIComponent
+    public class Panel : GuiUiComponent
     {
-        private List<UIComponent> allComponents = new List<UIComponent>();
-        public InputSg controller;
+        private List<GuiUiComponent> allComponents = new List<GuiUiComponent>();
+        public PlayerController controller;
         public int counter;
         public Panel(Vector2 location = new Vector2(), Point size = new Point()) : base(location,size)
         {
         }
 
-        public void AddUiObject(UIComponent uiObject)
+        public void AddUiObject(GuiUiComponent guiUiObject)
         {
-            controller = GameWorld.Input;
-            uiObject.Initialize();
-            uiObject.LoadContent();
-            allComponents.Add(uiObject);
+            controller = GameWorld.GetPlayerController(0);
+            guiUiObject.Initialize();
+            guiUiObject.LoadContent();
+            allComponents.Add(guiUiObject);
         }
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
 
-            var controllerRect = controller.MousePosition().ToPoint();
+            var controllerRect = Controller.MouseScreenCameraPosition().ToPoint();
             var realControllerRect = new Rectangle(controllerRect, new Point(25, 25));
 
             foreach (var _allComponent in allComponents)
             {
                 _allComponent.Update(gameTime);
-                if (controller.LeftMouseButtonClicked())
+                if (Controller.LeftMouseButtonClicked())
                 {
 
                     if (Collision.Collision.ShapesIntersect(_allComponent.BoundingBoxAfterOrigin, realControllerRect))
@@ -56,12 +55,8 @@ namespace SgEngine.UI
 
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
-            var mousePosition = controller.MousePosition();
-            var controllerRect = Camera.ScreenToWorldAndCamOffset(mousePosition);
-            var realControllerRect = new RectangleF(controllerRect, new Vector2(16, 16));
-
+            var realControllerRect = new RectangleF(Controller.MouseScreenCameraPosition(), new Vector2(16, 16));
             spriteBatch.DrawRectangle(realControllerRect, Color.White);
-            Debug.WriteLine($"{controllerRect.X} : {mousePosition.Y}");
 
             base.Draw(gameTime, spriteBatch);
             foreach (var _allComponent in allComponents)

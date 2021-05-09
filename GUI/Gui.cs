@@ -4,15 +4,16 @@
 // Copyright (C) 2020-2021 - Kevin Blanchard
 //
 ////////////////////////////////////////////////////////////
+
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace SgEngine.UI
+namespace SgEngine.GUI
 {
-    public class UI : UIComponent
+    public class Gui : GuiUiComponent
     {
-        public UI(): base(new Vector2(), new Point())
+        public Gui(): base(new Vector2(), new Point())
         {
             
         }
