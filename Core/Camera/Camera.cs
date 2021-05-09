@@ -18,7 +18,7 @@ namespace SgEngine.Core.Camera
         private static ResolutionHelper _resolutionHelper;
         private static GraphicsDevice _graphicsDevice;
         //TODO this is here for testing moving camera, it can be removed later when testing is not needed
-        private PlayerController _currentController;
+        private readonly PlayerController _currentController;
         /// <summary>
         /// The main Game camera.  This is used to move around the current map.
         /// </summary>
@@ -31,12 +31,7 @@ namespace SgEngine.Core.Camera
             _location = Vector3.Zero;
             _currentController = GameWorld.GetPlayerController(0);
         }
-
-        public void SetPlayerController(PlayerController playerController)
-        {
-            _currentController = playerController;
-        }
-
+        //TODO this is here for testing moving camera, it can be removed later when testing is not needed
         public void Update()
         {
             if (_currentController.IsButtonHeld(ControllerButtons.Right))
@@ -48,27 +43,45 @@ namespace SgEngine.Core.Camera
             if (_currentController.IsButtonHeld(ControllerButtons.Down))
                 _location.Y += 1;
         }
-        public static Vector2 ScreenToWorld(Vector2 screenPosition)
+        /// <summary>
+        /// Returns the resolution world coordinates for the current screen position, probably used for UI
+        /// </summary>
+        /// <param name="screenPosition">The current position on the screen</param>
+        /// <returns>The position in the world</returns>
+        public static Vector2 ScreenToWorldResolution(Vector2 screenPosition)
         {
             var viewportTopLeft = new Vector2(_graphicsDevice.Viewport.X, _graphicsDevice.Viewport.Y);
             var screenToWorldScale = _resolutionHelper.WorldSize.X / (float)_graphicsDevice.Viewport.Width;
             return (screenPosition - viewportTopLeft) * screenToWorldScale;
         }
 
+        /// <summary>
+        /// Probably used for rendering most game objects, this will add in the camera offset to the gameObject so that it's in the proper location
+        /// </summary>
+        /// <param name="currentLocation">The current location of the object in the game world</param>
+        /// <returns>The current location of the object in the gameworld in regards to the camera</returns>
         public static Vector2 CalculateCameraOffset(Vector2 currentLocation)
         {
-
             currentLocation.X -= _location.X;
             currentLocation.Y -= _location.Y;
             return currentLocation;
         }
 
-        public static Vector2 ScreenToWorldAndCamOffset(Vector2 currentLocation)
+        /// <summary>
+        /// Calculates the current position given translated from Screen to world, with the camera offset
+        /// </summary>
+        /// <param name="currentScreenLocation">The current screen location</param>
+        /// <returns></returns>
+        public static Vector2 ScreenToWorldAndCamOffset(Vector2 currentScreenLocation)
         {
-            var locAndCamOffset = CalculateCameraOffset(currentLocation);
+            var locAndCamOffset = CalculateCameraOffset(currentScreenLocation);
 
-            return ScreenToWorld(locAndCamOffset);
+            return ScreenToWorldResolution(locAndCamOffset);
         }
+        /// <summary>
+        /// Gets the transform matrix of the CameraTransform matrix
+        /// </summary>
+        /// <returns></returns>
         public Matrix GetCameraTransformMatrix()
         {
             Matrix.CreateTranslation(ref _location, out var matrix);

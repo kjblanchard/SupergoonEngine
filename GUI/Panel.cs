@@ -17,54 +17,45 @@ namespace SgEngine.GUI
 {
     public class Panel : GuiUiComponent
     {
-        private List<GuiUiComponent> allComponents = new List<GuiUiComponent>();
-        public PlayerController controller;
-        public int counter;
+        private readonly List<GuiUiComponent> _allComponents = new List<GuiUiComponent>();
+        private PlayerController _controller;
         public Panel(Vector2 location = new Vector2(), Point size = new Point()) : base(location,size)
         {
         }
 
         public void AddUiObject(GuiUiComponent guiUiObject)
         {
-            controller = GameWorld.GetPlayerController(0);
+            _controller = GameWorld.GetPlayerController(0);
             guiUiObject.Initialize();
             guiUiObject.LoadContent();
-            allComponents.Add(guiUiObject);
+            _allComponents.Add(guiUiObject);
         }
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
-
-            var controllerRect = Controller.MouseScreenCameraPosition().ToPoint();
+            var controllerRect = Controller.MouseScreenToWorldResolution().ToPoint();
             var realControllerRect = new Rectangle(controllerRect, new Point(25, 25));
 
-            foreach (var _allComponent in allComponents)
+            foreach (var _allComponent in _allComponents)
             {
                 _allComponent.Update(gameTime);
-                if (Controller.LeftMouseButtonClicked())
+                //TODO testing collisions, this section can be removed later
+                if (!Controller.LeftMouseButtonClicked()) continue;
+                if (Collision.Collision.ShapesIntersect(_allComponent.BoundingBoxAfterOrigin, realControllerRect))
                 {
-
-                    if (Collision.Collision.ShapesIntersect(_allComponent.BoundingBoxAfterOrigin, realControllerRect))
-                    {
-                        Debug.WriteLine("WOW an overlap" + counter);
-                        counter++;
-                    }
-                }
-
-                if (controller.IsButtonPressed(ControllerButtons.B))
-                {
-                    GameWorld.FullScreen = !GameWorld.FullScreen;
+                    Debug.WriteLine("WOW an overlap");
                 }
             }
         }
 
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
-            var realControllerRect = new RectangleF(Controller.MouseScreenCameraPosition(), new Vector2(16, 16));
+            //TODO testing drawing panels and stuff
+            var realControllerRect = new RectangleF(Controller.MouseScreenToWorldResolution(), new Vector2(16, 16));
             spriteBatch.DrawRectangle(realControllerRect, Color.White);
 
             base.Draw(gameTime, spriteBatch);
-            foreach (var _allComponent in allComponents)
+            foreach (var _allComponent in _allComponents)
             {
 
                 spriteBatch.DrawRectangle(_allComponent.BoundingBoxAfterOrigin, Color.Blue);

@@ -67,9 +67,9 @@ namespace SgEngine.Core.Input
         {
             return _input.MousePosition();
         }
-        public static Vector2 MouseScreenPosition()
+        public static Vector2 MouseScreenToWorldResolution()
         {
-            return Camera.Camera.ScreenToWorld(_input.MousePosition());
+            return Camera.Camera.ScreenToWorldResolution(_input.MousePosition());
         }
         public static Vector2 MouseScreenCameraPosition()
         {

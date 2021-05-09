@@ -17,9 +17,9 @@ namespace SgEngine.EKS
         public static Gui Gui => _instance._gui;
 
         public static GraphicsDevice GetGraphicsDevice => _instance.GraphicsDevice;
-        public static Point WindowSize => new Point(_instance._baseConfig.Window.X, _instance._baseConfig.Window.Y);
-        public static Point WindowCenter => new Point(_instance._baseConfig.World.X / 2, _instance._baseConfig.World.Y / 2);
-        public static GameWorld GetWorld => _instance;
+        public static Point WindowSize => _instance._resolutionHelper.WindowSize;
+        public static Point WorldCenter => new Point(_instance._resolutionHelper.WorldSize.X / 2, _instance._resolutionHelper.WorldSize.Y / 2);
+        public static Point WindowCenter => new Point(_instance._resolutionHelper.WindowSize.X / 2, _instance._resolutionHelper.WindowSize.Y / 2);
         protected static GameWorld _instance;
         public static Camera MainCamera => _instance._mainCamera;
         public static Matrix ResolutionSpriteScale => _instance._resolutionHelper.SpriteScale;
@@ -78,7 +78,14 @@ namespace SgEngine.EKS
             _baseConfig = LoadBaseConfig();
             InitializeResolutionHelper();
             _mainCamera = new Camera(_resolutionHelper, GraphicsDevice);
+            _gui.Initialize();
             _spriteBatch = new SpriteBatch(GraphicsDevice);
+        }
+
+        protected override void LoadContent()
+        {
+            base.LoadContent();
+            _gui.LoadContent();
         }
 
         /// <summary>
