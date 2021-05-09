@@ -16,7 +16,7 @@ namespace SgEngine.Core.Sounds
         /// <summary>
         /// Initializes FMOD and loads the music banks
         /// </summary>
-        public void Startup()
+        public void Initialize()
         {
             InitializeFmodStudio();
             var deserializedBanks = ReadMusicJsonFile("music");

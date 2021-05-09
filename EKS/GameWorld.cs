@@ -22,6 +22,23 @@ namespace SgEngine.EKS
         public static GameWorld GetWorld => _instance;
         protected static GameWorld _instance;
         public static Camera MainCamera => _instance._mainCamera;
+        public static Matrix ResolutionSpriteScale => _instance._resolutionHelper.SpriteScale;
+
+        /// <summary>
+        /// Gets whether the game is currently full screen.
+        /// When you set it, it also will Apply the resolution changes afterwards
+        /// </summary>
+        public static bool FullScreen
+        {
+            get => _instance._fullScreen;
+            set
+            {
+                _instance._fullScreen = value;
+                _instance._resolutionHelper.ApplyResolutionSettings(_instance._fullScreen);
+            }
+        }
+
+        protected bool _fullScreen;
         protected GraphicsDeviceManager _graphicsDeviceManager;
         protected SpriteBatch _spriteBatch;
         protected ContentLoader _contentLoader;
@@ -56,44 +73,34 @@ namespace SgEngine.EKS
         protected override void Initialize()
         {
             base.Initialize();
-            _resolutionHelper = new ResolutionHelper(_graphicsDeviceManager, GraphicsDevice);
-            LoadBaseConfig();
-            ConfigureGraphics();
-
-            _mainCamera = new Camera(_resolutionHelper);
-            _resolutionHelper.ApplyResolutionSettings(false);
             Input.Initialize();
-            SoundSystem.Startup();
+            SoundSystem.Initialize();
+            _baseConfig = LoadBaseConfig();
+            InitializeResolutionHelper();
+            _mainCamera = new Camera(_resolutionHelper, GraphicsDevice);
+            _spriteBatch = new SpriteBatch(GraphicsDevice);
+        }
 
+        /// <summary>
+        /// Creates the resolutionHelper and initializes it
+        /// </summary>
+        private void InitializeResolutionHelper()
+        {
+            _resolutionHelper = new ResolutionHelper(_graphicsDeviceManager, GraphicsDevice);
+            _resolutionHelper.Initialize(new Point(_baseConfig.Window.X, _baseConfig.Window.Y),
+                new Point(_baseConfig.World.X, _baseConfig.World.Y));
+            _resolutionHelper.ApplyResolutionSettings(false);
         }
 
         /// <summary>
         /// Load the base configuration file from json, and store it as a local variable;
         /// </summary>
-        private void LoadBaseConfig()
+        private BaseConfig LoadBaseConfig()
         {
             using var streamreader =
                 Helpers.CreateJsonStreamReader("BaseConfig", Helpers.ConfigFileToRead.ConfigFile);
             var data = streamreader.ReadToEnd();
-            _baseConfig = System.Text.Json.JsonSerializer.Deserialize<BaseConfig>(data);
-        }
-
-        /// <summary>
-        /// Load the base config into the resolutionHelper
-        /// </summary>
-        private void ConfigureGraphics()
-        {
-            //_graphicsDeviceManager.PreferredBackBufferWidth = _baseConfig.Window.X;
-            //_graphicsDeviceManager.PreferredBackBufferHeight = _baseConfig.Window.Y;
-            ResolutionHelper.windowSize = new Point(_baseConfig.Window.X, _baseConfig.Window.Y);
-            ResolutionHelper.worldSize = new Point(_baseConfig.World.X, _baseConfig.World.Y);
-            //_graphicsDeviceManager.ApplyChanges();
-        }
-
-        protected override void LoadContent()
-        {
-            base.LoadContent();
-            _spriteBatch = new SpriteBatch(GraphicsDevice);
+            return System.Text.Json.JsonSerializer.Deserialize<BaseConfig>(data);
         }
 
         protected override void Update(GameTime gameTime)
@@ -101,15 +108,7 @@ namespace SgEngine.EKS
             base.Update(gameTime);
             SoundSystem.Update();
             Input.Update();
-            MainCamera.SetPlayerController(GetPlayerController(0));
             MainCamera.Update();
         }
-
-        protected override void Draw(GameTime gameTime)
-        {
-            base.Draw(gameTime);
-
-        }
-
     }
 }

@@ -8,54 +8,58 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using SgEngine.Core.Input;
+using SgEngine.EKS;
 
 namespace SgEngine.Core.Camera
 {
     public class Camera
     {
-        public static Vector3 Location;
-        public PlayerController currentController;
-        public static ResolutionHelper ResolutionHelper;
-        public Camera(ResolutionHelper resolutionHelper)
+        private static Vector3 _location;
+        private static ResolutionHelper _resolutionHelper;
+        private static GraphicsDevice _graphicsDevice;
+        //TODO this is here for testing moving camera, it can be removed later when testing is not needed
+        private PlayerController _currentController;
+        /// <summary>
+        /// The main Game camera.  This is used to move around the current map.
+        /// </summary>
+        /// <param name="resolutionHelper">The resolution help that it works with</param>
+        /// <param name="graphicsDevice">The graphics device that is used for calculations</param>
+        public Camera(ResolutionHelper resolutionHelper, GraphicsDevice graphicsDevice)
         {
-            ResolutionHelper = resolutionHelper;
-            Location = Vector3.Zero;
-        }
-        public Matrix GetTransformMatrix()
-        {
-            var matrix = Matrix.Identity;
-            Matrix.CreateTranslation(ref Location, out matrix);
-            return matrix;
+            _resolutionHelper = resolutionHelper;
+            _graphicsDevice = graphicsDevice;
+            _location = Vector3.Zero;
+            _currentController = GameWorld.GetPlayerController(0);
         }
 
         public void SetPlayerController(PlayerController playerController)
         {
-            currentController = playerController;
+            _currentController = playerController;
         }
 
         public void Update()
         {
-            if (currentController.IsButtonHeld(ControllerButtons.Right))
-                Location.X += 1;
-            if (currentController.IsButtonHeld(ControllerButtons.Left))
-                Location.X -= 1;
-            if (currentController.IsButtonHeld(ControllerButtons.Up))
-                Location.Y -= 1;
-            if (currentController.IsButtonHeld(ControllerButtons.Down))
-                Location.Y += 1;
+            if (_currentController.IsButtonHeld(ControllerButtons.Right))
+                _location.X += 1;
+            if (_currentController.IsButtonHeld(ControllerButtons.Left))
+                _location.X -= 1;
+            if (_currentController.IsButtonHeld(ControllerButtons.Up))
+                _location.Y -= 1;
+            if (_currentController.IsButtonHeld(ControllerButtons.Down))
+                _location.Y += 1;
         }
         public static Vector2 ScreenToWorld(Vector2 screenPosition)
         {
-            var viewportTopLeft = new Vector2(ResolutionHelper._graphicsDevice.Viewport.X, ResolutionHelper._graphicsDevice.Viewport.Y);
-            var screenToWorldScale = ResolutionHelper.worldSize.X / (float)ResolutionHelper._graphicsDevice.Viewport.Width;
+            var viewportTopLeft = new Vector2(_graphicsDevice.Viewport.X, _graphicsDevice.Viewport.Y);
+            var screenToWorldScale = _resolutionHelper.WorldSize.X / (float)_graphicsDevice.Viewport.Width;
             return (screenPosition - viewportTopLeft) * screenToWorldScale;
         }
 
         public static Vector2 CalculateCameraOffset(Vector2 currentLocation)
         {
 
-            currentLocation.X -= Location.X;
-            currentLocation.Y -= Location.Y;
+            currentLocation.X -= _location.X;
+            currentLocation.Y -= _location.Y;
             return currentLocation;
         }
 
@@ -64,6 +68,11 @@ namespace SgEngine.Core.Camera
             var locAndCamOffset = CalculateCameraOffset(currentLocation);
 
             return ScreenToWorld(locAndCamOffset);
+        }
+        public Matrix GetCameraTransformMatrix()
+        {
+            Matrix.CreateTranslation(ref _location, out var matrix);
+            return matrix;
         }
     }
 }

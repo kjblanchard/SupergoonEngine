@@ -15,17 +15,25 @@ namespace SgEngine.Core
 {
     public class ResolutionHelper
     {
-        public static Point windowSize;
-        public static Point worldSize;
-        public static GraphicsDeviceManager _graphics;
-        public static GraphicsDevice _graphicsDevice;
-        public static Matrix SpriteScale;
+        public Point WorldSize => _worldSize;
+        public Point WindowSize => _windowSize;
+        private Point _windowSize;
+        private Point _worldSize;
+        public GraphicsDeviceManager _graphics;
+        public GraphicsDevice _graphicsDevice;
+        public Matrix SpriteScale;
 
         public ResolutionHelper(GraphicsDeviceManager graphicsDeviceManager, GraphicsDevice GraphicsDevice)
         {
             _graphicsDevice = GraphicsDevice;
             _graphics = graphicsDeviceManager;
 
+        }
+
+        public void Initialize(Point windowSize, Point worldSize)
+        {
+            _windowSize = windowSize;
+            _worldSize = worldSize;
         }
         public void ApplyResolutionSettings(bool fullScreen)
         {
@@ -34,7 +42,7 @@ namespace SgEngine.Core
             if (fullScreen)
                 screenSize = new Point(GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width, GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height);
             else
-                screenSize = windowSize;
+                screenSize = _windowSize;
 
             // scale the window to the desired size
             _graphics.PreferredBackBufferWidth = screenSize.X;
@@ -46,7 +54,7 @@ namespace SgEngine.Core
             _graphicsDevice.Viewport = CalculateViewport(screenSize);
 
             // calculate how the graphics should be scaled, so that the game world fits inside the window
-            SpriteScale = Matrix.CreateScale((float)_graphicsDevice.Viewport.Width / worldSize.X, (float)_graphicsDevice.Viewport.Height / worldSize.Y, 1);
+            SpriteScale = Matrix.CreateScale((float)_graphicsDevice.Viewport.Width / _worldSize.X, (float)_graphicsDevice.Viewport.Height / _worldSize.Y, 1);
             //spriteScale.Translation = (new Vector3(100,0,0));
         }
 
@@ -61,7 +69,7 @@ namespace SgEngine.Core
             Viewport viewport = new Viewport();
 
             // calculate the two aspect ratios
-            float gameAspectRatio = (float)worldSize.X / worldSize.Y;
+            float gameAspectRatio = (float)_worldSize.X / _worldSize.Y;
             float windowAspectRatio = (float)windowSize.X / windowSize.Y;
 
             // if the window is relatively wide, use the full window height

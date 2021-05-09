@@ -50,6 +50,11 @@ namespace SgEngine.GUI
                         counter++;
                     }
                 }
+
+                if (controller.IsButtonPressed(ControllerButtons.B))
+                {
+                    GameWorld.FullScreen = !GameWorld.FullScreen;
+                }
             }
         }
 
