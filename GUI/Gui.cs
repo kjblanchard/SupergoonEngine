@@ -8,15 +8,17 @@
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using SgEngine.GUI.Components;
 
 namespace SgEngine.GUI
 {
-    public class Gui : GuiUiComponent
+    public class Gui : GuiComponent
     {
         public Gui(): base(new Vector2(), new Point())
         {
             
         }
+
         private List<Canvas> AllCanvasList = new List<Canvas>();
         public Canvas MasterCanvas = new Canvas(new Rectangle());
         public void AddPanel(Canvas panelToAdd)

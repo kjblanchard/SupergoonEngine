@@ -8,10 +8,11 @@
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using SgEngine.GUI.Components;
 
 namespace SgEngine.GUI
 {
-    public class Canvas : GuiUiComponent
+    public class Canvas : GuiComponent
     {
         private List<Panel> AllPanels = new List<Panel>();
         private Rectangle _locationAndSize;

@@ -7,6 +7,7 @@
 
 using System;
 using Microsoft.Xna.Framework;
+using MonoGame.Extended;
 
 namespace SgEngine.Collision
 {
@@ -28,6 +29,16 @@ namespace SgEngine.Collision
         public static bool ShapesIntersect(Rectangle rectangle1, Rectangle rectangle2)
         {
             return rectangle1.Intersects(rectangle2);
+
+        }
+        public static bool ShapesIntersect(Rectangle rectangle1, RectangleF rectangle2)
+        {
+            return rectangle2.Intersects(rectangle1);
+
+        }
+        public static bool ShapesIntersect(RectangleF rectangle1, RectangleF rectangle2)
+        {
+            return rectangle2.Intersects(rectangle1);
 
         }
     }

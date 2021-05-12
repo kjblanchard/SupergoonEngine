@@ -12,30 +12,30 @@ using SgEngine.GUI.Components;
 
 namespace SgEngine.GUI
 {
-    public class GuiUiImage : GuiUiComponent
+    public class GuiImage : GuiComponent
     {
-        private GuiUiImageComponent _guiUiImageComponent;
+        private GuiImageComponent _guiImageComponent;
 
-        public GuiUiImage(Enum spriteSheetToLoad, Point size, Vector2 location = new Vector2()) : base(location,size)
+        public GuiImage(Enum spriteSheetToLoad, Point size, Vector2 location = new Vector2()) : base(location,size)
         {
-            _guiUiImageComponent = new GuiUiImageComponent(this, spriteSheetToLoad, size);
+            _guiImageComponent = new GuiImageComponent(this, spriteSheetToLoad, size);
         }
         public override void Initialize()
         {
             base.Initialize();
-            _guiUiImageComponent.Initialize();
+            _guiImageComponent.Initialize();
         }
 
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
-            _guiUiImageComponent.Update(gameTime);
+            _guiImageComponent.Update(gameTime);
         }
 
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
             base.Draw(gameTime, spriteBatch);
-            _guiUiImageComponent.Draw(gameTime,spriteBatch);
+            _guiImageComponent.Draw(gameTime,spriteBatch);
         }
     }
 }

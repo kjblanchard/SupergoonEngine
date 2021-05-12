@@ -5,6 +5,7 @@
 //
 ////////////////////////////////////////////////////////////
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
@@ -12,27 +13,40 @@ using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
 using SgEngine.Core.Input;
 using SgEngine.EKS;
+using SgEngine.GUI.Components;
 
 namespace SgEngine.GUI
 {
-    public class Panel : GuiUiComponent
+    public class Panel : GuiComponent
     {
-        private readonly List<GuiUiComponent> _allComponents = new List<GuiUiComponent>();
+        private readonly List<GuiComponent> _allComponents = new List<GuiComponent>();
+        private GuiImageComponent _guiImageComponent;
         private PlayerController _controller;
-        public Panel(Vector2 location = new Vector2(), Point size = new Point()) : base(location,size)
+        public Panel(Vector2 location = new Vector2(), Point size = new Point(), Enum spriteSheetToLoad = null) : base(location,size)
         {
+            if (spriteSheetToLoad != null)
+            {
+                _guiImageComponent = new GuiImageComponent(this, spriteSheetToLoad, size);
+            }
         }
 
-        public void AddUiObject(GuiUiComponent guiUiObject)
+        public override void Initialize()
+        {
+            base.Initialize();
+            _guiImageComponent?.Initialize();
+        }
+
+        public void AddUiObject(GuiComponent guiObject)
         {
             _controller = GameWorld.GetPlayerController(0);
-            guiUiObject.Initialize();
-            guiUiObject.LoadContent();
-            _allComponents.Add(guiUiObject);
+            guiObject.Initialize();
+            guiObject.LoadContent();
+            _allComponents.Add(guiObject);
         }
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
+            _guiImageComponent?.Update(gameTime);
             var controllerRect = Controller.MouseScreenToWorldResolution().ToPoint();
             var realControllerRect = new Rectangle(controllerRect, new Point(25, 25));
 
@@ -50,15 +64,16 @@ namespace SgEngine.GUI
 
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
+            _guiImageComponent?.Draw(gameTime,spriteBatch);
             //TODO testing drawing panels and stuff
-            var realControllerRect = new RectangleF(Controller.MouseScreenToWorldResolution(), new Vector2(16, 16));
-            spriteBatch.DrawRectangle(realControllerRect, Color.White);
+            var controllerRect = new RectangleF(Controller.MouseScreenToWorldResolution(), new Vector2(16, 16));
+            spriteBatch.DrawRectangle(controllerRect, Color.White);
 
             base.Draw(gameTime, spriteBatch);
             foreach (var _allComponent in _allComponents)
             {
 
-                spriteBatch.DrawRectangle(_allComponent.BoundingBoxAfterOrigin, Color.Blue);
+                //spriteBatch.DrawRectangle(_allComponent.BoundingBoxAfterOrigin, Color.Blue);
                 _allComponent.Draw(gameTime, spriteBatch);
             }
         }

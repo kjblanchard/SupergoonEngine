@@ -14,17 +14,18 @@ using SgEngine.Core;
 
 namespace SgEngine.GUI.Components
 {
-    public class GuiUiImageComponent : GuiUiComponent
+    public class GuiImageComponent : GuiComponent
     {
         private GraphicsDevice _graphics;
         private readonly Spritesheet _spriteSheet;
         private float _opacity = 1.0f;
 
-        public GuiUiImageComponent(GuiUiComponent parent, Enum spriteSheetToLoad, Point size, Vector2 offset = new Vector2()) : base(offset, size, parent)
+        public GuiImageComponent(GuiComponent parent, Enum spriteSheetToLoad, Point size, Vector2 offset = new Vector2()) : base(offset, size, parent)
         {
-            ComponentType = EngineComponentTypes.UiComponents.ImageComponent;
+            _componentType = EngineComponentTypes.UiComponents.ImageComponent;
             _spriteSheet = ContentLoader.GetSpriteSheet(spriteSheetToLoad);
             _size = size;
+            _debugMode = false;
         }
 
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
@@ -34,7 +35,7 @@ namespace SgEngine.GUI.Components
             spriteBatch.Draw(_spriteSheet._texture, rectToDraw, null,
                 Color.White * _opacity, 0.0f, _spriteSheet.Center(),
                SpriteEffects.None, 0.0f);
-            if (!_debugMode)
+            if (_debugMode)
                 DrawDebugBox(spriteBatch, rectToDraw);
         }
         private void DrawDebugBox(SpriteBatch spriteBatch, Rectangle positionToDraw)

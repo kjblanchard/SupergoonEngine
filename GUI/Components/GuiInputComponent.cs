@@ -10,9 +10,9 @@ using SgEngine.Core.Input;
 
 namespace SgEngine.GUI.Components
 {
-    public class GuiUiInputComponent : GuiUiComponent
+    public class GuiInputComponent : GuiComponent
     {
-        public GuiUiInputComponent() : base(new Vector2(), new Point())
+        public GuiInputComponent() : base(new Vector2(), new Point())
         {
             
         }

@@ -28,6 +28,10 @@ namespace SgEngine.Core
             _fileName = fileName;
         }
 
+        /// <summary>
+        /// This should be used for the origin, it will return the width and height /2 for use in origin 
+        /// </summary>
+        /// <returns></returns>
         public Vector2 Center()
         {
             Vector2 newVector2 = new Vector2();
