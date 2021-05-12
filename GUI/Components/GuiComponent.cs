@@ -46,12 +46,20 @@ namespace SgEngine.GUI.Components
         {
             get
             {
-                
-            Vector2 newVector2 = new Vector2();
-            newVector2.X = _size.X / 2;
-            newVector2.Y = _size.Y / 2;
-            return newVector2;
+                Vector2 newVector2 = new Vector2();
+                newVector2.X = _size.X / 2;
+                newVector2.Y = _size.Y / 2;
+                return newVector2;
             }
+        }
+
+        /// <summary>
+        /// Gets and sets the debug value for this component.  This is used for drawing debug boxes and logging output, etc
+        /// </summary>
+        public bool DebugMode
+        {
+            get => _debugMode;
+            set => _debugMode = value;
         }
 
         /// <summary>

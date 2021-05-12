@@ -19,10 +19,24 @@ namespace SgEngine.GUI
 {
     public class Panel : GuiComponent
     {
+        public new bool DebugMode
+        {
+            get => _debugMode;
+            set
+            {
+                if (_guiImageComponent != null)
+                {
+                    _guiImageComponent.DebugMode = value;
+                }
+                _debugMode = value; 
+
+            }
+        }
+
         private readonly List<GuiComponent> _allComponents = new List<GuiComponent>();
         private GuiImageComponent _guiImageComponent;
         private PlayerController _controller;
-        public Panel(Vector2 location = new Vector2(), Point size = new Point(), Enum spriteSheetToLoad = null) : base(location,size)
+        public Panel(Vector2 location = new Vector2(), Point size = new Point(), Enum spriteSheetToLoad = null) : base(location, size)
         {
             if (spriteSheetToLoad != null)
             {
@@ -42,6 +56,16 @@ namespace SgEngine.GUI
             guiObject.Initialize();
             guiObject.LoadContent();
             _allComponents.Add(guiObject);
+        }
+
+        public void ModifyDebugForPanel(bool debugValue)
+        {
+            foreach (var _allComponent in _allComponents)
+            {
+                _allComponent.DebugMode = debugValue;
+                DebugMode = debugValue;
+            }
+
         }
         public override void Update(GameTime gameTime)
         {
@@ -64,7 +88,7 @@ namespace SgEngine.GUI
 
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
-            _guiImageComponent?.Draw(gameTime,spriteBatch);
+            _guiImageComponent?.Draw(gameTime, spriteBatch);
             //TODO testing drawing panels and stuff
             var controllerRect = new RectangleF(Controller.MouseScreenToWorldResolution(), new Vector2(16, 16));
             spriteBatch.DrawRectangle(controllerRect, Color.White);

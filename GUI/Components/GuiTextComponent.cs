@@ -8,6 +8,7 @@
 using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MonoGame.Extended;
 using MonoGame.Extended.BitmapFonts;
 using SgEngine.Core;
 using SgEngine.EKS;
@@ -22,7 +23,7 @@ namespace SgEngine.GUI.Components
         public Point textBoxSize;
         public string fontType;
         public GuiTextComponent.Alignment alignment;
-        
+
     }
     public class GuiTextComponent : GuiComponent
     {
@@ -30,7 +31,12 @@ namespace SgEngine.GUI.Components
         {
             public const string ChronoTypeRegular = "Fonts/ChronoType";
         }
-        public enum Alignment { Center, Left, Right, Top, Bottom }
+
+        public enum Alignment
+        {
+            Center,
+            Left
+        }
 
         private TextBoxConfig _textBoxConfig;
         private SpriteFont _font;
@@ -59,19 +65,27 @@ namespace SgEngine.GUI.Components
                      drawLocation.Y += textOrigin.Y;
                      break;
                  case Alignment.Center:
-                     break;
-                 case Alignment.Right:
-                     break;
-                 case Alignment.Top:
-                     break;
-                 case Alignment.Bottom:
+                     var whitespaceSize = _size.X - measuredText.X;
+                     var xAlign = whitespaceSize / 2;
+                     drawLocation.X += textOrigin.X;
+                     drawLocation.Y += textOrigin.Y;
+                     drawLocation.X += xAlign;
                      break;
                  default:
                      throw new ArgumentOutOfRangeException();
              }
-            //spriteBatch.DrawString(_font,_textBoxConfig.displayText,drawLocation,Color.Yellow);
             spriteBatch.DrawString(_font, _textBoxConfig.displayText, drawLocation, Color.White, 0, textOrigin, 1,
                 SpriteEffects.None, 1);
+            if (_debugMode)
+            {
+                DrawDebugBox(spriteBatch,new Rectangle(drawLocation.ToPoint(),_size),textOrigin);
+            }
+        }
+        private void DrawDebugBox(SpriteBatch spriteBatch, Rectangle positionToDraw, Vector2 textOrigin)
+        {
+             positionToDraw.X -= (int)textOrigin.X ;
+             positionToDraw.Y -= (int)textOrigin.Y ;
+            spriteBatch.DrawRectangle(positionToDraw, Color.Red);
         }
     }
 }
