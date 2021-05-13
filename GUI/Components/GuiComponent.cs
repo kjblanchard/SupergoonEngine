@@ -42,6 +42,21 @@ namespace SgEngine.GUI.Components
             }
         }
 
+        /// <summary>
+        /// Gets the origin of all parents, useful for nested components to get the origin
+        /// </summary>
+        public Vector2 FullOrigin
+        {
+            get
+            {
+                if (_parent != null)
+                    return _parent.FullOrigin + Origin;
+                return Origin;
+            }
+        }
+        /// <summary>
+        /// Gets the origin of this object only, doesn't take into consideration parents.
+        /// </summary>
         public Vector2 Origin
         {
             get

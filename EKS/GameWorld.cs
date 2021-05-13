@@ -21,6 +21,7 @@ namespace SgEngine.EKS
         protected static GameWorld _instance;
         public static Camera MainCamera => _instance._mainCamera;
         public static Matrix ResolutionSpriteScale => _instance._resolutionHelper.SpriteScale;
+        public static Point GameWorldSize => new Point(_instance._baseConfig.World.X, _instance._baseConfig.World.Y);
 
         /// <summary>
         /// Gets whether the game is currently full screen.

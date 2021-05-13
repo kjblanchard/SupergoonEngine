@@ -7,6 +7,9 @@
 
 namespace SgEngine.GUI.Utils
 {
+    /// <summary>
+    /// Used in Gui components for measuring the screen sides to offset things.
+    /// </summary>
     public struct GuiBorder
     {
         public int Top;

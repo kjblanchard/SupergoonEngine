@@ -71,35 +71,31 @@ namespace SgEngine.GUI
         {
             base.Update(gameTime);
             _guiImageComponent?.Update(gameTime);
-            var controllerRect = Controller.MouseScreenToWorldResolution().ToPoint();
-            var realControllerRect = new Rectangle(controllerRect, new Point(25, 25));
-
             foreach (var _allComponent in _allComponents)
             {
                 _allComponent.Update(gameTime);
-                //TODO testing collisions, this section can be removed later
-                if (!Controller.LeftMouseButtonClicked()) continue;
-                if (Collision.Collision.ShapesIntersect(_allComponent.BoundingBoxAfterOrigin, realControllerRect))
-                {
-                    Debug.WriteLine("WOW an overlap");
-                }
             }
         }
 
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
             _guiImageComponent?.Draw(gameTime, spriteBatch);
-            //TODO testing drawing panels and stuff
-            var controllerRect = new RectangleF(Controller.MouseScreenToWorldResolution(), new Vector2(16, 16));
-            spriteBatch.DrawRectangle(controllerRect, Color.White);
 
             base.Draw(gameTime, spriteBatch);
             foreach (var _allComponent in _allComponents)
             {
-
-                //spriteBatch.DrawRectangle(_allComponent.BoundingBoxAfterOrigin, Color.Blue);
                 _allComponent.Draw(gameTime, spriteBatch);
             }
+            //TODO testing drawing panels and stuff
+            var controllerRect = new RectangleF(Controller.MouseScreenToWorldResolution(), new Vector2(16, 16));
+            spriteBatch.DrawRectangle(controllerRect, Color.White);
+        }
+
+        public void AddTextObjectToPanel(TextBoxConfig textboxConfig)
+        {
+            var newObj = new GuiTextComponent(textboxConfig);
+            AddUiObject(newObj);
+
         }
     }
 }
