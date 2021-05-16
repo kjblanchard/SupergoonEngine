@@ -64,6 +64,8 @@ namespace SgEngine.GUI.Components
         }
 
         private TextBoxConfig _textBoxConfig;
+
+        public Vector2 TextSize => _font.MeasureString(_textBoxConfig.displayText);
         private SpriteFont _font;
         public GuiTextComponent(TextBoxConfig configuration) : base(configuration.parentOffset, configuration.textBoxSize, configuration.parent)
         {
@@ -123,6 +125,12 @@ namespace SgEngine.GUI.Components
             positionToDraw.X -= (int)textOrigin.X;
             positionToDraw.Y -= (int)textOrigin.Y;
             spriteBatch.DrawRectangle(positionToDraw, Color.Red);
+        }
+
+        public void AutoSetSize()
+        {
+            var newSize = TextSize;
+            _size = new Point((int)newSize.X, (int)newSize.Y);
         }
     }
 }

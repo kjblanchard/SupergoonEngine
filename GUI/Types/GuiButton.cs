@@ -65,5 +65,11 @@ namespace SgEngine.GUI.Types
         {
             spriteBatch.DrawRectangle(positionToDraw, Color.Red);
         }
+
+        public void AutoSetSizeBasedOnText()
+        {
+            _guiTextComponent.AutoSetSize();
+            _size = _guiTextComponent.Size;
+        }
     }
 }
