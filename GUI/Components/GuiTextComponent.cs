@@ -35,6 +35,7 @@ namespace SgEngine.GUI.Components
         public Point textBoxSize;
         public string fontType;
         public GuiTextComponent.Alignment alignment;
+        public Color textColor = Color.White;
 
     }
     public class GuiTextComponent : GuiComponent
@@ -55,6 +56,11 @@ namespace SgEngine.GUI.Components
         {
             Center,
             Left
+        }
+
+        public Color TextColor
+        {
+            set => _textBoxConfig.textColor = value;
         }
 
         private TextBoxConfig _textBoxConfig;
@@ -83,7 +89,7 @@ namespace SgEngine.GUI.Components
                 Alignment.Center => AlignCenter(measuredText, drawLocation, textOrigin),
                 _ => throw new ArgumentOutOfRangeException()
             };
-            spriteBatch.DrawString(_font, _textBoxConfig.displayText, drawLocation, Color.White, 0, textOrigin, 1,
+            spriteBatch.DrawString(_font, _textBoxConfig.displayText, drawLocation, _textBoxConfig.textColor, 0, textOrigin, 1,
                 SpriteEffects.None, 1);
             if(_debugMode)
                 DrawDebugBox(spriteBatch, new Rectangle(drawLocation.ToPoint(), _size), textOrigin);
