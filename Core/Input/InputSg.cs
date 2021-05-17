@@ -118,6 +118,11 @@ namespace SgEngine.Core.Input
         {
             return _currentMouseState.Position.ToVector2();
         }
+
+        public bool WasThereMouseMovement()
+        {
+            return _previouMouseState.Position != _currentMouseState.Position;
+        }
         public bool LeftMouseButtonClicked()
         {
             return _currentMouseState.LeftButton == ButtonState.Pressed && _previouMouseState.LeftButton == ButtonState.Released;

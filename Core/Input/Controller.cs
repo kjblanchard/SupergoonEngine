@@ -77,6 +77,11 @@ namespace SgEngine.Core.Input
             return Camera.Camera.ScreenToWorldAndCamOffset(_input.MousePosition());
          }
 
+        public static bool WasThereMouseMovement()
+        {
+            return _input.WasThereMouseMovement();
+        }
+
         public static bool LeftMouseButtonClicked()
         {
             return _input.LeftMouseButtonClicked();

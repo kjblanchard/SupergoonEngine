@@ -16,8 +16,21 @@ using SgEngine.GUI.Components;
 
 namespace SgEngine.GUI.Types
 {
+
     public class GuiButtonController : GuiComponent
     {
+        public bool ButtonsActive
+        {
+            get => _areButtonsActive;
+            set
+            {
+                if (value)
+                    ButtonsToManage[CurrentSelection].IsSelected = true;
+                _areButtonsActive = value;
+
+            }
+        }
+        private bool _areButtonsActive = false;
         private bool _shouldLoopSelection = true;
         public int CurrentSelection
         {
@@ -91,7 +104,7 @@ namespace SgEngine.GUI.Types
                 ButtonsToManage[CurrentSelection].OnClick();
         }
 
-        private void SelectButton(int newSelection)
+        public void SelectButton(int newSelection)
         {
             if (CurrentSelection == newSelection)
                 return;
@@ -103,31 +116,57 @@ namespace SgEngine.GUI.Types
         private void HandleMouseInput()
         {
             CurrentHoveredButtons.Clear();
-            //Check for a newly hovered button, select it if there is
+            CheckForNewlyHoveredButtons();
+            HandleMovingMouseOffSelection();
+            HandleMouseSelectionWhenKeyboardMovedSelection();
+            HandleLeftClick();
+
+        }
+
+        private void HandleMouseSelectionWhenKeyboardMovedSelection()
+        {
+            if (Controller.WasThereMouseMovement())
+            {
+                if (CurrentHoveredButtons.Count == 1)
+                    SelectButton(CurrentHoveredButtons[0]);
+            }
+        }
+
+        private void HandleMovingMouseOffSelection()
+        {
+            if (ButtonsToManage[CurrentSelection].WasJustLeftHovered)
+            {
+                if (CurrentHoveredButtons.Count > 0)
+                    SelectButton(CurrentHoveredButtons[0]);
+            }
+        }
+
+        private void CheckForNewlyHoveredButtons()
+        {
             for (int i = 0; i < ButtonsToManage.Count; i++)
             {
                 var currentButton = ButtonsToManage[i];
-                if(currentButton._isHovered)
+                if (currentButton._isHovered)
                     CurrentHoveredButtons.Add(i);
                 if (ButtonsToManage[i].WasJustHovered)
                 {
                     SelectButton(i);
                 }
             }
+        }
 
-            //Handle if you just moved off the button with your mouse
-            if (ButtonsToManage[CurrentSelection].WasJustLeftHovered)
+        private void HandleLeftClick()
+        {
+            if (!Controller.LeftMouseButtonClicked()) return;
+            if (CurrentHoveredButtons.Contains(CurrentSelection))
             {
-                for (int i = 0; i < ButtonsToManage.Count; i++)
-                {
-                    if (ButtonsToManage[i]._isHovered)
-                    {
-                        Debug.WriteLine("This button was just chosen cause someone left his hover over this frame " + ButtonsToManage[i]._guiTextComponent.DisplayText);
-                        SelectButton(i);
-                    }
-                }
-
+                ButtonsToManage[CurrentSelection].OnClick();
+                return;
             }
+
+            if (CurrentHoveredButtons.Count != 1) return;
+            SelectButton(CurrentHoveredButtons[0]);
+            ButtonsToManage[CurrentHoveredButtons[0]].OnClick();
 
         }
 
