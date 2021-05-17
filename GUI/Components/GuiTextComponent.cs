@@ -6,6 +6,7 @@
 ////////////////////////////////////////////////////////////
 
 using System;
+using FMOD;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
@@ -57,6 +58,8 @@ namespace SgEngine.GUI.Components
             Center,
             Left
         }
+
+        public string DisplayText => _textBoxConfig.displayText;
 
         public Color TextColor
         {

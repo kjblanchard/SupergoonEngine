@@ -27,6 +27,22 @@ namespace SgEngine.GUI.Components
                 return _parent.GlobalPosition + _offset;
             }
         }
+        public bool IsSelected
+        {
+            get => _isSelected;
+            set
+            {
+                switch (value)
+                {
+                    case true:
+                        OnSelected();
+                        break;
+                    case false:
+                        OnDeselected();
+                        break;
+                }
+            }
+        }
 
         /// <summary>
         /// Gets the bounding box with the origin removed, this is useful for interacting with the mouse
@@ -148,14 +164,21 @@ namespace SgEngine.GUI.Components
 
         public virtual void OnSelected()
         {
+            _isSelected = true;
 
+        }
+        public virtual void OnDeselected()
+        {
+            _isSelected = false;
         }
         public virtual void OnActivate()
         {
+            IsActive = true;
         }
 
         public virtual void OnDeactivate()
         {
+            IsActive = false;
         }
 
         public void Activate()

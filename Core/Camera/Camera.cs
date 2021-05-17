@@ -5,6 +5,7 @@
 //
 ////////////////////////////////////////////////////////////
 
+using System.Runtime.CompilerServices;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using SgEngine.Core.Input;
@@ -32,16 +33,21 @@ namespace SgEngine.Core.Camera
             _currentController = GameWorld.GetPlayerController(0);
         }
         //TODO this is here for testing moving camera, it can be removed later when testing is not needed
+        private void MoveCamera()
+        {
+            
+            //if (_currentController.IsButtonHeld(ControllerButtons.Right))
+            //    _location.X += 1;
+            //if (_currentController.IsButtonHeld(ControllerButtons.Left))
+            //    _location.X -= 1;
+            //if (_currentController.IsButtonHeld(ControllerButtons.Up))
+            //    _location.Y -= 1;
+            //if (_currentController.IsButtonHeld(ControllerButtons.Down))
+            //    _location.Y += 1;
+        }
         public void Update()
         {
-            if (_currentController.IsButtonHeld(ControllerButtons.Right))
-                _location.X += 1;
-            if (_currentController.IsButtonHeld(ControllerButtons.Left))
-                _location.X -= 1;
-            if (_currentController.IsButtonHeld(ControllerButtons.Up))
-                _location.Y -= 1;
-            if (_currentController.IsButtonHeld(ControllerButtons.Down))
-                _location.Y += 1;
+            MoveCamera();
         }
         /// <summary>
         /// Returns the resolution world coordinates for the current screen position, probably used for UI
