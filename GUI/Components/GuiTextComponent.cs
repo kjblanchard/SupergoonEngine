@@ -96,8 +96,7 @@ namespace SgEngine.GUI.Components
             };
             spriteBatch.DrawString(_font, _textBoxConfig.displayText, drawLocation, _textBoxConfig.textColor, 0, textOrigin, 1,
                 SpriteEffects.None, 1);
-            if(_debugMode)
-                DrawDebugBox(spriteBatch, new Rectangle(drawLocation.ToPoint(), _size), textOrigin);
+            DrawDebugBox(spriteBatch, new Rectangle(drawLocation.ToPoint(), _size), textOrigin);
         }
 
         private Vector2 AlignCenter(Vector2 measuredText, Vector2 drawLocation, Vector2 textOrigin)
@@ -123,17 +122,25 @@ namespace SgEngine.GUI.Components
         /// <param name="spriteBatch">The spritebatch to draw to</param>
         /// <param name="positionToDraw">The position to draw on the screen</param>
         /// <param name="textOrigin">The origin of the text, so that we can rotate it and stuff</param>
-        private void DrawDebugBox(SpriteBatch spriteBatch, Rectangle positionToDraw, Vector2 textOrigin)
-        {
-            positionToDraw.X -= (int)textOrigin.X;
-            positionToDraw.Y -= (int)textOrigin.Y;
-            spriteBatch.DrawRectangle(positionToDraw, Color.Red);
-        }
+        //private void DrawDebugBox(SpriteBatch spriteBatch, Rectangle positionToDraw, Vector2 textOrigin)
+        //{
+        //    positionToDraw.X -= (int)textOrigin.X;
+        //    positionToDraw.Y -= (int)textOrigin.Y;
+        //    spriteBatch.DrawRectangle(positionToDraw, Color.Red);
+        //}
 
         public void AutoSetSize()
         {
             var newSize = TextSize;
             _size = new Point((int)newSize.X, (int)newSize.Y);
+        }
+        public Vector2 CursorDrawLocation()
+        {
+            var temp = GlobalPosition - _parent.Origin;
+            var measuredText = _font.MeasureString(_textBoxConfig.displayText);
+            temp.X -= 10;
+            temp.Y += measuredText.Y / 2;
+            return temp;
         }
     }
 }

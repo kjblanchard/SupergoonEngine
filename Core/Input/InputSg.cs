@@ -7,6 +7,7 @@
 
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using SgEngine.EKS;
 
@@ -23,10 +24,10 @@ namespace SgEngine.Core.Input
         private readonly GamePadState[] _currentGamePadStates = new GamePadState[4];
         public PlayerController[] PlayerControllers = new PlayerController[4];
 
-
         public void Initialize()
         {
             CreatePlayerControllers();
+
         }
 
         /// <summary>
@@ -44,6 +45,7 @@ namespace SgEngine.Core.Input
                 _currentGamePadStates[i] = GamePad.GetState((PlayerIndex)(i));
             }
         }
+
         /// <summary>
         /// Checks and returns whether the player has started pressing a certain keyboard key in the last frame of the game loop.
         /// </summary>

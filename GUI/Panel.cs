@@ -86,9 +86,6 @@ namespace SgEngine.GUI
             {
                 _allComponent.Draw(gameTime, spriteBatch);
             }
-            //TODO testing drawing panels and stuff
-            var controllerRect = new RectangleF(Controller.MouseScreenToWorldResolution(), new Vector2(16, 16));
-            spriteBatch.DrawRectangle(controllerRect, Color.White);
         }
 
         public void AddTextObjectToPanel(TextBoxConfig textboxConfig)

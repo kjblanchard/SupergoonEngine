@@ -48,9 +48,9 @@ namespace SgEngine.GUI.Types
         {
             _previouslyHoveredStatus = _isHovered;
             _isHovered = CheckIfHovered(thingToCheckAgainst);
-            if(WasJustHovered)
+            if (WasJustHovered)
                 OnJustHovered();
-            if(WasJustLeftHovered)
+            if (WasJustLeftHovered)
                 OnJustHoveredLeave();
         }
 
@@ -74,21 +74,8 @@ namespace SgEngine.GUI.Types
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
             base.Draw(gameTime, spriteBatch);
-            _guiTextComponent.Draw(gameTime,spriteBatch);
-
-            if (_debugMode)
-                DrawDebugBox(spriteBatch,BoundingBoxParentOffset);
-        }
-
-        /// <summary>
-        /// Draws a Debug box around the text
-        /// </summary>
-        /// <param name="spriteBatch">The spritebatch to draw to</param>
-        /// <param name="positionToDraw">The position to draw on the screen</param>
-        /// <param name="textOrigin">The origin of the text, so that we can rotate it and stuff</param>
-        private void DrawDebugBox(SpriteBatch spriteBatch, RectangleF positionToDraw)
-        {
-            spriteBatch.DrawRectangle(positionToDraw, Color.Red);
+            _guiTextComponent.Draw(gameTime, spriteBatch);
+            DrawDebugBox(spriteBatch, new Rectangle(GlobalPosition.ToPoint(), _size), Origin);
         }
 
         public void AutoSetSizeBasedOnText()
@@ -100,10 +87,13 @@ namespace SgEngine.GUI.Types
         public override void HandleInput()
         {
             base.HandleInput();
-            var mousePosition = Controller.MouseScreenCameraPosition();
-            var mouseRect = new RectangleF(mousePosition, new Size2(16, 16));
-            UpdateHoveredStatus(mouseRect);
+            UpdateHoveredStatus(Controller.MouseBounds());
         }
 
+        public Vector2 CursorDrawLocation()
+        {
+            return GlobalPosition - Origin;
+        }
     }
+
 }

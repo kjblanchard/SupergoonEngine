@@ -59,8 +59,10 @@ namespace SgEngine.GUI.Types
         public List<GuiButton> ButtonsToManage = new List<GuiButton>();
         public List<int> CurrentHoveredButtons = new List<int>();
         public PlayerController playerController = GameWorld.GetPlayerController(0);
+        public GuiImageComponent cursorGuiImageComponent;
         public GuiButtonController(GuiComponent parent, Vector2 offset = new Vector2(), Point size = new Point()) : base(offset, size, parent)
         {
+            
         }
 
         public void AddButton(GuiButton buttonToAdd)

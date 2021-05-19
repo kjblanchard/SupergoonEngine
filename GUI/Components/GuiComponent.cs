@@ -27,6 +27,20 @@ namespace SgEngine.GUI.Components
                 return _parent.GlobalPosition + _offset;
             }
         }
+
+
+        public Vector2 LocalPosition
+        {
+            get
+            {
+                return _offset;
+            }
+            set
+            {
+                _offset = value;
+            }
+        }
+
         public bool IsSelected
         {
             get => _isSelected;
@@ -191,6 +205,21 @@ namespace SgEngine.GUI.Components
         {
             IsActive = false;
             OnDeactivate();
+        }
+
+        /// <summary>
+        /// Draws a Debug box around the gui object
+        /// </summary>
+        /// <param name="spriteBatch">The spritebatch to draw to</param>
+        /// <param name="positionToDraw">The position to draw on the screen</param>
+        /// <param name="originToOffset">The origin, so that we can rotate it and stuff</param>
+        protected void DrawDebugBox(SpriteBatch spriteBatch, Rectangle positionToDraw, Vector2 originToOffset)
+        {
+            if(!DebugMode)
+                return;
+            positionToDraw.X -= (int)originToOffset.X;
+            positionToDraw.Y -= (int)originToOffset.Y;
+            spriteBatch.DrawRectangle(positionToDraw, Color.Red);
         }
     }
 }

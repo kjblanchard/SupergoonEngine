@@ -7,6 +7,7 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using MonoGame.Extended;
 using SgEngine.EKS;
 
 namespace SgEngine.Core.Input
@@ -16,6 +17,8 @@ namespace SgEngine.Core.Input
     /// </summary>
     public abstract class Controller
     {
+        public static Spritesheet MouseSpriteSheet;
+        public static bool MouseDebugMode = false;
         protected Controller()
         {
             _input ??= GameWorld.Input;
@@ -70,6 +73,13 @@ namespace SgEngine.Core.Input
         public static Vector2 MouseScreenToWorldResolution()
         {
             return Camera.Camera.ScreenToWorldResolution(_input.MousePosition());
+        }
+
+        public static RectangleF MouseBounds()
+        {
+
+           return new RectangleF(Controller.MouseScreenToWorldResolution(),
+                new Size2(10,10));
         }
         public static Vector2 MouseScreenCameraPosition()
         {
