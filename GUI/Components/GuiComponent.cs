@@ -213,13 +213,30 @@ namespace SgEngine.GUI.Components
         /// <param name="spriteBatch">The spritebatch to draw to</param>
         /// <param name="positionToDraw">The position to draw on the screen</param>
         /// <param name="originToOffset">The origin, so that we can rotate it and stuff</param>
-        protected void DrawDebugBox(SpriteBatch spriteBatch, Rectangle positionToDraw, Vector2 originToOffset)
+        /// <param name="colorToDraw"></param>
+        protected void DrawDebugBox(SpriteBatch spriteBatch, Rectangle positionToDraw, Vector2 originToOffset, Color colorToDraw)
         {
-            if(!DebugMode)
+            if (!DebugMode)
                 return;
             positionToDraw.X -= (int)originToOffset.X;
             positionToDraw.Y -= (int)originToOffset.Y;
-            spriteBatch.DrawRectangle(positionToDraw, Color.Red);
+            spriteBatch.DrawRectangle(positionToDraw, colorToDraw);
         }
+        /// <summary>
+        /// Draws a Debug box around the gui object
+        /// </summary>
+        /// <param name="spriteBatch">The spritebatch to draw to</param>
+        /// <param name="positionToDraw">The position to draw on the screen</param>
+        /// <param name="originToOffset">The origin, so that we can rotate it and stuff</param>
+        /// <param name="colorToDraw"></param>
+        protected void DrawDebugBox(SpriteBatch spriteBatch, RectangleF positionToDraw, Vector2 originToOffset, Color colorToDraw)
+        {
+            if (!DebugMode)
+                return;
+            positionToDraw.X -= (int)originToOffset.X;
+            positionToDraw.Y -= (int)originToOffset.Y;
+            spriteBatch.DrawRectangle(positionToDraw, colorToDraw);
+        }
+
     }
 }

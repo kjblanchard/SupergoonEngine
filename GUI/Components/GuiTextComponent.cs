@@ -96,7 +96,7 @@ namespace SgEngine.GUI.Components
             };
             spriteBatch.DrawString(_font, _textBoxConfig.displayText, drawLocation, _textBoxConfig.textColor, 0, textOrigin, 1,
                 SpriteEffects.None, 1);
-            DrawDebugBox(spriteBatch, new Rectangle(drawLocation.ToPoint(), _size), textOrigin);
+            DrawDebugBox(spriteBatch, new Rectangle(drawLocation.ToPoint(), _size), textOrigin,Color.White);
         }
 
         private Vector2 AlignCenter(Vector2 measuredText, Vector2 drawLocation, Vector2 textOrigin)
@@ -115,6 +115,7 @@ namespace SgEngine.GUI.Components
             drawLocation.Y += textOrigin.Y;
             return drawLocation;
         }
+
 
         /// <summary>
         /// Draws a Debug box around the text

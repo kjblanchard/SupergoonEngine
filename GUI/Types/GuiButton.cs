@@ -33,7 +33,8 @@ namespace SgEngine.GUI.Types
                 return bounds;
             }
         }
-        public GuiButton(TextBoxConfig textBoxConfig, Point size, Vector2 parentOffset, Enum graphicToLoad = null) : base(textBoxConfig.parentOffset, textBoxConfig.textBoxSize, textBoxConfig.parent)
+        //public GuiButton(TextBoxConfig textBoxConfig, Point size, Vector2 parentOffset, Enum graphicToLoad = null) : base(textBoxConfig.parentOffset, textBoxConfig.textBoxSize, textBoxConfig.parent)
+        public GuiButton(TextBoxConfig textBoxConfig, Point size, Vector2 parentOffset,GuiComponent parent = null, Enum graphicToLoad = null) : base(parentOffset, size, parent)
         {
             _textBoxConfig = textBoxConfig;
             if (graphicToLoad != null)
@@ -75,13 +76,14 @@ namespace SgEngine.GUI.Types
         {
             base.Draw(gameTime, spriteBatch);
             _guiTextComponent.Draw(gameTime, spriteBatch);
-            DrawDebugBox(spriteBatch, new Rectangle(GlobalPosition.ToPoint(), _size), Origin);
+            //DrawDebugBox(spriteBatch, new Rectangle(GlobalPosition.ToPoint(), _size), FullOrigin);
+            DrawDebugBox(spriteBatch, BoundingBoxParentOffset, new Vector2(),Color.Red);
         }
 
         public void AutoSetSizeBasedOnText()
         {
             _guiTextComponent.AutoSetSize();
-            _size = _guiTextComponent.Size;
+            //_size = _guiTextComponent.Size;
         }
 
         public override void HandleInput()
