@@ -6,6 +6,7 @@
 ////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using FMOD;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -49,6 +50,7 @@ namespace SgEngine.GUI.Components
         {
             public const string ChronoTypeRegular = "Fonts/ChronoType";
         }
+
 
         /// <summary>
         /// The ways that we can align the text

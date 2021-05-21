@@ -24,7 +24,7 @@ namespace SgEngine.GUI.Types
             get => _areButtonsActive;
             set
             {
-                if (value)
+                if (value && ButtonsToManage.Count >= CurrentSelection)
                     ButtonsToManage[CurrentSelection].IsSelected = true;
                 _areButtonsActive = value;
 
@@ -62,12 +62,22 @@ namespace SgEngine.GUI.Types
         public GuiImageComponent cursorGuiImageComponent;
         public GuiButtonController(GuiComponent parent, Vector2 offset = new Vector2(), Point size = new Point()) : base(offset, size, parent)
         {
-            
+
         }
 
         public void AddButton(GuiButton buttonToAdd)
         {
             ButtonsToManage.Add(buttonToAdd);
+        }
+
+        public void AddButtons(params GuiButton[] buttonsToAdd)
+        {
+
+            foreach (var button in buttonsToAdd)
+            {
+
+                ButtonsToManage.Add(button);
+            }
         }
 
         public override void Update(GameTime gameTime)

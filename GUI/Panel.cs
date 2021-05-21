@@ -28,7 +28,7 @@ namespace SgEngine.GUI
                 {
                     _guiImageComponent.DebugMode = value;
                 }
-                _debugMode = value; 
+                _debugMode = value;
 
             }
         }
@@ -56,6 +56,16 @@ namespace SgEngine.GUI
             guiObject.Initialize();
             guiObject.LoadContent();
             _allComponents.Add(guiObject);
+        }
+        public void AddUiObject(params GuiComponent[] guiObjects)
+        {
+            foreach (var guiComponent in guiObjects)
+            {
+                _controller = GameWorld.GetPlayerController(0);
+                guiComponent.Initialize();
+                guiComponent.LoadContent();
+                _allComponents.Add(guiComponent);
+            }
         }
 
         public void ModifyDebugForPanel(bool debugValue)
