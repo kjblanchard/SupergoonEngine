@@ -6,6 +6,7 @@
 ////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
@@ -57,6 +58,7 @@ namespace SgEngine.GUI.Components
                 }
             }
         }
+
 
         /// <summary>
         /// Gets the bounding box with the origin removed, this is useful for interacting with the mouse
@@ -142,6 +144,7 @@ namespace SgEngine.GUI.Components
             _parent = parent;
             _offset = offset;
             _size = size;
+            Gui.AllGuiComponents.Add(this);
         }
 
         private void AssignObjectNumber()

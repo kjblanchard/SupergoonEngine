@@ -19,9 +19,9 @@ namespace SgEngine.GUI.Types
         protected TextBoxConfig _textBoxConfig;
         public GuiTextComponent _guiTextComponent;
         protected GuiImageComponent _guiImageComponent;
-        public bool _previouslyHoveredStatus, _isHovered;
-        public bool WasJustHovered => _isHovered && !_previouslyHoveredStatus;
-        public bool WasJustLeftHovered => !_isHovered && _previouslyHoveredStatus;
+        public bool PreviouslyHoveredStatus, IsHovered;
+        public bool WasJustHovered => IsHovered && !PreviouslyHoveredStatus;
+        public bool WasJustLeftHovered => !IsHovered && PreviouslyHoveredStatus;
 
 
         protected Rectangle BoundingBoxParentOffset
@@ -33,7 +33,6 @@ namespace SgEngine.GUI.Types
                 return bounds;
             }
         }
-        //public GuiButton(TextBoxConfig textBoxConfig, Point size, Vector2 parentOffset, Enum graphicToLoad = null) : base(textBoxConfig.parentOffset, textBoxConfig.textBoxSize, textBoxConfig.parent)
         public GuiButton(TextBoxConfig textBoxConfig, Point size, Vector2 parentOffset,GuiComponent parent = null, Enum graphicToLoad = null) : base(parentOffset, size, parent)
         {
             _textBoxConfig = textBoxConfig;
@@ -47,8 +46,8 @@ namespace SgEngine.GUI.Types
 
         public void UpdateHoveredStatus(RectangleF thingToCheckAgainst)
         {
-            _previouslyHoveredStatus = _isHovered;
-            _isHovered = CheckIfHovered(thingToCheckAgainst);
+            PreviouslyHoveredStatus = IsHovered;
+            IsHovered = CheckIfHovered(thingToCheckAgainst);
             if (WasJustHovered)
                 OnJustHovered();
             if (WasJustLeftHovered)
@@ -76,14 +75,12 @@ namespace SgEngine.GUI.Types
         {
             base.Draw(gameTime, spriteBatch);
             _guiTextComponent.Draw(gameTime, spriteBatch);
-            //DrawDebugBox(spriteBatch, new Rectangle(GlobalPosition.ToPoint(), _size), FullOrigin);
             DrawDebugBox(spriteBatch, BoundingBoxParentOffset, new Vector2(),Color.Red);
         }
 
         public void AutoSetSizeBasedOnText()
         {
             _guiTextComponent.AutoSetSize();
-            //_size = _guiTextComponent.Size;
         }
 
         public override void HandleInput()
@@ -92,10 +89,6 @@ namespace SgEngine.GUI.Types
             UpdateHoveredStatus(Controller.MouseBounds());
         }
 
-        public Vector2 CursorDrawLocation()
-        {
-            return GlobalPosition - Origin;
-        }
     }
 
 }

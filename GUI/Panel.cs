@@ -7,18 +7,17 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using MonoGame.Extended;
-using SgEngine.Core.Input;
-using SgEngine.EKS;
 using SgEngine.GUI.Components;
 
 namespace SgEngine.GUI
 {
     public class Panel : GuiComponent
     {
+        /// <summary>
+        /// Sets the debug mode for itself and for its image component to the value
+        /// </summary>
         public new bool DebugMode
         {
             get => _debugMode;
@@ -29,13 +28,11 @@ namespace SgEngine.GUI
                     _guiImageComponent.DebugMode = value;
                 }
                 _debugMode = value;
-
             }
         }
-
+        
         private readonly List<GuiComponent> _allComponents = new List<GuiComponent>();
-        private GuiImageComponent _guiImageComponent;
-        private PlayerController _controller;
+        private readonly GuiImageComponent _guiImageComponent;
         public Panel(Vector2 location = new Vector2(), Point size = new Point(), Enum spriteSheetToLoad = null) : base(location, size)
         {
             if (spriteSheetToLoad != null)
@@ -52,7 +49,6 @@ namespace SgEngine.GUI
 
         public void AddUiObject(GuiComponent guiObject)
         {
-            _controller = GameWorld.GetPlayerController(0);
             guiObject.Initialize();
             guiObject.LoadContent();
             _allComponents.Add(guiObject);
@@ -61,13 +57,16 @@ namespace SgEngine.GUI
         {
             foreach (var guiComponent in guiObjects)
             {
-                _controller = GameWorld.GetPlayerController(0);
                 guiComponent.Initialize();
                 guiComponent.LoadContent();
                 _allComponents.Add(guiComponent);
             }
         }
 
+        /// <summary>
+        /// Modifies the debugMode for the entire pane  
+        /// </summary>
+        /// <param name="debugValue">The value to set the debug to for every item in the panel</param>
         public void ModifyDebugForPanel(bool debugValue)
         {
             foreach (var _allComponent in _allComponents)
@@ -90,7 +89,6 @@ namespace SgEngine.GUI
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
             _guiImageComponent?.Draw(gameTime, spriteBatch);
-
             base.Draw(gameTime, spriteBatch);
             foreach (var _allComponent in _allComponents)
             {
@@ -98,11 +96,5 @@ namespace SgEngine.GUI
             }
         }
 
-        public void AddTextObjectToPanel(TextBoxConfig textboxConfig)
-        {
-            var newObj = new GuiTextComponent(textboxConfig);
-            AddUiObject(newObj);
-
-        }
     }
 }

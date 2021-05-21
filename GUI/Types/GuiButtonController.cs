@@ -7,7 +7,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using SgEngine.Core.Input;
@@ -51,7 +50,6 @@ namespace SgEngine.GUI.Types
                         _currentSelectedButton = Math.Clamp(value, 0, ButtonsToManage.Count - 1);
                         break;
                 }
-                Debug.WriteLine("Current selection just switched to " + _currentSelectedButton);
             }
         }
 
@@ -59,7 +57,6 @@ namespace SgEngine.GUI.Types
         public List<GuiButton> ButtonsToManage = new List<GuiButton>();
         public List<int> CurrentHoveredButtons = new List<int>();
         public PlayerController playerController = GameWorld.GetPlayerController(0);
-        public GuiImageComponent cursorGuiImageComponent;
         public GuiButtonController(GuiComponent parent, Vector2 offset = new Vector2(), Point size = new Point()) : base(offset, size, parent)
         {
 
@@ -158,7 +155,7 @@ namespace SgEngine.GUI.Types
             for (int i = 0; i < ButtonsToManage.Count; i++)
             {
                 var currentButton = ButtonsToManage[i];
-                if (currentButton._isHovered)
+                if (currentButton.IsHovered)
                     CurrentHoveredButtons.Add(i);
                 if (ButtonsToManage[i].WasJustHovered)
                 {

@@ -14,6 +14,7 @@ namespace SgEngine.GUI
 {
     public class Gui : GuiComponent
     {
+        public static List<GuiComponent> AllGuiComponents = new List<GuiComponent>();
         public Gui(): base(new Vector2(), new Point())
         {
             
