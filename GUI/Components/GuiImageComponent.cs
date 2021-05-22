@@ -17,9 +17,10 @@ namespace SgEngine.GUI.Components
 {
     public class GuiImageComponent : GuiComponent
     {
-        private GraphicsDevice _graphics;
+        public bool IsVisible { get; set; } = true;
         private readonly Spritesheet _spriteSheet;
         private float _opacity = 1.0f;
+        private Rectangle drawRectangle;
 
         public GuiImageComponent(GuiComponent parent, Enum spriteSheetToLoad, Point size, Vector2 offset = new Vector2()) : base(offset, size, parent)
         {
@@ -28,17 +29,30 @@ namespace SgEngine.GUI.Components
             _size = size;
         }
 
+        public override void Initialize()
+        {
+            drawRectangle = new Rectangle(GlobalPosition.ToPoint(), _size);
+        }
+
+        public override void Update(GameTime gameTime)
+        {
+            base.Update(gameTime);
+            drawRectangle.Location = LocationOverride ? LocalPosition.ToPoint() : GlobalPosition.ToPoint();
+        }
+
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
             base.Draw(gameTime, spriteBatch);
-            var rectToDraw = new Rectangle(GlobalPosition.ToPoint(), _size);
-            if (LocationOverride)
-                rectToDraw.Location = LocalPosition.ToPoint();
-            spriteBatch.Draw(_spriteSheet._texture, rectToDraw, null,
+            if (!IsVisible)
+                return;
+            //var rectToDraw = new Rectangle(GlobalPosition.ToPoint(), _size);
+            //if (LocationOverride)
+            //    rectToDraw.Location = LocalPosition.ToPoint();
+            spriteBatch.Draw(_spriteSheet._texture, drawRectangle, null,
                 Color.White * _opacity, 0.0f, _spriteSheet.Center(),
                SpriteEffects.None, 0.0f);
             if (_debugMode)
-                DrawDebugBox(spriteBatch, rectToDraw);
+                DrawDebugBox(spriteBatch, drawRectangle);
         }
         private void DrawDebugBox(SpriteBatch spriteBatch, Rectangle positionToDraw)
         {

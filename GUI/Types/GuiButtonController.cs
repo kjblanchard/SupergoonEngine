@@ -16,8 +16,15 @@ using SgEngine.GUI.Components;
 namespace SgEngine.GUI.Types
 {
 
-    public class GuiButtonController : GuiComponent
+    public abstract class GuiButtonController : GuiComponent
     {
+        /// <summary>
+        /// The cursor for this button controller, can be assigned in the parent class
+        /// </summary>
+        public GuiImageComponent CursorGuiImageComponent;
+        /// <summary>
+        /// Selects the current selection and sets the buttons active to true.  Probably allows movement in the icons too
+        /// </summary>
         public bool ButtonsActive
         {
             get => _areButtonsActive;
@@ -25,12 +32,12 @@ namespace SgEngine.GUI.Types
             {
                 if (value && ButtonsToManage.Count >= CurrentSelection)
                     ButtonsToManage[CurrentSelection].IsSelected = true;
+                if (CursorGuiImageComponent != null)
+                    CursorGuiImageComponent.IsVisible = true;
                 _areButtonsActive = value;
-
             }
         }
-        private bool _areButtonsActive = false;
-        private bool _shouldLoopSelection = true;
+        private bool _areButtonsActive;
         public int CurrentSelection
         {
             get => _currentSelectedButton;
@@ -52,14 +59,22 @@ namespace SgEngine.GUI.Types
                 }
             }
         }
-
         private int _currentSelectedButton;
+        private bool _shouldLoopSelection = true;
         public List<GuiButton> ButtonsToManage = new List<GuiButton>();
         public List<int> CurrentHoveredButtons = new List<int>();
-        public PlayerController playerController = GameWorld.GetPlayerController(0);
-        public GuiButtonController(GuiComponent parent, Vector2 offset = new Vector2(), Point size = new Point()) : base(offset, size, parent)
+        private PlayerController _playerController = GameWorld.GetPlayerController(0);
+
+        protected GuiButtonController(GuiComponent parent, Vector2 offset = new Vector2(), Point size = new Point()) : base(offset, size, parent)
         {
 
+        }
+
+
+        public override void Initialize()
+        {
+            base.Initialize();
+            CursorGuiImageComponent?.Initialize();
         }
 
         public void AddButton(GuiButton buttonToAdd)
@@ -70,9 +85,8 @@ namespace SgEngine.GUI.Types
             buttonToAdd.BeginRun();
         }
 
-        public void AddButtons(params GuiButton[] buttonsToAdd)
+        public void AddButton(params GuiButton[] buttonsToAdd)
         {
-
             foreach (var button in buttonsToAdd)
             {
                 AddButton(button);
@@ -82,9 +96,20 @@ namespace SgEngine.GUI.Types
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
-            HandleInput();
+            if (_areButtonsActive && _playerController != null)
+                HandleInput();
+            CursorGuiImageComponent?.Update(gameTime);
         }
 
+        public void TakeControl(PlayerController controllerToControl)
+        {
+            _playerController = controllerToControl;
+        }
+
+        public void RemoveControl()
+        {
+            _playerController = null;
+        }
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
             base.Draw(gameTime, spriteBatch);
@@ -92,6 +117,7 @@ namespace SgEngine.GUI.Types
             {
                 _guiButton.Draw(gameTime, spriteBatch);
             }
+            CursorGuiImageComponent?.Draw(gameTime, spriteBatch);
         }
 
         public override void HandleInput()
@@ -105,17 +131,17 @@ namespace SgEngine.GUI.Types
             HandleMouseInput();
         }
 
-        private void HandleKeyboardInput()
+        protected void HandleKeyboardInput()
         {
-            if (playerController.IsButtonPressed(ControllerButtons.Down))
+            if (_playerController.IsButtonPressed(ControllerButtons.Down))
                 SelectButton(CurrentSelection + 1);
-            else if (playerController.IsButtonPressed(ControllerButtons.Up))
+            else if (_playerController.IsButtonPressed(ControllerButtons.Up))
                 SelectButton(CurrentSelection - 1);
-            if (playerController.IsButtonPressed(ControllerButtons.A))
+            if (_playerController.IsButtonPressed(ControllerButtons.A))
                 ButtonsToManage[CurrentSelection].OnClick();
         }
 
-        public void SelectButton(int newSelection)
+        protected void SelectButton(int newSelection)
         {
             if (CurrentSelection == newSelection)
                 return;
@@ -124,35 +150,15 @@ namespace SgEngine.GUI.Types
             ButtonsToManage[CurrentSelection].IsSelected = true;
         }
 
-        private void HandleMouseInput()
+        protected void HandleMouseInput()
         {
             CurrentHoveredButtons.Clear();
-            CheckForNewlyHoveredButtons();
-            HandleMovingMouseOffSelection();
-            HandleMouseSelectionWhenKeyboardMovedSelection();
+            SelectNewlyHoveredButton();
+            MouseMovingOffCurrentSelection();
+            UpdateSelectionOnMouseMovement();
             HandleLeftClick();
-
         }
-
-        private void HandleMouseSelectionWhenKeyboardMovedSelection()
-        {
-            if (Controller.WasThereMouseMovement())
-            {
-                if (CurrentHoveredButtons.Count == 1)
-                    SelectButton(CurrentHoveredButtons[0]);
-            }
-        }
-
-        private void HandleMovingMouseOffSelection()
-        {
-            if (ButtonsToManage[CurrentSelection].WasJustLeftHovered)
-            {
-                if (CurrentHoveredButtons.Count > 0)
-                    SelectButton(CurrentHoveredButtons[0]);
-            }
-        }
-
-        private void CheckForNewlyHoveredButtons()
+        private void SelectNewlyHoveredButton()
         {
             for (int i = 0; i < ButtonsToManage.Count; i++)
             {
@@ -165,22 +171,52 @@ namespace SgEngine.GUI.Types
                 }
             }
         }
+        private void MouseMovingOffCurrentSelection()
+        {
+            if (ButtonsToManage[CurrentSelection].WasJustLeftHovered)
+            {
+                if (CurrentHoveredButtons.Count > 0)
+                    SelectButton(CurrentHoveredButtons[0]);
+            }
+        }
 
+        private void UpdateSelectionOnMouseMovement()
+        {
+            if (Controller.WasThereMouseMovement())
+            {
+                if (CurrentHoveredButtons.Count == 1)
+                    SelectButton(CurrentHoveredButtons[0]);
+            }
+        }
         private void HandleLeftClick()
         {
             if (!Controller.LeftMouseButtonClicked()) return;
-            if (CurrentHoveredButtons.Contains(CurrentSelection))
-            {
-                ButtonsToManage[CurrentSelection].OnClick();
-                return;
-            }
+            if (ClickIfButtonIsHovered()) return;
+            SelectAndClickIfPossible();
+        }
+        /// <summary>
+        /// If you are hovering over a button, click it, otherwise don't
+        /// </summary>
+        /// <returns>True if the button was clicked</returns>
+        private bool ClickIfButtonIsHovered()
+        {
+            if (!CurrentHoveredButtons.Contains(CurrentSelection)) return false;
+            ButtonsToManage[CurrentSelection].OnClick();
+            return true;
 
+        }
+        /// <summary>
+        /// If you are hovering over one button, select it and then click on it.  If not, return
+        /// </summary>
+        private void SelectAndClickIfPossible()
+        {
             if (CurrentHoveredButtons.Count != 1) return;
             SelectButton(CurrentHoveredButtons[0]);
             ButtonsToManage[CurrentHoveredButtons[0]].OnClick();
-
         }
-
+        /// <summary>
+        /// Turns on debug mode for all of the buttons
+        /// </summary>
         public void AllButtonDebugMode()
         {
             foreach (var _guiButton in ButtonsToManage)
@@ -188,6 +224,8 @@ namespace SgEngine.GUI.Types
                 _guiButton.DebugMode = true;
             }
         }
+
+
 
     }
 }
