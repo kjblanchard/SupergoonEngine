@@ -6,6 +6,7 @@
 ////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
@@ -28,6 +29,10 @@ namespace SgEngine.GUI.Components
             }
         }
 
+        /// <summary>
+        /// Used when you need to position something on a specific spot on the screen and not use parents and local position to draw
+        /// </summary>
+        public bool LocationOverride = false;
 
         public Vector2 LocalPosition
         {
@@ -57,6 +62,7 @@ namespace SgEngine.GUI.Components
                 }
             }
         }
+
 
         /// <summary>
         /// Gets the bounding box with the origin removed, this is useful for interacting with the mouse
@@ -142,6 +148,7 @@ namespace SgEngine.GUI.Components
             _parent = parent;
             _offset = offset;
             _size = size;
+            Gui.AllGuiComponents.Add(this);
         }
 
         private void AssignObjectNumber()
@@ -175,26 +182,6 @@ namespace SgEngine.GUI.Components
         public virtual void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
         }
-
-        public virtual void OnSelected()
-        {
-            _isSelected = true;
-
-        }
-        public virtual void OnDeselected()
-        {
-            _isSelected = false;
-        }
-        public virtual void OnActivate()
-        {
-            IsActive = true;
-        }
-
-        public virtual void OnDeactivate()
-        {
-            IsActive = false;
-        }
-
         public void Activate()
         {
             IsActive = true;
@@ -208,27 +195,35 @@ namespace SgEngine.GUI.Components
         }
 
         /// <summary>
-        /// Draws a Debug box around the gui object
+        /// What happens when this component has been selected
         /// </summary>
-        /// <param name="spriteBatch">The spritebatch to draw to</param>
-        /// <param name="positionToDraw">The position to draw on the screen</param>
-        /// <param name="originToOffset">The origin, so that we can rotate it and stuff</param>
-        /// <param name="colorToDraw"></param>
-        protected void DrawDebugBox(SpriteBatch spriteBatch, Rectangle positionToDraw, Vector2 originToOffset, Color colorToDraw)
+        protected virtual void OnSelected()
         {
-            if (!DebugMode)
-                return;
-            positionToDraw.X -= (int)originToOffset.X;
-            positionToDraw.Y -= (int)originToOffset.Y;
-            spriteBatch.DrawRectangle(positionToDraw, colorToDraw);
+            _isSelected = true;
+
         }
         /// <summary>
-        /// Draws a Debug box around the gui object
+        /// What happens when this component has been deselected
         /// </summary>
-        /// <param name="spriteBatch">The spritebatch to draw to</param>
-        /// <param name="positionToDraw">The position to draw on the screen</param>
-        /// <param name="originToOffset">The origin, so that we can rotate it and stuff</param>
-        /// <param name="colorToDraw"></param>
+        protected virtual void OnDeselected()
+        {
+            _isSelected = false;
+        }
+        /// <summary>
+        /// What happens when this component is activated
+        /// </summary>
+        protected virtual void OnActivate()
+        {
+            IsActive = true;
+        }
+
+        /// <summary>
+        /// What happens when this component is deactivated
+        /// </summary>
+        protected virtual void OnDeactivate()
+        {
+            IsActive = false;
+        }
         protected void DrawDebugBox(SpriteBatch spriteBatch, RectangleF positionToDraw, Vector2 originToOffset, Color colorToDraw)
         {
             if (!DebugMode)

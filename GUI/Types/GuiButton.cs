@@ -14,17 +14,21 @@ using SgEngine.GUI.Components;
 
 namespace SgEngine.GUI.Types
 {
-    public class GuiButton : GuiComponent
+    public abstract class GuiButton : GuiComponent
     {
-        protected TextBoxConfig _textBoxConfig;
-        public GuiTextComponent _guiTextComponent;
+        public bool PreviouslyHoveredStatus, IsHovered;
+        public bool WasJustHovered => IsHovered && !PreviouslyHoveredStatus;
+        public bool WasJustLeftHovered => !IsHovered && PreviouslyHoveredStatus;
+
+        protected GuiTextComponent _buttonTextComponent;
         protected GuiImageComponent _guiImageComponent;
-        public bool _previouslyHoveredStatus, _isHovered;
-        public bool WasJustHovered => _isHovered && !_previouslyHoveredStatus;
-        public bool WasJustLeftHovered => !_isHovered && _previouslyHoveredStatus;
 
 
-        protected Rectangle BoundingBoxParentOffset
+        /// <summary>
+        /// Gets a rectangleF from the buttons bounding box, and offsets it by its parents origin, used for debug box drawing and
+        /// for collision with the mouse, which is after origin draw
+        /// </summary>
+        protected RectangleF BoundingBoxParentOffset
         {
             get
             {
@@ -33,68 +37,69 @@ namespace SgEngine.GUI.Types
                 return bounds;
             }
         }
-        //public GuiButton(TextBoxConfig textBoxConfig, Point size, Vector2 parentOffset, Enum graphicToLoad = null) : base(textBoxConfig.parentOffset, textBoxConfig.textBoxSize, textBoxConfig.parent)
-        public GuiButton(TextBoxConfig textBoxConfig, Point size, Vector2 parentOffset,GuiComponent parent = null, Enum graphicToLoad = null) : base(parentOffset, size, parent)
+        /// <summary>
+        /// A gui button class that should be used as a base for all buttons
+        /// </summary>
+        /// <param name="textBoxConfig">The text that should be shown with the button</param>
+        /// <param name="size">The size of the button</param>
+        /// <param name="parentOffset">The offset of the components parent</param>
+        /// <param name="parent">The parent of this object</param>
+        /// <param name="graphicToLoad">The graphic for this button</param>
+        protected GuiButton(Point size, Vector2 parentOffset, GuiComponent parent, TextBoxConfig textBoxConfig = null, Enum graphicToLoad = null) : base(parentOffset, size, parent)
         {
-            _textBoxConfig = textBoxConfig;
             if (graphicToLoad != null)
                 _guiImageComponent = new GuiImageComponent(this, graphicToLoad, size, parentOffset);
-            _guiTextComponent = new GuiTextComponent(textBoxConfig);
-            _guiTextComponent.Initialize();
-            if (graphicToLoad != null)
-                _guiImageComponent.Initialize();
+            if (textBoxConfig != null)
+                _buttonTextComponent = new GuiTextComponent(textBoxConfig);
         }
 
-        public void UpdateHoveredStatus(RectangleF thingToCheckAgainst)
+        public override void Initialize()
         {
-            _previouslyHoveredStatus = _isHovered;
-            _isHovered = CheckIfHovered(thingToCheckAgainst);
-            if (WasJustHovered)
-                OnJustHovered();
-            if (WasJustLeftHovered)
-                OnJustHoveredLeave();
+            base.Initialize();
+            _buttonTextComponent?.Initialize();
+            _guiImageComponent?.Initialize();
         }
-
-
-        public bool CheckIfHovered(Rectangle thingToCheckAgainst)
-        {
-            return Collision.Collision.ShapesIntersect(thingToCheckAgainst, BoundingBoxParentOffset);
-        }
-        public bool CheckIfHovered(RectangleF thingToCheckAgainst)
-        {
-            return Collision.Collision.ShapesIntersect(thingToCheckAgainst, BoundingBoxParentOffset);
-        }
-
-        public virtual void OnJustHovered()
-        {
-        }
-        public virtual void OnJustHoveredLeave()
-        {
-        }
-        public virtual void OnClick() { }
-        public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
-        {
-            base.Draw(gameTime, spriteBatch);
-            _guiTextComponent.Draw(gameTime, spriteBatch);
-            //DrawDebugBox(spriteBatch, new Rectangle(GlobalPosition.ToPoint(), _size), FullOrigin);
-            DrawDebugBox(spriteBatch, BoundingBoxParentOffset, new Vector2(),Color.Red);
-        }
-
-        public void AutoSetSizeBasedOnText()
-        {
-            _guiTextComponent.AutoSetSize();
-            //_size = _guiTextComponent.Size;
-        }
-
+        /// <summary>
+        /// Updates the Hovered Status based on the mousebounds of the controller
+        /// </summary>
         public override void HandleInput()
         {
             base.HandleInput();
             UpdateHoveredStatus(Controller.MouseBounds());
         }
-
-        public Vector2 CursorDrawLocation()
+        private void UpdateHoveredStatus(RectangleF thingToCheckAgainst)
         {
-            return GlobalPosition - Origin;
+            PreviouslyHoveredStatus = IsHovered;
+            IsHovered = CheckIfHovered(thingToCheckAgainst);
+            if (WasJustHovered)
+                OnJustHovered();
+            if (WasJustLeftHovered)
+                OnJustHoveredLeave();
+        }
+        private bool CheckIfHovered(RectangleF thingToCheckAgainst)
+        {
+            return Collision.Collision.ShapesIntersect(thingToCheckAgainst, BoundingBoxParentOffset);
+        }
+        /// <summary>
+        /// What happens when this button is just hovered
+        /// </summary>
+        public virtual void OnJustHovered() { }
+        /// <summary>
+        /// What happens when this button was just left it's hovered status
+        /// </summary>
+        public virtual void OnJustHoveredLeave() { }
+        /// <summary>
+        /// What happens when this button is clicked
+        /// </summary>
+        public virtual void OnClick() { }
+
+
+        public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
+        {
+            base.Draw(gameTime, spriteBatch);
+            _buttonTextComponent?.Draw(gameTime, spriteBatch);
+            _guiImageComponent?.Draw(gameTime,spriteBatch);
+            DrawDebugBox(spriteBatch, BoundingBoxParentOffset, new Vector2(), Color.Red);
         }
     }
 

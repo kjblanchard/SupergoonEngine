@@ -81,6 +81,7 @@ namespace SgEngine.GUI.Components
         {
             base.Initialize();
             _font = ContentLoader.LoadFont(_textBoxConfig.fontType);
+            AutoSetSize();
         }
 
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
@@ -136,14 +137,6 @@ namespace SgEngine.GUI.Components
         {
             var newSize = TextSize;
             _size = new Point((int)newSize.X, (int)newSize.Y);
-        }
-        public Vector2 CursorDrawLocation()
-        {
-            var temp = GlobalPosition - _parent.Origin;
-            var measuredText = _font.MeasureString(_textBoxConfig.displayText);
-            temp.X -= 10;
-            temp.Y += measuredText.Y / 2;
-            return temp;
         }
     }
 }
