@@ -6,15 +6,9 @@
 ////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
-using FMOD;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using MonoGame.Extended;
-using MonoGame.Extended.BitmapFonts;
 using SgEngine.Core;
-using SgEngine.EKS;
-
 namespace SgEngine.GUI.Components
 {
     /// <summary>
@@ -25,19 +19,19 @@ namespace SgEngine.GUI.Components
         /// <summary>
         /// The actual Text that you want displayed
         /// </summary>
-        public string displayText;
+        public string DisplayText;
         /// <summary>
         /// The parent of this text object, used for offsetting and drawing properly in the panel.
         /// </summary>
-        public GuiComponent parent;
+        public GuiComponent Parent;
         /// <summary>
         /// The offset from the parent that you want the text.
         /// </summary>
-        public Vector2 parentOffset;
-        public Point textBoxSize;
-        public string fontType;
-        public GuiTextComponent.Alignment alignment;
-        public Color textColor = Color.White;
+        public Vector2 ParentOffset;
+        public Point TextBoxSize;
+        public string FontType;
+        public GuiTextComponent.Alignment Alignment;
+        public Color TextColor = Color.White;
 
     }
     public class GuiTextComponent : GuiComponent
@@ -61,27 +55,26 @@ namespace SgEngine.GUI.Components
             Left
         }
 
-        public string DisplayText => _textBoxConfig.displayText;
+        public string DisplayText => _textBoxConfig.DisplayText;
 
         public Color TextColor
         {
-            set => _textBoxConfig.textColor = value;
+            set => _textBoxConfig.TextColor = value;
         }
+        public Vector2 TextSize => _font.MeasureString(_textBoxConfig.DisplayText);
 
-        private TextBoxConfig _textBoxConfig;
+        private readonly TextBoxConfig _textBoxConfig;
 
-        public Vector2 TextSize => _font.MeasureString(_textBoxConfig.displayText);
         private SpriteFont _font;
-        public GuiTextComponent(TextBoxConfig configuration) : base(configuration.parentOffset, configuration.textBoxSize, configuration.parent)
+        public GuiTextComponent(TextBoxConfig configuration) : base(configuration.ParentOffset, configuration.TextBoxSize, configuration.Parent)
         {
             _textBoxConfig = configuration;
-            DebugMode = true;
         }
 
         public override void Initialize()
         {
             base.Initialize();
-            _font = ContentLoader.LoadFont(_textBoxConfig.fontType);
+            _font = ContentLoader.LoadFont(_textBoxConfig.FontType);
             AutoSetSize();
         }
 
@@ -89,16 +82,16 @@ namespace SgEngine.GUI.Components
         {
             base.Draw(gameTime, spriteBatch);
             var drawLocation = GlobalPosition;
-            var measuredText = _font.MeasureString(_textBoxConfig.displayText);
+            var measuredText = _font.MeasureString(_textBoxConfig.DisplayText);
             var textOrigin = new Vector2(measuredText.X / 2, measuredText.Y / 2);
             drawLocation -= _parent.Origin;
-            drawLocation = _textBoxConfig.alignment switch
+            drawLocation = _textBoxConfig.Alignment switch
             {
                 Alignment.Left => AlignLeft(drawLocation, textOrigin),
                 Alignment.Center => AlignCenter(measuredText, drawLocation, textOrigin),
                 _ => throw new ArgumentOutOfRangeException()
             };
-            spriteBatch.DrawString(_font, _textBoxConfig.displayText, drawLocation, _textBoxConfig.textColor, 0, textOrigin, 1,
+            spriteBatch.DrawString(_font, _textBoxConfig.DisplayText, drawLocation, _textBoxConfig.TextColor, 0, textOrigin, 1,
                 SpriteEffects.None, 1);
             DrawDebugBox(spriteBatch, new Rectangle(drawLocation.ToPoint(), _size), textOrigin,Color.White);
         }
@@ -120,21 +113,10 @@ namespace SgEngine.GUI.Components
             return drawLocation;
         }
 
-
         /// <summary>
-        /// Draws a Debug box around the text
+        /// Sets the size of the textbox based on the size of the text
         /// </summary>
-        /// <param name="spriteBatch">The spritebatch to draw to</param>
-        /// <param name="positionToDraw">The position to draw on the screen</param>
-        /// <param name="textOrigin">The origin of the text, so that we can rotate it and stuff</param>
-        //private void DrawDebugBox(SpriteBatch spriteBatch, Rectangle positionToDraw, Vector2 textOrigin)
-        //{
-        //    positionToDraw.X -= (int)textOrigin.X;
-        //    positionToDraw.Y -= (int)textOrigin.Y;
-        //    spriteBatch.DrawRectangle(positionToDraw, Color.Red);
-        //}
-
-        public void AutoSetSize()
+        private void AutoSetSize()
         {
             var newSize = TextSize;
             _size = new Point((int)newSize.X, (int)newSize.Y);

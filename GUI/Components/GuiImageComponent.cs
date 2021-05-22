@@ -6,7 +6,6 @@
 ////////////////////////////////////////////////////////////
 
 using System;
-using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
@@ -45,9 +44,6 @@ namespace SgEngine.GUI.Components
             base.Draw(gameTime, spriteBatch);
             if (!IsVisible)
                 return;
-            //var rectToDraw = new Rectangle(GlobalPosition.ToPoint(), _size);
-            //if (LocationOverride)
-            //    rectToDraw.Location = LocalPosition.ToPoint();
             spriteBatch.Draw(_spriteSheet._texture, drawRectangle, null,
                 Color.White * _opacity, 0.0f, _spriteSheet.Center(),
                SpriteEffects.None, 0.0f);
