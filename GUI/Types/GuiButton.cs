@@ -23,7 +23,6 @@ namespace SgEngine.GUI.Types
         protected GuiTextComponent _buttonTextComponent;
         protected GuiImageComponent _guiImageComponent;
 
-
         /// <summary>
         /// Gets a rectangleF from the buttons bounding box, and offsets it by its parents origin, used for debug box drawing and
         /// for collision with the mouse, which is after origin draw
@@ -92,7 +91,6 @@ namespace SgEngine.GUI.Types
         /// What happens when this button is clicked
         /// </summary>
         public virtual void OnClick() { }
-
 
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {

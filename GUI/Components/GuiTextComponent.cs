@@ -75,6 +75,7 @@ namespace SgEngine.GUI.Components
         public GuiTextComponent(TextBoxConfig configuration) : base(configuration.parentOffset, configuration.textBoxSize, configuration.parent)
         {
             _textBoxConfig = configuration;
+            DebugMode = true;
         }
 
         public override void Initialize()

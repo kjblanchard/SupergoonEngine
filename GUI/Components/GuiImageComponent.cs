@@ -21,13 +21,11 @@ namespace SgEngine.GUI.Components
         private readonly Spritesheet _spriteSheet;
         private float _opacity = 1.0f;
 
-
         public GuiImageComponent(GuiComponent parent, Enum spriteSheetToLoad, Point size, Vector2 offset = new Vector2()) : base(offset, size, parent)
         {
             _componentType = EngineComponentTypes.UiComponents.ImageComponent;
             _spriteSheet = ContentLoader.GetSpriteSheet(spriteSheetToLoad);
             _size = size;
-            _debugMode = false;
         }
 
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
