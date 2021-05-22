@@ -1,5 +1,6 @@
 ﻿using System;
 using SgEngine.Models;
+using SgEngine.SgJson;
 
 namespace SgEngine.Core.Sounds
 {
@@ -48,7 +49,7 @@ namespace SgEngine.Core.Sounds
         BankfileList ReadMusicJsonFile(string fileName)
         {
             using var streamreader =
-                Utils.Helpers.CreateJsonStreamReader(fileName, Utils.Helpers.ConfigFileToRead.MusicFile);
+                GameJsonLoader.CreateJsonStreamReader(fileName, GameJsonLoader.ConfigFileToRead.MusicFile);
             try
             {
                 var data = streamreader.ReadToEnd();

@@ -1,16 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
+﻿////////////////////////////////////////////////////////////
+//
+// Super Goon Games - 2D Game Engine
+// Copyright (C) 2020-2021 - Kevin Blanchard
+//
+////////////////////////////////////////////////////////////
 
-namespace SgEngine.Utils
+using System;
+using System.IO;
+
+namespace SgEngine.SgJson
 {
-    public static class Helpers
+    public class GameJsonLoader
     {
+        
         public enum ConfigFileToRead
         {
             ConfigFile,
-            MusicFile
+            MusicFile,
+            UiScreenFile
         }
         public static StreamReader CreateJsonStreamReader(string fileToRead,ConfigFileToRead fileType)
         {
@@ -18,6 +25,7 @@ namespace SgEngine.Utils
             {
                 ConfigFileToRead.ConfigFile => "Base",
                 ConfigFileToRead.MusicFile => "Sound",
+                ConfigFileToRead.UiScreenFile => "Ui/Screens",
                 _ => throw new ArgumentOutOfRangeException(nameof(fileType), fileType, null)
             };
 

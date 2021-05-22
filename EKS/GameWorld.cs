@@ -6,7 +6,7 @@ using SgEngine.Core.Input;
 using SgEngine.Core.Sounds;
 using SgEngine.GUI;
 using SgEngine.Models;
-using SgEngine.Utils;
+using SgEngine.SgJson;
 
 namespace SgEngine.EKS
 {
@@ -105,7 +105,7 @@ namespace SgEngine.EKS
         private BaseConfig LoadBaseConfig()
         {
             using var streamreader =
-                Helpers.CreateJsonStreamReader("BaseConfig", Helpers.ConfigFileToRead.ConfigFile);
+                GameJsonLoader.CreateJsonStreamReader("BaseConfig", GameJsonLoader.ConfigFileToRead.ConfigFile);
             var data = streamreader.ReadToEnd();
             return System.Text.Json.JsonSerializer.Deserialize<BaseConfig>(data);
         }
