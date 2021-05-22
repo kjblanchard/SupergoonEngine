@@ -29,21 +29,21 @@ namespace SgEngine.GUI.Components
         /// </summary>
         public Vector2 ParentOffset;
         public Point TextBoxSize;
-        public string FontType;
+        public int FontType;
         public GuiTextComponent.Alignment Alignment;
         public Color TextColor = Color.White;
 
     }
     public class GuiTextComponent : GuiComponent
     {
-        //TODO move this out of the guitextcomponent file
-        /// <summary>
-        /// The different fonts in the game that we can use in text components, this will likely move out somewhere else
-        /// </summary>
-        public struct FontTypes
-        {
-            public const string ChronoTypeRegular = "Fonts/ChronoType";
-        }
+        ////TODO move this out of the guitextcomponent file
+        ///// <summary>
+        ///// The different fonts in the game that we can use in text components, this will likely move out somewhere else
+        ///// </summary>
+        //public struct FontTypes
+        //{
+        //    public const string ChronoTypeRegular = "Fonts/ChronoType";
+        //}
 
 
         /// <summary>
@@ -61,20 +61,26 @@ namespace SgEngine.GUI.Components
         {
             set => _textBoxConfig.TextColor = value;
         }
-        public Vector2 TextSize => _font.MeasureString(_textBoxConfig.DisplayText);
+        public Vector2 TextSize => _fontSheet.SpriteFont.MeasureString(_textBoxConfig.DisplayText);
 
         private readonly TextBoxConfig _textBoxConfig;
 
-        private SpriteFont _font;
-        public GuiTextComponent(TextBoxConfig configuration) : base(configuration.ParentOffset, configuration.TextBoxSize, configuration.Parent)
+        private FontSheet _fontSheet;
+        public GuiTextComponent(TextBoxConfig configuration, Enum fontToLoad) : base(configuration.ParentOffset, configuration.TextBoxSize, configuration.Parent)
         {
             _textBoxConfig = configuration;
+            var parsedInt = Convert.ToInt32(fontToLoad);
+            _fontSheet = ContentLoader.GetFontSheet(parsedInt);
+        }
+        public GuiTextComponent(TextBoxConfig configuration, int fontToLoad) : base(configuration.ParentOffset, configuration.TextBoxSize, configuration.Parent)
+        {
+            _textBoxConfig = configuration;
+            _fontSheet = ContentLoader.GetFontSheet(fontToLoad);
         }
 
         public override void Initialize()
         {
             base.Initialize();
-            _font = ContentLoader.LoadFont(_textBoxConfig.FontType);
             AutoSetSize();
         }
 
@@ -82,7 +88,7 @@ namespace SgEngine.GUI.Components
         {
             base.Draw(gameTime, spriteBatch);
             var drawLocation = GlobalPosition;
-            var measuredText = _font.MeasureString(_textBoxConfig.DisplayText);
+            var measuredText = _fontSheet.SpriteFont.MeasureString(_textBoxConfig.DisplayText);
             var textOrigin = new Vector2(measuredText.X / 2, measuredText.Y / 2);
             drawLocation -= _parent.Origin;
             drawLocation = _textBoxConfig.Alignment switch
@@ -91,9 +97,9 @@ namespace SgEngine.GUI.Components
                 Alignment.Center => AlignCenter(measuredText, drawLocation, textOrigin),
                 _ => throw new ArgumentOutOfRangeException()
             };
-            spriteBatch.DrawString(_font, _textBoxConfig.DisplayText, drawLocation, _textBoxConfig.TextColor, 0, textOrigin, 1,
+            spriteBatch.DrawString(_fontSheet.SpriteFont, _textBoxConfig.DisplayText, drawLocation, _textBoxConfig.TextColor, 0, textOrigin, 1,
                 SpriteEffects.None, 1);
-            DrawDebugBox(spriteBatch, new Rectangle(drawLocation.ToPoint(), _size), textOrigin,Color.White);
+            DrawDebugBox(spriteBatch, new Rectangle(drawLocation.ToPoint(), _size), textOrigin, Color.White);
         }
 
         private Vector2 AlignCenter(Vector2 measuredText, Vector2 drawLocation, Vector2 textOrigin)

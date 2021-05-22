@@ -17,10 +17,24 @@ namespace SgEngine.Core
     {
         static ContentManager _contentManager;
         private static Spritesheet[] _spriteSheets;
-        public ContentLoader(ContentManager content, Spritesheet[] spriteSheetDictionary)
+        private static FontSheet[] _fontSheets;
+        public ContentLoader(ContentManager content, Spritesheet[] spriteSheetDictionary,FontSheet[] fontSheets)
         {
             _contentManager = content;
             _spriteSheets = spriteSheetDictionary;
+            _fontSheets = fontSheets;
+        }
+
+        public static FontSheet GetFontSheet(int fontSheetToLoad)
+        {
+            var fontSheet = _fontSheets[fontSheetToLoad];
+            if (!fontSheet.IsLoaded)
+            {
+                fontSheet.SpriteFont = LoadFont(fontSheet.FileName);
+                fontSheet.IsLoaded = true;
+            }
+
+            return fontSheet;
         }
 
         public static Spritesheet GetSpriteSheet(Enum fileToLoad)
@@ -34,7 +48,20 @@ namespace SgEngine.Core
                 spriteSheet.Height = spriteSheet._texture.Height;
                 spriteSheet.Width = spriteSheet._texture.Width;
                 spriteSheet.IsLoaded = true;
-                Debug.WriteLine(spriteSheet.Width.ToString());
+            }
+
+            return spriteSheet;
+        }
+        public static Spritesheet GetSpriteSheet(int fileToLoad)
+        {
+
+            var spriteSheet = _spriteSheets[fileToLoad];
+            if (!spriteSheet.IsLoaded)
+            {
+                spriteSheet._texture = LoadSprite(spriteSheet._fileName);
+                spriteSheet.Height = spriteSheet._texture.Height;
+                spriteSheet.Width = spriteSheet._texture.Width;
+                spriteSheet.IsLoaded = true;
             }
 
             return spriteSheet;

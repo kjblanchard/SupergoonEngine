@@ -27,6 +27,19 @@ namespace SgEngine.GUI.Components
             _spriteSheet = ContentLoader.GetSpriteSheet(spriteSheetToLoad);
             _size = size;
         }
+        /// <summary>
+        /// Used when loaded from json
+        /// </summary>
+        /// <param name="parent"></param>
+        /// <param name="spriteSheetToLoad"></param>
+        /// <param name="size"></param>
+        /// <param name="offset"></param>
+        public GuiImageComponent(GuiComponent parent, int spriteSheetToLoad, Point size, Vector2 offset = new Vector2()) : base(offset, size, parent)
+        {
+            _componentType = EngineComponentTypes.UiComponents.ImageComponent;
+            _spriteSheet = ContentLoader.GetSpriteSheet(spriteSheetToLoad);
+            _size = size;
+        }
 
         public override void Initialize()
         {

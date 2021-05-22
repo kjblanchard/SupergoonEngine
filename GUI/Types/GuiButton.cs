@@ -49,7 +49,7 @@ namespace SgEngine.GUI.Types
             if (graphicToLoad != null)
                 _guiImageComponent = new GuiImageComponent(this, graphicToLoad, size, parentOffset);
             if (textBoxConfig != null)
-                _buttonTextComponent = new GuiTextComponent(textBoxConfig);
+                _buttonTextComponent = new GuiTextComponent(textBoxConfig,textBoxConfig.FontType);
         }
 
         public override void Initialize()

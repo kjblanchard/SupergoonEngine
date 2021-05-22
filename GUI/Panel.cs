@@ -40,6 +40,16 @@ namespace SgEngine.GUI
                 _guiImageComponent = new GuiImageComponent(this, spriteSheetToLoad, size);
             }
         }
+        /// <summary>
+        /// Used when loaded from the config reader
+        /// </summary>
+        /// <param name="location"></param>
+        /// <param name="size"></param>
+        /// <param name="spritesheetToLoad"></param>
+        public Panel(Vector2 location, Point size, int spriteSheetToLoad) : base(location, size)
+        {
+                _guiImageComponent = new GuiImageComponent(this, spriteSheetToLoad, size);
+        }
 
         public override void Initialize()
         {

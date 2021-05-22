@@ -35,7 +35,7 @@ namespace SgEngine.Models.Ui
     {
         public string Alignment { get; set; }
         public string DisplayText { get; set; }
-        public string FontType { get; set; }
+        public int FontType { get; set; }
         public ParentOffset ParentOffset { get; set; }
     }
 
@@ -44,7 +44,7 @@ namespace SgEngine.Models.Ui
         public string Name { get; set; }
         public Location Location { get; set; }
         public Size Size { get; set; }
-        public string Graphic { get; set; }
+        public int Graphic { get; set; }
         public List<TextComponent> TextComponents { get; set; }
     }
 
