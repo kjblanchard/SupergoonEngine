@@ -12,12 +12,14 @@ using Microsoft.Xna.Framework.Graphics;
 using SgEngine.Core.Input;
 using SgEngine.EKS;
 using SgEngine.GUI.Components;
+using SgEngine.Interfaces;
 
 namespace SgEngine.GUI.Types
 {
 
-    public abstract class GuiButtonController : GuiComponent
+    public abstract class GuiButtonController : GuiComponent, IPlaySfx
     {
+        protected IPlaySfx AsIPlaySfx => (IPlaySfx)this;
         /// <summary>
         /// The cursor for this button controller, can be assigned in the parent class
         /// </summary>
@@ -59,6 +61,11 @@ namespace SgEngine.GUI.Types
                 }
             }
         }
+
+        protected Enum _moveSoundEffect;
+        protected Enum _selectSoundEffect;
+        protected Enum _cancelSoundEffect;
+
         private int _currentSelectedButton;
         private bool _shouldLoopSelection = true;
         public List<GuiButton> ButtonsToManage = new List<GuiButton>();
@@ -138,16 +145,25 @@ namespace SgEngine.GUI.Types
             else if (_playerController.IsButtonPressed(ControllerButtons.Up))
                 SelectButton(CurrentSelection - 1);
             if (_playerController.IsButtonPressed(ControllerButtons.A))
-                ButtonsToManage[CurrentSelection].OnClick();
+                Pressbutton(CurrentSelection);
         }
 
-        protected void SelectButton(int newSelection)
+        protected void SelectButton(int newSelection, bool selectedByMouse = false)
         {
             if (CurrentSelection == newSelection)
                 return;
             ButtonsToManage[CurrentSelection].IsSelected = false;
             CurrentSelection = newSelection;
             ButtonsToManage[CurrentSelection].IsSelected = true;
+            if (!selectedByMouse && _moveSoundEffect != null)
+                AsIPlaySfx.PlaySfx(_moveSoundEffect);
+        }
+
+        protected void Pressbutton(int buttonToPress, bool pressedByMouse = false)
+        {
+            ButtonsToManage[CurrentSelection].OnClick();
+            if (_selectSoundEffect != null)
+                AsIPlaySfx.PlaySfx(_selectSoundEffect);
         }
 
         protected void HandleMouseInput()
@@ -167,7 +183,7 @@ namespace SgEngine.GUI.Types
                     CurrentHoveredButtons.Add(i);
                 if (ButtonsToManage[i].WasJustHovered)
                 {
-                    SelectButton(i);
+                    SelectButton(i, true);
                 }
             }
         }
@@ -176,7 +192,7 @@ namespace SgEngine.GUI.Types
             if (ButtonsToManage[CurrentSelection].WasJustLeftHovered)
             {
                 if (CurrentHoveredButtons.Count > 0)
-                    SelectButton(CurrentHoveredButtons[0]);
+                    SelectButton(CurrentHoveredButtons[0], true);
             }
         }
 
@@ -185,7 +201,7 @@ namespace SgEngine.GUI.Types
             if (Controller.WasThereMouseMovement())
             {
                 if (CurrentHoveredButtons.Count == 1)
-                    SelectButton(CurrentHoveredButtons[0]);
+                    SelectButton(CurrentHoveredButtons[0], true);
             }
         }
         private void HandleLeftClick()
@@ -201,7 +217,7 @@ namespace SgEngine.GUI.Types
         private bool ClickIfButtonIsHovered()
         {
             if (!CurrentHoveredButtons.Contains(CurrentSelection)) return false;
-            ButtonsToManage[CurrentSelection].OnClick();
+            Pressbutton(CurrentSelection,true);
             return true;
 
         }
@@ -211,8 +227,8 @@ namespace SgEngine.GUI.Types
         private void SelectAndClickIfPossible()
         {
             if (CurrentHoveredButtons.Count != 1) return;
-            SelectButton(CurrentHoveredButtons[0]);
-            ButtonsToManage[CurrentHoveredButtons[0]].OnClick();
+            SelectButton(CurrentHoveredButtons[0],true);
+            Pressbutton(CurrentSelection, true);
         }
         /// <summary>
         /// Turns on debug mode for all of the buttons

@@ -86,6 +86,16 @@ namespace SgEngine.Core.Sounds
             _previousPlayingInstance?.Instance.release();
         }
 
+        public void PlaySfx(Enum enumValue)
+        {
+            var value = Convert.ToInt32(enumValue);
+            var chosenSoundFile = _soundFileArray[1].EventDescriptions[value];
+            chosenSoundFile.Description.loadSampleData();
+            chosenSoundFile.Description.createInstance(out var tempInstance);
+            chosenSoundFile.Instance = tempInstance;
+            chosenSoundFile.Instance.start();
+        }
+
         /// <summary>
         /// This method must be called every update so that fmod can function properly
         /// </summary>
