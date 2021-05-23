@@ -10,10 +10,11 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using SgEngine.EKS;
 using SgEngine.Interfaces;
+using SgEngine.Interfaces.EKS;
 
 namespace SgEngine.Components
 {
-    public class Component : IUpdate
+    public class Component : IFullEksObject
     {
         public Vector2 GlobalPosition
         {

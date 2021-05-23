@@ -7,11 +7,12 @@ using Microsoft.Xna.Framework.Graphics;
 using SgEngine.Components;
 using SgEngine.Core;
 using SgEngine.Interfaces;
+using SgEngine.Interfaces.EKS;
 
 namespace SgEngine.EKS
 {
 
-    public class GameObject : IUpdate
+    public class GameObject : IFullEksObject
     {
         #region State
 

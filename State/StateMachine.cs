@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using SgEngine.Interfaces;
+using SgEngine.Interfaces.EKS;
 
 namespace SgEngine.State
 {
@@ -11,7 +12,7 @@ namespace SgEngine.State
     /// Statemachine that will be used for managing state changes for things.
     /// </summary>
     /// <typeparam name="T">The type of states that it will hold in it's dictionary</typeparam>
-    public class StateMachine<T> : IUpdate where T : IState
+    public class StateMachine<T> : IFullEksObject where T : IState
     {
         #region Configuration
 

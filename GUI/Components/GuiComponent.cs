@@ -10,11 +10,12 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
-using IUpdate = SgEngine.Interfaces.IUpdate;
+using SgEngine.Interfaces;
+using SgEngine.Interfaces.EKS;
 
 namespace SgEngine.GUI.Components
 {
-    public abstract class GuiComponent : IUpdate
+    public abstract class GuiComponent : IFullEksObject
     {
         /// <summary>
         /// Returns the position of the parents global plus the components local position

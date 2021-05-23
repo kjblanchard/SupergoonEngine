@@ -4,10 +4,11 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using SgEngine.Interfaces;
+using SgEngine.Interfaces.EKS;
 
 namespace SgEngine.EKS
 {
-    public class GameObjectList<T> : IUpdate where T : GameObject
+    public class GameObjectList<T> : IFullEksObject where T : GameObject
     {
 
         public List<T> NewGameObjects { get; set; } = new List<T>();

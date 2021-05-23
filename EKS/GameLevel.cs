@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 using SgEngine.Interfaces;
+using SgEngine.Interfaces.EKS;
 
 namespace SgEngine.EKS
 {
-    public class GameLevel : IUpdate
+    public class GameLevel : IFullEksObject
     {
 
         public static GameLevel _instance;
