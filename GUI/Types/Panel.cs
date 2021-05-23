@@ -11,7 +11,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using SgEngine.GUI.Components;
 
-namespace SgEngine.GUI
+namespace SgEngine.GUI.Types
 {
     public class Panel : GuiComponent
     {

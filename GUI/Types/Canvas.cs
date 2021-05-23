@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using SgEngine.GUI.Components;
+using SgEngine.GUI.Types;
 
 namespace SgEngine.GUI
 {

@@ -7,20 +7,19 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq.Expressions;
 using System.Text.Json;
-using FMOD;
 using Microsoft.Xna.Framework;
-using SgEngine.Core;
 using SgEngine.GUI.Components;
+using SgEngine.GUI.Types;
 using SgEngine.Models.Ui;
-using Panel = SgEngine.GUI.Panel;
+using Panel = SgEngine.GUI.Types.Panel;
 
 namespace SgEngine.SgJson.Parsing
 {
-    public class UiParser
+    public abstract class UiParser
     {
-        public static UiScreenModel LoadUiScreenJson(string fileToLoad)
+
+        public UiScreenModel LoadUiScreenJson(string fileToLoad)
         {
 
             var jsonReader = GameJsonLoader.CreateJsonStreamReader(fileToLoad, GameJsonLoader.ConfigFileToRead.UiScreenFile);
@@ -28,13 +27,13 @@ namespace SgEngine.SgJson.Parsing
             return JsonSerializer.Deserialize<UiScreenModel>(data);
         }
 
-        public static List<Panel> ParsePanelsFromJson(UiScreenModel loadedJsonScreen)
+        public List<Panel> ParsePanelsFromJson(UiScreenModel loadedJsonScreen)
         {
             var panelList = new List<Panel>();
             foreach (var panelJson in loadedJsonScreen.Panels)
             {
                 var panel = CreatePanel(panelJson);
-                if (panelJson.TextComponents.Count > 0)
+                if (panelJson.TextComponents?.Count > 0)
                 {
                     foreach (var textComponentJson in panelJson.TextComponents)
                     {
@@ -42,35 +41,85 @@ namespace SgEngine.SgJson.Parsing
                         panel.AddUiObject(guiTextComponent);
                     }
                 }
+
+                if (panelJson.Buttons?.Count > 0)
+                {
+                    foreach (var button in panelJson.Buttons)
+                    {
+                        var guiButton = CreateButton(button, panel);
+                        AddButtonToPanel(guiButton, panel);
+                    }
+
+                }
+
+                if (panelJson.ButtonControllers?.Count > 0)
+                {
+                    foreach (var buttonController in panelJson.ButtonControllers)
+                    {
+                        var guiButtonController = CreateButtonController(buttonController, panel);
+                        foreach (var button in buttonController.Buttons)
+                        {
+                            var guiButton = CreateButton(button, panel);
+                            guiButtonController.AddButton(guiButton);
+                            guiButtonController.ButtonsActive = true;
+                        }
+                        panel.AddUiObject(guiButtonController);
+                    }
+                }
                 panelList.Add(panel);
             }
             return panelList;
         }
 
-        private static Panel CreatePanel(Models.Ui.Panel panelJson)
+        private static void AddButtonToPanel(GuiButton guiButton, Panel panel)
+        {
+            if (guiButton != null)
+                panel.AddUiObject(guiButton);
+            else
+            {
+                //TODO add this to debug handler
+                Debug.WriteLine("The button was null");
+            }
+        }
+
+        private Panel CreatePanel(Models.Ui.Panel panelJson)
         {
             var panelLocation = new Vector2(panelJson.Location.X, panelJson.Location.Y);
             var panelSize = new Point(panelJson.Size.X, panelJson.Size.Y);
             return panelJson.Graphic == -1 ? new Panel(panelLocation, panelSize) : new Panel(panelLocation, panelSize, panelJson.Graphic);
         }
 
-        private static GuiTextComponent CreateTextComponent(Models.Ui.TextComponent textComponent, Panel parent)
+        private GuiTextComponent CreateTextComponent(Models.Ui.TextComponent textComponent, Panel parent)
         {
 
+            var textConfig = PopulateTextConfig(textComponent, parent);
+            return new GuiTextComponent(textConfig, textConfig.FontType);
+        }
+
+        protected TextBoxConfig PopulateTextConfig(TextComponent textComponentJson, GuiComponent parent)
+        {
             var textConfig = new TextBoxConfig();
-            textConfig.Alignment = textComponent.Alignment switch
+            textConfig.Alignment = textComponentJson.Alignment switch
             {
                 "Center" => GuiTextComponent.Alignment.Center,
                 "Left" => GuiTextComponent.Alignment.Left,
                 _ => textConfig.Alignment
             };
-            textConfig.DisplayText = textComponent.DisplayText;
-            textConfig.FontType = textComponent.FontType;
+            textConfig.DisplayText = textComponentJson.DisplayText;
+            textConfig.FontType = textComponentJson.FontType;
             textConfig.Parent = parent;
-            textConfig.ParentOffset =
-                new Vector2(textComponent.ParentOffset.X, textComponent.ParentOffset.Y);
-
-            return new GuiTextComponent(textConfig, textConfig.FontType);
+            textConfig.ParentOffset = new Vector2(textComponentJson.ParentOffset.X, textComponentJson.ParentOffset.Y);
+            return textConfig;
         }
+
+        /// <summary>
+        /// To load guibuttons, this needs to be overridden
+        /// </summary>
+        /// <param name="buttonModel"></param>
+        /// <param name="parent"></param>
+        /// <returns></returns>
+        public abstract GuiButton CreateButton(Button buttonModel, GuiComponent parent);
+
+        public abstract GuiButtonController CreateButtonController(ButtonController buttonControllerJson, GuiComponent parent);
     }
 }
