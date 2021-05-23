@@ -1,4 +1,5 @@
 ﻿using System;
+using FMOD.Studio;
 using SgEngine.Models;
 using SgEngine.SgJson;
 
@@ -70,7 +71,11 @@ namespace SgEngine.Core.Sounds
         public void PlayBgm(Enum enumValue)
         {
             if (_currentPlayingInstance != null)
+            {
+                _currentPlayingInstance.Instance.stop(STOP_MODE.ALLOWFADEOUT);
                 _previousPlayingInstance = _currentPlayingInstance;
+                
+            }
             var value = Convert.ToInt32(enumValue);
             var chosenSoundFile = _soundFileArray[0].EventDescriptions[value];
             chosenSoundFile.Description.loadSampleData();
