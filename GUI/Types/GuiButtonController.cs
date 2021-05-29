@@ -13,6 +13,7 @@ using SgEngine.Core.Input;
 using SgEngine.EKS;
 using SgEngine.GUI.Components;
 using SgEngine.Interfaces;
+using SgEngine.Interfaces.Sound;
 
 namespace SgEngine.GUI.Types
 {

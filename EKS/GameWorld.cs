@@ -68,6 +68,7 @@ namespace SgEngine.EKS
             _gui = new Gui();
             _soundSystem = new SoundSystem();
             _input = new InputSg();
+            
         }
 
         protected override void Initialize()
@@ -80,6 +81,7 @@ namespace SgEngine.EKS
             _mainCamera = new Camera(_resolutionHelper, GraphicsDevice);
             _gui.Initialize();
             _spriteBatch = new SpriteBatch(GraphicsDevice);
+            SgDebug.SgDebug.Initialize();
         }
 
         protected override void LoadContent()

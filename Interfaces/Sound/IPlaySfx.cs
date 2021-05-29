@@ -9,7 +9,7 @@ using System;
 using SgEngine.Core.Sounds;
 using SgEngine.EKS;
 
-namespace SgEngine.Interfaces
+namespace SgEngine.Interfaces.Sound
 {
     public interface IPlaySfx
     {

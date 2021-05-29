@@ -1,6 +1,8 @@
 ﻿using System;
 using FMOD.Studio;
+using SgEngine.Interfaces.SgDebug;
 using SgEngine.Models;
+using SgEngine.SgDebug;
 using SgEngine.SgJson;
 
 namespace SgEngine.Core.Sounds
@@ -8,7 +10,7 @@ namespace SgEngine.Core.Sounds
     /// <summary>
     /// The FMOD sound system that SG engine uses
     /// </summary>
-    public class SoundSystem
+    public class SoundSystem: ISendDebugMessage
     {
         private FMOD.Studio.System _fmodStudioSystem;
         private readonly SoundFile[] _soundFileArray = new SoundFile[2];
@@ -20,6 +22,7 @@ namespace SgEngine.Core.Sounds
         /// </summary>
         public void Initialize()
         {
+            OnDebugMessage += SgDebug.SgDebug.DebugMessage;
             InitializeFmodStudio();
             var deserializedBanks = ReadMusicJsonFile("music");
 
@@ -58,7 +61,7 @@ namespace SgEngine.Core.Sounds
             }
             catch
             {
-                //TODO Create a debug logger that handles these things and writes it to a file
+                SendDebugMessage($"Just failed to gather json data from the file {fileName} for some reason",LogLevel.Critical);
                 return null;
             }
         }
@@ -102,6 +105,14 @@ namespace SgEngine.Core.Sounds
         public void Update()
         {
             _fmodStudioSystem.update();
+        }
+
+        public event ISendDebugMessage.DebugLogEventHandler OnDebugMessage;
+
+        public void SendDebugMessage(string messageToWrite, LogLevel logLevel = LogLevel.Debug)
+        {
+            OnDebugMessage?.Invoke(this,messageToWrite,logLevel);
+            
         }
     }
 

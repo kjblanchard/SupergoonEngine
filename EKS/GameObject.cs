@@ -1,21 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using SgEngine.Components;
 using SgEngine.Core;
-using SgEngine.Interfaces;
 using SgEngine.Interfaces.EKS;
+using SgEngine.Interfaces.SgDebug;
+using SgEngine.SgDebug;
 
 namespace SgEngine.EKS
 {
 
-    public class GameObject : IFullEksObject
+    public class GameObject : IFullEksObject, ISendDebugMessage
     {
         #region State
 
+        /// <summary>
+        /// Event that the debug Handler will subscribe to for handling messages from gameobjects
+        /// </summary>
+        public event ISendDebugMessage.DebugLogEventHandler OnDebugMessage;
         /// <summary>
         /// The position of this game object, relative to its parent in the game-object hierachy.
         /// </summary>
@@ -27,9 +31,24 @@ namespace SgEngine.EKS
         }
 
         public static int id;
-        protected int Id;
+
+        public int Id => _id;
+        protected int _id;
         protected Vector2 _localPosition = Vector2.Zero;
 
+        public bool Debug
+        {
+            get => _debugMode;
+            set
+            {
+                if (value)
+                    OnDebugMessage += SgDebug.SgDebug.DebugMessage;
+                else
+                    OnDebugMessage -= SgDebug.SgDebug.DebugMessage;
+                _debugMode = value;
+            }
+        }
+        private bool _debugMode;
 
         /// <summary>
         /// Whether or not this game object is currently active.
@@ -66,7 +85,7 @@ namespace SgEngine.EKS
         /// <param name="location">The location OR the offset of the gameobject, if it doesn't have a parent, its probably  </param>
         public GameObject()
         {
-            Id = id;
+            _id = id;
             id++;
         }
 
@@ -125,7 +144,6 @@ namespace SgEngine.EKS
         public virtual void Reset() { }
 
 
-        //TODO add in some documentation here
         public void AddComponent(Component componentToAdd)
         {
             Components.Add(componentToAdd);
@@ -136,16 +154,22 @@ namespace SgEngine.EKS
             return Components.FirstOrDefault(component => Equals(component._componentType, componentToGet));
         }
 
-        public T GetComponent<T>(Enum componentToGet) where T:Component
+        public T GetComponent<T>(Enum componentToGet) where T : Component
         {
             var component = Components.FirstOrDefault(component => Equals(component._componentType, componentToGet));
-            var convertedComponent = (T) (component);
+            var convertedComponent = (T)(component);
             return convertedComponent;
         }
 
         public void AddTimer(Timer timerToAdd)
         {
             Timers.Add(timerToAdd);
+        }
+
+
+        public void SendDebugMessage(string messageToWrite, LogLevel logLevel = LogLevel.Debug)
+        {
+                OnDebugMessage?.Invoke(this, messageToWrite, logLevel);
         }
     }
 

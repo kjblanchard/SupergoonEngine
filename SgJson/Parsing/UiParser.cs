@@ -11,14 +11,21 @@ using System.Text.Json;
 using Microsoft.Xna.Framework;
 using SgEngine.GUI.Components;
 using SgEngine.GUI.Types;
+using SgEngine.Interfaces.SgDebug;
 using SgEngine.Models.Ui;
+using SgEngine.SgDebug;
 using Panel = SgEngine.GUI.Types.Panel;
 
 namespace SgEngine.SgJson.Parsing
 {
-    public abstract class UiParser
+    public abstract class UiParser : ISendDebugMessage
     {
+        public event ISendDebugMessage.DebugLogEventHandler OnDebugMessage;
 
+        protected UiParser()
+        {
+            OnDebugMessage += SgDebug.SgDebug.DebugMessage;
+        }
         public UiScreenModel LoadUiScreenJson(string fileToLoad)
         {
 
@@ -71,13 +78,13 @@ namespace SgEngine.SgJson.Parsing
             return panelList;
         }
 
-        private static void AddButtonToPanel(GuiButton guiButton, Panel panel)
+        private void AddButtonToPanel(GuiButton guiButton, Panel panel)
         {
             if (guiButton != null)
                 panel.AddUiObject(guiButton);
             else
             {
-                //TODO add this to debug handler
+                SendDebugMessage("The button was null");
                 Debug.WriteLine("The button was null");
             }
         }
@@ -121,5 +128,9 @@ namespace SgEngine.SgJson.Parsing
         public abstract GuiButton CreateButton(Button buttonModel, GuiComponent parent);
 
         public abstract GuiButtonController CreateButtonController(ButtonController buttonControllerJson, GuiComponent parent);
+        public void SendDebugMessage(string messageToWrite, LogLevel logLevel = LogLevel.Debug)
+        {
+            OnDebugMessage?.Invoke(this,messageToWrite,logLevel);
+        }
     }
 }
