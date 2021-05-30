@@ -39,16 +39,17 @@ namespace SgEngine.SgDebug
 
         private void TextInputHandler(object sender, TextInputEventArgs args)
         {
+            if (args.Key == Keys.OemTilde)
+            {
+                _isConsoleWindowOpen = !_isConsoleWindowOpen;
+            }
+            if(!_isConsoleWindowOpen) return;
             if (Char.IsLetter(args.Character))
                 _displayLine += args.Character;
             if (args.Key == Keys.Back && _displayLine.Length > 0)
                 _displayLine = _displayLine[..^1];
             if (args.Key == Keys.Space)
                 _displayLine += " ";
-            if (args.Key == Keys.OemTilde)
-            {
-                _isConsoleWindowOpen = !_isConsoleWindowOpen;
-            }
             if (args.Key == Keys.Enter)
                 HandleEnter();
         }

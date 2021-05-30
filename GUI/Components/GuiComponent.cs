@@ -124,6 +124,12 @@ namespace SgEngine.GUI.Components
         /// </summary>
         public int UiObjectNumber => _objectNumber;
 
+        public string ComponentName
+        {
+            get => _componentName;
+            set => _componentName = value;
+        }
+
         /// <summary>
         /// Size of the current UI object
         /// </summary>
@@ -136,6 +142,7 @@ namespace SgEngine.GUI.Components
         protected Enum _componentType;
         protected bool _debugMode;
         protected bool _isSelected;
+        protected string _componentName;
         private static int _nextObjectNumber;
         /// <summary>
         /// This is an abstract class that every Ui object inherits from. 

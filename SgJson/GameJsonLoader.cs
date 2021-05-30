@@ -21,7 +21,7 @@ namespace SgEngine.SgJson
         }
         public static StreamReader CreateJsonStreamReader(string fileToRead,ConfigFileToRead fileType)
         {
-            string folderName = fileType switch
+            var folderName = fileType switch
             {
                 ConfigFileToRead.ConfigFile => "Base",
                 ConfigFileToRead.MusicFile => "Sound",

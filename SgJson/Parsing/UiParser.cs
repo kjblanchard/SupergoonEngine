@@ -26,6 +26,11 @@ namespace SgEngine.SgJson.Parsing
         {
             OnDebugMessage += SgDebug.SgDebug.DebugMessage;
         }
+        /// <summary>
+        /// Loads from a file, and returns a Model for a UI screen
+        /// </summary>
+        /// <param name="fileToLoad">The actual file to load</param>
+        /// <returns>Returns the deserialized json file</returns>
         public UiScreenModel LoadUiScreenJson(string fileToLoad)
         {
 
@@ -34,6 +39,11 @@ namespace SgEngine.SgJson.Parsing
             return JsonSerializer.Deserialize<UiScreenModel>(data);
         }
 
+        /// <summary>
+        /// Goes through the UIScreen and create all of the panels that are to be used
+        /// </summary>
+        /// <param name="loadedJsonScreen"></param>
+        /// <returns></returns>
         public List<Panel> ParsePanelsFromJson(UiScreenModel loadedJsonScreen)
         {
             var panelList = new List<Panel>();
@@ -93,12 +103,11 @@ namespace SgEngine.SgJson.Parsing
         {
             var panelLocation = new Vector2(panelJson.Location.X, panelJson.Location.Y);
             var panelSize = new Point(panelJson.Size.X, panelJson.Size.Y);
-            return panelJson.Graphic == -1 ? new Panel(panelLocation, panelSize) : new Panel(panelLocation, panelSize, panelJson.Graphic);
+            return panelJson.Graphic == -1 ? new Panel(panelLocation, panelSize) : new Panel(panelLocation, panelSize, panelJson.Graphic){ComponentName = panelJson.Name};
         }
 
-        private GuiTextComponent CreateTextComponent(Models.Ui.TextComponent textComponent, Panel parent)
+        private GuiTextComponent CreateTextComponent(TextComponent textComponent, Panel parent)
         {
-
             var textConfig = PopulateTextConfig(textComponent, parent);
             return new GuiTextComponent(textConfig, textConfig.FontType);
         }
@@ -127,6 +136,12 @@ namespace SgEngine.SgJson.Parsing
         /// <returns></returns>
         public abstract GuiButton CreateButton(Button buttonModel, GuiComponent parent);
 
+        /// <summary>
+        /// To load Button controllers, this needs to be overridden
+        /// </summary>
+        /// <param name="buttonControllerJson"></param>
+        /// <param name="parent"></param>
+        /// <returns></returns>
         public abstract GuiButtonController CreateButtonController(ButtonController buttonControllerJson, GuiComponent parent);
         public void SendDebugMessage(string messageToWrite, LogLevel logLevel = LogLevel.Debug)
         {
