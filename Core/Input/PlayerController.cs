@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using SgEngine.EKS;
 using IUpdate = SgEngine.Interfaces.EKS.IUpdate;
 
 namespace SgEngine.Core.Input
@@ -154,6 +155,7 @@ namespace SgEngine.Core.Input
         private void CheckAllButtonActions()
         {
             _buttonAndActions.Clear();
+            if(GameWorld.IsDebugConsoleOpen)return;
             foreach (var _controllerButton in (ControllerButtons[])Enum.GetValues(typeof(ControllerButtons)))
             {
                 CheckIfButtonPressed(_controllerButton);

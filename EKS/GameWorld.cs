@@ -23,6 +23,7 @@ namespace SgEngine.EKS
         public static Camera MainCamera => _instance._mainCamera;
         public static Matrix ResolutionSpriteScale => _instance._resolutionHelper.SpriteScale;
         public static Point GameWorldSize => new Point(_instance._baseConfig.World.X, _instance._baseConfig.World.Y);
+        public static bool IsDebugConsoleOpen => SgDebug.SgDebugPanel._isConsoleWindowOpen;
         
 
         /// <summary>
