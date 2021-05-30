@@ -8,7 +8,9 @@
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using SgEngine.EKS;
 using SgEngine.GUI.Components;
+using SgEngine.SgDebug;
 
 namespace SgEngine.GUI
 {
@@ -22,6 +24,8 @@ namespace SgEngine.GUI
 
         private List<Canvas> AllCanvasList = new List<Canvas>();
         public Canvas MasterCanvas = new Canvas(new Rectangle());
+
+        public Canvas DebugWindowCanvas = new Canvas(new Rectangle());
         public void AddPanel(Canvas panelToAdd)
         {
             AllCanvasList.Add(panelToAdd);
@@ -39,6 +43,8 @@ namespace SgEngine.GUI
             {
                 canvas.Initialize();
             }
+            DebugWindowCanvas.Initialize();
+            DebugWindowCanvas.AddPanel(new SgDebugPanel());
         }
 
         public override void LoadContent()
@@ -47,6 +53,7 @@ namespace SgEngine.GUI
             {
                 canvas.LoadContent();
             }
+            DebugWindowCanvas.LoadContent();
         }
         
         public override void Update(GameTime gameTime)
@@ -55,6 +62,7 @@ namespace SgEngine.GUI
             {
                 canvas.Update(gameTime);
             }
+            DebugWindowCanvas.Update(gameTime);
         }
 
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
@@ -63,6 +71,7 @@ namespace SgEngine.GUI
             {
                 canvas.Draw(gameTime,spriteBatch);
             }
+            DebugWindowCanvas.Draw(gameTime,spriteBatch);
         }
     }
     

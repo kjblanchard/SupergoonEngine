@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using SgEngine.Core;
 using SgEngine.Core.Camera;
@@ -37,6 +38,9 @@ namespace SgEngine.EKS
                 _instance._resolutionHelper.ApplyResolutionSettings(_instance._fullScreen);
             }
         }
+
+        public static GameWindow GameWindow => _instance.Window;
+        public static ContentManager FullContentManager => _instance.Content;
 
         protected bool _fullScreen;
         protected GraphicsDeviceManager _graphicsDeviceManager;
