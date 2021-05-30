@@ -7,10 +7,10 @@
 
 using Microsoft.Xna.Framework;
 
-namespace SgEngine.Interfaces
+namespace SgEngine.Interfaces.EKS
 {
     public interface IUpdate
     {
-        public virtual void Update(GameTime gameTime){}
+        public void Update(GameTime gameTime){}
     }
 }

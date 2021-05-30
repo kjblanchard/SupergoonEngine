@@ -6,14 +6,17 @@
 ////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using IUpdate = SgEngine.Interfaces.EKS.IUpdate;
 
 namespace SgEngine.Core.Input
 {
     /// <summary>
     /// This is the Controller that all players should use.  It should correlate to a keyboard/joystick mapping
     /// </summary>
-    public class PlayerController : Controller
+    public class PlayerController : Controller, IUpdate
     {
         #region Class Vars
 
@@ -22,11 +25,13 @@ namespace SgEngine.Core.Input
         /// </summary>
         public int PlayerNum { get; }
 
-        public KeyMapping<Keys> KeyboardMapping {
+        public KeyMapping<Keys> KeyboardMapping
+        {
             get => _keyMapping;
             set => _keyMapping = value;
         }
-        public KeyMapping<Buttons> JoystickMapping {
+        public KeyMapping<Buttons> JoystickMapping
+        {
             get => _buttonMapping;
             set => _buttonMapping = value;
         }
@@ -38,7 +43,9 @@ namespace SgEngine.Core.Input
         /// The joystick mapping set to this controller, it is set to the default if it isn't changed
         /// </summary>
         private KeyMapping<Buttons> _buttonMapping = _defaultJoystickMap;
-        
+
+        private List<ControllerButtonAndAction> _buttonAndActions = new List<ControllerButtonAndAction>();
+
 
         #endregion
 
@@ -107,6 +114,7 @@ namespace SgEngine.Core.Input
                                        _input.KeyDown(PlayerNum, _buttonMapping.XButton),
                 ControllerButtons.Select => _input.KeyDown(_keyMapping.SelectButton) ||
                                             _input.KeyDown(PlayerNum, _buttonMapping.SelectButton),
+                ControllerButtons.Start => false,
                 _ => throw new ArgumentOutOfRangeException(nameof(button), button, null)
             };
         }
@@ -130,9 +138,69 @@ namespace SgEngine.Core.Input
                 ControllerButtons.A => _input.KeyReleased(_keyMapping.AButton) || _input.KeyReleased(PlayerNum, _buttonMapping.AButton),
                 ControllerButtons.X => _input.KeyReleased(_keyMapping.XButton) || _input.KeyReleased(PlayerNum, _buttonMapping.XButton),
                 ControllerButtons.Select => _input.KeyReleased(_keyMapping.SelectButton) || _input.KeyReleased(PlayerNum, _buttonMapping.SelectButton),
+                ControllerButtons.Start => false,
 
                 _ => throw new ArgumentOutOfRangeException(nameof(button), button, null)
             };
         }
+
+        public void Update(GameTime gameTime)
+        {
+            CheckAllButtonActions();
+            SendButtonEvents();
+        }
+
+
+        private void CheckAllButtonActions()
+        {
+            _buttonAndActions.Clear();
+            foreach (var _controllerButton in (ControllerButtons[])Enum.GetValues(typeof(ControllerButtons)))
+            {
+                CheckIfButtonPressed(_controllerButton);
+                CheckIfButtonHeld(_controllerButton);
+                CheckIfButtonReleased(_controllerButton);
+            }
+
+        }
+
+        private void CheckIfButtonPressed(ControllerButtons buttonToCheck)
+        {
+            if (IsButtonPressed(buttonToCheck))
+                _buttonAndActions.Add(new ControllerButtonAndAction { ButtonAction = ButtonActions.Pressed, ButtonPressed = buttonToCheck });
+        }
+        private void CheckIfButtonHeld(ControllerButtons buttonToCheck)
+        {
+            if (IsButtonHeld(buttonToCheck))
+                _buttonAndActions.Add(new ControllerButtonAndAction { ButtonAction = ButtonActions.Held, ButtonPressed = buttonToCheck });
+
+        }
+        private void CheckIfButtonReleased(ControllerButtons buttonToCheck)
+        {
+            if (IsButtonReleased(buttonToCheck))
+                _buttonAndActions.Add(new ControllerButtonAndAction { ButtonAction = ButtonActions.Released, ButtonPressed = buttonToCheck });
+        }
+
+        public delegate void ButtonPressedEventHandler(object sender, List<ControllerButtonAndAction> actionsThisFrame);
+
+        public event ButtonPressedEventHandler OnButtonsPressed;
+
+        private void SendButtonEvents()
+        {
+            OnButtonsPressed?.Invoke(this, _buttonAndActions);
+        }
+    }
+
+    public enum ButtonActions
+    {
+        None = 0,
+        Pressed = 1,
+        Held = 2,
+        Released = 3
+    }
+
+    public struct ControllerButtonAndAction
+    {
+        public ControllerButtons ButtonPressed;
+        public ButtonActions ButtonAction;
     }
 }

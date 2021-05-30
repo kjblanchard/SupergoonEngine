@@ -33,13 +33,17 @@ namespace SgEngine.Core.Input
         /// <summary>
         /// Updates the controller and joystick states
         /// </summary>
-        public void Update()
+        public void Update(GameTime gameTime)
         {
             _previouMouseState = _currentMouseState;
             _previousKeyboardState = _currentKeyboardState;
             _currentKeyboardState = Keyboard.GetState();
             _currentMouseState = Mouse.GetState();
             _currentGamePadStates.CopyTo(_previousGamePadStates, 0);
+            foreach (var _playerController in PlayerControllers)
+            {
+                _playerController.Update(gameTime);
+            }
             for (int i = 0; i < _currentGamePadStates.Length; i++)
             {
                 _currentGamePadStates[i] = GamePad.GetState((PlayerIndex)(i));

@@ -9,13 +9,14 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
 using SgEngine.EKS;
+using IUpdate = SgEngine.Interfaces.EKS.IUpdate;
 
 namespace SgEngine.Core.Input
 {
     /// <summary>
     /// Base class used for AI controllers and for player controllers
     /// </summary>
-    public abstract class Controller
+    public abstract class Controller 
     {
         public static Spritesheet MouseSpriteSheet;
         public static bool MouseDebugMode = false;
@@ -23,6 +24,8 @@ namespace SgEngine.Core.Input
         {
             _input ??= GameWorld.Input;
         }
+
+
         /// <summary>
         /// Default keyboard mapping for player 1
         /// </summary>

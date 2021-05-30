@@ -120,7 +120,7 @@ namespace SgEngine.EKS
         {
             base.Update(gameTime);
             SoundSystem.Update();
-            Input.Update();
+            Input.Update(gameTime);
             MainCamera.Update();
         }
     }

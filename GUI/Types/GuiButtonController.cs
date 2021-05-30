@@ -13,13 +13,15 @@ using SgEngine.Core.Input;
 using SgEngine.EKS;
 using SgEngine.GUI.Components;
 using SgEngine.Interfaces;
+using SgEngine.Interfaces.EKS;
 using SgEngine.Interfaces.Sound;
 
 namespace SgEngine.GUI.Types
 {
 
-    public abstract class GuiButtonController : GuiComponent, IPlaySfx
+    public abstract class GuiButtonController : GuiComponent, IPlaySfx, IHandlePlayerInput
     {
+        public IHandlePlayerInput AsIhHandlePlayerInput => this;
         protected IPlaySfx AsIPlaySfx => (IPlaySfx)this;
         /// <summary>
         /// The cursor for this button controller, can be assigned in the parent class
@@ -71,7 +73,7 @@ namespace SgEngine.GUI.Types
         private bool _shouldLoopSelection = true;
         public List<GuiButton> ButtonsToManage = new List<GuiButton>();
         public List<int> CurrentHoveredButtons = new List<int>();
-        private PlayerController _playerController = GameWorld.GetPlayerController(0);
+        //private PlayerController _playerController = GameWorld.GetPlayerController(0);
 
         protected GuiButtonController(GuiComponent parent, Vector2 offset = new Vector2(), Point size = new Point()) : base(offset, size, parent)
         {
@@ -83,6 +85,7 @@ namespace SgEngine.GUI.Types
         {
             base.Initialize();
             CursorGuiImageComponent?.Initialize();
+            AsIhHandlePlayerInput.TakeControl(0);
         }
 
         public void AddButton(GuiButton buttonToAdd)
@@ -104,19 +107,21 @@ namespace SgEngine.GUI.Types
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
-            if (_areButtonsActive && _playerController != null)
+            //if (_areButtonsActive && _playerController != null)
+            //    HandleInput();
+            if (_areButtonsActive)
                 HandleInput();
             CursorGuiImageComponent?.Update(gameTime);
         }
 
         public void TakeControl(PlayerController controllerToControl)
         {
-            _playerController = controllerToControl;
+            //_playerController = controllerToControl;
         }
 
         public void RemoveControl()
         {
-            _playerController = null;
+            //_playerController = null;
         }
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
@@ -141,12 +146,22 @@ namespace SgEngine.GUI.Types
 
         protected void HandleKeyboardInput()
         {
-            if (_playerController.IsButtonPressed(ControllerButtons.Down))
-                SelectButton(CurrentSelection + 1);
-            else if (_playerController.IsButtonPressed(ControllerButtons.Up))
-                SelectButton(CurrentSelection - 1);
-            if (_playerController.IsButtonPressed(ControllerButtons.A))
-                Pressbutton(CurrentSelection);
+            foreach (var buttonAndAction in AsIhHandlePlayerInput.ThisFrameControllerButtonAndActions)
+            {
+                if(buttonAndAction.ButtonPressed == ControllerButtons.Down && buttonAndAction.ButtonAction == ButtonActions.Pressed)
+                    SelectButton(CurrentSelection +1);
+                if(buttonAndAction.ButtonPressed == ControllerButtons.Up && buttonAndAction.ButtonAction == ButtonActions.Pressed)
+                    SelectButton(CurrentSelection -1);
+                if(buttonAndAction.ButtonPressed == ControllerButtons.A && buttonAndAction.ButtonAction == ButtonActions.Pressed)
+                    Pressbutton(CurrentSelection);
+                
+            }
+            //if (_playerController.IsButtonPressed(ControllerButtons.Down))
+            //    SelectButton(CurrentSelection + 1);
+            //else if (_playerController.IsButtonPressed(ControllerButtons.Up))
+            //    SelectButton(CurrentSelection - 1);
+            //if (_playerController.IsButtonPressed(ControllerButtons.A))
+            //    Pressbutton(CurrentSelection);
         }
 
         protected void SelectButton(int newSelection, bool selectedByMouse = false)
@@ -243,6 +258,7 @@ namespace SgEngine.GUI.Types
         }
 
 
-
+        List<ControllerButtonAndAction> IHandlePlayerInput.ThisFrameControllerButtonAndActions { get; set; } =
+            new List<ControllerButtonAndAction>();
     }
 }
