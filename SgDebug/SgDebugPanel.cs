@@ -33,7 +33,7 @@ namespace SgEngine.SgDebug
         private const int msForEachBlink = 500;
         private int totalMsWaited;
         private bool shouldShowCursor;
-        private bool _isConsoleWindowOpen = true;
+        private bool _isConsoleWindowOpen = false;
 
 
 
