@@ -6,11 +6,9 @@
 ////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
-using SgEngine.Interfaces;
 using SgEngine.Interfaces.EKS;
 
 namespace SgEngine.GUI.Components
@@ -29,24 +27,21 @@ namespace SgEngine.GUI.Components
                 return _parent.GlobalPosition + _offset;
             }
         }
-
         /// <summary>
         /// Used when you need to position something on a specific spot on the screen and not use parents and local position to draw
         /// </summary>
         public bool LocationOverride = false;
-
+        /// <summary>
+        /// Gets the "local position" which is just this components offset, not it's parents
+        /// </summary>
         public Vector2 LocalPosition
         {
-            get
-            {
-                return _offset;
-            }
-            set
-            {
-                _offset = value;
-            }
+            get => _offset;
+            set => _offset = value;
         }
-
+        /// <summary>
+        /// Modifies the isSelected field, and calls the onselected or ondeselected m ethod
+        /// </summary>
         public bool IsSelected
         {
             get => _isSelected;
@@ -63,8 +58,6 @@ namespace SgEngine.GUI.Components
                 }
             }
         }
-
-
         /// <summary>
         /// Gets the bounding box with the origin removed, this is useful for interacting with the mouse
         /// </summary>
@@ -78,7 +71,6 @@ namespace SgEngine.GUI.Components
 
             }
         }
-
         /// <summary>
         /// Gets the origin of all parents, useful for nested components to get the origin
         /// </summary>
@@ -98,9 +90,7 @@ namespace SgEngine.GUI.Components
         {
             get
             {
-                Vector2 newVector2 = new Vector2();
-                newVector2.X = _size.X / 2;
-                newVector2.Y = _size.Y / 2;
+                var newVector2 = new Vector2 {X = _size.X / 2, Y = _size.Y / 2};
                 return newVector2;
             }
         }
@@ -113,31 +103,31 @@ namespace SgEngine.GUI.Components
             get => _debugMode;
             set => _debugMode = value;
         }
-
         /// <summary>
         /// Returns a bounding box for this component
         /// </summary>
         public Rectangle BoundingBox => new Rectangle(GlobalPosition.ToPoint(), _size);
-
         /// <summary>
         /// Gets the current objects object number
         /// </summary>
         public int UiObjectNumber => _objectNumber;
 
+        /// <summary>
+        /// The components name, not really used yet
+        /// </summary>
         public string ComponentName
         {
             get => _componentName;
             set => _componentName = value;
         }
-
         /// <summary>
         /// Size of the current UI object
         /// </summary>
         public Point Size => _size;
         protected Point _size;
         protected int _objectNumber;
-        protected Vector2 _offset = Vector2.Zero;
-        protected bool IsActive;
+        protected Vector2 _offset;
+        protected bool _isActive;
         protected GuiComponent _parent;
         protected Enum _componentType;
         protected bool _debugMode;
@@ -158,11 +148,12 @@ namespace SgEngine.GUI.Components
             _size = size;
             Gui.AllGuiComponents.Add(this);
         }
-
+        /// <summary>
+        /// Assigns this object with a number and then increments it
+        /// </summary>
         private void AssignObjectNumber()
         {
-            _objectNumber = _nextObjectNumber;
-            _nextObjectNumber++;
+            _objectNumber = _nextObjectNumber++;
         }
 
         public virtual void Initialize()
@@ -173,10 +164,9 @@ namespace SgEngine.GUI.Components
         {
         }
 
-        public void BeginRun()
+        public virtual void BeginRun()
         {
-            IsActive = true;
-            OnActivate();
+            Activate();
         }
 
         public virtual void Update(GameTime gameTime)
@@ -192,13 +182,11 @@ namespace SgEngine.GUI.Components
         }
         public void Activate()
         {
-            IsActive = true;
             OnActivate();
         }
 
         public void Deactivate()
         {
-            IsActive = false;
             OnDeactivate();
         }
 
@@ -222,7 +210,7 @@ namespace SgEngine.GUI.Components
         /// </summary>
         protected virtual void OnActivate()
         {
-            IsActive = true;
+            _isActive = true;
         }
 
         /// <summary>
@@ -230,8 +218,15 @@ namespace SgEngine.GUI.Components
         /// </summary>
         protected virtual void OnDeactivate()
         {
-            IsActive = false;
+            _isActive = false;
         }
+        /// <summary>
+        /// Draws the debug box around this object.  You can offset it (for graphics) so that it is drawn in the right spot
+        /// </summary>
+        /// <param name="spriteBatch">The spritebatch to write to</param>
+        /// <param name="positionToDraw">The position on the screen to draw</param>
+        /// <param name="originToOffset">The amount to subtract for offsetting</param>
+        /// <param name="colorToDraw">The color to draw the box</param>
         protected void DrawDebugBox(SpriteBatch spriteBatch, RectangleF positionToDraw, Vector2 originToOffset, Color colorToDraw)
         {
             if (!DebugMode)

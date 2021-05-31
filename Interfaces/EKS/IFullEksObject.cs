@@ -3,6 +3,9 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace SgEngine.Interfaces.EKS
 {
+    /// <summary>
+    /// Brings in a few different interfaces, as well as a bunch of its own. Update, Draw, Handleinput, init, beginrun, activate and deactivate
+    /// </summary>
     public interface IFullEksObject : IUpdate, IDraw, IHandleInput
     {
         public virtual void Initialize() { }
