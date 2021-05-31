@@ -8,8 +8,8 @@
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using SgEngine.EKS;
 using SgEngine.GUI.Components;
+using SgEngine.GUI.Types;
 using SgEngine.SgDebug;
 
 namespace SgEngine.GUI
@@ -28,11 +28,15 @@ namespace SgEngine.GUI
         public Canvas DebugWindowCanvas = new Canvas(new Rectangle());
         public void AddPanel(Canvas panelToAdd)
         {
+            panelToAdd.Initialize();
+            panelToAdd.LoadContent();
+            panelToAdd.BeginRun();
             AllCanvasList.Add(panelToAdd);
         }
 
         public void RemovePanel(Canvas panelToRemove)
         {
+            panelToRemove.Deactivate();
             AllCanvasList.Remove(panelToRemove);
         }
 

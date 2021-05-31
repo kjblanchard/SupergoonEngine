@@ -9,18 +9,15 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using SgEngine.GUI.Components;
-using SgEngine.GUI.Types;
 
-namespace SgEngine.GUI
+namespace SgEngine.GUI.Types
 {
     public class Canvas : GuiComponent
     {
         private List<Panel> AllPanels = new List<Panel>();
-        private Rectangle _locationAndSize;
 
         public Canvas(Rectangle locationAndSize) : base(locationAndSize.Location.ToVector2())
         {
-            _locationAndSize = locationAndSize;
         }
 
         public override void Initialize()
