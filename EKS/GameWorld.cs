@@ -124,5 +124,10 @@ namespace SgEngine.EKS
             Input.Update(gameTime);
             MainCamera.Update();
         }
+
+        public static void ExitGame()
+        {
+            _instance.Exit();
+        }
     }
 }

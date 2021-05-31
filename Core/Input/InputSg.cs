@@ -5,11 +5,8 @@
 //
 ////////////////////////////////////////////////////////////
 
-using System.Collections.Generic;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using SgEngine.EKS;
 
 namespace SgEngine.Core.Input
 {
@@ -18,6 +15,8 @@ namespace SgEngine.Core.Input
     /// </summary>
     public class InputSg
     {
+        public static Spritesheet MouseSpriteSheet;
+        public static bool MouseDebugMode = false;
         private KeyboardState _currentKeyboardState, _previousKeyboardState;
         private MouseState _currentMouseState, _previouMouseState;
         private readonly GamePadState[] _previousGamePadStates = new GamePadState[4];
@@ -27,7 +26,6 @@ namespace SgEngine.Core.Input
         public void Initialize()
         {
             CreatePlayerControllers();
-
         }
 
         /// <summary>

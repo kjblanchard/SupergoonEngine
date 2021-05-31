@@ -58,16 +58,22 @@ namespace SgEngine.SgDebug
         {
             if(String.IsNullOrEmpty(_displayLine))
                 return;
-            if (_displayLine != "debug enable")
+            if (_displayLine == "debug enable")
             {
                 AddToDisplayHistory(_displayLine);
-                AddToDisplayHistory("*rInvalid Command");
+                AddToDisplayHistory("*gCommand Executed");
                 _displayLine = "";
+            }
+            else if(_displayLine == "exit")
+
+            {
+                GameWorld.ExitGame();
+
             }
             else
             {
                 AddToDisplayHistory(_displayLine);
-                AddToDisplayHistory("*gCommand Executed");
+                AddToDisplayHistory("*rInvalid Command");
                 _displayLine = "";
             }
         }

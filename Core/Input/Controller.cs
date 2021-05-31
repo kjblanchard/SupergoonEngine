@@ -9,7 +9,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
 using SgEngine.EKS;
-using IUpdate = SgEngine.Interfaces.EKS.IUpdate;
 
 namespace SgEngine.Core.Input
 {
@@ -18,8 +17,6 @@ namespace SgEngine.Core.Input
     /// </summary>
     public abstract class Controller 
     {
-        public static Spritesheet MouseSpriteSheet;
-        public static bool MouseDebugMode = false;
         protected Controller()
         {
             _input ??= GameWorld.Input;
