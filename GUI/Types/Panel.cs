@@ -30,9 +30,31 @@ namespace SgEngine.GUI.Types
                 _debugMode = value;
             }
         }
-        
+
+        /// <summary>
+        /// Modifies the debugMode for the entire panel
+        /// </summary>
+        public bool PanelDebug
+        {
+            set
+            {
+                foreach (var _allComponent in _allComponents)
+                {
+                    _allComponent.DebugMode = value;
+                }
+
+                DebugMode = value;
+            }
+        }
+
         private readonly List<GuiComponent> _allComponents = new List<GuiComponent>();
         private readonly GuiImageComponent _guiImageComponent;
+        /// <summary>
+        /// Used when created in code
+        /// </summary>
+        /// <param name="location">The place to draw it</param>
+        /// <param name="size">The size of this panel</param>
+        /// <param name="spriteSheetToLoad">Will create a gui Image component on it if needed</param>
         public Panel(Vector2 location = new Vector2(), Point size = new Point(), Enum spriteSheetToLoad = null) : base(location, size)
         {
             if (spriteSheetToLoad != null)
@@ -48,7 +70,7 @@ namespace SgEngine.GUI.Types
         /// <param name="spritesheetToLoad"></param>
         public Panel(Vector2 location, Point size, int spriteSheetToLoad) : base(location, size)
         {
-                _guiImageComponent = new GuiImageComponent(this, spriteSheetToLoad, size);
+            _guiImageComponent = new GuiImageComponent(this, spriteSheetToLoad, size);
         }
 
         public override void Initialize()
@@ -57,35 +79,21 @@ namespace SgEngine.GUI.Types
             _guiImageComponent?.Initialize();
         }
 
-        public void AddUiObject(GuiComponent guiObject)
+        public void AddGuiComponent(GuiComponent guiObject)
         {
             guiObject.Initialize();
             guiObject.LoadContent();
+            guiObject.BeginRun();
             _allComponents.Add(guiObject);
         }
-        public void AddUiObject(params GuiComponent[] guiObjects)
+        public void AddGuiComponent(params GuiComponent[] guiObjects)
         {
             foreach (var guiComponent in guiObjects)
             {
-                guiComponent.Initialize();
-                guiComponent.LoadContent();
-                _allComponents.Add(guiComponent);
+                AddGuiComponent(guiComponent);
             }
         }
 
-        /// <summary>
-        /// Modifies the debugMode for the entire pane  
-        /// </summary>
-        /// <param name="debugValue">The value to set the debug to for every item in the panel</param>
-        public void ModifyDebugForPanel(bool debugValue)
-        {
-            foreach (var _allComponent in _allComponents)
-            {
-                _allComponent.DebugMode = debugValue;
-                DebugMode = debugValue;
-            }
-
-        }
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
@@ -105,6 +113,5 @@ namespace SgEngine.GUI.Types
                 _allComponent.Draw(gameTime, spriteBatch);
             }
         }
-
     }
 }

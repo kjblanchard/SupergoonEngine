@@ -55,7 +55,7 @@ namespace SgEngine.SgJson.Parsing
                     foreach (var textComponentJson in panelJson.TextComponents)
                     {
                         var guiTextComponent = CreateTextComponent(textComponentJson, panel);
-                        panel.AddUiObject(guiTextComponent);
+                        panel.AddGuiComponent(guiTextComponent);
                     }
                 }
 
@@ -80,7 +80,7 @@ namespace SgEngine.SgJson.Parsing
                             guiButtonController.AddButton(guiButton);
                             guiButtonController.ButtonsActive = true;
                         }
-                        panel.AddUiObject(guiButtonController);
+                        panel.AddGuiComponent(guiButtonController);
                     }
                 }
                 panelList.Add(panel);
@@ -91,7 +91,7 @@ namespace SgEngine.SgJson.Parsing
         private void AddButtonToPanel(GuiButton guiButton, Panel panel)
         {
             if (guiButton != null)
-                panel.AddUiObject(guiButton);
+                panel.AddGuiComponent(guiButton);
             else
             {
                 SendDebugMessage("The button was null");
