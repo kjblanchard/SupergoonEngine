@@ -61,9 +61,9 @@ namespace SgEngine.GUI.Types
         /// <summary>
         /// Updates the Hovered Status based on the mousebounds of the controller
         /// </summary>
-        public override void HandleInput()
+        public override void HandleMouse()
         {
-            base.HandleInput();
+            base.HandleMouse();
             UpdateHoveredStatus(Controller.MouseBounds());
         }
         private void UpdateHoveredStatus(RectangleF thingToCheckAgainst)

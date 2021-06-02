@@ -173,7 +173,7 @@ namespace SgEngine.GUI.Components
         {
         }
 
-        public virtual void HandleInput()
+        public virtual void HandleMouse()
         {
         }
 

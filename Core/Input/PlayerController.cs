@@ -45,7 +45,7 @@ namespace SgEngine.Core.Input
         /// </summary>
         private KeyMapping<Buttons> _buttonMapping = _defaultJoystickMap;
 
-        private List<ControllerButtonAndAction> _buttonAndActions = new List<ControllerButtonAndAction>();
+        public int NumberOfButtons = Enum.GetValues(typeof(ControllerButtons)).Length;
 
 
         #endregion
@@ -148,19 +148,17 @@ namespace SgEngine.Core.Input
         public void Update(GameTime gameTime)
         {
             CheckAllButtonActions();
-            SendButtonEvents();
         }
 
 
         private void CheckAllButtonActions()
         {
-            _buttonAndActions.Clear();
-            if(GameWorld.IsDebugConsoleOpen)return;
-            foreach (var _controllerButton in (ControllerButtons[])Enum.GetValues(typeof(ControllerButtons)))
+            if (GameWorld.IsDebugConsoleOpen) return;
+            for (int i = 0; i < NumberOfButtons; i++)
             {
-                CheckIfButtonPressed(_controllerButton);
-                CheckIfButtonHeld(_controllerButton);
-                CheckIfButtonReleased(_controllerButton);
+                CheckIfButtonPressed((ControllerButtons)i);
+                CheckIfButtonHeld((ControllerButtons)i);
+                CheckIfButtonReleased((ControllerButtons)i);
             }
 
         }
@@ -168,28 +166,23 @@ namespace SgEngine.Core.Input
         private void CheckIfButtonPressed(ControllerButtons buttonToCheck)
         {
             if (IsButtonPressed(buttonToCheck))
-                _buttonAndActions.Add(new ControllerButtonAndAction { ButtonAction = ButtonActions.Pressed, ButtonPressed = buttonToCheck });
+                OnButtonPressed(buttonToCheck);
+
+
         }
         private void CheckIfButtonHeld(ControllerButtons buttonToCheck)
         {
             if (IsButtonHeld(buttonToCheck))
-                _buttonAndActions.Add(new ControllerButtonAndAction { ButtonAction = ButtonActions.Held, ButtonPressed = buttonToCheck });
+                OnButtonHeld(buttonToCheck);
 
         }
         private void CheckIfButtonReleased(ControllerButtons buttonToCheck)
         {
             if (IsButtonReleased(buttonToCheck))
-                _buttonAndActions.Add(new ControllerButtonAndAction { ButtonAction = ButtonActions.Released, ButtonPressed = buttonToCheck });
+                OnButtonReleased(buttonToCheck);
         }
 
-        public delegate void ButtonPressedEventHandler(object sender, List<ControllerButtonAndAction> actionsThisFrame);
 
-        public event ButtonPressedEventHandler OnButtonsPressed;
-
-        private void SendButtonEvents()
-        {
-            OnButtonsPressed?.Invoke(this, _buttonAndActions);
-        }
     }
 
     public enum ButtonActions
@@ -200,9 +193,4 @@ namespace SgEngine.Core.Input
         Released = 3
     }
 
-    public struct ControllerButtonAndAction
-    {
-        public ControllerButtons ButtonPressed;
-        public ButtonActions ButtonAction;
-    }
 }

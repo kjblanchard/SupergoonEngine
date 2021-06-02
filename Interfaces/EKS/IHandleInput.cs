@@ -9,6 +9,6 @@ namespace SgEngine.Interfaces.EKS
 {
     public interface IHandleInput
     {
-        public virtual void HandleInput (){}
+        public virtual void HandleMouse (){}
     }
 }

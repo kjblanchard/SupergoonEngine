@@ -7,6 +7,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using SgEngine.Core.Input;
@@ -14,14 +15,15 @@ using SgEngine.EKS;
 using SgEngine.GUI.Components;
 using SgEngine.Interfaces;
 using SgEngine.Interfaces.EKS;
+using SgEngine.Interfaces.Input;
 using SgEngine.Interfaces.Sound;
 
 namespace SgEngine.GUI.Types
 {
 
-    public abstract class GuiButtonController : GuiComponent, IPlaySfx, IHandlePlayerInput
+    public abstract class GuiButtonController : GuiComponent, IPlaySfx, ISubscribeToButton.IHandleAButtonPressed, ISubscribeToButton.IHandleUpButtonPressed, ISubscribeToButton.IHandleDownButtonPressed
     {
-        public IHandlePlayerInput AsIhHandlePlayerInput => this;
+        public ISubscribeToButton AsIhHandlePlayerInput => this;
         protected IPlaySfx AsIPlaySfx => (IPlaySfx)this;
         /// <summary>
         /// The cursor for this button controller, can be assigned in the parent class
@@ -85,7 +87,7 @@ namespace SgEngine.GUI.Types
         {
             base.Initialize();
             CursorGuiImageComponent?.Initialize();
-            AsIhHandlePlayerInput.TakeControl(0);
+            SubScribeToButtons();
         }
 
         public void AddButton(GuiButton buttonToAdd)
@@ -107,21 +109,17 @@ namespace SgEngine.GUI.Types
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
-            //if (_areButtonsActive && _playerController != null)
-            //    HandleInput();
             if (_areButtonsActive)
-                HandleInput();
+                HandleMouse();
             CursorGuiImageComponent?.Update(gameTime);
         }
 
         public void TakeControl(PlayerController controllerToControl)
         {
-            //_playerController = controllerToControl;
         }
 
         public void RemoveControl()
         {
-            //_playerController = null;
         }
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
@@ -133,36 +131,16 @@ namespace SgEngine.GUI.Types
             CursorGuiImageComponent?.Draw(gameTime, spriteBatch);
         }
 
-        public override void HandleInput()
+        public override void HandleMouse()
         {
-            base.HandleInput();
+            base.HandleMouse();
             foreach (var _guiButton in ButtonsToManage)
             {
-                _guiButton.HandleInput();
+                _guiButton.HandleMouse();
             }
-            HandleKeyboardInput();
             HandleMouseInput();
         }
 
-        protected void HandleKeyboardInput()
-        {
-            foreach (var buttonAndAction in AsIhHandlePlayerInput.ThisFrameControllerButtonAndActions)
-            {
-                if(buttonAndAction.ButtonPressed == ControllerButtons.Down && buttonAndAction.ButtonAction == ButtonActions.Pressed)
-                    SelectButton(CurrentSelection +1);
-                if(buttonAndAction.ButtonPressed == ControllerButtons.Up && buttonAndAction.ButtonAction == ButtonActions.Pressed)
-                    SelectButton(CurrentSelection -1);
-                if(buttonAndAction.ButtonPressed == ControllerButtons.A && buttonAndAction.ButtonAction == ButtonActions.Pressed)
-                    Pressbutton(CurrentSelection);
-                
-            }
-            //if (_playerController.IsButtonPressed(ControllerButtons.Down))
-            //    SelectButton(CurrentSelection + 1);
-            //else if (_playerController.IsButtonPressed(ControllerButtons.Up))
-            //    SelectButton(CurrentSelection - 1);
-            //if (_playerController.IsButtonPressed(ControllerButtons.A))
-            //    Pressbutton(CurrentSelection);
-        }
 
         protected void SelectButton(int newSelection, bool selectedByMouse = false)
         {
@@ -175,7 +153,7 @@ namespace SgEngine.GUI.Types
                 AsIPlaySfx.PlaySfx(_moveSoundEffect);
         }
 
-        protected void Pressbutton(int buttonToPress, bool pressedByMouse = false)
+        protected void PressButton(int buttonToPress, bool pressedByMouse = false)
         {
             ButtonsToManage[CurrentSelection].OnClick();
             if (_selectSoundEffect != null)
@@ -233,7 +211,7 @@ namespace SgEngine.GUI.Types
         private bool ClickIfButtonIsHovered()
         {
             if (!CurrentHoveredButtons.Contains(CurrentSelection)) return false;
-            Pressbutton(CurrentSelection,true);
+            PressButton(CurrentSelection, true);
             return true;
 
         }
@@ -243,8 +221,8 @@ namespace SgEngine.GUI.Types
         private void SelectAndClickIfPossible()
         {
             if (CurrentHoveredButtons.Count != 1) return;
-            SelectButton(CurrentHoveredButtons[0],true);
-            Pressbutton(CurrentSelection, true);
+            SelectButton(CurrentHoveredButtons[0], true);
+            PressButton(CurrentSelection, true);
         }
         /// <summary>
         /// Turns on debug mode for all of the buttons
@@ -258,7 +236,27 @@ namespace SgEngine.GUI.Types
         }
 
 
-        List<ControllerButtonAndAction> IHandlePlayerInput.ThisFrameControllerButtonAndActions { get; set; } =
-            new List<ControllerButtonAndAction>();
+        public void AButtonEventHandler(object sender, ControllerButtons buttonPressed, ButtonActions actionPerformed)
+        {
+            PressButton(CurrentSelection);
+        }
+
+        public void UpButtonEventHandler(object sender, ControllerButtons buttonPressed, ButtonActions actionPerformed)
+        {
+            SelectButton(CurrentSelection - 1);
+        }
+
+        public void DownButtonEventHandler(object sender, ControllerButtons buttonPressed, ButtonActions actionPerformed)
+        {
+            SelectButton(CurrentSelection + 1);
+        }
+
+        public void SubScribeToButtons()
+        {
+            AsIhHandlePlayerInput.SubscribeToButtonPressed(0, ControllerButtons.A, AButtonEventHandler);
+            AsIhHandlePlayerInput.SubscribeToButtonPressed(0, ControllerButtons.Up, UpButtonEventHandler);
+            AsIhHandlePlayerInput.SubscribeToButtonPressed(0, ControllerButtons.Down, DownButtonEventHandler);
+
+        }
     }
 }
