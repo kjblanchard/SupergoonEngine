@@ -7,23 +7,17 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using SgEngine.Core.Input;
-using SgEngine.EKS;
 using SgEngine.GUI.Components;
-using SgEngine.Interfaces;
-using SgEngine.Interfaces.EKS;
-using SgEngine.Interfaces.Input;
 using SgEngine.Interfaces.Sound;
 
 namespace SgEngine.GUI.Types
 {
 
-    public abstract class GuiButtonController : GuiComponent, IPlaySfx, ISubscribeToButton.IHandleAButtonPressed, ISubscribeToButton.IHandleUpButtonPressed, ISubscribeToButton.IHandleDownButtonPressed
+    public abstract class GuiButtonController : GuiComponent, IPlaySfx
     {
-        public ISubscribeToButton AsIhHandlePlayerInput => this;
         protected IPlaySfx AsIPlaySfx => (IPlaySfx)this;
         /// <summary>
         /// The cursor for this button controller, can be assigned in the parent class
@@ -87,7 +81,6 @@ namespace SgEngine.GUI.Types
         {
             base.Initialize();
             CursorGuiImageComponent?.Initialize();
-            SubScribeToButtons();
         }
 
         public void AddButton(GuiButton buttonToAdd)
@@ -159,7 +152,9 @@ namespace SgEngine.GUI.Types
             if (_selectSoundEffect != null)
                 AsIPlaySfx.PlaySfx(_selectSoundEffect);
         }
-
+        /// <summary>
+        /// Handles all of the mouse functions that happens this frame on the button controller
+        /// </summary>
         protected void HandleMouseInput()
         {
             CurrentHoveredButtons.Clear();
@@ -168,6 +163,9 @@ namespace SgEngine.GUI.Types
             UpdateSelectionOnMouseMovement();
             HandleLeftClick();
         }
+        /// <summary>
+        /// If you just hover over a button, select that button
+        /// </summary>
         private void SelectNewlyHoveredButton()
         {
             for (int i = 0; i < ButtonsToManage.Count; i++)
@@ -181,6 +179,9 @@ namespace SgEngine.GUI.Types
                 }
             }
         }
+        /// <summary>
+        /// Handles if you are hovering over two options, and you move off of the current selection with your mouse to jump to the other hovered item
+        /// </summary>
         private void MouseMovingOffCurrentSelection()
         {
             if (ButtonsToManage[CurrentSelection].WasJustLeftHovered)
@@ -189,7 +190,9 @@ namespace SgEngine.GUI.Types
                     SelectButton(CurrentHoveredButtons[0], true);
             }
         }
-
+        /// <summary>
+        /// If there was mouse movement, select the button you are hovered over.  Handles if there was keyboard/joystick movement and then mouse movement after
+        /// </summary>
         private void UpdateSelectionOnMouseMovement()
         {
             if (Controller.WasThereMouseMovement())
@@ -198,6 +201,9 @@ namespace SgEngine.GUI.Types
                     SelectButton(CurrentHoveredButtons[0], true);
             }
         }
+        /// <summary>
+        /// Handles the left mouse button clicks
+        /// </summary>
         private void HandleLeftClick()
         {
             if (!Controller.LeftMouseButtonClicked()) return;
@@ -236,27 +242,5 @@ namespace SgEngine.GUI.Types
         }
 
 
-        public void AButtonEventHandler(object sender, ControllerButtons buttonPressed, ButtonActions actionPerformed)
-        {
-            PressButton(CurrentSelection);
-        }
-
-        public void UpButtonEventHandler(object sender, ControllerButtons buttonPressed, ButtonActions actionPerformed)
-        {
-            SelectButton(CurrentSelection - 1);
-        }
-
-        public void DownButtonEventHandler(object sender, ControllerButtons buttonPressed, ButtonActions actionPerformed)
-        {
-            SelectButton(CurrentSelection + 1);
-        }
-
-        public void SubScribeToButtons()
-        {
-            AsIhHandlePlayerInput.SubscribeToButtonPressed(0, ControllerButtons.A, AButtonEventHandler);
-            AsIhHandlePlayerInput.SubscribeToButtonPressed(0, ControllerButtons.Up, UpButtonEventHandler);
-            AsIhHandlePlayerInput.SubscribeToButtonPressed(0, ControllerButtons.Down, DownButtonEventHandler);
-
-        }
     }
 }
