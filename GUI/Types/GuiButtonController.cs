@@ -11,16 +11,14 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using SgEngine.Core.Input;
 using SgEngine.GUI.Components;
-using SgEngine.Interfaces.Sound;
 
 namespace SgEngine.GUI.Types
 {
 
-    public abstract class GuiButtonController : GuiComponent, IPlaySfx
+    public abstract class GuiButtonController : GuiComponent
     {
-        protected IPlaySfx AsIPlaySfx => (IPlaySfx)this;
         /// <summary>
-        /// The cursor for this button controller, can be assigned in the parent class
+        /// The cursor for this button controller, can be assigned in the parent class.  Left this here so that when buttons become active it shows the cursor
         /// </summary>
         public GuiImageComponent CursorGuiImageComponent;
         /// <summary>
@@ -39,6 +37,9 @@ namespace SgEngine.GUI.Types
             }
         }
         private bool _areButtonsActive;
+        /// <summary>
+        /// Returns the current selection, also will loop to the other side of the buttons if should loop selection is true
+        /// </summary>
         public int CurrentSelection
         {
             get => _currentSelectedButton;
@@ -60,16 +61,10 @@ namespace SgEngine.GUI.Types
                 }
             }
         }
-
-        protected Enum _moveSoundEffect;
-        protected Enum _selectSoundEffect;
-        protected Enum _cancelSoundEffect;
-
         private int _currentSelectedButton;
-        private bool _shouldLoopSelection = true;
         public List<GuiButton> ButtonsToManage = new List<GuiButton>();
         public List<int> CurrentHoveredButtons = new List<int>();
-        //private PlayerController _playerController = GameWorld.GetPlayerController(0);
+        private bool _shouldLoopSelection = true;
 
         protected GuiButtonController(GuiComponent parent, Vector2 offset = new Vector2(), Point size = new Point()) : base(offset, size, parent)
         {
@@ -77,11 +72,6 @@ namespace SgEngine.GUI.Types
         }
 
 
-        public override void Initialize()
-        {
-            base.Initialize();
-            CursorGuiImageComponent?.Initialize();
-        }
 
         public void AddButton(GuiButton buttonToAdd)
         {
@@ -107,13 +97,6 @@ namespace SgEngine.GUI.Types
             CursorGuiImageComponent?.Update(gameTime);
         }
 
-        public void TakeControl(PlayerController controllerToControl)
-        {
-        }
-
-        public void RemoveControl()
-        {
-        }
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
             base.Draw(gameTime, spriteBatch);
@@ -135,23 +118,6 @@ namespace SgEngine.GUI.Types
         }
 
 
-        protected void SelectButton(int newSelection, bool selectedByMouse = false)
-        {
-            if (CurrentSelection == newSelection)
-                return;
-            ButtonsToManage[CurrentSelection].IsSelected = false;
-            CurrentSelection = newSelection;
-            ButtonsToManage[CurrentSelection].IsSelected = true;
-            if (!selectedByMouse && _moveSoundEffect != null)
-                AsIPlaySfx.PlaySfx(_moveSoundEffect);
-        }
-
-        protected void PressButton(int buttonToPress, bool pressedByMouse = false)
-        {
-            ButtonsToManage[CurrentSelection].OnClick();
-            if (_selectSoundEffect != null)
-                AsIPlaySfx.PlaySfx(_selectSoundEffect);
-        }
         /// <summary>
         /// Handles all of the mouse functions that happens this frame on the button controller
         /// </summary>
@@ -229,6 +195,19 @@ namespace SgEngine.GUI.Types
             if (CurrentHoveredButtons.Count != 1) return;
             SelectButton(CurrentHoveredButtons[0], true);
             PressButton(CurrentSelection, true);
+        }
+        protected virtual void SelectButton(int newSelection, bool selectedByMouse = false)
+        {
+            if (CurrentSelection == newSelection)
+                return;
+            ButtonsToManage[CurrentSelection].IsSelected = false;
+            CurrentSelection = newSelection;
+            ButtonsToManage[CurrentSelection].IsSelected = true;
+        }
+
+        protected virtual void PressButton(int buttonToPress, bool pressedByMouse = false)
+        {
+            ButtonsToManage[CurrentSelection].OnClick();
         }
         /// <summary>
         /// Turns on debug mode for all of the buttons

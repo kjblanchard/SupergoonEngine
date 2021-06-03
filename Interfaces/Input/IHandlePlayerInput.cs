@@ -6,7 +6,6 @@
 ////////////////////////////////////////////////////////////
 
 using System;
-using MonoGame.Extended;
 using SgEngine.Core.Input;
 using SgEngine.EKS;
 
@@ -188,6 +187,9 @@ namespace SgEngine.Interfaces.Input
 
         }
 
+
+
+    }
         public interface IHandleAButtonPressed : ISubscribeToButton
         {
             public void AButtonEventHandler(object sender, ControllerButtons buttonPressed,
@@ -219,7 +221,4 @@ namespace SgEngine.Interfaces.Input
             }
         }
 
-
-
-    }
 }
