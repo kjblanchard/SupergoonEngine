@@ -10,80 +10,94 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using SgEngine.Core;
 using SgEngine.EKS;
 using SgEngine.GUI.Types;
-using SgEngine.Models;
-using SgEngine.SgJson.Parsing;
 
 namespace SgEngine.SgDebug
 {
     public class SgDebugPanel : Panel
     {
-        public Rectangle DrawRectangle => new Rectangle(debugWindowLocation, debugWindowSize);
-        private Point debugWindowSize;
-        private Point debugWindowLocation = new Point(0, 0);
+        public Rectangle DrawRectangle => new Rectangle(debugWindowLocation, _debugWindowSize);
+        public static bool IsConsoleWindowOpen;
+        private Point _debugWindowSize;
+        private readonly Point debugWindowLocation = new Point(0, 0);
         private Texture2D _textureToDraw;
         private SpriteFont _fontToWriteWith;
-        private List<string> _displayHistory = new List<string>();
-        private const string terminalIndicator = "console>";
+        private readonly List<string> _displayHistory = new List<string>();
+        private const string _terminalIndicator = "console>";
         private string _displayLine = String.Empty;
-        private char typedChar;
-        private GameWindow gameWindow;
-        private const int msForEachBlink = 500;
-        private int totalMsWaited;
-        private bool shouldShowCursor;
-        public static bool _isConsoleWindowOpen;
+        private GameWindow _gameWindow;
+        private const int _msForEachBlink = 500;
+        private int _totalMsWaited;
+        private bool _shouldShowCursor;
+
 
 
 
         private void TextInputHandler(object sender, TextInputEventArgs args)
         {
+            HandleTilde(args);
+            if (!IsConsoleWindowOpen) return;
+            HandleLetterKeys(args);
+            HandleSpecialKeys(args);
+        }
+
+        private static void HandleTilde(TextInputEventArgs args)
+        {
             if (args.Key == Keys.OemTilde)
+                IsConsoleWindowOpen = !IsConsoleWindowOpen;
+        }
+
+        private void HandleSpecialKeys(TextInputEventArgs args)
+        {
+            switch (args.Key)
             {
-                _isConsoleWindowOpen = !_isConsoleWindowOpen;
+                case Keys.Back when _displayLine.Length > 0:
+                    _displayLine = _displayLine[..^1];
+                    break;
+                case Keys.Space:
+                    _displayLine += " ";
+                    break;
+                case Keys.Enter:
+                    HandleEnter();
+                    break;
             }
-            if(!_isConsoleWindowOpen) return;
-            if (Char.IsLetter(args.Character))
+        }
+
+        private void HandleLetterKeys(TextInputEventArgs args)
+        {
+            if (char.IsLetter(args.Character))
                 _displayLine += args.Character;
-            if (args.Key == Keys.Back && _displayLine.Length > 0)
-                _displayLine = _displayLine[..^1];
-            if (args.Key == Keys.Space)
-                _displayLine += " ";
-            if (args.Key == Keys.Enter)
-                HandleEnter();
         }
 
         private void HandleEnter()
         {
-            if(String.IsNullOrEmpty(_displayLine))
+            if (string.IsNullOrEmpty(_displayLine))
                 return;
-            if (_displayLine == "debug enable")
+            switch (_displayLine)
             {
-                AddToDisplayHistory(_displayLine);
-                AddToDisplayHistory("*gCommand Executed");
-                _displayLine = "";
-            }
-            else if(_displayLine == "exit")
-
-            {
-                GameWorld.ExitGame();
-
-            }
-            else
-            {
-                AddToDisplayHistory(_displayLine);
-                AddToDisplayHistory("*rInvalid Command");
-                _displayLine = "";
+                case "debug enable":
+                    AddToDisplayHistory(_displayLine);
+                    AddToDisplayHistory("*gCommand Executed");
+                    _displayLine = "";
+                    break;
+                case "exit":
+                    GameWorld.ExitGame();
+                    break;
+                default:
+                    AddToDisplayHistory(_displayLine);
+                    AddToDisplayHistory("*rInvalid Command");
+                    _displayLine = "";
+                    break;
             }
         }
         public override void Initialize()
         {
             base.Initialize();
-            gameWindow = GameWorld.GameWindow;
-            gameWindow.TextInput += TextInputHandler;
-            debugWindowSize = GameWorld.GameWorldSize;
-            debugWindowSize.Y = debugWindowSize.Y / 2;
+            _gameWindow = GameWorld.GameWindow;
+            _gameWindow.TextInput += TextInputHandler;
+            _debugWindowSize = GameWorld.GameWorldSize;
+            _debugWindowSize.Y = _debugWindowSize.Y / 2;
             _textureToDraw = new Texture2D(GameWorld.GetGraphicsDevice, 1, 1);
             _textureToDraw.SetData(new Color[] { Color.Black });
         }
@@ -91,11 +105,11 @@ namespace SgEngine.SgDebug
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
-            totalMsWaited += gameTime.ElapsedGameTime.Milliseconds;
-            if (totalMsWaited >= msForEachBlink)
+            _totalMsWaited += gameTime.ElapsedGameTime.Milliseconds;
+            if (_totalMsWaited >= _msForEachBlink)
             {
-                shouldShowCursor = !shouldShowCursor;
-                totalMsWaited = 0;
+                _shouldShowCursor = !_shouldShowCursor;
+                _totalMsWaited = 0;
             }
         }
 
@@ -118,14 +132,14 @@ namespace SgEngine.SgDebug
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
             base.Draw(gameTime, spriteBatch);
-            if (_isConsoleWindowOpen)
+            if (IsConsoleWindowOpen)
             {
                 spriteBatch.Draw(_textureToDraw, DrawRectangle, Color.White);
-                var locationToDrawFirstLine = debugWindowSize;
+                var locationToDrawFirstLine = _debugWindowSize;
                 locationToDrawFirstLine.Y -= 20;
                 locationToDrawFirstLine.X = 5;
-                var stringToWrite = terminalIndicator + _displayLine;
-                if (shouldShowCursor)
+                var stringToWrite = _terminalIndicator + _displayLine;
+                if (_shouldShowCursor)
                     stringToWrite += "_";
                 spriteBatch.DrawString(_fontToWriteWith, stringToWrite, locationToDrawFirstLine.ToVector2(),
                     Color.White);
