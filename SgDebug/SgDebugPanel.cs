@@ -5,8 +5,8 @@
 //
 ////////////////////////////////////////////////////////////
 
-using System;
 using System.Collections.Generic;
+using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -15,6 +15,12 @@ using SgEngine.GUI.Types;
 
 namespace SgEngine.SgDebug
 {
+    public struct StringAndColor
+    {
+        public string WhatToWrite;
+        public Color ColorToWrite;
+
+    }
     public class SgDebugPanel : Panel
     {
         public Rectangle DrawRectangle => new Rectangle(debugWindowLocation, _debugWindowSize);
@@ -23,14 +29,19 @@ namespace SgEngine.SgDebug
         private readonly Point debugWindowLocation = new Point(0, 0);
         private Texture2D _textureToDraw;
         private SpriteFont _fontToWriteWith;
-        private readonly List<string> _displayHistory = new List<string>();
         private const string _terminalIndicator = "console>";
-        private string _displayLine = String.Empty;
         private GameWindow _gameWindow;
         private const int _msForEachBlink = 500;
         private int _totalMsWaited;
         private bool _shouldShowCursor;
 
+        private StringBuilder _displayLine = new StringBuilder(30, 30);
+        private List<StringBuilder> _displayHistory = new List<StringBuilder>();
+        private int _counter = 7;
+        private const string _commandExecuted = "*gCommand Executed";
+        private const string _commandFailed = "*rInvalid Command";
+
+        //private readonly List<string> _displayHistory = new List<string>();
 
 
 
@@ -53,10 +64,10 @@ namespace SgEngine.SgDebug
             switch (args.Key)
             {
                 case Keys.Back when _displayLine.Length > 0:
-                    _displayLine = _displayLine[..^1];
+                    //_displayLine = _displayLine[..^1];
                     break;
                 case Keys.Space:
-                    _displayLine += " ";
+                    //_displayLine += " ";
                     break;
                 case Keys.Enter:
                     HandleEnter();
@@ -67,29 +78,29 @@ namespace SgEngine.SgDebug
         private void HandleLetterKeys(TextInputEventArgs args)
         {
             if (char.IsLetter(args.Character))
-                _displayLine += args.Character;
+                _displayLine.Append(args.Character);
         }
 
         private void HandleEnter()
         {
-            if (string.IsNullOrEmpty(_displayLine))
+            if (_displayLine.Length == 0)
                 return;
-            switch (_displayLine)
+            switch (_displayLine.ToString())
             {
                 case "debug enable":
-                    AddToDisplayHistory(_displayLine);
-                    AddToDisplayHistory("*gCommand Executed");
-                    _displayLine = "";
+                    AddToDisplayHistory(_displayLine.ToString());
+                    AddToDisplayHistory(_commandExecuted);
                     break;
                 case "exit":
                     GameWorld.ExitGame();
                     break;
                 default:
-                    AddToDisplayHistory(_displayLine);
-                    AddToDisplayHistory("*rInvalid Command");
-                    _displayLine = "";
+                    AddToDisplayHistory(_displayLine.ToString());
+                    AddToDisplayHistory(_commandFailed);
                     break;
             }
+
+            _displayLine.Clear();
         }
         public override void Initialize()
         {
@@ -100,6 +111,10 @@ namespace SgEngine.SgDebug
             _debugWindowSize.Y = _debugWindowSize.Y / 2;
             _textureToDraw = new Texture2D(GameWorld.GetGraphicsDevice, 1, 1);
             _textureToDraw.SetData(new Color[] { Color.Black });
+            //for (int i = 0; i < _displayHistory.Count; i++)
+            //{
+            //    _displayHistory[i] = new StringBuilder(30);
+            //}
         }
 
         public override void Update(GameTime gameTime)
@@ -115,7 +130,9 @@ namespace SgEngine.SgDebug
 
         private void AddToDisplayHistory(string textToAdd)
         {
-            _displayHistory.Add(textToAdd);
+            //_displayHistory[_counter].Clear();
+            //_displayHistory[_counter].Append(textToAdd);
+            _displayHistory.Add(new StringBuilder(textToAdd));
             if (_displayHistory.Count > 9)
                 _displayHistory.RemoveAt(0);
 
@@ -138,9 +155,9 @@ namespace SgEngine.SgDebug
                 var locationToDrawFirstLine = _debugWindowSize;
                 locationToDrawFirstLine.Y -= 20;
                 locationToDrawFirstLine.X = 5;
-                var stringToWrite = _terminalIndicator + _displayLine;
+                var stringToWrite = new StringBuilder(_terminalIndicator + _displayLine);
                 if (_shouldShowCursor)
-                    stringToWrite += "_";
+                    stringToWrite.Append('_');
                 spriteBatch.DrawString(_fontToWriteWith, stringToWrite, locationToDrawFirstLine.ToVector2(),
                     Color.White);
                 var counter = 1;
@@ -151,16 +168,16 @@ namespace SgEngine.SgDebug
                     var yOffset = 10 * counter;
                     drawPos.Y -= yOffset;
                     var colorToWrite = Color.White;
-                    if (_displayHistory[i].StartsWith("*r"))
-                    {
-                        colorToWrite = Color.Red;
-                        wordToWrite = wordToWrite.Split('r')[1];
-                    }
-                    if (_displayHistory[i].StartsWith("*g"))
-                    {
-                        colorToWrite = Color.Green;
-                        wordToWrite = wordToWrite.Split('g')[1];
-                    }
+                    //if (wordToWrite.ToString().Contains("*g"))
+                    //{
+                    //    wordToWrite.Replace("*g", "");
+                    //    colorToWrite = Color.Green;
+                    //}
+                    //if (wordToWrite.ToString().Contains("*r"))
+                    //{
+                    //    wordToWrite.Replace("*r", "");
+                    //    colorToWrite = Color.Red;
+                    //}
                     spriteBatch.DrawString(_fontToWriteWith, wordToWrite, drawPos.ToVector2(), colorToWrite);
                     counter++;
                 }
