@@ -10,10 +10,12 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
 using SgEngine.Interfaces.EKS;
+using SgEngine.Interfaces.SgDebug;
+using SgEngine.SgDebug;
 
 namespace SgEngine.GUI.Components
 {
-    public abstract class GuiComponent : IFullEksObject
+    public abstract class GuiComponent : IFullEksObject, ISendDebugMessage
     {
         /// <summary>
         /// Returns the position of the parents global plus the components local position
@@ -90,7 +92,7 @@ namespace SgEngine.GUI.Components
         {
             get
             {
-                var newVector2 = new Vector2 {X = _size.X / 2, Y = _size.Y / 2};
+                var newVector2 = new Vector2 { X = _size.X / 2, Y = _size.Y / 2 };
                 return newVector2;
             }
         }
@@ -101,7 +103,14 @@ namespace SgEngine.GUI.Components
         public bool DebugMode
         {
             get => _debugMode;
-            set => _debugMode = value;
+            set
+            {
+                if (value)
+                    OnDebugMessage += SgDebug.SgDebug.DebugMessage;
+                else
+                    OnDebugMessage -= SgDebug.SgDebug.DebugMessage;
+                _debugMode = value;
+            }
         }
         /// <summary>
         /// Returns a bounding box for this component
@@ -236,5 +245,10 @@ namespace SgEngine.GUI.Components
             spriteBatch.DrawRectangle(positionToDraw, colorToDraw);
         }
 
+        public event ISendDebugMessage.DebugLogEventHandler OnDebugMessage;
+        public void SendDebugMessage(string messageToWrite, LogLevel logLevel = LogLevel.Debug)
+        {
+            OnDebugMessage?.Invoke(this, messageToWrite, logLevel);
+        }
     }
 }

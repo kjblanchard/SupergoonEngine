@@ -8,6 +8,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using Microsoft.Xna.Framework;
 using SgEngine.EKS;
 using SgEngine.GUI.Components;
 
@@ -58,7 +59,9 @@ namespace SgEngine.SgDebug
 
         private static void WriteDebugLog(string whatToWrite)
         {
-            Debug.WriteLine($"{DateTime.Now} - Debug message - {whatToWrite}");
+            var newString = $"{DateTime.Now}-DbgMsg-{whatToWrite}";
+            Debug.WriteLine(newString);
+            SgDebugPanel.AddToDisplayHistory(newString,Color.Blue);
         }
 
         private static void WriteDebugLog(object sender, string whatToWrite)
