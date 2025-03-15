@@ -9,18 +9,30 @@
  *
  */
 #pragma once
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct SDL_Window Window;
 typedef struct SDL_Renderer Renderer;
 
 /**
- * @brief Creates the Game Window and renderer
+ * @brief Set the Window Options object
  *
- * @param width
- * @param height
- * @param name
+ * @param width size of window
+ * @param height height of window
+ * @param name window name
  */
-void CreateWindow(int width, int height, const char* name);
+void SetWindowOptions(int width, int height, const char* name);
+/**
+ * @brief Creates the Game Window and renderer, called by the engine on startup,
+ * make sure to call SetWindowOptions before run
+ */
+void CreateWindow(void);
 Window* GetGameWindow(void);
 Renderer* GetGameRenderer(void);
 void DrawStart(void);
 void DrawEnd(void);
+#ifdef __cplusplus
+}
+#endif

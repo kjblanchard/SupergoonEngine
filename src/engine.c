@@ -9,6 +9,9 @@
 #include <Supergoon/window.h>
 // This is not needed, just for testing
 #include <Supergoon/graphics.h>
+#ifdef imgui
+#include <Supergoon/Debug/ImGui.hpp>
+#endif
 
 static geClock _clock;
 static void (*_startFunc)(void) = NULL;
@@ -26,7 +29,7 @@ static bool Start(void) {
 	geInitializeJoysticks();
 	sgInitializeLua();
 	geClockStart(&_clock);
-	CreateWindow(1920, 1080, "Testing");
+	CreateWindow();
 	return true;
 }
 static bool sdlEventLoop(void) {
@@ -39,6 +42,10 @@ static bool sdlEventLoop(void) {
 				break;
 		}
 		if (_handleEventFunc) quit = _handleEventFunc(&event);
+#ifdef imgui
+		HandleImGuiEvent(&event);
+
+#endif
 	}
 	return quit;
 }

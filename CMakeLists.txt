@@ -38,13 +38,16 @@ set(SRC_FILES
 if(imgui)
     message(STATUS "ImGui is enabled, adding ImGui-related files.")
     list(APPEND SRC_FILES
-        src/imgui/imgui_impl_sdl3.cpp
-        src/imgui/imgui_impl_sdlrenderer3.cpp
-        src/imgui/imgui_demo.cpp
-        src/imgui/imgui_tables.cpp
-        src/imgui/imgui_widgets.cpp
-        src/imgui/imgui_draw.cpp
-        src/imgui/imgui.cpp
+        src/Imgui/imgui_impl_sdl3.cpp
+        src/Imgui/imgui_impl_sdlrenderer3.cpp
+        src/Imgui/imgui_demo.cpp
+        src/Imgui/imgui_tables.cpp
+        src/Imgui/imgui_widgets.cpp
+        src/Imgui/imgui_draw.cpp
+        src/Imgui/imgui.cpp
+        src/Debug/ImGui.cpp
+        src/Debug/Debug.cpp # For showing all the windows
+        src/Debug/Console.cpp
     )
 endif()
 

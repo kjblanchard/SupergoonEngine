@@ -1,5 +1,5 @@
 #include <SDL3/SDL.h>
-#include <Supergoon/input/joystick.h>
+#include <Supergoon/Input/joystick.h>
 #include <Supergoon/log.h>
 #include <math.h>
 #include <string.h>
