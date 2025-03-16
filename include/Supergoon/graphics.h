@@ -11,12 +11,20 @@
 #pragma once
 #include <Supergoon/Primitives/Color.h>
 typedef struct SDL_Texture Texture;
+typedef struct SDL_FRect Rectangle;
 
 /**
  * @brief Draws a rectangle on the screen, currently doesn't take any params hah..
  *
  */
 void DrawRect(void);
+/**
+ * @brief Draws a texture to the screen, make sure we are in a drawstart.
+ * @param texture
+ * @param dst
+ * @param src
+ */
+void DrawTexture(Texture* texture, Rectangle* dst, Rectangle* src);
 /**
  * @brief Creates a Texture that can be used as a render target.
  * Used if this will be drawn on by other draw calls
@@ -27,3 +35,11 @@ void DrawRect(void);
  * @return Texture*
  */
 Texture* CreateRenderTargetTexture(int width, int height, sgColor color);
+
+/**
+ * @brief Loads a bmp from the assets/img folder
+ *
+ * @param filename The name of the file, without the .bmp
+ * @return Texture* Loaded texture, or null if failure
+ */
+Texture* CreateTextureFromIndexedBMP(const char* filename);

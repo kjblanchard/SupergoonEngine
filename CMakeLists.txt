@@ -33,6 +33,7 @@ set(SRC_FILES
     src/input/keyboard.c
     src/window.c
     src/graphics.c
+    src/filesystem.c
 )
 
 if(imgui)

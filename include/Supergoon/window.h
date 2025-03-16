@@ -39,9 +39,13 @@ void SetScalingOptions(int worldWidth, int worldHeight);
  * make sure to call SetWindowOptions before run
  */
 void CreateWindow(void);
-Window* GetGameWindow(void);
-Renderer* GetGameRenderer(void);
+/**
+ * @brief Prepares the engine for drawing
+ */
 void DrawStart(void);
+/**
+ * @brief Concludes drawing, and draws to screen
+ */
 void DrawEnd(void);
 #ifdef __cplusplus
 }

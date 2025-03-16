@@ -1,3 +1,4 @@
+#include <Supergoon/filesystem.h>
 #include <Supergoon/log.h>
 #include <Supergoon/pch.h>
 
@@ -21,37 +22,12 @@ static void Log(sgLogLevel level, const char *data_to_write);
  * @brief The log level to log at, this should be sent in via settings.
  */
 static sgLogLevel logLevel = Log_LDebug;
-static char *_systemFilePath = NULL;
 static const char *logFileName = "errors.log";
-static int geGetFileFilepath(char *buffer, size_t bufferSize, const char *filename) {
-	if (_systemFilePath != NULL) {
-		snprintf(buffer, bufferSize, "%s%s", _systemFilePath, filename);
-		return 0;
-	}
-	const char *base_path = SDL_GetPrefPath("Supergoon Games", "EscapeTheFate");
-	int result = -1;  // Return -1 on error
-
-	if (base_path == NULL) {
-		// Use the current directory if SDL_GetBasePath() fails
-		if (snprintf(buffer, bufferSize, "./%s", filename) < (int)bufferSize) {
-			result = 0;	 // Success
-		}
-	} else {
-		// Construct the path using the base path provided by SDL
-		if (snprintf(buffer, bufferSize, "%s%s", base_path, filename) < (int)bufferSize) {
-			_systemFilePath = strdup(base_path);
-			SDL_free((void *)base_path);  // Clean up the SDL memory
-			result = 0;					  // Success
-		}
-	}
-	return result;
-}
 
 int sgInitializeDebugLogFile(void) {
 	sgLogDebug("Opening log file at %s", logFileName);
 	char buf[1000];
-	// geGetLoadFilename(buf, sizeof(buf), logFileName);
-	geGetFileFilepath(buf, sizeof(buf), logFileName);
+	GetFilenameWithPrefPathFilepath(buf, sizeof(buf), logFileName);
 	openDebugFile = fopen(buf, "a");
 	if (openDebugFile)
 		return 1;
