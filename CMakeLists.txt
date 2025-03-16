@@ -34,6 +34,11 @@ set(SRC_FILES
     src/window.c
     src/graphics.c
     src/filesystem.c
+    src/events.c
+    src/Audio/Bgm.c
+    src/Audio/Sfx.c
+    src/Audio/Stream.c
+    src/Audio/Audio.c
 )
 
 if(imgui)
@@ -49,6 +54,9 @@ if(imgui)
         src/Debug/ImGui.cpp
         src/Debug/Debug.cpp # For showing all the windows
         src/Debug/Console.cpp
+        src/Debug/Audio.cpp
+
+        # src/Debug/Audio.cpp
     )
 endif()
 
