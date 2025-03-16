@@ -8,7 +8,12 @@
 #include <Supergoon/Debug/ImGui.hpp>
 #include <string>
 
+// defined in window.c
+extern Window* _window;
+extern Renderer* _renderer;
+
 void InitializeImGui(void) {
+	assert(_renderer && _window && "No renderer, make sure window is created");
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
@@ -16,26 +21,26 @@ void InitializeImGui(void) {
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;  // IF using Docking Branch
 	static auto thing = std::string(SDL_GetPrefPath("Supergoon Games", "EscapeTheFate")) + "debug.ini";
 	io.IniFilename = thing.c_str();
-	ImGui_ImplSDL3_InitForSDLRenderer(GetGameWindow(), GetGameRenderer());
-	ImGui_ImplSDLRenderer3_Init(GetGameRenderer());
+	ImGui_ImplSDL3_InitForSDLRenderer(_window, _renderer);
+	ImGui_ImplSDLRenderer3_Init(_renderer);
+	InitializeDebug();
 }
 void HandleImGuiEvent(Event* event) {
 	ImGui_ImplSDL3_ProcessEvent(event);
 }
 
 void StartImGuiFrame(void) {
-	// ClearRenderTargetTexture(_imguiGameTexture);
-	// Draw everything to this target instead when building with imgui.
-	// SDL_SetRenderTarget(_renderer, _imguiGameTexture);
 	ImGui_ImplSDLRenderer3_NewFrame();
 	ImGui_ImplSDL3_NewFrame();
 	ImGui::NewFrame();
 }
 
 void DrawImGui(void) {
-	SDL_SetRenderTarget(GetGameRenderer(), NULL);
+	assert(_renderer && "No renderer, make sure window is created");
+	// Draw imgui to the entire screen.
+	SDL_SetRenderTarget(_renderer, NULL);
 	ShowWidgets();
 	ImGui::ShowDemoWindow();
 	ImGui::Render();
-	ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), GetGameRenderer());
+	ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), _renderer);
 }

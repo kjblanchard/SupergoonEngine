@@ -1,7 +1,4 @@
 #pragma once
-// #ifdef __cplusplus
-// extern "C" {
-// #endif
 /**
  * @brief Initialize it?
  *
@@ -12,7 +9,3 @@ void InitializeContentDebugWindow(void);
  *
  */
 void ShowContentDebugWindow(void);
-
-// #ifdef __cplusplus
-// }
-// #endif

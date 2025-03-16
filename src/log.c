@@ -1,5 +1,5 @@
-#include <Supergoon/pch.h>
 #include <Supergoon/log.h>
+#include <Supergoon/pch.h>
 
 #define MAX_LOG_SIZE 400
 
@@ -20,7 +20,7 @@ static void Log(sgLogLevel level, const char *data_to_write);
 /**
  * @brief The log level to log at, this should be sent in via settings.
  */
-static sgLogLevel logLevel = Log_LInfo;
+static sgLogLevel logLevel = Log_LDebug;
 static char *_systemFilePath = NULL;
 static const char *logFileName = "errors.log";
 static int geGetFileFilepath(char *buffer, size_t bufferSize, const char *filename) {
@@ -138,7 +138,6 @@ void sgLogCritical(const char *fmt, ...) {
 	va_start(args, fmt);
 	LogSetup(Log_LCritical, fmt, args);
 	fprintf(stderr, "Critical error, exiting!\n");
-
 	exit(1);
 }
 

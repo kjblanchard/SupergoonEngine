@@ -2,21 +2,18 @@
 /**
  * @file debug.h
  * @author Kevin Blanchard (kevin@supergoon.com)
- * @brief
- * @version 0.1
+ * @brief Logging functions used for logging at specific levels, log to a file, etc.
+ * @version 0.2
  * @date 2023-07-15
- *
  * @copyright Copyright (c) 2023
- *
- */
-
-/**
- * @brief The level that we should show debug events at.
- *
  */
 #ifdef __cplusplus
 extern "C" {
 #endif
+/**
+ * @brief The level that we should show debug events at.
+ *
+ */
 typedef enum sgLogLevel {
 	Log_LDefault = 0,
 	Log_LDebug = 1,
@@ -68,11 +65,15 @@ void sgLogError(const char *format, ...);
  * @param ... The variables for the printf
  */
 void sgLogCritical(const char *fmt, ...);
-
+/**
+ * @brief Sets a log function that will be called on every log function, usually used for outputting the logs somewhere else as well (imgui)
+ */
 void sgSetDebugFunction(void (*)(const char *, const char *, int));
-
+/**
+ * @brief Sets the log level that we should use throughout the program.  If a log is this level or higher, it will be shown, defaults to Debug
+ * @param newLevel
+ */
 void sgSetLogLevel(int newLevel);
-
 #ifdef __cplusplus
 }
 #endif

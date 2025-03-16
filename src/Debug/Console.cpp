@@ -22,7 +22,6 @@ void ShowContentDebugWindow(void) {
 	auto window_flags = GetDefaultWindowFlags();
 	bool p_open;
 	if (!ImGui::Begin("Console", &p_open, window_flags)) {
-		// Early out if the window is collapsed, as an optimization.
 		ImGui::End();
 		return;
 	}
@@ -30,6 +29,10 @@ void ShowContentDebugWindow(void) {
 	ImGui::SameLine();
 	if (ImGui::Button("Clear Logs")) {
 		consoleMessages.clear();
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Test Message")) {
+		sgLogDebug("Hello debug test!");
 	}
 	ImGui::BeginChild("##log", ImVec2(0.0f, 0.0f), ImGuiChildFlags_Borders, ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_AlwaysHorizontalScrollbar);
 	for (auto message : consoleMessages) {
@@ -42,6 +45,9 @@ void ShowContentDebugWindow(void) {
 			typeText = "Error - ";
 			color.G = 0;
 			color.B = 0;
+		} else if (message.first == Log_LDebug) {
+			typeText = "Debug - ";
+			color.R = color.G = color.B = 150;
 		}
 		ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(color.R, color.G, color.B, 255));
 		ImGui::Text("%s %s", typeText.c_str(), message.second.c_str());
@@ -52,9 +58,9 @@ void ShowContentDebugWindow(void) {
 	}
 	scrollToBottom = false;
 	ImGui::EndChild();
-
 	ImGui::End();
 }
+
 void InitializeContentDebugWindow(void) {
 	sgSetDebugFunction(engineLogFunc);
 }
