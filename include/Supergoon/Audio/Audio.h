@@ -13,10 +13,6 @@ extern "C" {
 #endif
 
 #pragma once
-typedef union SDL_Event Event;
-
-// Engine Functions
-
 // Game functions
 void SetBgmTrack(int track);
 void LoadBgm(const char* filename, float volume, int loops);
@@ -32,7 +28,7 @@ void PauseBgm(void);
  * @brief Stops a bgm, returning it to the start but does noe unload it
  */
 void StopBgm(void);
-void StopBgmFadeout(float fadeTime);
+void StopBgmFadeout(void);
 void UpdatePlayingBgmVolume(void);
 
 // inline void SetGlobalSfxVolume(float volume) { _globalSfxVolume = volume; };

@@ -126,6 +126,8 @@ void ShowAudioDebugWindow() {
 				if (ImGui::SliderFloat(volumeStr.c_str(), &_bgmAssets[i].Volume, 0, 1.0)) {
 					UpdatePlayingBgmVolume();
 				}
+				ImGui::SameLine();
+				HelpMarker("Updates the playing BGM sound only, this is multiplied by the global to get the final sound volume");
 			} else {
 				ImGui::ProgressBar(0, ImVec2(0.f, 0.f), "0/0sec");
 			}
@@ -167,6 +169,11 @@ void ShowAudioDebugWindow() {
 				SetBgmTrack(bgmTrack);
 				StopBgm();
 			}
+			ImGui::SameLine();
+			if (ImGui::Button("Stop Fadeout")) {
+				SetBgmTrack(bgmTrack);
+				StopBgmFadeout();
+			}
 			if (ImGui::InputInt("Track", &bgmTrack)) {
 			}
 			ImGui::SameLine();
@@ -175,12 +182,6 @@ void ShowAudioDebugWindow() {
 			}
 			ImGui::SameLine();
 			HelpMarker("How many times to loop at the loop points.  Loop points are loaded into the .ogg file.  -1 will loop forever");
-			// ImGui::SameLine();
-			// if (ImGui::Button("Stop Fadeout")) {
-			// 	sound->StopBgmFadeout();
-			// }
-			ImGui::SameLine();
-			HelpMarker("Updates the playing BGM sound only, this is multiplied by the global to get the final sound volume");
 		}
 	}
 	// if (ImGui::CollapsingHeader("Sfx")) {

@@ -3,6 +3,8 @@
 
 // Function in audio.c
 extern void audioEventHandler(Event *event);
+// Function in tween.c
+void handleTweenEvents(Event *event);
 BuiltinEventTypes BuiltinEventIds;
 static int (*_customEventHandler)(Event *event) = NULL;
 
@@ -11,6 +13,9 @@ void InitializeEventEngine(void) {
 	BuiltinEventIds.PlayBgmEvent = SDL_RegisterEvents(1);
 	BuiltinEventIds.StopBgmEvent = SDL_RegisterEvents(1);
 	BuiltinEventIds.PauseBgmEvent = SDL_RegisterEvents(1);
+	BuiltinEventIds.StartTweenEvent = SDL_RegisterEvents(1);
+	BuiltinEventIds.PauseTweenEvent = SDL_RegisterEvents(1);
+	BuiltinEventIds.StopTweenEvent = SDL_RegisterEvents(1);
 }
 
 void PushEvent(uint32_t eventType, int eventCode, void *data, void *data2) {
@@ -25,6 +30,7 @@ void PushEvent(uint32_t eventType, int eventCode, void *data, void *data2) {
 
 int HandleEvents(Event *event) {
 	audioEventHandler(event);
+	handleTweenEvents(event);
 	return false;
 }
 

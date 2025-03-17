@@ -2,6 +2,7 @@
 #include <Supergoon/Audio/Bgm.h>
 #include <Supergoon/Audio/Sfx.h>
 #include <Supergoon/Audio/Stream.h>
+#include <Supergoon/Tweening/tween.h>
 #include <Supergoon/events.h>
 #include <Supergoon/log.h>
 #include <assert.h>
@@ -11,6 +12,7 @@ static unsigned int _track = 0;
 typedef struct AudioBgmAsset {
 	Bgm* Bgm;
 	float Volume;
+	bool IsFading;
 } AudioBgmAsset;
 typedef struct BgmLoadArgs {
 	char* Name;
@@ -33,6 +35,7 @@ void initializeAudio(void) {
 	for (size_t i = 0; i < MAX_TRACKS; i++) {
 		_bgmAssets[i].Bgm = NULL;
 		_bgmAssets[i].Volume = 0;
+		_bgmAssets[i].IsFading = false;
 	}
 }
 
@@ -154,7 +157,35 @@ void PauseBgm(void) {
 void StopBgm(void) {
 	PushEvent(BuiltinEventIds.StopBgmEvent, _track, NULL, NULL);
 }
-void StopBgmFadeout(float fadeTime);
+
+static void updateBgmFadeoutUpdateFunc(void* bgmVoid) {
+	(void)bgmVoid;
+	UpdatePlayingBgmVolume();
+}
+
+static void stopBgmFadeoutEndFunc(void* bgmVoid) {
+	AudioBgmAsset* bgmAsset = (AudioBgmAsset*)bgmVoid;
+	assert(bgmAsset && "Bad bgm asset passed in, something is wrong");
+	bgmAsset->IsFading = false;
+	bgmAsset->Volume = 0;
+	if (!bgmAsset->Bgm || !bgmAsset->Bgm->IsPlaying) {
+		return;
+	}
+	bgmStop(bgmAsset->Bgm);
+}
+
+void StopBgmFadeout(void) {
+	AudioBgmAsset* bgmAsset = &_bgmAssets[_track];
+	if (!(bgmAsset && bgmAsset->Bgm)) {
+		sgLogInfo("Trying to fadeout an invalid BGM");
+		return;
+	}
+	bgmAsset->IsFading = true;
+	Tween tween = CreateFloatTween(&bgmAsset->Volume, bgmAsset->Volume, 0.0, 0.25, TweenEasingLinear);
+	SetTweenUserdata(tween, bgmAsset);
+	SetTweenFunctions(tween, NULL, updateBgmFadeoutUpdateFunc, stopBgmFadeoutEndFunc);
+	StartTween(tween);
+}
 void SetPlayingBgmVolume(float volume) {
 	if (!_bgmAssets[_track].Bgm) return;
 	_bgmAssets[_track].Bgm->Volume = volume;

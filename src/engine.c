@@ -8,6 +8,7 @@
 #include <Supergoon/events.h>
 #include <Supergoon/log.h>
 #include <Supergoon/lua.h>
+#include <Supergoon/state.h>
 #include <Supergoon/window.h>
 // This is not needed, just for testing
 #include <Supergoon/graphics.h>
@@ -18,6 +19,9 @@
 // Functions in Audio.c
 extern void initializeAudio(void);
 extern void audioUpdate(void);
+// Function in tween.c
+extern void initializeTweenEngine(void);
+extern void updateTweens(void);
 
 static geClock _clock;
 static void (*_startFunc)(void) = NULL;
@@ -38,6 +42,7 @@ static bool Start(void) {
 	geClockStart(&_clock);
 	CreateWindow();
 	initializeAudio();
+	initializeTweenEngine();
 	return true;
 }
 static bool sdlEventLoop(void) {
@@ -65,7 +70,10 @@ static void Update(void) {
 		quit = sdlEventLoop();
 		geUpdateKeyboard();
 		geClockUpdate(&_clock);
+		DeltaTimeMilliseconds = geClockGetUpdateTimeMilliseconds();
+		DeltaTimeSeconds = geClockGetUpdateTimeSeconds();
 		audioUpdate();
+		updateTweens();
 		if (_updateFunc) _updateFunc();
 		DrawStart();
 		DrawRect();

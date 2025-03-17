@@ -12,6 +12,9 @@ typedef struct BuiltinEventTypes {
 	uint32_t PlayBgmEvent;
 	uint32_t StopBgmEvent;
 	uint32_t PauseBgmEvent;
+	uint32_t StartTweenEvent;
+	uint32_t PauseTweenEvent;
+	uint32_t StopTweenEvent;
 } BuiltinEventTypes;
 /**
  * @brief Event Ids to be used when pushing events

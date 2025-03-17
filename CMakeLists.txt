@@ -26,9 +26,9 @@ set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build libraries as static" FORCE)
 set(SRC_FILES
     src/engine.c
     src/lua.c
-    src/easing.c
     src/log.c
     src/clock.c
+    src/state.c
     src/input/joystick.c
     src/input/keyboard.c
     src/window.c
@@ -39,6 +39,8 @@ set(SRC_FILES
     src/Audio/Sfx.c
     src/Audio/Stream.c
     src/Audio/Audio.c
+    src/Tweening/easing.c
+    src/Tweening/tween.c
 )
 
 if(imgui)
