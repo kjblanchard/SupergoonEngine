@@ -8,19 +8,21 @@
 #include <vector>
 
 using namespace std;
-#ifndef MAX_SLOTS
-#define MAX_SLOTS 4
+#ifndef MAX_TRACKS
+#define MAX_TRACKS 4
 #endif
 
 extern float _globalBgmVolume;
 typedef struct AudioBgmAsset {
-	sgBgm* Bgm;
+	Bgm* Bgm;
 	float Volume;
 } AudioBgmAsset;
-extern AudioBgmAsset _bgmAssets[MAX_SLOTS];
+extern AudioBgmAsset _bgmAssets[MAX_TRACKS];
 
 std::vector<string> bgmNames;
 std::vector<string> sfxNames;
+static int bgmTrack = 0;
+static int loops = 0;
 // static float sfxPlayVolume = 1.0f;
 static void HelpMarker(const char* desc) {
 	ImGui::TextDisabled("(?)");
@@ -105,6 +107,30 @@ void ShowAudioDebugWindow() {
 	}
 	// ImGui::SliderFloat("Global Sfx Volume", &Sound::Instance()->_globalSfxVolume, 0.0f, 1.0f);
 	if (ImGui::CollapsingHeader("Bgm")) {
+		for (size_t i = 0; i < MAX_TRACKS; i++) {
+			ImGui::Text("Track %ld", i);
+			ImGui::SameLine();
+			if (_bgmAssets[i].Bgm) {
+				double pos = getBgmCurrentPosition(_bgmAssets[i].Bgm);
+				double duration = getBgmDuration(_bgmAssets[i].Bgm);
+				double percent = pos / duration;
+				char buf[32];
+				snprintf(buf, 32, "%.1fsec/%.1fsec", (pos), duration);
+				ImGui::ProgressBar(percent, ImVec2(0.f, 0.f), buf);
+				// ImGui::Text("Loops Remaining %d ##%ld", _bgmAssets[i].Bgm->Loops, i);
+				std::string s = _bgmAssets[i].Bgm->Filename;
+				std::string last_element(s.substr(s.rfind("/") + 1));
+				ImGui::Text("Name: %s", last_element.c_str());
+				ImGui::Text("Loops Remaining %d", _bgmAssets[i].Bgm->Loops);
+				auto volumeStr = "Volume ##" + to_string(i);
+				if (ImGui::SliderFloat(volumeStr.c_str(), &_bgmAssets[i].Volume, 0, 1.0)) {
+					UpdatePlayingBgmVolume();
+				}
+			} else {
+				ImGui::ProgressBar(0, ImVec2(0.f, 0.f), "0/0sec");
+			}
+		}
+
 		if (bgmNames.size() > 0) {
 			static int item_current = 1;
 			// Create a vector to hold the const char* pointers
@@ -116,31 +142,43 @@ void ShowAudioDebugWindow() {
 				cStrings.push_back(name.c_str());
 			}
 			ImGui::ListBox("BgmItemList", &item_current, cStrings.data(), cStrings.size(), 4);
-			ImGui::SameLine();
-			HelpMarker("Click on a song to play, and then click play to try it out.");
-			if (ImGui::Button("PlayBgm")) {
+			if (ImGui::Button("LoadBgm")) {
 				auto song = bgmNames[item_current];
 				std::regex dotRegex("\\.ogg");
 				std::vector<std::string> result(std::sregex_token_iterator(song.begin(), song.end(), dotRegex, -1), std::sregex_token_iterator());
-				SetBgmSlot(0);
-				LoadBgm(result[0].c_str(), 1.0, 1);
+				SetBgmTrack(bgmTrack);
+				LoadBgm(result[0].c_str(), 1.0, loops);
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("PlayBgm")) {
+				// auto song = bgmNames[item_current];
+				// std::regex dotRegex("\\.ogg");
+				// std::vector<std::string> result(std::sregex_token_iterator(song.begin(), song.end(), dotRegex, -1), std::sregex_token_iterator());
+				SetBgmTrack(bgmTrack);
 				PlayBgm();
 			}
-			// ImGui::SameLine();
-			// if (ImGui::Button("Pause")) {
-			// 	sound->PauseBgm();
-			// }
-			// ImGui::SameLine();
-			// if (ImGui::Button("Stop")) {
-			// 	sound->StopBgm();
-			// }
+			ImGui::SameLine();
+			if (ImGui::Button("Pause")) {
+				SetBgmTrack(bgmTrack);
+				PauseBgm();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Stop")) {
+				SetBgmTrack(bgmTrack);
+				StopBgm();
+			}
+			if (ImGui::InputInt("Track", &bgmTrack)) {
+			}
+			ImGui::SameLine();
+			HelpMarker("The stream to load into");
+			if (ImGui::InputInt("Loops", &loops)) {
+			}
+			ImGui::SameLine();
+			HelpMarker("How many times to loop at the loop points.  Loop points are loaded into the .ogg file.  -1 will loop forever");
 			// ImGui::SameLine();
 			// if (ImGui::Button("Stop Fadeout")) {
 			// 	sound->StopBgmFadeout();
 			// }
-			if (ImGui::SliderFloat("Bgm Playing Volume", &_bgmAssets[item_current].Volume, 0, 1.0)) {
-				UpdatePlayingBgmVolume();
-			}
 			ImGui::SameLine();
 			HelpMarker("Updates the playing BGM sound only, this is multiplied by the global to get the final sound volume");
 		}

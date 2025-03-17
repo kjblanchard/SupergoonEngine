@@ -1,6 +1,17 @@
+/**
+ * @file Bgm.c
+ * @author Kevin B (kevin@supergoon.com)
+ * @brief Handle Streaming ogg assets with SDL for use as BGMs in the engine
+ * @version 0.1
+ * @date 2025-03-17
+ *
+ * @copyright Copyright (c) 2025
+ *
+ */
 #include <SDL3/SDL.h>
 #include <Supergoon/Audio/Bgm.h>
 #include <Supergoon/log.h>
+#include <assert.h>
 #include <stdlib.h>
 #include <vorbis/vorbisfile.h>
 
@@ -8,16 +19,14 @@
 #define strncasecmp(x, y, z) _strnicmp(x, y, z)
 #endif
 
-#define BGM_NUM_BUFFERS 4		  // Amount of "Buffers" we should have buffered in the SDL stream
-#define BGM_BUFFER_SIZE 8192	  // 8kb
-#define VORBIS_REQUEST_SIZE 4096  // Size of vorbis requests, usually recommend to be 4096
-// #define MINIMUM_STREAM_SIZE (BGM_BUFFER_SIZE * BGM_NUM_BUFFERS) - BGM_BUFFER_SIZE  // If our sdl stream is less than this, add another buffer
+#define BGM_NUM_BUFFERS 4									  // Amount of "Buffers" we should have buffered in the SDL stream
+#define BGM_BUFFER_SIZE 8192								  // 8kb
+#define VORBIS_REQUEST_SIZE 4096							  // Size of vorbis requests, usually recommend to be 4096
 #define MINIMUM_STREAM_SIZE BGM_BUFFER_SIZE *BGM_NUM_BUFFERS  // If our sdl stream is less than this, add another buffer
 
-static void getLoopPointsFromVorbisComments(sgBgm *bgm, double *loopBegin, double *loopEnd) {
+static void getLoopPointsFromVorbisComments(Bgm *bgm, double *loopBegin, double *loopEnd) {
 	vorbis_comment *vc = ov_comment(bgm->VorbisFile, -1);
 	if (!vc) {
-		// SDL_LogWarn(SG_LOG_LEVEL_sound, "Error retrieving vorbis comments for %s , setting to 0", bgm->Filename);
 		sgLogWarn("Error retrieving vorbis comments for %s , setting to 0", bgm->Filename);
 		*loopBegin = *loopEnd = 0;
 		return;
@@ -36,7 +45,7 @@ static void getLoopPointsFromVorbisComments(sgBgm *bgm, double *loopBegin, doubl
 	}
 }
 
-static void setBgmLoopPoints(sgBgm *bgm) {
+static void setBgmLoopPoints(Bgm *bgm) {
 	double loopBegin = 0, loopEnd = 0;
 	if (bgm->Loops != 0) {
 		getLoopPointsFromVorbisComments(bgm, &loopBegin, &loopEnd);
@@ -56,8 +65,8 @@ static void setBgmLoopPoints(sgBgm *bgm) {
 	}
 }
 
-static void loadDataToStream(sgBgm *bgm) {
-	if (!bgm->CanPlay) {
+static void loadDataToStream(Bgm *bgm) {
+	if (!bgm->IsLoaded) {
 		return;
 	}
 	uint64_t requestSize = VORBIS_REQUEST_SIZE;
@@ -76,13 +85,16 @@ static void loadDataToStream(sgBgm *bgm) {
 		if (requestSize == 0) {
 			// We are at the end of the loop point and should loop or stop.
 			if (bgm->Loops == 0) {
-				sgBgmStop(bgm);
+				bgmStop(bgm);
 				break;
 			}
 			ov_pcm_seek_lap(bgm->VorbisFile, bgm->LoopStart);
 			// Convert samples to bytes and set that as our current location in the loop
 			bgm->CurrentLoopBytesRead = ov_pcm_tell(bgm->VorbisFile) * bgm->VorbisInfo->channels * sizeof(short);
-			--bgm->Loops;
+			// -1 is the infinite loop
+			if (bgm->Loops != -1) {
+				--bgm->Loops;
+			}
 			isLooped = true;
 			break;
 		}
@@ -106,18 +118,18 @@ static void loadDataToStream(sgBgm *bgm) {
 	}
 }
 
-sgBgm *sgBgmNew(void) {
-	sgBgm *bgm = SDL_malloc(sizeof(*bgm));
+Bgm *bgmNew(void) {
+	Bgm *bgm = SDL_malloc(sizeof(*bgm));
 	bgm->VorbisFile = SDL_malloc(sizeof(*bgm->VorbisFile));
 	bgm->Filename = NULL;
 	bgm->Buffer = SDL_malloc(BGM_BUFFER_SIZE);
 	bgm->LoopStart = bgm->LoopEnd = bgm->Loops = bgm->CurrentLoopBytesRead = 0;
-	bgm->CanPlay = bgm->IsPlaying = false;
+	bgm->IsLoaded = bgm->IsPlaying = false;
 	bgm->Volume = 1.0f;
 	return bgm;
 }
 
-void sgBgmLoad(sgBgm *bgm) {
+void bgmLoad(Bgm *bgm) {
 	int result = ov_fopen(bgm->Filename, bgm->VorbisFile);
 	if (result != 0) {
 		SDL_LogError(0, "Could not open audio in %s: %d\n", bgm->Filename, result);
@@ -131,14 +143,21 @@ void sgBgmLoad(sgBgm *bgm) {
 		sgLogWarn("Stream failed to create: %s\n", SDL_GetError());
 		return;
 	}
-	bgm->CanPlay = true;
+	bgm->IsLoaded = true;
 	while (SDL_GetAudioStreamAvailable(bgm->Stream) < MINIMUM_STREAM_SIZE) {
 		loadDataToStream(bgm);
 	}
 }
 
-void sgBgmPlay(sgBgm *bgm) {
-	if (!bgm->CanPlay) {
+void bgmPlay(Bgm *bgm) {
+	if (!bgm) {
+		return;
+	}
+	if (!bgm->IsLoaded) {
+		return;
+	}
+	if (bgm->IsPlaying) {
+		sgLogInfo("Trying to play a bgm that is already playing");
 		return;
 	}
 	bgm->IsPlaying = true;
@@ -147,7 +166,7 @@ void sgBgmPlay(sgBgm *bgm) {
 	}
 }
 
-void sgBgmPause(sgBgm *bgm) {
+void bgmPause(Bgm *bgm) {
 	if (!bgm->IsPlaying) {
 		return;
 	}
@@ -155,23 +174,25 @@ void sgBgmPause(sgBgm *bgm) {
 	bgm->IsPlaying = false;
 }
 
-void sgBgmStop(sgBgm *bgm) {
+void bgmStop(Bgm *bgm) {
 	SDL_PauseAudioStreamDevice(bgm->Stream);
 	ov_pcm_seek_lap(bgm->VorbisFile, 0);
 	SDL_ClearAudioStream(bgm->Stream);
-	loadDataToStream(bgm);
+	// Not sure why this was here?
+	// loadDataToStream(bgm);
+	bgm->CurrentLoopBytesRead = 0;
 	bgm->IsPlaying = false;
 }
 
-void sgBgmUpdate(sgBgm *bgm) {
-	if (!bgm->IsPlaying || !bgm->CanPlay) {
+void bgmUpdate(Bgm *bgm) {
+	if (!bgm->IsPlaying || !bgm->IsLoaded) {
 		return;
 	}
-	while (SDL_GetAudioStreamAvailable(bgm->Stream) < MINIMUM_STREAM_SIZE) {
+	while (SDL_GetAudioStreamAvailable(bgm->Stream) < MINIMUM_STREAM_SIZE && bgm->IsPlaying) {
 		loadDataToStream(bgm);
 	}
 }
-void sgBgmDelete(sgBgm *bgm) {
+void bgmDelete(Bgm *bgm) {
 	SDL_free(bgm->Buffer);
 	SDL_free(bgm->Filename);
 	ov_clear(bgm->VorbisFile);
@@ -179,10 +200,16 @@ void sgBgmDelete(sgBgm *bgm) {
 	SDL_free(bgm);
 }
 
-void sgBgmUpdateVolume(sgBgm *bgm, float volume) {
+void bgmUpdateVolume(Bgm *bgm, float volume) {
 	if (!bgm->Stream || volume > 1.0 || volume < 0) {
 		return;
 	}
 	bgm->Volume = volume;
 	SDL_SetAudioStreamGain(bgm->Stream, volume);
+}
+double getBgmDuration(Bgm *bgm) {
+	return ov_time_total(bgm->VorbisFile, -1);
+}
+double getBgmCurrentPosition(Bgm *bgm) {
+	return ov_time_tell(bgm->VorbisFile);
 }

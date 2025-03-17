@@ -38,4 +38,5 @@ int GetDefaultWindowFlags() {
 
 void InitializeDebug() {
 	InitializeContentDebugWindow();
+	InitializeAudioDebugWindow();
 }

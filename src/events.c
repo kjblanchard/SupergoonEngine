@@ -1,5 +1,8 @@
+#include <Supergoon/Audio/Audio.h>
 #include <Supergoon/events.h>
 
+// Function in audio.c
+extern void audioEventHandler(Event *event);
 BuiltinEventTypes BuiltinEventIds;
 static int (*_customEventHandler)(Event *event) = NULL;
 
@@ -7,9 +10,10 @@ void InitializeEventEngine(void) {
 	BuiltinEventIds.LoadBgmEvent = SDL_RegisterEvents(1);
 	BuiltinEventIds.PlayBgmEvent = SDL_RegisterEvents(1);
 	BuiltinEventIds.StopBgmEvent = SDL_RegisterEvents(1);
+	BuiltinEventIds.PauseBgmEvent = SDL_RegisterEvents(1);
 }
 
-int PushEvent(uint32_t eventType, int eventCode, void *data, void *data2) {
+void PushEvent(uint32_t eventType, int eventCode, void *data, void *data2) {
 	SDL_Event event;
 	SDL_zero(event);
 	event.type = eventType;
@@ -20,7 +24,7 @@ int PushEvent(uint32_t eventType, int eventCode, void *data, void *data2) {
 }
 
 int HandleEvents(Event *event) {
-	(void *)event;
+	audioEventHandler(event);
 	return false;
 }
 

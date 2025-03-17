@@ -11,6 +11,7 @@ typedef struct BuiltinEventTypes {
 	uint32_t LoadBgmEvent;
 	uint32_t PlayBgmEvent;
 	uint32_t StopBgmEvent;
+	uint32_t PauseBgmEvent;
 } BuiltinEventTypes;
 /**
  * @brief Event Ids to be used when pushing events
@@ -29,9 +30,8 @@ void InitializeEventEngine(void);
  * @param eventCode userdata
  * @param data userdata
  * @param data2 userdata
- * @return int bool value if you should exit the game or not from this event
  */
-int PushEvent(uint32_t eventType, int eventCode, void *data, void *data2);
+void PushEvent(uint32_t eventType, int eventCode, void *data, void *data2);
 /**
  * @brief Handle all the engine builtin events, called in the main loop
  *

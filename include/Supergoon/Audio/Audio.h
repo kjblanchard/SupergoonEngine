@@ -16,15 +16,21 @@ extern "C" {
 typedef union SDL_Event Event;
 
 // Engine Functions
-void InitializeAudio(void);
-void AudioEventHandler(Event* event);
-void Update(void);
 
 // Game functions
-void SetBgmSlot(int slot);
+void SetBgmTrack(int track);
 void LoadBgm(const char* filename, float volume, int loops);
+/**
+ * @brief Plays a BGM, additionally unpauses it if it is paused.
+ */
 void PlayBgm(void);
+/**
+ * @brief Pauses a BGM, can be resumed with PlayBGm afterwards
+ */
 void PauseBgm(void);
+/**
+ * @brief Stops a bgm, returning it to the start but does noe unload it
+ */
 void StopBgm(void);
 void StopBgmFadeout(float fadeTime);
 void UpdatePlayingBgmVolume(void);

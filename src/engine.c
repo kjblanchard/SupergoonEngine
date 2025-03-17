@@ -1,9 +1,11 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <Supergoon/Audio/Audio.h>
 #include <Supergoon/Input/joystick.h>
 #include <Supergoon/Input/keyboard.h>
 #include <Supergoon/clock.h>
 #include <Supergoon/engine.h>
+#include <Supergoon/events.h>
 #include <Supergoon/log.h>
 #include <Supergoon/lua.h>
 #include <Supergoon/window.h>
@@ -12,6 +14,10 @@
 #ifdef imgui
 #include <Supergoon/Debug/ImGui.hpp>
 #endif
+
+// Functions in Audio.c
+extern void initializeAudio(void);
+extern void audioUpdate(void);
 
 static geClock _clock;
 static void (*_startFunc)(void) = NULL;
@@ -28,8 +34,10 @@ static bool Start(void) {
 	geInitializeKeyboard();
 	geInitializeJoysticks();
 	sgInitializeLua();
+	InitializeEventEngine();
 	geClockStart(&_clock);
 	CreateWindow();
+	initializeAudio();
 	return true;
 }
 static bool sdlEventLoop(void) {
@@ -42,6 +50,7 @@ static bool sdlEventLoop(void) {
 				break;
 		}
 		if (_handleEventFunc) quit = _handleEventFunc(&event);
+		HandleEvents(&event);
 #ifdef imgui
 		HandleImGuiEvent(&event);
 
@@ -56,6 +65,7 @@ static void Update(void) {
 		quit = sdlEventLoop();
 		geUpdateKeyboard();
 		geClockUpdate(&_clock);
+		audioUpdate();
 		if (_updateFunc) _updateFunc();
 		DrawStart();
 		DrawRect();
