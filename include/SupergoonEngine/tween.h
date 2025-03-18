@@ -10,6 +10,7 @@
 #pragma once
 #include <Supergoon/Tweening/tween.h>
 #include <stdint.h>
+#define MAX_TWEENS 100
 typedef enum TweenType {
 	TweenTypeFloat,
 	TweenTypeInt,

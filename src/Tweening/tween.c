@@ -5,8 +5,6 @@
 #include <Supergoon/state.h>
 #include <SupergoonEngine/tween.h>
 
-#define MAX_TWEENS 100
-
 static void updateTween(sgTween* tweenPtr, Tween id);
 static void startTween(Tween tween);
 static void pauseTween(Tween tween);
@@ -45,15 +43,26 @@ void handleTweenEvents(Event* event) {
 	}
 }
 
+static bool isTweenAvailableForActions(Tween tween) {
+	if (_tweens[tween].Available) {
+		sgLogInfo("Trying to perform actions on a tween that isn't available");
+		return false;
+	}
+	return true;
+}
+
 static void startTween(Tween tween) {
+	if (!isTweenAvailableForActions(tween)) return;
 	_tweens[tween].Started = true;
 }
 
 static void pauseTween(Tween tween) {
+	if (!isTweenAvailableForActions(tween)) return;
 	_tweens[tween].Started = false;
 }
 
 static void stopTween(Tween tween) {
+	if (!isTweenAvailableForActions(tween)) return;
 	_tweens[tween].Started = false;
 	_tweens[tween].Available = true;
 	_tweens[tween].CurrentTimeSeconds = 0;
@@ -69,7 +78,9 @@ void updateTweens(void) {
 static Tween getFirstUnusedTween(void) {
 	for (size_t i = 0; i < MAX_TWEENS; i++) {
 		if (_tweens[i].Available) {
-			++_numberTweens;
+			if ((int)i >= _numberTweens) {
+				++_numberTweens;
+			}
 			zeroTween(i);
 			_tweens[i].Available = false;
 			return i;

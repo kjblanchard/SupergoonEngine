@@ -54,9 +54,10 @@ if(imgui)
         src/Imgui/imgui_draw.cpp
         src/Imgui/imgui.cpp
         src/Debug/ImGui.cpp
-        src/Debug/Debug.cpp # For showing all the windows
         src/Debug/Console.cpp
         src/Debug/Audio.cpp
+        src/Debug/Tween.cpp
+        src/Debug/Debug.cpp # For showing all the windows
 
         # src/Debug/Audio.cpp
     )

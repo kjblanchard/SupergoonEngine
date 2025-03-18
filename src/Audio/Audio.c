@@ -180,6 +180,10 @@ void StopBgmFadeout(void) {
 		sgLogInfo("Trying to fadeout an invalid BGM");
 		return;
 	}
+	if (bgmAsset->IsFading) {
+		sgLogInfo("Trying to fadeout a BGM that is already fading");
+		return;
+	}
 	bgmAsset->IsFading = true;
 	Tween tween = CreateFloatTween(&bgmAsset->Volume, bgmAsset->Volume, 0.0, 0.25, TweenEasingLinear);
 	SetTweenUserdata(tween, bgmAsset);
