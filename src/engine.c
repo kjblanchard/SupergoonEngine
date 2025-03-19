@@ -72,6 +72,7 @@ static void Update(void) {
 		geClockUpdate(&_clock);
 		DeltaTimeMilliseconds = geClockGetUpdateTimeMilliseconds();
 		DeltaTimeSeconds = geClockGetUpdateTimeSeconds();
+		Ticks += 1;
 		audioUpdate();
 		updateTweens();
 		if (_updateFunc) _updateFunc();

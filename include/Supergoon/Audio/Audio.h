@@ -15,7 +15,7 @@ extern "C" {
 #pragma once
 // Game functions
 void SetBgmTrack(int track);
-void LoadBgm(const char* filename, float volume, int loops);
+void LoadBgm(const char *filename, float volume, int loops);
 /**
  * @brief Plays a BGM, additionally unpauses it if it is paused.
  */
@@ -30,13 +30,10 @@ void PauseBgm(void);
 void StopBgm(void);
 void StopBgmFadeout(void);
 void UpdatePlayingBgmVolume(void);
-
-// inline void SetGlobalSfxVolume(float volume) { _globalSfxVolume = volume; };
+void SetGlobalBgmVolume(float volume);
+void SetGlobalSfxVolume(float volume);
 // void PlaySfx(Sfx *sfx, float volume = 1.0);
-// void PlaySfxOneShot(const char *name, float volume = 1.0);
-// static inline Sound *Instance() { return _instance; }
-//  Updates all internal bgms
-// making public for now to test threading.
+void PlaySfxOneShot(const char *name, float volume);
 
 #ifdef __cplusplus
 }

@@ -6,16 +6,17 @@
 #include <vorbis/vorbisfile.h>
 #define VORBIS_REQUEST_SIZE 4096  // Size of vorbis requests, usually recommend to be 4096
 
-sgSfx* sgSfxNew(void) {
-	sgSfx* sfx = SDL_malloc(sizeof(*sfx));
-	sfx->Filename = NULL;
+Sfx* SfxNew(void) {
+	Sfx* sfx = SDL_malloc(sizeof(*sfx));
+	memset(sfx->Filename, 0, sizeof(sfx->Filename));
+	// sfx->Filename = NULL;
 	sfx->Buffer = NULL;
 	sfx->BufferLength = 0;
 	sfx->Volume = 1.0f;
 	return sfx;
 }
 
-void sgSfxLoad(sgSfx* sfx) {
+void SfxLoad(Sfx* sfx) {
 	OggVorbis_File ovf;
 	int result = ov_fopen(sfx->Filename, &ovf);
 	if (result != 0) {
@@ -39,7 +40,7 @@ void sgSfxLoad(sgSfx* sfx) {
 	ov_clear(&ovf);
 }
 
-void sgSfxPlay(sgSfx* sfx, sgStream* stream) {
+void SfxPlay(Sfx* sfx, sgStream* stream) {
 	if (!stream || !sfx->Buffer) {
 		sgLogWarn("Trying to play a sfx without setting a stream or loading properly: %s", sfx->Filename);
 		return;
@@ -52,25 +53,25 @@ void sgSfxPlay(sgSfx* sfx, sgStream* stream) {
 	}
 	SDL_ResumeAudioStreamDevice(stream->stream);
 }
-void sgSfxPlayOneShot(const char* filename, sgStream* stream) {
-	sgSfx* sfx = sgSfxNew();
-	sfx->Filename = strdup(filename);
-	sgSfxLoad(sfx);
-	sgSfxPlay(sfx, stream);
-	sgSfxDelete(sfx);
-}
+// void SfxPlayOneShot(const char* filename, sgStream* stream) {
+// 	Sfx* sfx = SfxNew();
+// 	sfx->Filename = strdup(filename);
+// 	SfxLoad(sfx);
+// 	SfxPlay(sfx, stream);
+// 	SfxDelete(sfx);
+// }
 
-void sgSfxDelete(sgSfx* sfx) {
-	if (sfx->Filename) {
-		SDL_free(sfx->Filename);
-	}
+void SfxDelete(Sfx* sfx) {
+	// if (sfx->Filename) {
+	// 	SDL_free(sfx->Filename);
+	// }
 	SDL_free(sfx->Buffer);
 	// ov_clear(sfx->VorbisFile);
 	// SDL_ClearAudioStream(sfx->Stream);
 	SDL_free(sfx);
 }
 
-// void sgSfxUpdateVolume(sgSfx* sfx, float volume) {
+// void sgSfxUpdateVolume(Sfx* sfx, float volume) {
 // 	if (!_sgSfxStream || volume > 1.0 || volume < 0) {
 // 		return;
 // 	}

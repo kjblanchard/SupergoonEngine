@@ -5,15 +5,22 @@
 #include <Supergoon/Tweening/tween.h>
 #include <Supergoon/events.h>
 #include <Supergoon/log.h>
+#include <Supergoon/state.h>
 #include <assert.h>
 
 #define MAX_TRACKS 4
+#define MAX_SFX_STREAMS 8
+#define SFX_CACHE_SIZE 12
 static unsigned int _track = 0;
 typedef struct AudioBgmAsset {
 	Bgm* Bgm;
 	float Volume;
 	bool IsFading;
 } AudioBgmAsset;
+typedef struct AudioSfxAsset {
+	Sfx Sfx;
+	uint32_t LastUsedTicks;
+} AudioSfxAsset;
 typedef struct BgmLoadArgs {
 	char* Name;
 	int Loops;
@@ -22,6 +29,9 @@ typedef struct BgmLoadArgs {
 } BgmLoadArgs;
 AudioBgmAsset _bgmAssets[MAX_TRACKS];
 float _globalBgmVolume = 1.0;
+float _globalSfxVolume = 1.0;
+sgStream _sfxStreams[MAX_SFX_STREAMS];
+AudioSfxAsset _sfxCache[SFX_CACHE_SIZE];
 
 static void loadBgmInternal(Event* event);
 static void stopBgmInternal(Event* event);
@@ -36,6 +46,16 @@ void initializeAudio(void) {
 		_bgmAssets[i].Bgm = NULL;
 		_bgmAssets[i].Volume = 0;
 		_bgmAssets[i].IsFading = false;
+	}
+
+	for (size_t i = 0; i < MAX_SFX_STREAMS; i++) {
+		sgStreamInit(&_sfxStreams[i]);
+	}
+
+	for (size_t i = 0; i < SFX_CACHE_SIZE; i++) {
+		snprintf(_sfxCache[i].Sfx.Filename, SFX_MAX_CHARS, "");
+		_sfxCache[i].Sfx.Buffer = NULL;
+		_sfxCache[i].LastUsedTicks = 0;
 	}
 }
 
@@ -199,4 +219,57 @@ void SetPlayingBgmVolume(float volume) {
 void SetGlobalBgmVolume(float volume) {
 	_globalBgmVolume = volume;
 	UpdatePlayingBgmVolume();
+}
+
+void SetGlobalSfxVolume(float volume) {
+	_globalSfxVolume = volume;
+}
+
+void PlaySfxOneShot(const char* name, float volume) {
+	sgStream* stream = NULL;
+	for (size_t i = 0; i < MAX_SFX_STREAMS; i++) {
+		if (sgStreamIsFinished(&_sfxStreams[i])) {
+			stream = &_sfxStreams[i];
+			break;
+		}
+	}
+	if (!stream) {
+		sgLogWarn("No free sfx streams, not playing SFX");
+	}
+	// Check the cache if we already loaded this
+	char fullPathBuffer[SFX_MAX_CHARS];
+	if (snprintf(fullPathBuffer, sizeof(fullPathBuffer), "%sassets/audio/sfx/%s%s", SDL_GetBasePath(), name, ".ogg") >= (int)sizeof(fullPathBuffer) - 1) {
+		sgLogError("Buffer size to small for comparing, probably use an alloc, or increase SFX_MAX_CHARS");
+		return;
+	}
+	Sfx* sfx = NULL;
+	for (size_t i = 0; i < SFX_CACHE_SIZE; i++) {
+		if (strcmp(fullPathBuffer, _sfxCache[i].Sfx.Filename) == 0) {
+			sfx = &_sfxCache[i].Sfx;
+			break;
+		}
+	}
+	if (sfx) {
+		sfx->Volume = volume;
+		SfxPlay(sfx, stream);
+		return;
+	}
+	// Clean the sfx used a while ago, and cache a new one
+	uint32_t oldestCache = UINT32_MAX;
+	int oldestCacheNum = 0;
+	for (size_t i = 0; i < SFX_CACHE_SIZE; i++) {
+		if (_sfxCache[i].LastUsedTicks < oldestCache) {
+			oldestCache = _sfxCache[i].LastUsedTicks;
+			oldestCacheNum = i;
+		}
+	}
+	AudioSfxAsset* sfxAsset = &_sfxCache[oldestCacheNum];
+	sfxAsset->LastUsedTicks = Ticks;
+	SDL_free(sfxAsset->Sfx.Buffer);
+	sfxAsset->Sfx.Buffer = NULL;
+	memcpy(sfxAsset->Sfx.Filename, fullPathBuffer, SFX_MAX_CHARS);
+	sfxAsset->Sfx.Filename[SFX_MAX_CHARS - 1] = '\0';  // Ensure null termination f
+	SfxLoad(&sfxAsset->Sfx);
+	sfx->Volume = volume;
+	SfxPlay(&sfxAsset->Sfx, stream);
 }

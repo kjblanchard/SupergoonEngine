@@ -23,7 +23,7 @@ std::vector<string> bgmNames;
 std::vector<string> sfxNames;
 static int bgmTrack = 0;
 static int loops = 0;
-// static float sfxPlayVolume = 1.0f;
+static float sfxPlayVolume = 1.0f;
 static void HelpMarker(const char* desc) {
 	ImGui::TextDisabled("(?)");
 	if (ImGui::BeginItemTooltip()) {
@@ -184,32 +184,30 @@ void ShowAudioDebugWindow() {
 			HelpMarker("How many times to loop at the loop points.  Loop points are loaded into the .ogg file.  -1 will loop forever");
 		}
 	}
-	// if (ImGui::CollapsingHeader("Sfx")) {
-	// 	if (sfxNames.size() > 0) {
-	// 		static int item_current = 1;
-	// 		// Create a vector to hold the const char* pointers
-	// 		std::vector<const char*> cStrings;
-	// 		// Reserve space for performance (optional but good practice)
-	// 		cStrings.reserve(sfxNames.size());
-	// 		// Extract the const char* pointers from std::string
-	// 		for (const std::string& name : sfxNames) {
-	// 			cStrings.push_back(name.c_str());
-	// 		}
-	// 		ImGui::ListBox("SfxItemList", &item_current, cStrings.data(), cStrings.size(), 4);
-	// 		ImGui::SameLine();
-	// 		HelpMarker("Click on a sound to play, and then click play to try it out.");
-	// 		if (ImGui::Button("PlaySfx")) {
-	// 			auto song = sfxNames[item_current];
-	// 			std::regex dotRegex("\\.ogg");
-	// 			std::vector<std::string> result(std::sregex_token_iterator(song.begin(), song.end(), dotRegex, -1), std::sregex_token_iterator());
-	// 			auto sfx = ContentRegistry::CreateContent<Sfx>(result[0]);
-	// 			ContentRegistry::LoadContent(*sfx);
-	// 			sound->PlaySfx(sfx.get(), sfxPlayVolume);
-	// 		}
-	// 		ImGui::SameLine();
-	// 		ImGui::SliderFloat("Volume", &sfxPlayVolume, 0, 1.0);
-	// 	}
-	// }
+	if (ImGui::CollapsingHeader("Sfx")) {
+		if (sfxNames.size() > 0) {
+			static int item_current = 1;
+			// Create a vector to hold the const char* pointers
+			std::vector<const char*> cStrings;
+			// Reserve space for performance (optional but good practice)
+			cStrings.reserve(sfxNames.size());
+			// Extract the const char* pointers from std::string
+			for (const std::string& name : sfxNames) {
+				cStrings.push_back(name.c_str());
+			}
+			ImGui::ListBox("SfxItemList", &item_current, cStrings.data(), cStrings.size(), 4);
+			ImGui::SameLine();
+			HelpMarker("Click on a sound to play, and then click play to try it out.");
+			if (ImGui::Button("PlaySfx")) {
+				auto song = sfxNames[item_current];
+				std::regex dotRegex("\\.ogg");
+				std::vector<std::string> result(std::sregex_token_iterator(song.begin(), song.end(), dotRegex, -1), std::sregex_token_iterator());
+				PlaySfxOneShot(result[0].c_str(), sfxPlayVolume);
+			}
+			ImGui::SameLine();
+			ImGui::SliderFloat("Volume", &sfxPlayVolume, 0, 1.0);
+		}
+	}
 	if (ImGui::Button("Update Sound Files")) {
 		// Gather all files in assets/sound
 		GetFiles();

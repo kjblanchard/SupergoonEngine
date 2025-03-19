@@ -11,3 +11,4 @@
 #pragma once
 extern float DeltaTimeSeconds;
 extern float DeltaTimeMilliseconds;
+extern uint32_t Ticks;

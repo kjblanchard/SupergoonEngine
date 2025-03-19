@@ -2,13 +2,17 @@
 #include <Supergoon/Audio/Stream.h>
 #include <Supergoon/log.h>
 
-sgStream* sgStreamNew(void) {
-	sgStream* stream = malloc(sizeof(*stream));
+void sgStreamInit(sgStream* stream) {
 	const SDL_AudioSpec spec = {SDL_AUDIO_S16LE, 2, 4800};
 	stream->stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, NULL, NULL);
 	if (!stream->stream) {
 		sgLogWarn("Failed making stream, %s", SDL_GetError());
 	}
+}
+
+sgStream* sgStreamNew(void) {
+	sgStream* stream = malloc(sizeof(*stream));
+	sgStreamInit(stream);
 	return stream;
 }
 

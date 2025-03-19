@@ -4,29 +4,28 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#define SFX_MAX_CHARS 255
 typedef struct sgStream sgStream;
 
-	typedef struct sgSfx {
-	char* Filename;
+typedef struct Sfx {
+	char Filename[SFX_MAX_CHARS];
 	short* Buffer;
 	int BufferLength;
 	//  between 0 and 1.0f;
 	float Volume;
 	SDL_AudioSpec spec;
 
-} sgSfx;
+} Sfx;
 
 // Creates a SFX, still need to set filename
-sgSfx* sgSfxNew(void);
+Sfx* SfxNew(void);
 // Load all data from the sfx to the buffer for playing.
-void sgSfxLoad(sgSfx*);
+void SfxLoad(Sfx*);
 // Put data from the buffer into the stream
-void sgSfxPlay(sgSfx*, sgStream*);
-void sgSfxPlayOneShot(const char* filename, sgStream*);
+void SfxPlay(Sfx*, sgStream*);
+// void SfxPlayOneShot(const char* filename, sgStream*);
 // Frees a sfx
-void sgSfxDelete(sgSfx*);
-// Volume should be between 0 and 1.0
-// void sgSfxUpdateVolume(sgSfx*, float);
+void SfxDelete(Sfx*);
 
 #ifdef __cplusplus
 }
