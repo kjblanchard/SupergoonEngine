@@ -10,6 +10,7 @@
 #include <Supergoon/lua.h>
 #include <Supergoon/state.h>
 #include <Supergoon/window.h>
+#include <SupergoonEngine/map.h>
 // This is not needed, just for testing
 #include <Supergoon/graphics.h>
 #ifdef imgui
@@ -37,12 +38,15 @@ static bool Start(void) {
 	sgInitializeDebugLogFile();
 	geInitializeKeyboard();
 	geInitializeJoysticks();
-	sgInitializeLua();
+	InitializeLuaEngine();
 	InitializeEventEngine();
 	geClockStart(&_clock);
 	CreateWindow();
 	initializeAudio();
 	initializeTweenEngine();
+	Tilemap map = parseTiledTilemap("debugTown");
+	createBackgroundsFromTilemap(map);
+
 	return true;
 }
 static bool sdlEventLoop(void) {
