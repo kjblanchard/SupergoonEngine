@@ -37,6 +37,18 @@ void DrawTexture(Texture* texture, Rectangle* dst, Rectangle* src);
 Texture* CreateRenderTargetTexture(int width, int height, sgColor color);
 
 /**
+ * @brief Draws a texture on a render target texture.  Useful for creating something that you can draw with, Used by engine for bg1 and bg2
+ * Make sure dst was created with CreateRenderTargetTexture
+ *
+ * @param dst
+ * @param src
+ * @param dstRect
+ * @param srcRect
+ */
+
+void DrawTextureToRenderTargetTexture(Texture* dst, Texture* src, Rectangle* dstRect, Rectangle* srcRect);
+
+/**
  * @brief Loads a bmp from the assets/img folder
  *
  * @param filename The name of the file, without the .bmp

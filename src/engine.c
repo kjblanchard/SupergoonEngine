@@ -24,6 +24,8 @@ extern void audioUpdate(void);
 // Function in tween.c
 extern void initializeTweenEngine(void);
 extern void updateTweens(void);
+// Texting, in map.c
+extern Texture *bg1Texture;
 
 static geClock _clock;
 static void (*_startFunc)(void) = NULL;
@@ -45,8 +47,8 @@ static bool Start(void) {
 	CreateWindow();
 	initializeAudio();
 	initializeTweenEngine();
-	// Tilemap *map = parseTiledTilemap("debugTown");
-	// createBackgroundsFromTilemap(map);
+	Tilemap *map = parseTiledTilemap("debugTown");
+	createBackgroundsFromTilemap(map);
 
 	return true;
 }
@@ -82,7 +84,11 @@ static void Update(void) {
 		updateTweens();
 		if (_updateFunc) _updateFunc();
 		DrawStart();
-		DrawRect();
+		if (bg1Texture) {
+			Rectangle src = {0, 0, 512, 288};
+			DrawTexture(bg1Texture, &src, &src);
+		}
+		// DrawRect();
 		if (_drawFunc) _drawFunc();
 		DrawEnd();
 		geUpdateControllerLastFrame();

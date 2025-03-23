@@ -48,6 +48,9 @@ void DrawStart(void);
  */
 void DrawEnd(void);
 
+int WindowHeight(void);
+int WindowWidth(void);
+
 void CloseWindow(void);
 #ifdef __cplusplus
 }

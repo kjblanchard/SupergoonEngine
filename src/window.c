@@ -64,13 +64,13 @@ void DrawStart(void) {
 	// Clear the texture we draw from
 	SDL_SetRenderTarget(_renderer, _imguiGameTexture);
 	SDL_RenderClear(_renderer);
-	Rectangle dst = {0, 0, 32, 32};
-	DrawTexture(testTexture, &dst, &dst);
 #ifdef imgui
 	StartImGuiFrame();
 #endif
 }
 void DrawEnd(void) {
+	Rectangle dst = {0, 32, 32, 32};
+	DrawTexture(testTexture, &dst, &dst);
 	SDL_SetRenderTarget(_renderer, NULL);
 	SDL_FRect dest = {0, 0, _windowWidth, _windowHeight};
 	SDL_RenderTexture(_renderer, _imguiGameTexture, NULL, &dest);
@@ -83,8 +83,15 @@ void DrawEnd(void) {
 void DrawTexture(Texture* texture, Rectangle* dst, Rectangle* src) {
 	SDL_RenderTexture(_renderer, texture, src, dst);
 }
+
+int WindowHeight(void) {
+	return _windowHeight;
+}
+int WindowWidth(void) {
+	return _windowWidth;
+}
 void CloseWindow(void) {
-	SDL_DestroyTexture(testTexture);
+	// SDL_DestroyTexture(testTexture);
 	SDL_DestroyTexture(_imguiGameTexture);
 	SDL_DestroyRenderer(_renderer);
 	SDL_DestroyWindow(_window);

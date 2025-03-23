@@ -57,3 +57,9 @@ Texture* CreateTextureFromIndexedBMP(const char* filename) {
 	}
 	return texture;
 }
+void DrawTextureToRenderTargetTexture(Texture* dst, Texture* src, Rectangle* dstRect, Rectangle* srcRect) {
+	Texture* currentRenderTarget = SDL_GetRenderTarget(_renderer);
+	SDL_SetRenderTarget(_renderer, dst);
+	SDL_RenderTexture(_renderer, src, srcRect, dstRect);
+	SDL_SetRenderTarget(_renderer, currentRenderTarget);
+}

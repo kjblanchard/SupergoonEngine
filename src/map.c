@@ -1,4 +1,5 @@
 #include <Supergoon/filesystem.h>
+#include <Supergoon/graphics.h>
 #include <Supergoon/log.h>
 #include <Supergoon/lua.h>
 #include <SupergoonEngine/map.h>
@@ -8,6 +9,8 @@
 // Reads through the tiled layer group and assigns properly
 static void handleTiledLayerGroup(Tilemap* map);
 static void handleTiledObjectGroup(Tilemap* map);
+Texture* bg1Texture = NULL;
+Texture* bg2Texture = NULL;
 
 Tilemap* parseTiledTilemap(const char* tiledFilename) {
 	char name[50];
@@ -20,7 +23,7 @@ Tilemap* parseTiledTilemap(const char* tiledFilename) {
 	map->tileheight = LuaGetInt("tileheight");
 	LuaPushTableToStack("tilesets");
 	map->tileset_count = LuaGetTableLength();
-	map->tilesets = malloc(map->tileset_count * sizeof(Tileset));
+	map->tilesets = calloc(map->tileset_count, sizeof(Tileset));
 	for (int i = 0; i < map->tileset_count; i++) {
 		LuaPushTableObjectToStacki(i);
 		LuaCopyString("name", map->tilesets[i].name, sizeof(map->tilesets[i].name));
@@ -69,9 +72,9 @@ static void handleTiledLayerGroup(Tilemap* map) {
 	LayerGroup* group = &map->groups[groupNum];
 	strncpy(group->Name, name, sizeof(group->Name));
 	LuaPushTableToStack("layers");
-	int numLayers = LuaGetTableLength();
-	group->Layers = calloc(numLayers, sizeof(TileLayer));
-	for (size_t i = 0; i < (size_t)numLayers; i++) {
+	group->NumLayers = LuaGetTableLength();
+	group->Layers = calloc(group->NumLayers, sizeof(TileLayer));
+	for (size_t i = 0; i < (size_t)group->NumLayers; i++) {
 		LuaPushTableObjectToStacki(i);
 		createTileLayer(&group->Layers[i]);
 		LuaPopStack(1);
@@ -79,8 +82,65 @@ static void handleTiledLayerGroup(Tilemap* map) {
 	LuaPopStack(1);
 }
 
+static void loadTilesetTextures(Tilemap* map) {
+	for (size_t i = 0; i < (size_t)map->tileset_count; i++) {
+		// Remove the .bmp from the name for easier loading with function
+		int nameLen = strlen(map->tilesets[i].image);
+		// Subtract .bmp (4) chars
+		map->tilesets[i].image[nameLen - 4] = '\0';
+		map->tilesets[i].tilesetTexture = CreateTextureFromIndexedBMP(map->tilesets[i].image);
+	}
+}
+
 static void handleTiledObjectGroup(Tilemap* map) {
 }
 
-void createBackgroundsFromTilemap(Tilemap map) {
+static Tileset* GetTilesetForGID(int gid, Tilemap* map) {
+	int highestGID = 0;
+	Tileset* highestGIDTileset = NULL;
+	for (size_t i = 0; i < (size_t)map->tileset_count; i++) {
+		if (gid >= map->tilesets[i].firstgid && map->tilesets[i].firstgid >= highestGID) {
+			highestGID = map->tilesets[i].firstgid;
+			highestGIDTileset = &map->tilesets[i];
+		}
+	}
+	return highestGIDTileset;
+}
+
+static void GetRectForGid(int gid, Tileset* tileset, Rectangle* rect) {
+	int tilemapGid = gid - tileset->firstgid;
+	int x = (tilemapGid % (tileset->imagewidth / tileset->tilewidth)) * tileset->tilewidth;
+	int y = (tilemapGid / (tileset->imagewidth / tileset->tilewidth)) * tileset->tileheight;
+	rect->x = x;
+	rect->y = y;
+	rect->w = tileset->tilewidth;
+	rect->h = tileset->tileheight;
+}
+
+void createBackgroundsFromTilemap(Tilemap* map) {
+	int mapWidth = map->width * map->tilewidth;
+	int mapHeight = map->height * map->tileheight;
+	bg1Texture = CreateRenderTargetTexture(mapWidth, mapHeight, (sgColor){255, 255, 255, 255});
+	// Load the tileset textures so that we can use them to draw with.
+	loadTilesetTextures(map);
+	LayerGroup* bg1LayerGroup = &map->groups[0];
+	Rectangle dstRect = {0, 0, map->tilewidth, map->tileheight};
+	Rectangle srcRect = {0, 0, 0, 0};
+	for (size_t i = 0; i < (size_t)bg1LayerGroup->NumLayers; i++) {
+		TileLayer* layer = &bg1LayerGroup->Layers[i];
+		for (int y = 0; y < layer->height; ++y) {
+			for (int x = 0; x < layer->width; ++x) {
+				int index = (y * layer->width) + x;
+				int tileGid = layer->data[index];
+				if (tileGid == 0)
+					continue;
+				Tileset* srcTileset = GetTilesetForGID(tileGid, map);
+				GetRectForGid(tileGid, srcTileset, &srcRect);
+				Texture* srcTexture = srcTileset->tilesetTexture;
+				dstRect.x = x * map->tilewidth;
+				dstRect.y = y * map->tileheight;
+				DrawTextureToRenderTargetTexture(bg1Texture, srcTexture, &dstRect, &srcRect);
+			}
+		}
+	}
 }
