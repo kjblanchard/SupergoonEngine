@@ -83,3 +83,9 @@ void DrawEnd(void) {
 void DrawTexture(Texture* texture, Rectangle* dst, Rectangle* src) {
 	SDL_RenderTexture(_renderer, texture, src, dst);
 }
+void CloseWindow(void) {
+	SDL_DestroyTexture(testTexture);
+	SDL_DestroyTexture(_imguiGameTexture);
+	SDL_DestroyRenderer(_renderer);
+	SDL_DestroyWindow(_window);
+}

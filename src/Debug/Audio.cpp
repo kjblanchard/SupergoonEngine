@@ -3,6 +3,7 @@
 #include <Supergoon/Audio/Bgm.h>
 
 #include <Supergoon/Debug/Audio.hpp>
+#include <Supergoon/pch.hpp>
 #include <regex>
 #include <string>
 #include <vector>
@@ -48,11 +49,13 @@ static void GetFiles() {
 	}
 
 	dir = "sfx";
+	SDL_free(fullPath);
 	SDL_asprintf(&fullPath, "%sassets/audio/%s/", SDL_GetBasePath(), dir);
 	char** sfxFiles = SDL_GlobDirectory(fullPath, pattern, 0, &count);
 	for (size_t i = 0; i < (size_t)count; i++) {
 		sfxNames.push_back(std::string(sfxFiles[i]));
 	}
+	SDL_free(fullPath);
 	SDL_free(bgmFiles);
 	SDL_free(sfxFiles);
 }
@@ -213,4 +216,7 @@ void ShowAudioDebugWindow() {
 		GetFiles();
 	}
 	ImGui::End();
+}
+
+void CloseAudioDebugWindow(void) {
 }

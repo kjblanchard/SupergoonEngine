@@ -16,6 +16,10 @@ sgStream* sgStreamNew(void) {
 	return stream;
 }
 
+void sgStreamClose(sgStream* stream) {
+	SDL_DestroyAudioStream(stream->stream);
+}
+
 bool sgStreamIsFinished(sgStream* stream) {
 	return SDL_GetAudioStreamAvailable(stream->stream) == 0;
 }

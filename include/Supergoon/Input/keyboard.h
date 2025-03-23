@@ -15,11 +15,11 @@ extern "C" {
 
 typedef union SDL_Event SDL_Event;
 
-void geInitializeKeyboard(void);
-void geUpdateKeyboard(void);
-int geKeyJustReleased(const int key);
-int geKeyJustPressed(const int key);
-int geKeyHeldDown(int key);
+void InitializeKeyboardSystem(void);
+void UpdateKeyboardSystem(void);
+int IsKeyboardKeyJustReleased(const int key);
+int IsKeyboardKeyJustPressed(const int key);
+int IsKeyboardKeyHeldDown(int key);
 
 #ifdef __cplusplus
 }

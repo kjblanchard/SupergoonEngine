@@ -19,6 +19,7 @@
 
 // Functions in Audio.c
 extern void initializeAudio(void);
+extern void closeAudio(void);
 extern void audioUpdate(void);
 // Function in tween.c
 extern void initializeTweenEngine(void);
@@ -36,7 +37,7 @@ static bool Start(void) {
 		return false;
 	}
 	sgInitializeDebugLogFile();
-	geInitializeKeyboard();
+	InitializeKeyboardSystem();
 	geInitializeJoysticks();
 	InitializeLuaEngine();
 	InitializeEventEngine();
@@ -44,8 +45,8 @@ static bool Start(void) {
 	CreateWindow();
 	initializeAudio();
 	initializeTweenEngine();
-	Tilemap map = parseTiledTilemap("debugTown");
-	createBackgroundsFromTilemap(map);
+	// Tilemap *map = parseTiledTilemap("debugTown");
+	// createBackgroundsFromTilemap(map);
 
 	return true;
 }
@@ -72,7 +73,7 @@ static void Update(void) {
 	bool quit = false;
 	while (!quit) {
 		quit = sdlEventLoop();
-		geUpdateKeyboard();
+		UpdateKeyboardSystem();
 		geClockUpdate(&_clock);
 		DeltaTimeMilliseconds = geClockGetUpdateTimeMilliseconds();
 		DeltaTimeSeconds = geClockGetUpdateTimeSeconds();
@@ -90,6 +91,10 @@ static void Update(void) {
 
 static void Quit(void) {
 	sgCloseDebugLogFile();
+	ShutdownJoystickSystem();
+	sgCloseLua();
+	closeAudio();
+	CloseWindow();
 }
 
 void SetStartFunction(void (*startFunc)(void)) {

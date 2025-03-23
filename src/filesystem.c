@@ -1,5 +1,7 @@
+#include <SDL3/SDL_filesystem.h>
 #include <Supergoon/filesystem.h>
 #include <Supergoon/log.h>
+#include <stdio.h>
 
 static char *_systemFilePath = NULL;
 

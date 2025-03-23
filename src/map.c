@@ -3,6 +3,7 @@
 #include <Supergoon/lua.h>
 #include <SupergoonEngine/map.h>
 #include <stdio.h>
+#include <string.h>
 
 // Reads through the tiled layer group and assigns properly
 static void handleTiledLayerGroup(Tilemap* map);

@@ -47,6 +47,8 @@ void DrawStart(void);
  * @brief Concludes drawing, and draws to screen
  */
 void DrawEnd(void);
+
+void CloseWindow(void);
 #ifdef __cplusplus
 }
 #endif

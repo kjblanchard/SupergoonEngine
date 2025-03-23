@@ -19,6 +19,8 @@ bool geGamepadButtonJustReleased(const int padNum, const int button);
 bool geGamepadButtonJustPressed(const int padNum, const int button);
 bool geGamepadButtonHeldDown(const int padNum, const int button);
 
+void ShutdownJoystickSystem(void);
+
 #ifdef __cplusplus
 }
 #endif

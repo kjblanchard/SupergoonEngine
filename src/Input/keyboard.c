@@ -11,23 +11,23 @@ static void InitializeKeyboardStateArrays(void) {
 	memcpy(_currentKeyboardState, SDL_GetKeyboardState(NULL), sizeof(Uint8) * SDL_SCANCODE_COUNT);
 }
 
-void geInitializeKeyboard(void) {
+void InitializeKeyboardSystem(void) {
 	InitializeKeyboardStateArrays();
 }
 
-int geKeyHeldDown(int key) {
+int IsKeyboardKeyHeldDown(int key) {
 	return _previousKeyboardState[key] && _currentKeyboardState[key];
 }
 
-int geKeyJustPressed(const int key) {
+int IsKeyboardKeyJustPresed(const int key) {
 	return _currentKeyboardState[key] && !_previousKeyboardState[key];
 }
 
-int geKeyJustReleased(const int key) {
+int IsKeyboardKeyJustReleased(const int key) {
 	return !_currentKeyboardState[key] && _previousKeyboardState[key];
 }
 
-void geUpdateKeyboard(void) {
+void UpdateKeyboardSystem(void) {
 	memcpy(_previousKeyboardState, _currentKeyboardState, sizeof(Uint8) * SDL_SCANCODE_COUNT);
 	memcpy(_currentKeyboardState, SDL_GetKeyboardState(NULL), sizeof(Uint8) * SDL_SCANCODE_COUNT);
 }

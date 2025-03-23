@@ -71,10 +71,9 @@ set(SKIP_INSTALL_ALL ON CACHE BOOL "We don't want any of these external packages
 set(CMAKE_DEBUG_POSTFIX "" CACHE STRING " Don't use the d for debug packages" FORCE)
 set(CMAKE_DEBUG_TARGET_PROPERTIES "DEBUG_OUTPUT" "" CACHE STRING "Don't use the d for debug packages" FORCE)
 
-target_precompile_headers(${LIBRARY_TARGET_NAME} PRIVATE
-    "$<$<COMPILE_LANGUAGE:C>:${CMAKE_CURRENT_SOURCE_DIR}/include/Supergoon/pch.h>"
-    "$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/include/Supergoon/pch.hpp>")
-
+# target_precompile_headers(${LIBRARY_TARGET_NAME} PRIVATE
+# "$<$<COMPILE_LANGUAGE:C>:${CMAKE_CURRENT_SOURCE_DIR}/include/Supergoon/pch.h>"
+# "$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/include/Supergoon/pch.hpp>")
 if(SYSTEM_PACKAGES) # If we are using system packages, then we should try to find them.
     find_package(SDL3 CONFIG COMPONENTS SDL3-shared)
     find_library(LIB_VORBIS
@@ -156,17 +155,35 @@ if(NOT LIB_VORBIS)
     list(APPEND EXTERNAL_LIBS vorbisenc vorbisfile vorbis)
 endif(NOT LIB_VORBIS)
 
-# if(NOT LIB_LUA)
-# message(STATUS "Lua not found. Fetching Lua...")
-# FetchContent_Declare(
-# LIB_LUA
-# GIT_REPOSITORY https://github.com/walterschell/Lua.git
-# GIT_TAG v5.3.3
-# EXCLUDE_FROM_ALL
-# )
-# FetchContent_MakeAvailable(LIB_LUA)
-# list(APPEND EXTERNAL_LIBS lua_static)
-# endif(NOT LIB_LUA)
+if(NOT LIB_LUA)
+    message(STATUS "Lua not found. Fetching Lua...")
+
+    # include(ExternalProject)
+    # ExternalProject_Add(lua
+    # URL https://www.lua.org/ftp/lua-5.1.5.tar.gz
+    # URL_HASH SHA256=2640fc56a795f29d28ef15e13c34a47e223960b0240e8cb0a82d9b0738695333
+    # BUILD_IN_SOURCE 1
+    # PREFIX ${CMAKE_BINARY_DIR}/lua
+    # CONFIGURE_COMMAND ""
+    # BUILD_COMMAND make macosx
+    # # BUILD_COMMAND make generic
+    # INSTALL_COMMAND ""
+    # )
+    # list(APPEND EXTERNAL_LIBS lua)
+
+    # add_library(lua STATIC IMPORTED)
+    FetchContent_Declare(
+        LIB_LUA
+        GIT_REPOSITORY https://github.com/walterschell/Lua.git
+        GIT_TAG v5.4.5
+        EXCLUDE_FROM_ALL
+    )
+    FetchContent_MakeAvailable(LIB_LUA)
+    # list(APPEND EXTERNAL_LIBS lua_static)
+
+    list(APPEND EXTERNAL_LIBS lua_static)
+endif(NOT LIB_LUA)
+
 if(DEBUG_CMAKE_VARIABLES)
     get_cmake_property(ALL_VARIABLES VARIABLES)
 
@@ -191,3 +208,6 @@ target_include_directories(${LIBRARY_TARGET_NAME}
     ${sdl3_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
+install(DIRECTORY ${FOLDERS_TO_COPY}
+    DESTINATION ${INSTALL_DIR}
+    COMPONENT assets)

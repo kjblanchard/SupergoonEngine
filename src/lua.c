@@ -1,7 +1,10 @@
+#include <SDL3/SDL_filesystem.h>
 #include <Supergoon/log.h>
 #include <lauxlib.h>
 #include <lua.h>
 #include <lualib.h>
+#include <stdio.h>
+#include <string.h>
 
 static lua_State *_luaState;
 
@@ -48,7 +51,8 @@ void LuaPushTableToStack(const char *tableFieldName) {
 }
 
 int LuaGetTableLength(void) {
-	return lua_objlen(_luaState, -1);
+	// return lua_objlen(_luaState, -1);
+	return lua_rawlen(_luaState, -1);
 }
 
 void LuaCopyString(const char *name, char *location, int strlen) {

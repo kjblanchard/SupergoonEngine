@@ -1,9 +1,12 @@
+#include <SDL3/SDL_events.h>
 #include <Supergoon/Tweening/easing.h>
 #include <Supergoon/Tweening/tween.h>
 #include <Supergoon/events.h>
 #include <Supergoon/log.h>
 #include <Supergoon/state.h>
 #include <SupergoonEngine/tween.h>
+#include <stdbool.h>
+#include <stdlib.h>
 
 static void updateTween(sgTween* tweenPtr, Tween id);
 static void startTween(Tween tween);

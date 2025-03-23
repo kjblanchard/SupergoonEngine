@@ -1,3 +1,5 @@
+#include <stdbool.h>
+#include <SDL3/SDL_events.h>
 #include <Supergoon/Audio/Audio.h>
 #include <Supergoon/events.h>
 

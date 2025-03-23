@@ -15,6 +15,8 @@ sgStream* sgStreamNew(void);
 void sgStreamInit(sgStream* stream);
 bool sgStreamIsFinished(sgStream* stream);
 void sgStreamFree(sgStream* stream);
+// Close a stream, used by engine
+void sgStreamClose(sgStream* stream);
 #ifdef __cplusplus
 }
 #endif

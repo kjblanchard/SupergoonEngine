@@ -1,3 +1,5 @@
+#include <SDL3/SDL_events.h>
+#include <SDL3/SDL_filesystem.h>
 #include <Supergoon/Audio/Audio.h>
 #include <Supergoon/Audio/Bgm.h>
 #include <Supergoon/Audio/Sfx.h>
@@ -56,6 +58,24 @@ void initializeAudio(void) {
 		snprintf(_sfxCache[i].Sfx.Filename, SFX_MAX_CHARS, "");
 		_sfxCache[i].Sfx.Buffer = NULL;
 		_sfxCache[i].LastUsedTicks = 0;
+	}
+}
+
+void closeAudio(void) {
+	for (size_t i = 0; i < MAX_TRACKS; i++) {
+		if (_bgmAssets[i].Bgm) {
+			bgmDelete(_bgmAssets[i].Bgm);
+		}
+	}
+
+	for (size_t i = 0; i < MAX_SFX_STREAMS; i++) {
+		sgStreamClose(&_sfxStreams[i]);
+	}
+
+	for (size_t i = 0; i < SFX_CACHE_SIZE; i++) {
+		if (_sfxCache[i].Sfx.Buffer) {
+			SDL_free(_sfxCache[i].Sfx.Buffer);
+		}
 	}
 }
 
@@ -270,6 +290,6 @@ void PlaySfxOneShot(const char* name, float volume) {
 	memcpy(sfxAsset->Sfx.Filename, fullPathBuffer, SFX_MAX_CHARS);
 	sfxAsset->Sfx.Filename[SFX_MAX_CHARS - 1] = '\0';  // Ensure null termination f
 	SfxLoad(&sfxAsset->Sfx);
-	sfx->Volume = volume;
+	sfxAsset->Sfx.Volume = volume;
 	SfxPlay(&sfxAsset->Sfx, stream);
 }
