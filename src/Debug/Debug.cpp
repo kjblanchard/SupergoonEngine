@@ -2,6 +2,7 @@
 #include <Supergoon/Debug/Audio.hpp>
 #include <Supergoon/Debug/Console.hpp>
 #include <Supergoon/Debug/Debug.hpp>
+#include <Supergoon/Debug/Game.hpp>
 #include <Supergoon/Debug/Tween.hpp>
 #include <Supergoon/pch.hpp>
 
@@ -9,6 +10,7 @@ void ShowWidgets() {
 	ShowContentDebugWindow();
 	ShowAudioDebugWindow();
 	ShowTweenDebugWindow();
+	ShowGameDebugWindow();
 }
 
 int GetDefaultWindowFlags() {

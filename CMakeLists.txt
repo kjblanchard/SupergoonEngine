@@ -58,6 +58,7 @@ if(imgui)
         src/Debug/Console.cpp
         src/Debug/Audio.cpp
         src/Debug/Tween.cpp
+        src/Debug/Game.cpp
         src/Debug/Debug.cpp # For showing all the windows
 
         # src/Debug/Audio.cpp
@@ -158,21 +159,14 @@ endif(NOT LIB_VORBIS)
 
 if(NOT LIB_LUA)
     message(STATUS "Lua not found. Fetching Lua...")
+    set(LUA_ENABLE_TESTING OFF CACHE BOOL "Build SDL as a shared library")
+    set(LUA_BUILD_COMPILER OFF CACHE BOOL "Build SDL as a shared library")
+    set(LUA_BUILD_BINARY OFF CACHE BOOL "Build SDL as a shared library")
 
-    # include(ExternalProject)
-    # ExternalProject_Add(lua
-    # URL https://www.lua.org/ftp/lua-5.1.5.tar.gz
-    # URL_HASH SHA256=2640fc56a795f29d28ef15e13c34a47e223960b0240e8cb0a82d9b0738695333
-    # BUILD_IN_SOURCE 1
-    # PREFIX ${CMAKE_BINARY_DIR}/lua
-    # CONFIGURE_COMMAND ""
-    # BUILD_COMMAND make macosx
-    # # BUILD_COMMAND make generic
-    # INSTALL_COMMAND ""
-    # )
-    # list(APPEND EXTERNAL_LIBS lua)
+    if(IOS) # Test for ios sim with lua, as this fails with system and needs this define
+        add_definitions(-DTARGET_OS_IOS=1)
+    endif(IOS)
 
-    # add_library(lua STATIC IMPORTED)
     FetchContent_Declare(
         LIB_LUA
         GIT_REPOSITORY https://github.com/walterschell/Lua.git

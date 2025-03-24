@@ -10,11 +10,12 @@
 // Window/renderer is used as extern in graphics
 Window* _window = NULL;
 Renderer* _renderer = NULL;
-static Texture* _imguiGameTexture;
 static int _windowWidth = 0;
 static int _windowHeight = 0;
-static int _logicalWidth = 0;
-static int _logicalHeight = 0;
+// Used in debug, so non static
+int _logicalWidth = 0;
+int _logicalHeight = 0;
+Texture* _imguiGameTexture;
 static const char* _windowName = NULL;
 static Texture* testTexture = NULL;
 
@@ -72,9 +73,10 @@ void DrawEnd(void) {
 	Rectangle dst = {0, 32, 32, 32};
 	DrawTexture(testTexture, &dst, &dst);
 	SDL_SetRenderTarget(_renderer, NULL);
+#ifndef imgui
 	SDL_FRect dest = {0, 0, _windowWidth, _windowHeight};
-	SDL_RenderTexture(_renderer, _imguiGameTexture, NULL, &dest);
-#ifdef imgui
+	SDL_RenderTexture(_renderer, _imguiGameTexture, NULL, NULL);
+#else
 	DrawImGui();
 #endif
 	SDL_RenderPresent(_renderer);
