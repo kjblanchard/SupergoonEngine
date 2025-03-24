@@ -5,7 +5,8 @@ extern "C" {
 typedef union SDL_Event Event;
 
 void InitializeImGui(void);
-void HandleImGuiEvent(Event* event);
+// Returns true if we should send this to the game, false if we should continue
+bool HandleImGuiEvent(Event* event);
 void StartImGuiFrame(void);
 void DrawImGui(void);
 void EndImGuiFrame(void);

@@ -160,11 +160,13 @@ endif(NOT LIB_VORBIS)
 if(NOT LIB_LUA)
     message(STATUS "Lua not found. Fetching Lua...")
     set(LUA_ENABLE_TESTING OFF CACHE BOOL "Build SDL as a shared library")
+    set(LUA_ENABLE_SHARED OFF CACHE BOOL "Build SDL as a shared library")
     set(LUA_BUILD_COMPILER OFF CACHE BOOL "Build SDL as a shared library")
     set(LUA_BUILD_BINARY OFF CACHE BOOL "Build SDL as a shared library")
 
     if(IOS) # Test for ios sim with lua, as this fails with system and needs this define
         add_definitions(-DTARGET_OS_IOS=1)
+        add_definitions(-DLUA_USE_IOS=1)
     endif(IOS)
 
     FetchContent_Declare(

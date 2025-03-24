@@ -12,7 +12,7 @@ extern int _logicalWidth;
 extern int _logicalHeight;
 Texture* _imguiGameTexture;
 
-// bool GameWidget::_isFocusedLastFrame = true;
+bool _isFocusedLastFrame = true;
 
 void ShowGameDebugWindow(void) {
 	auto window_flags = GetDefaultWindowFlags();
@@ -37,14 +37,6 @@ void ShowGameDebugWindow(void) {
 	ImVec2 imguiSize(scaledWidth, scaledHeight);  // Use the scaled size
 	auto tex = (ImTextureID)(intptr_t)_imguiGameTexture;
 	ImGui::Image(tex, imguiSize);
+	_isFocusedLastFrame = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootWindow);
 	ImGui::End();
 }
-// 	bool isFocused = ImGui::IsWindowFocused();
-// 	if (_isFocusedLastFrame != isFocused) {
-// 		Events::PushEvent(Events::BuiltinEvents.ImGuiFocusedEvent, isFocused);
-// 		_isFocusedLastFrame = isFocused;
-// 	}
-// 	auto graphics = Graphics::Instance();
-
-// }
-// }  // namespace Supergoon

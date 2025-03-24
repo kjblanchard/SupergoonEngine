@@ -1,5 +1,4 @@
 #include <SDL3/SDL.h>
-#include <SDL3/SDL_main.h>
 #include <Supergoon/Audio/Audio.h>
 #include <Supergoon/Input/joystick.h>
 #include <Supergoon/Input/keyboard.h>
@@ -35,7 +34,8 @@ static int (*_handleEventFunc)(Event *) = NULL;
 
 static bool Start(void) {
 	if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMEPAD)) {
-		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Couldn't initialize SDL!", SDL_GetError(), NULL);
+		const char *error = SDL_GetError();
+		sgLogError("Could not init sdl, %s", SDL_GetError());
 		return false;
 	}
 	sgInitializeDebugLogFile();
@@ -61,12 +61,15 @@ static bool sdlEventLoop(void) {
 				return true;
 				break;
 		}
+#ifdef imgui
+		if (!HandleImGuiEvent(&event)) {
+			sgLogWarn("We are not sending this to the game");
+			continue;
+		}
+		sgLogWarn("We are sending this to the game");
+#endif
 		if (_handleEventFunc) quit = _handleEventFunc(&event);
 		HandleEvents(&event);
-#ifdef imgui
-		HandleImGuiEvent(&event);
-
-#endif
 	}
 	return quit;
 }

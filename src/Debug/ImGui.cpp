@@ -11,6 +11,8 @@
 // defined in window.c
 extern Window* _window;
 extern Renderer* _renderer;
+// defined in Game.cpp
+extern bool _isFocusedLastFrame;
 
 void InitializeImGui(void) {
 	assert(_renderer && _window && "No renderer, make sure window is created");
@@ -25,8 +27,10 @@ void InitializeImGui(void) {
 	ImGui_ImplSDLRenderer3_Init(_renderer);
 	InitializeDebug();
 }
-void HandleImGuiEvent(Event* event) {
+
+bool HandleImGuiEvent(Event* event) {
 	ImGui_ImplSDL3_ProcessEvent(event);
+	return _isFocusedLastFrame;
 }
 
 void StartImGuiFrame(void) {
