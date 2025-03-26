@@ -4,9 +4,9 @@ extern "C" {
 #endif
 
 typedef enum TiledPropertyTypes {
-	Int,
-	Float,
-	String,
+	TiledPropertyTypeInt,
+	TiledPropertyTypeFloat,
+	TiledPropertyTypeString,
 } TiledPropertyTypes;
 
 typedef struct TiledProperty {

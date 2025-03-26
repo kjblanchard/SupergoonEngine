@@ -28,6 +28,10 @@ void LuaRunFile(const char *path) {
 	}
 }
 
+int LuaGetStackSize(void) {
+	return lua_gettop(_luaState);
+}
+
 void LuaPushTableFromFile(const char *path) {
 	LuaRunFile(path);
 	if (!lua_istable(_luaState, -1)) {
@@ -55,10 +59,30 @@ int LuaGetTableLength(void) {
 	return lua_rawlen(_luaState, -1);
 }
 
+int LuaGetTableLengthMap(void) {
+	int len = 0;
+	lua_pushnil(_luaState);
+	while (lua_next(_luaState, -2) != 0) {
+		++len;
+		lua_pop(_luaState, 1);
+	}
+	lua_pop(_luaState, 1);
+	return len;
+}
+
 void LuaCopyString(const char *name, char *location, int strlen) {
 	lua_getfield(_luaState, -1, name);
 	strncpy(location, lua_tostring(_luaState, -1), strlen);
 	lua_pop(_luaState, 1);
+}
+
+void LuaCopyStringStack(int stackLocation, char *location, int strlen) {
+	strncpy(location, lua_tostring(_luaState, stackLocation), strlen);
+}
+
+char *LuaAllocateStringStack(int stackLocation) {
+	const char *string = lua_tostring(_luaState, stackLocation);
+	return strdup(string);
 }
 
 void LuaPushTableObjectToStacki(int i) {
@@ -69,8 +93,19 @@ void LuaPopStack(int num) {
 	lua_pop(_luaState, num);
 }
 
-int LuaGetIntFromStack() {
+int LuaGetIntFromStack(void) {
 	return lua_tointeger(_luaState, -1);
+}
+
+float LuaGetFloat(const char *field) {
+	lua_getfield(_luaState, -1, field);
+	float fieldFloat = lua_tonumber(_luaState, -1);
+	lua_pop(_luaState, 1);
+	return fieldFloat;
+}
+
+float LuaGetFloatFromStack(void) {
+	return lua_tonumber(_luaState, -1);
 }
 
 const char *LuaGetString(const char *name) {
@@ -93,4 +128,29 @@ void LuaClearStack(void) {
 
 void sgCloseLua(void) {
 	lua_close(_luaState);
+}
+
+void LuaStartTableKeyValueIteration(void) {
+	lua_pushnil(_luaState);
+	lua_pushnil(_luaState);
+}
+
+int LuaNextTableKeyValueIterate(void) {
+	return lua_next(_luaState, -2);
+}
+
+void LuaEndTableKeyValueIteration(void) {
+	// Removes the nil from the start table iteration
+	lua_pop(_luaState, 1);
+}
+bool LuaIsString(int stackLocation) {
+	return lua_isstring(_luaState, stackLocation);
+}
+
+bool LuaIsInt(int stackLocation) {
+	return lua_isinteger(_luaState, stackLocation);
+}
+
+bool LuaIsFloat(int stackLocation) {
+	return lua_isnumber(_luaState, stackLocation);
 }

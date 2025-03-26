@@ -34,7 +34,6 @@ static int (*_handleEventFunc)(Event *) = NULL;
 
 static bool Start(void) {
 	if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMEPAD)) {
-		const char *error = SDL_GetError();
 		sgLogError("Could not init sdl, %s", SDL_GetError());
 		return false;
 	}

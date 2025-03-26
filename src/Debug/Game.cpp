@@ -11,10 +11,16 @@
 extern int _logicalWidth;
 extern int _logicalHeight;
 Texture* _imguiGameTexture;
-
 bool _isFocusedLastFrame = true;
+static u_int8_t _frames = 0;
 
 void ShowGameDebugWindow(void) {
+	if (_frames < 2) {
+		++_frames;
+	} else if (_frames == 2) {
+		ImGui::SetNextWindowFocus();
+		++_frames;
+	}
 	auto window_flags = GetDefaultWindowFlags();
 	bool p_open;
 	if (!ImGui::Begin("Game", &p_open, window_flags)) {

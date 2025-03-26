@@ -43,14 +43,13 @@ Tilemap* parseTiledTilemap(const char* tiledFilename) {
 		const char* layerType = LuaGetString("type");
 		if (strcmp(layerType, "objectgroup") == 0) {
 			handleTiledObjectGroup(map);
-			sgLogWarn("This is a object group!");
 		} else if (strcmp(layerType, "group") == 0) {
 			handleTiledLayerGroup(map);
 		}
 		LuaPopStack(1);
 	}
-	LuaPopStack(1);
-	LuaClearStack();
+	LuaPopStack(2); //Layers and the actual table
+	LuaClearStack(); // for good measure :)
 	return map;
 }
 
@@ -92,7 +91,66 @@ static void loadTilesetTextures(Tilemap* map) {
 	}
 }
 
+static TiledPropertyTypes getPropertyTypeForStack(void) {
+	if (LuaIsInt(-1)) {
+		return TiledPropertyTypeInt;
+	} else if (LuaIsFloat(-1)) {
+		return TiledPropertyTypeFloat;
+	} else {
+		return TiledPropertyTypeString;
+	}
+}
+
+static void handleTiledEntities(Tilemap* map) {
+	LuaPushTableToStack("objects");
+	int numObjects = LuaGetTableLength();
+	map->objects = calloc(numObjects, sizeof(TiledObject));
+	for (size_t i = 0; i < (size_t)numObjects; i++) {
+		TiledObject* object = &map->objects[i];
+		LuaPushTableObjectToStacki(i);
+		object->Id = LuaGetInt("id");
+		LuaCopyString("name", object->Name, sizeof(object->Name));
+		object->ObjectType = atoi(LuaGetString("type"));
+		object->X = LuaGetFloat("x");
+		object->Y = LuaGetFloat("y");
+		object->Width = LuaGetFloat("width");
+		object->Height = LuaGetFloat("height");
+		LuaPushTableToStack("properties");
+		object->PropertyNum = LuaGetTableLengthMap();
+		if (object->PropertyNum == 0) {
+			LuaPopStack(2);
+			continue;
+		}
+		object->Properties = calloc(object->PropertyNum, sizeof(TiledProperty));
+		LuaStartTableKeyValueIteration();
+		for (size_t j = 0; j < (size_t)object->PropertyNum; j++) {
+			if (!LuaNextTableKeyValueIterate()) {
+				break;
+			}
+			TiledProperty* property = &object->Properties[j];
+			LuaCopyStringStack(-2, property->Name, sizeof(property->Name));
+			property->PropertyType = getPropertyTypeForStack();
+			if (property->PropertyType == TiledPropertyTypeInt) {
+				property->Data.IntData = LuaGetIntFromStack();
+			} else if (property->PropertyType == TiledPropertyTypeFloat) {
+				property->Data.FloatData = LuaGetFloatFromStack();
+			} else {
+				property->Data.StringData = LuaAllocateStringStack(-1);
+			}
+			LuaPopStack(1);
+		}
+		LuaEndTableKeyValueIteration();
+		LuaPopStack(2);
+	}
+	LuaPopStack(1);
+}
+
 static void handleTiledObjectGroup(Tilemap* map) {
+	const char* name = LuaGetString("name");
+	if (strcmp(name, "entities") != 0) {
+		return;
+	}
+	handleTiledEntities(map);
 }
 
 static Tileset* GetTilesetForGID(int gid, Tilemap* map) {
