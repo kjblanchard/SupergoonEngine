@@ -154,3 +154,4 @@ bool LuaIsInt(int stackLocation) {
 bool LuaIsFloat(int stackLocation) {
 	return lua_isnumber(_luaState, stackLocation);
 }
+

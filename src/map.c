@@ -48,8 +48,8 @@ Tilemap* parseTiledTilemap(const char* tiledFilename) {
 		}
 		LuaPopStack(1);
 	}
-	LuaPopStack(2); //Layers and the actual table
-	LuaClearStack(); // for good measure :)
+	LuaPopStack(2);	  // Layers and the actual table
+	LuaClearStack();  // for good measure :)
 	return map;
 }
 
@@ -57,7 +57,7 @@ static void createTileLayer(TileLayer* layer) {
 	layer->width = LuaGetInt("width");
 	layer->height = LuaGetInt("height");
 	int data_length = layer->width * layer->height;
-	layer->data = malloc(data_length * sizeof(int));
+	layer->data = calloc(data_length, sizeof(int));
 	LuaPushTableToStack("data");
 	for (int i = 0; i < data_length; i++) {
 		layer->data[i] = LuaGetIntFromTablei(i);
@@ -103,9 +103,9 @@ static TiledPropertyTypes getPropertyTypeForStack(void) {
 
 static void handleTiledEntities(Tilemap* map) {
 	LuaPushTableToStack("objects");
-	int numObjects = LuaGetTableLength();
-	map->objects = calloc(numObjects, sizeof(TiledObject));
-	for (size_t i = 0; i < (size_t)numObjects; i++) {
+	map->num_objects = LuaGetTableLength();
+	map->objects = calloc(map->num_objects, sizeof(TiledObject));
+	for (size_t i = 0; i < (size_t)map->num_objects; i++) {
 		TiledObject* object = &map->objects[i];
 		LuaPushTableObjectToStacki(i);
 		object->Id = LuaGetInt("id");
@@ -201,4 +201,22 @@ void createBackgroundsFromTilemap(Tilemap* map) {
 			}
 		}
 	}
+}
+
+void freeTiledTilemap(Tilemap* map) {
+	for (size_t i = 0; i < 2; i++) {
+		for (size_t j = 0; j < (size_t)map->groups[i].NumLayers; j++) {
+			SDL_free(map->groups[i].Layers[j].data);
+		}
+		SDL_free(map->groups[i].Layers);
+	}
+
+	if (map->num_objects > 0) {
+		for (size_t i = 0; i < (size_t)map->num_objects; i++) {
+			SDL_free(map->objects[i].Properties);
+		}
+		SDL_free(map->objects);
+	}
+	SDL_free(map->tilesets);
+	SDL_free(map);
 }

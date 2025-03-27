@@ -60,6 +60,7 @@ typedef struct Tilemap {
 	int tileheight;
 	int tileset_count;
 	Tileset* tilesets;	// Array of tilesets
+	int num_objects;
 	TiledObject* objects;
 	int layer_count;
 	LayerGroup groups[2];  // Array of tilesets
@@ -68,6 +69,7 @@ typedef struct Tilemap {
 // You must free this, do not pass .lua into this and yes do it, should be called from the engine only.
 Tilemap* parseTiledTilemap(const char* tiledFilename);
 void createBackgroundsFromTilemap(Tilemap* map);
+void freeTiledTilemap(Tilemap* map);
 
 #ifdef __cplusplus
 }

@@ -48,6 +48,7 @@ static bool Start(void) {
 	initializeTweenEngine();
 	Tilemap *map = parseTiledTilemap("debugTown");
 	createBackgroundsFromTilemap(map);
+	freeTiledTilemap(map);
 
 	return true;
 }
