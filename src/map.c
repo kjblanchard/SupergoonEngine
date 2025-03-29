@@ -101,7 +101,7 @@ static TiledPropertyTypes getPropertyTypeForStack(void) {
 	}
 }
 
-static void handleTiledEntities(Tilemap* map) {
+static void handleTiledObjectEntities(Tilemap* map) {
 	LuaPushTableToStack("objects");
 	map->num_objects = LuaGetTableLength();
 	map->objects = calloc(map->num_objects, sizeof(TiledObject));
@@ -150,7 +150,7 @@ static void handleTiledObjectGroup(Tilemap* map) {
 	if (strcmp(name, "entities") != 0) {
 		return;
 	}
-	handleTiledEntities(map);
+	handleTiledObjectEntities(map);
 }
 
 static Tileset* GetTilesetForGID(int gid, Tilemap* map) {

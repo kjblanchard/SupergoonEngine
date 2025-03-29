@@ -30,6 +30,7 @@ set(SRC_FILES
     src/clock.c
     src/state.c
     src/map.c
+    src/gameobject.c
     src/input/joystick.c
     src/input/keyboard.c
     src/window.c
