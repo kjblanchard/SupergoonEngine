@@ -4,8 +4,7 @@
 extern "C" {
 #endif
 #define MAX_GAMEOBJECT_TYPES 64
-extern GameObject* CurrentGameObject;
-#define GetCurrentGameObject(Type) ((Type*)CurrentGameObject)
+typedef struct TiledObject TiledObject;
 
 /**
  * @brief Holds all of the functions for the current types.
@@ -22,6 +21,7 @@ typedef struct GameObjectType {
  *
  */
 void InitializeGameObjectSystem(void);
+void AddGameObjectFromTiledMap(TiledObject* object);
 void GameObjectSystemUpdate(void);
 void ShutdownGameObjectSystem(void);
 #ifdef __cplusplus

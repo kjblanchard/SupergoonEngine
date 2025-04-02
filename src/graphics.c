@@ -10,11 +10,13 @@
 extern Window* _window;
 extern Renderer* _renderer;
 
-void DrawRect(void) {
+void DrawRect(RectangleF* rect) {
 	assert(_renderer && "No renderer, make sure window is created");
-	SDL_FRect rect = {0, 0, 16, 16};
 	SDL_SetRenderDrawColor(_renderer, 255, 255, 255, 255);
-	SDL_RenderRect(_renderer, &rect);
+	int result = SDL_RenderRect(_renderer, rect);
+	// if (!result) {
+	// 	sgLogError("Bad thing", SDL_GetError());
+	// }
 	SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
 }
 
@@ -57,7 +59,7 @@ Texture* CreateTextureFromIndexedBMP(const char* filename) {
 	}
 	return texture;
 }
-void DrawTextureToRenderTargetTexture(Texture* dst, Texture* src, Rectangle* dstRect, Rectangle* srcRect) {
+void DrawTextureToRenderTargetTexture(Texture* dst, Texture* src, RectangleF* dstRect, RectangleF* srcRect) {
 	Texture* currentRenderTarget = SDL_GetRenderTarget(_renderer);
 	SDL_SetRenderTarget(_renderer, dst);
 	SDL_RenderTexture(_renderer, src, srcRect, dstRect);

@@ -17,7 +17,11 @@ int _logicalWidth = 0;
 int _logicalHeight = 0;
 Texture* _imguiGameTexture;
 static const char* _windowName = NULL;
-static Texture* testTexture = NULL;
+#ifdef imgui
+// Defined in engine.c
+extern bool _isGameSimulatorRunning;
+#endif
+// static Texture* testTexture = NULL;
 
 void SetWindowOptions(int width, int height, const char* name) {
 	_windowWidth = width;
@@ -56,22 +60,26 @@ void CreateWindow(void) {
 	int renderTargetWidth = _logicalWidth ? _logicalWidth : _windowWidth;
 	int renderTargetHeight = _logicalHeight ? _logicalHeight : _windowHeight;
 	_imguiGameTexture = CreateRenderTargetTexture(renderTargetWidth, renderTargetHeight, (sgColor){0, 0, 0, 255});
-	testTexture = CreateTextureFromIndexedBMP("player1");
+	// testTexture = CreateTextureFromIndexedBMP("player1");
 }
 
 void DrawStart(void) {
 	// Clear the screen
 	SDL_RenderClear(_renderer);
-	// Clear the texture we draw from
-	SDL_SetRenderTarget(_renderer, _imguiGameTexture);
-	SDL_RenderClear(_renderer);
 #ifdef imgui
+	if (_isGameSimulatorRunning) {
+#endif
+		// Clear the texture we draw from
+		SDL_SetRenderTarget(_renderer, _imguiGameTexture);
+		SDL_RenderClear(_renderer);
+#ifdef imgui
+	}
 	StartImGuiFrame();
 #endif
 }
 void DrawEnd(void) {
-	Rectangle dst = {0, 32, 32, 32};
-	DrawTexture(testTexture, &dst, &dst);
+	// Rectangle dst = {0, 32, 32, 32};
+	// DrawTexture(testTexture, &dst, &dst);
 	SDL_SetRenderTarget(_renderer, NULL);
 #ifndef imgui
 	SDL_FRect dest = {0, 0, _windowWidth, _windowHeight};
@@ -82,7 +90,7 @@ void DrawEnd(void) {
 	SDL_RenderPresent(_renderer);
 }
 
-void DrawTexture(Texture* texture, Rectangle* dst, Rectangle* src) {
+void DrawTexture(Texture* texture, RectangleF* dst, RectangleF* src) {
 	SDL_RenderTexture(_renderer, texture, src, dst);
 }
 

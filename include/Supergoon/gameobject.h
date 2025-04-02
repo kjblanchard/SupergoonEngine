@@ -2,19 +2,27 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-typedef void (*GameObjectCreateFunc)(void);
-typedef void (*GameObjectStartFunc)(void);
-typedef void (*GameObjectUpdateFunc)(void);
-typedef void (*GameObjectDestroyFunc)(void);
+typedef struct GameObject GameObject;
+
+extern GameObject* CurrentGameObject;
+#define GetCurrentGameObject(Type) ((Type*)CurrentGameObject.Userdata)
+// Userdata could be tiledmap, or anything really.
+typedef void (*GameObjectCreateFunc)(void* userdata, GameObject* go);
+typedef void (*GameObjectStartFunc)(GameObject* go);
+typedef void (*GameObjectUpdateFunc)(GameObject* go);
+typedef void (*GameObjectDestroyFunc)(GameObject* go);
 
 typedef enum GameObjectFlags {
-	GameObjectFlagStarted = 1 << 0,
-	GameObjectFlagDoNotDestroy = 1 << 1,
-
+	GameObjectFlagLoaded = 1 << 0,
+	GameObjectFlagStarted = 1 << 1,
+	GameObjectFlagActive = 1 << 2,
+	GameObjectFlagDoNotDestroy = 1 << 3,
+	GameObjectFlagDestroyed = 1 << 4,
 } GameObjectFlags;
 
 typedef struct GameObject {
-	int Type;
+	unsigned int Id;
+	unsigned int Type;
 	GameObjectFlags Flags;
 	float X;
 	float Y;

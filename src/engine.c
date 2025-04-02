@@ -9,7 +9,9 @@
 #include <Supergoon/lua.h>
 #include <Supergoon/state.h>
 #include <Supergoon/window.h>
+#include <SupergoonEngine/gameobject.h>
 #include <SupergoonEngine/map.h>
+#include <SupergoonEngine/ui.h>
 // This is not needed, just for testing
 #include <Supergoon/graphics.h>
 #ifdef imgui
@@ -31,6 +33,9 @@ static void (*_startFunc)(void) = NULL;
 static void (*_updateFunc)(void) = NULL;
 static void (*_drawFunc)(void) = NULL;
 static int (*_handleEventFunc)(Event *) = NULL;
+#ifdef imgui
+bool _isGameSimulatorRunning = true;
+#endif
 
 static bool Start(void) {
 	if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMEPAD)) {
@@ -46,10 +51,8 @@ static bool Start(void) {
 	CreateWindow();
 	initializeAudio();
 	initializeTweenEngine();
-	Tilemap *map = parseTiledTilemap("debugTown");
-	createBackgroundsFromTilemap(map);
-	freeTiledTilemap(map);
-
+	InitializeGameObjectSystem();
+	InitializeUISystem();
 	return true;
 }
 static bool sdlEventLoop(void) {
@@ -63,10 +66,8 @@ static bool sdlEventLoop(void) {
 		}
 #ifdef imgui
 		if (!HandleImGuiEvent(&event)) {
-			sgLogWarn("We are not sending this to the game");
 			continue;
 		}
-		sgLogWarn("We are sending this to the game");
 #endif
 		if (_handleEventFunc) quit = _handleEventFunc(&event);
 		HandleEvents(&event);
@@ -83,16 +84,24 @@ static void Update(void) {
 		DeltaTimeMilliseconds = geClockGetUpdateTimeMilliseconds();
 		DeltaTimeSeconds = geClockGetUpdateTimeSeconds();
 		Ticks += 1;
+#ifdef imgui
+		// If we are im imgui and the game is "paused", we should just Draw and update imgui.
+		if (!_isGameSimulatorRunning) {
+		}
+#endif
 		audioUpdate();
 		updateTweens();
+		GameObjectSystemUpdate();
 		if (_updateFunc) _updateFunc();
+		UpdateUISystem();
 		DrawStart();
+		// Draw the backgrounds
 		if (bg1Texture) {
-			Rectangle src = {0, 0, 512, 288};
+			RectangleF src = {0, 0, 512, 288};
 			DrawTexture(bg1Texture, &src, &src);
 		}
-		// DrawRect();
 		if (_drawFunc) _drawFunc();
+		DrawUISystem();
 		DrawEnd();
 		geUpdateControllerLastFrame();
 	}
@@ -104,6 +113,7 @@ static void Quit(void) {
 	sgCloseLua();
 	closeAudio();
 	CloseWindow();
+	ShutdownUISystem();
 }
 
 void SetStartFunction(void (*startFunc)(void)) {
@@ -127,6 +137,7 @@ void Run(void) {
 	if (!started) {
 		fprintf(stderr, "Could not start program, exiting");
 	}
+	if (_startFunc) _startFunc();
 	Update();
 	Quit();
 }

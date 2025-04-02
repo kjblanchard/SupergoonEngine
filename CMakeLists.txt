@@ -43,6 +43,8 @@ set(SRC_FILES
     src/Audio/Audio.c
     src/Tweening/easing.c
     src/Tweening/tween.c
+    src/UI/ui.c
+    src/UI/uiobject.c
 )
 
 if(imgui)
@@ -60,6 +62,7 @@ if(imgui)
         src/Debug/Audio.cpp
         src/Debug/Tween.cpp
         src/Debug/Game.cpp
+        src/Debug/UI.cpp
         src/Debug/Debug.cpp # For showing all the windows
 
         # src/Debug/Audio.cpp

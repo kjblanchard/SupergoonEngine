@@ -2,6 +2,8 @@
 #include <Supergoon/graphics.h>
 #include <Supergoon/log.h>
 #include <Supergoon/lua.h>
+#include <Supergoon/map.h>
+#include <SupergoonEngine/gameobject.h>
 #include <SupergoonEngine/map.h>
 #include <stdio.h>
 #include <string.h>
@@ -9,6 +11,7 @@
 // Reads through the tiled layer group and assigns properly
 static void handleTiledLayerGroup(Tilemap* map);
 static void handleTiledObjectGroup(Tilemap* map);
+static Tilemap* _currentMap = NULL;
 Texture* bg1Texture = NULL;
 Texture* bg2Texture = NULL;
 
@@ -165,7 +168,7 @@ static Tileset* GetTilesetForGID(int gid, Tilemap* map) {
 	return highestGIDTileset;
 }
 
-static void GetRectForGid(int gid, Tileset* tileset, Rectangle* rect) {
+static void GetRectForGid(int gid, Tileset* tileset, RectangleF* rect) {
 	int tilemapGid = gid - tileset->firstgid;
 	int x = (tilemapGid % (tileset->imagewidth / tileset->tilewidth)) * tileset->tilewidth;
 	int y = (tilemapGid / (tileset->imagewidth / tileset->tilewidth)) * tileset->tileheight;
@@ -182,8 +185,8 @@ void createBackgroundsFromTilemap(Tilemap* map) {
 	// Load the tileset textures so that we can use them to draw with.
 	loadTilesetTextures(map);
 	LayerGroup* bg1LayerGroup = &map->groups[0];
-	Rectangle dstRect = {0, 0, map->tilewidth, map->tileheight};
-	Rectangle srcRect = {0, 0, 0, 0};
+	RectangleF dstRect = {0, 0, map->tilewidth, map->tileheight};
+	RectangleF srcRect = {0, 0, 0, 0};
 	for (size_t i = 0; i < (size_t)bg1LayerGroup->NumLayers; i++) {
 		TileLayer* layer = &bg1LayerGroup->Layers[i];
 		for (int y = 0; y < layer->height; ++y) {
@@ -219,4 +222,20 @@ void freeTiledTilemap(Tilemap* map) {
 	}
 	SDL_free(map->tilesets);
 	SDL_free(map);
+}
+
+void LoadMap(const char* mapName) {
+	// TODO Maybe we cache a few of these?  currently we reload every map change.
+	if (_currentMap) {
+		freeTiledTilemap(_currentMap);
+		_currentMap = NULL;
+	}
+	_currentMap = parseTiledTilemap(mapName);
+	createBackgroundsFromTilemap(_currentMap);
+}
+
+void LoadObjectsFromMap(void) {
+	for (size_t i = 0; i < (size_t)_currentMap->num_objects; i++) {
+		AddGameObjectFromTiledMap(&_currentMap->objects[i]);
+	}
 }

@@ -19,7 +19,7 @@ int IsKeyboardKeyHeldDown(int key) {
 	return _previousKeyboardState[key] && _currentKeyboardState[key];
 }
 
-int IsKeyboardKeyJustPresed(const int key) {
+int IsKeyboardKeyJustPressed(const int key) {
 	return _currentKeyboardState[key] && !_previousKeyboardState[key];
 }
 
