@@ -172,25 +172,13 @@ static int getLetterAdvance(UIText* text, int i) {
 	return text->Font->FontFace->glyph->advance.x >> 6;
 }
 
-// static int getLetterWidth(UIText* text, int i) {
-// 	int result = FT_Load_Char(text->Font->FontFace, text->Text[i], FT_LOAD_DEFAULT);
-// 	if (result) {
-// 		sgLogError("Could not measure character properly.  Char %s, error %d", text->Text[i], result);
-// 		return 0;
-// 	}
-// 	if (text->Text[i] == ' ') {
-// 		return (text->Font->FontFace->glyph->metrics.horiAdvance >> 6) / 2;
-// 	}
-// 	return text->Font->FontFace->glyph->metrics.width >> 6;
-// }
-
 static bool CheckShouldWrap(int x, int wordLength, int glyphWidth, int maxX) {
 	return x + wordLength + glyphWidth > maxX;
 }
 
 static void addWordToWrapPoints(unsigned int currentWordWraps, UIText* text, int location) {
 	if (currentWordWraps + 1 > text->NumWordWrapCharacters) {
-		int* newArray = realloc(text->WordWrapCharacters, sizeof(int) * currentWordWraps + 1);
+		unsigned int* newArray = realloc(text->WordWrapCharacters, sizeof(int) * currentWordWraps + 1);
 		if (!newArray) {
 			sgLogCritical("Could not allocate properly when creating text, now what");
 		}
@@ -211,8 +199,8 @@ void MeasureText(UIObject* uiobject) {
 	// Max width and height will be the size of the uiobject, this should be loaded prior
 	int maxWidth = uiobject->Location.w;
 	int maxHeight = uiobject->Location.h;
-	// int currentWordLength = 0, currentWordLetters = 0;
 	int currentWordLength = 0;
+	int currentWordLetters = 0;
 	int ascenderInPixels = (fontFace->ascender * text->FontSize) / fontFace->units_per_EM;
 	int descenderInPixels = (fontFace->descender * text->FontSize) / fontFace->units_per_EM;
 	int lineSpace = (fontFace->height * text->FontSize) / fontFace->units_per_EM;
@@ -236,19 +224,20 @@ void MeasureText(UIObject* uiobject) {
 			penX = 0;
 			penY += lineSpace;
 			++currentWordWraps;
+			currentWordLetters = 0;
 			currentWordLength = 0;
-			// currentWordLetters = 0;
 			continue;
 		}
 		int letterSize = getLetterAdvance(text, i);
 		if (letter == ' ') {
 			penX += currentWordLength + letterSize;
+			currentWordLetters = 0;
 			currentWordLength = 0;
 			continue;
 		}
 		// If we should wrap to the next line, move penx to beginning, and increment peny
 		if (CheckShouldWrap(penX, currentWordLength, letterSize, maxWidth)) {
-			addWordToWrapPoints(currentWordWraps, text, i);
+			addWordToWrapPoints(currentWordWraps, text, i - currentWordLetters);
 			// If current pen location is greater than the calculated text size, update
 			if (penX > textSizeX) {
 				textSizeX = penX;
@@ -257,14 +246,15 @@ void MeasureText(UIObject* uiobject) {
 			penY += lineSpace;
 			++currentWordWraps;
 			currentWordLength = 0;
+			currentWordLetters = 0;
 		}
 		currentWordLength += letterSize;
-		// ++currentWordLetters;
+		++currentWordLetters;
 		// If we shouldn't word wrap, treat every letter like it's own word.
 		if (!text->WordWrap) {
 			penX += letterSize;
 			currentWordLength = 0;
-			// currentWordLetters = 0;
+			currentWordLetters = 0;
 		}
 	}
 	// Once the word is completed, we should cleanup
@@ -320,7 +310,13 @@ void UITextOnDirty(UIObject* object) {
 	// Recreate texture if the size has changed
 	if (object->Location.h != h || object->Location.w != w) {
 		SDL_DestroyTexture(text->Texture);
-		CreateRenderTargetTexture(object->Location.w, object->Location.h, (sgColor){255, 255, 255, 0});
+		text->Texture = CreateRenderTargetTexture(object->Location.w, object->Location.h, (sgColor){255, 0, 0, 255});
+		text->PenX = 0;
+		// ext->PenY = 0;
+		text->PenY = (text->Font->FontFace->ascender * text->FontSize) / text->Font->FontFace->units_per_EM;
+		text->CurrentDrawnLetters = 0;
+		text->NumWordWrapCharacters = 0;
+		MeasureText(object);
 	}
 
 	// If there is more letters to draw than the current, clear the texture and start from 0
@@ -351,5 +347,6 @@ void UITextLoad(UIObject* object) {
 	UIText* text = (UIText*)object->Data;
 	assert(text && "No text?");
 	text->Font = _currentFont;
+	// Set the Y to be the full ascender, so the first line doesn't get offset above.  Probably not the best place for this.
 	text->PenY = (text->Font->FontFace->ascender * text->FontSize) / text->Font->FontFace->units_per_EM;
 }
