@@ -9,8 +9,10 @@ extern UIObject *_rootUIObject;
 
 static string GetWidgetTypeName(UIObjectTypes objectType) {
 	switch (objectType) {
-		case Panel:
+		case UIObjectTypesPanel:
 			return "Panel";
+		case UIObjectTypesImage:
+			return "Image";
 		default:
 			return "NotImplemented";
 	}
@@ -18,6 +20,7 @@ static string GetWidgetTypeName(UIObjectTypes objectType) {
 }
 
 void DrawUIObjects(UIObject *uiObject) {
+	assert(uiObject && uiObject->Name && "No name for object!!");
 	if (ImGui::TreeNode(uiObject->Name)) {
 		// auto panelLayerLabel = "Layer ##" + panelName;
 		auto panelOffsetLabel = "Offset X ##" + string(uiObject->Name);

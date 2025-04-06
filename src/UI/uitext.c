@@ -1,0 +1,355 @@
+#include <Supergoon/UI/uiobject.h>
+#include <Supergoon/UI/uitext.h>
+#include <Supergoon/filesystem.h>
+#include <Supergoon/log.h>
+#include <SupergoonEngine/graphics.h>
+#include <SupergoonEngine/tools.h>
+#include <assert.h>
+#define MAX_LOADED_FONTS 12
+#define ASCII_CHAR_NUM 127
+static FT_Library _loadedLibrary = NULL;
+// TODO we should cache fonts (faces) when we load them, so that we can use multiple.
+typedef struct LoadedFont {
+	char* FontName;
+	FT_Face FontFace;
+	// Support ASCII only
+	Texture* GlyphTextures[ASCII_CHAR_NUM];
+} LoadedFont;
+
+static LoadedFont _loadedFonts[MAX_LOADED_FONTS];
+static LoadedFont* _currentFont = NULL;
+
+void InitializeUITextSystem(void) {
+	if (!_loadedLibrary) {
+		if (FT_Init_FreeType(&_loadedLibrary)) {
+			sgLogCritical("Could not initialize FreeType library\n");
+		}
+	}
+}
+
+static void loadTexturesForFont(LoadedFont* font) {
+	for (size_t i = 0; i < ASCII_CHAR_NUM; i++) {
+		FT_UInt glyphIndex = FT_Get_Char_Index(font->FontFace, i);
+		bool result = FT_Load_Glyph(font->FontFace, glyphIndex, FT_LOAD_NO_HINTING | FT_LOAD_NO_AUTOHINT);
+		if (result) {
+			sgLogError("Something wrong with font?");
+		}
+		int error = FT_Render_Glyph(font->FontFace->glyph, /* glyph slot  */
+									FT_RENDER_MODE_NORMAL);
+		if (error) {
+			sgLogError("Something wrong with font?");
+		}
+		// Load surface and texture
+		if (font->FontFace->glyph->bitmap.width == 0 && font->FontFace->glyph->bitmap.rows == 0)
+			continue;
+
+		int pitch = font->FontFace->glyph->bitmap.pitch;
+		SDL_Surface* surface = SDL_CreateSurfaceFrom(font->FontFace->glyph->bitmap.width,
+													 font->FontFace->glyph->bitmap.rows,
+													 SDL_PIXELFORMAT_INDEX8,
+													 font->FontFace->glyph->bitmap.buffer,
+													 pitch);
+		if (!surface) {
+			sgLogError("Bad surface: %s", SDL_GetError());
+		}
+		SDL_Palette* palette = SDL_CreateSurfacePalette(surface);
+		int numColors = 256;
+		for (int i = 0; i < numColors; ++i) {
+			palette->colors[i].r = 255;
+			palette->colors[i].g = 255;
+			palette->colors[i].b = 255;
+			palette->colors[i].a = (Uint8)(i);
+		}
+		palette->ncolors = numColors;
+
+		result = SDL_SetPaletteColors(palette, palette->colors, 0, palette->ncolors);
+		if (!result) {
+			sgLogWarn("Could not set, error %s", SDL_GetError());
+		}
+		result = SDL_SetSurfaceColorKey(surface, true, 0);
+		if (!result) {
+			sgLogWarn("Could not set, error %s;", SDL_GetError());
+		}
+		font->GlyphTextures[i] = LoadTextureFromSurface(surface);
+	}
+}
+
+static LoadedFont* getLoadedFont(const char* fontName, unsigned int size) {
+	char fontAndSize[255];
+	snprintf(fontAndSize, sizeof(fontAndSize), "%s%d", fontName, size);
+	for (size_t i = 0; i < MAX_LOADED_FONTS; i++) {
+		if (_loadedFonts[i].FontName && strcmp(fontAndSize, _loadedFonts[i].FontName) == 0) {
+			return &_loadedFonts[i];
+		}
+	}
+	// It isn't loaded, we should load it
+	LoadedFont* fontToLoadInto = NULL;
+	for (size_t i = 0; i < MAX_LOADED_FONTS; i++) {
+		if (!_loadedFonts[i].FontName) {
+			fontToLoadInto = &_loadedFonts[i];
+			break;
+		}
+	}
+	if (!fontToLoadInto) {
+		sgLogError("Could not load font, you have used the max fonts/sizes, pleas up MAX_LOADED_FONTS in uitext.c");
+		return NULL;
+	}
+	fontToLoadInto->FontName = strdup(fontAndSize);
+	snprintf(fontAndSize, sizeof(fontAndSize), "assets/fonts/%s.ttf", fontName);
+	char fullFilepath[200];
+	GetFilenameWithExeFilepath(fullFilepath, sizeof(fullFilepath), fontAndSize);
+	int result = FT_New_Face(_loadedLibrary, fullFilepath, 0, &fontToLoadInto->FontFace);
+	// TODO probably should cleanup here even though it may never happen
+	if (result) {
+		sgLogError("Could not open font %s with error %d\n", fullFilepath, result);
+		return fontToLoadInto;
+	}
+	FT_Set_Pixel_Sizes(fontToLoadInto->FontFace, 0, size);
+	loadTexturesForFont(fontToLoadInto);
+	return fontToLoadInto;
+}
+
+void SetFont(const char* fontName, unsigned int size) {
+	if (!fontName) {
+		sgLogWarn("No font name, not setting");
+		return;
+	}
+	if (size > 999 || size < 1) {
+		sgLogWarn("Improper size passed into font, must be between 1 and 1000, setting to 32.");
+		size = 32;
+	}
+	_currentFont = getLoadedFont(fontName, size);
+}
+
+static int GetLetterYBearing(char letter, LoadedFont* font) {
+	int result = FT_Load_Char(font->FontFace, letter, FT_LOAD_DEFAULT);
+	if (result) {
+		sgLogError("Could not measure character properly.  Char %s, error %d", letter, result);
+		return 0;
+	}
+	// return font->FontFace->glyph->metrics.horiBearingY >> 6;
+	return font->FontFace->glyph->bitmap_top;
+}
+
+static int getKerning(int i, char* text, LoadedFont* font) {
+	if (strlen(text) <= (size_t)i + 1) {
+		return 0;
+	}
+	if (!FT_HAS_KERNING(font->FontFace)) {
+		sgLogDebug("No kerning for font, returning 0");
+		return 0;
+	}
+	unsigned int glyph_index_c = FT_Get_Char_Index(font->FontFace, text[i]);
+	unsigned int glyph_index_n = FT_Get_Char_Index(font->FontFace, text[i + 1]);
+	FT_Vector delta;
+	int result = FT_Get_Kerning(font->FontFace, glyph_index_c, glyph_index_n, FT_KERNING_DEFAULT, &delta);
+	if (result) {
+		sgLogError("Could not get kerning");
+	}
+	result = delta.x >> 6;
+	if (delta.x != 0) {
+		sgLogWarn("Wow theres actually kerning and this hasen't been tested");
+	}
+	return result;
+}
+
+// Used for drawing, so it aligns properly
+static int getLetterXOffset(UIText* text, int i) {
+	int result = FT_Load_Char(text->Font->FontFace, text->Text[i], FT_LOAD_DEFAULT);
+	if (result) {
+		sgLogError("Could not measure character properly.  Char %s, error %d", text->Text[i], result);
+		return 0;
+	}
+	return text->Font->FontFace->glyph->bitmap_left;
+}
+
+static int getLetterAdvance(UIText* text, int i) {
+	int result = FT_Load_Char(text->Font->FontFace, text->Text[i], FT_LOAD_DEFAULT);
+	if (result) {
+		sgLogError("Could not measure character properly.  Char %s, error %d", text->Text[i], result);
+		return 0;
+	}
+	return text->Font->FontFace->glyph->advance.x >> 6;
+}
+
+// static int getLetterWidth(UIText* text, int i) {
+// 	int result = FT_Load_Char(text->Font->FontFace, text->Text[i], FT_LOAD_DEFAULT);
+// 	if (result) {
+// 		sgLogError("Could not measure character properly.  Char %s, error %d", text->Text[i], result);
+// 		return 0;
+// 	}
+// 	if (text->Text[i] == ' ') {
+// 		return (text->Font->FontFace->glyph->metrics.horiAdvance >> 6) / 2;
+// 	}
+// 	return text->Font->FontFace->glyph->metrics.width >> 6;
+// }
+
+static bool CheckShouldWrap(int x, int wordLength, int glyphWidth, int maxX) {
+	return x + wordLength + glyphWidth > maxX;
+}
+
+static void addWordToWrapPoints(unsigned int currentWordWraps, UIText* text, int location) {
+	if (currentWordWraps + 1 > text->NumWordWrapCharacters) {
+		int* newArray = realloc(text->WordWrapCharacters, sizeof(int) * currentWordWraps + 1);
+		if (!newArray) {
+			sgLogCritical("Could not allocate properly when creating text, now what");
+		}
+		text->WordWrapCharacters = newArray;
+	}
+	text->WordWrapCharacters[currentWordWraps] = location;
+	++text->NumWordWrapCharacters;
+}
+
+// Any time we need a full pass of the object to get the word wrap lines or size of the actual text, we will need this.
+void MeasureText(UIObject* uiobject) {
+	if (uiobject->Type != UIObjectTypesText) {
+		return;
+	}
+	UIText* text = (UIText*)uiobject->Data;
+	FT_Face fontFace = text->Font->FontFace;
+	assert(fontFace && text && "no font loaded for text to load");
+	// Max width and height will be the size of the uiobject, this should be loaded prior
+	int maxWidth = uiobject->Location.w;
+	int maxHeight = uiobject->Location.h;
+	// int currentWordLength = 0, currentWordLetters = 0;
+	int currentWordLength = 0;
+	int ascenderInPixels = (fontFace->ascender * text->FontSize) / fontFace->units_per_EM;
+	int descenderInPixels = (fontFace->descender * text->FontSize) / fontFace->units_per_EM;
+	int lineSpace = (fontFace->height * text->FontSize) / fontFace->units_per_EM;
+	int startLoc = ascenderInPixels;
+	// Used to determine when to start for alignments, after we measure the text.
+	int textSizeX = 0, textSizeY = 0;
+	int penX = 0;
+	int penY = startLoc;
+	int currentWordWraps = 0;
+	for (size_t i = 0; i < strlen(text->Text); i++) {
+		char letter = text->Text[i];
+		// If this is a newline, we should add to our letter points if there is a word
+		if (letter == '\n') {
+			if (currentWordLength) {
+				addWordToWrapPoints(currentWordWraps, text, i);
+				penX += currentWordLength;
+				if (penX > textSizeX) {
+					textSizeX = penX;
+				}
+			}
+			penX = 0;
+			penY += lineSpace;
+			++currentWordWraps;
+			currentWordLength = 0;
+			// currentWordLetters = 0;
+			continue;
+		}
+		int letterSize = getLetterAdvance(text, i);
+		if (letter == ' ') {
+			penX += currentWordLength + letterSize;
+			currentWordLength = 0;
+			continue;
+		}
+		// If we should wrap to the next line, move penx to beginning, and increment peny
+		if (CheckShouldWrap(penX, currentWordLength, letterSize, maxWidth)) {
+			addWordToWrapPoints(currentWordWraps, text, i);
+			// If current pen location is greater than the calculated text size, update
+			if (penX > textSizeX) {
+				textSizeX = penX;
+			}
+			penX = 0;
+			penY += lineSpace;
+			++currentWordWraps;
+			currentWordLength = 0;
+		}
+		currentWordLength += letterSize;
+		// ++currentWordLetters;
+		// If we shouldn't word wrap, treat every letter like it's own word.
+		if (!text->WordWrap) {
+			penX += letterSize;
+			currentWordLength = 0;
+			// currentWordLetters = 0;
+		}
+	}
+	// Once the word is completed, we should cleanup
+	if (currentWordLength) {
+		penX += currentWordLength;
+	}
+	textSizeX = textSizeX > penX ? textSizeX : penX;
+	textSizeY = penY - descenderInPixels;
+	if (textSizeY > maxHeight) {
+		sgLogWarn("Your text overflowed through Y, please adjust your bounds else it will flow past");
+	}
+}
+
+static void drawLetter(UIObject* obj, UIText* text) {
+	// Check to see if we should move to the next line:
+	for (size_t i = 0; i < text->NumWordWrapCharacters; i++) {
+		if (text->WordWrapCharacters[i] == text->CurrentDrawnLetters) {
+			text->PenX = 0;
+			text->PenY += (text->Font->FontFace->height * text->FontSize) / text->Font->FontFace->units_per_EM;
+			break;
+		}
+	}
+	Texture* texture = text->Font->GlyphTextures[(unsigned char)text->Text[text->CurrentDrawnLetters]];
+	// Draw text
+	int x = text->PenX + getLetterXOffset(text, text->CurrentDrawnLetters) - getKerning(text->CurrentDrawnLetters, text->Text, text->Font);
+	// int x = text->PenX;
+	int y = text->PenY - GetLetterYBearing(text->Text[text->CurrentDrawnLetters], text->Font);
+	float w, h;
+	SDL_GetTextureSize(texture, &w, &h);
+	RectangleF dst = {x, y, w, h};
+	if (!text->Texture) {
+		sgLogError("How is there no texture here:??");
+		return;
+	}
+	DrawTextureToRenderTargetTexture(text->Texture, texture, &dst, NULL);
+	// increase penx
+	// text->PenX += getLetterWidth(text, text->CurrentDrawnLetters);
+	text->PenX += getLetterAdvance(text, text->CurrentDrawnLetters);
+}
+
+void UITextOnDirty(UIObject* object) {
+	if (object->Type != UIObjectTypesText) {
+		return;
+	}
+	// Should set the font, for now we just use the one
+	UIText* text = (UIText*)object->Data;
+	assert(object && text && text->Font && "no font loaded for text to load");
+	if (text && !text->Texture) {
+		text->Texture = CreateRenderTargetTexture(object->Location.w, object->Location.h, (sgColor){255, 0, 0, 255});
+	}
+	float w, h;
+	SDL_GetTextureSize(text->Texture, &w, &h);
+	// Recreate texture if the size has changed
+	if (object->Location.h != h || object->Location.w != w) {
+		SDL_DestroyTexture(text->Texture);
+		CreateRenderTargetTexture(object->Location.w, object->Location.h, (sgColor){255, 255, 255, 0});
+	}
+
+	// If there is more letters to draw than the current, clear the texture and start from 0
+	if (text->NumLettersToDraw < text->CurrentDrawnLetters) {
+		sgColor color = {255, 255, 255, 0};
+		ClearRenderTargetTexture(text->Texture, &color);
+	}
+	unsigned int lettersToWrite = text->NumLettersToDraw > strlen(text->Text) ? strlen(text->Text) : text->NumLettersToDraw;
+	while (text->CurrentDrawnLetters < lettersToWrite) {
+		drawLetter(object, text);
+		++text->CurrentDrawnLetters;
+	}
+}
+
+void UITextDraw(UIObject* object) {
+	if (!object) {
+		return;
+	}
+	UIText* text = (UIText*)object->Data;
+	assert(text && "No text?");
+	DrawTexture(text->Texture, &object->Location, NULL);
+}
+
+void UITextLoad(UIObject* object) {
+	if (!object) {
+		return;
+	}
+	UIText* text = (UIText*)object->Data;
+	assert(text && "No text?");
+	text->Font = _currentFont;
+	text->PenY = (text->Font->FontFace->ascender * text->FontSize) / text->Font->FontFace->units_per_EM;
+}

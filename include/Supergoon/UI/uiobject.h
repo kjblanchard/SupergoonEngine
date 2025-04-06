@@ -5,7 +5,9 @@ extern "C" {
 #endif
 
 typedef enum UIObjectTypes {
-	Panel,
+	UIObjectTypesPanel,
+	UIObjectTypesImage,
+	UIObjectTypesText,
 
 } UIObjectTypes;
 typedef enum UIObjectFlags {

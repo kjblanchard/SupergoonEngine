@@ -4,9 +4,9 @@
 extern "C" {
 #endif
 
-typedef struct SDL_AudioStream SDL_AudioStream;
+struct SDL_AudioStream;
 typedef struct sgStream {
-	SDL_AudioStream* stream;
+	struct SDL_AudioStream* stream;
 } sgStream;
 
 // Create a new stream that you will manage the lifetime for,

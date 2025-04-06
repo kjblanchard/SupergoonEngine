@@ -45,6 +45,8 @@ set(SRC_FILES
     src/Tweening/tween.c
     src/UI/ui.c
     src/UI/uiobject.c
+    src/UI/uiimage.c
+    src/UI/uitext.c
 )
 
 if(imgui)
@@ -60,6 +62,7 @@ if(imgui)
         src/Debug/ImGui.cpp
         src/Debug/Console.cpp
         src/Debug/Audio.cpp
+        src/Debug/Graphics.cpp
         src/Debug/Tween.cpp
         src/Debug/Game.cpp
         src/Debug/UI.cpp
@@ -117,6 +120,13 @@ if(SYSTEM_PACKAGES) # If we are using system packages, then we should try to fin
     if(LIB_LUA)
         list(APPEND EXTERNAL_LIBS ${LIB_LUA})
     endif(LIB_LUA)
+
+    find_package(Freetype)
+
+    if(FREETYPE_FOUND)
+        list(APPEND EXTERNAL_LIBS ${FREETYPE_LIBRARY})
+        target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC /usr/local/include/freetype2)
+    endif(FREETYPE_FOUND)
 endif(SYSTEM_PACKAGES)
 
 if(NOT SDL3_FOUND)
@@ -168,7 +178,25 @@ if(NOT LIB_LUA)
     set(LUA_BUILD_COMPILER OFF CACHE BOOL "Build SDL as a shared library")
     set(LUA_BUILD_BINARY OFF CACHE BOOL "Build SDL as a shared library")
 
-    if(IOS) # Test for ios sim with lua, as this fails with system and needs this define
+    if(NOT FREETYPE_FOUND)
+        message(STATUS "freetype not found. Fetching freetype...")
+        set(FT_DISABLE_BROTLI ON CACHE BOOL "Do not install when installing" FORCE)
+        set(FT_DISABLE_HARFBUZZ ON CACHE BOOL "Do not install when installing" FORCE)
+        set(FT_DISABLE_ZLIB ON CACHE BOOL "Do not use" FORCE)
+        set(FT_DISABLE_BZIP2 ON CACHE BOOL "Do not use" FORCE)
+        set(FT_DISABLE_PNG ON CACHE BOOL "Do not use" FORCE)
+        set(FT_DISABLE_PNG ON CACHE BOOL "Do not use" FORCE)
+        FetchContent_Declare(
+            LIB_FREETYPE
+            GIT_REPOSITORY https://github.com/freetype/freetype
+            GIT_TAG VER-2-13-3
+            EXCLUDE_FROM_ALL
+        )
+        FetchContent_MakeAvailable(LIB_FREETYPE)
+        list(APPEND EXTERNAL_LIBS freetype)
+    endif(NOT FREETYPE_FOUND)
+
+    if(IOS) # Test for ios sim with lua, as this fails with system and needs this define.. TODO not sure if needed
         add_definitions(-DTARGET_OS_IOS=1)
         add_definitions(-DLUA_USE_IOS=1)
     endif(IOS)
@@ -200,13 +228,21 @@ target_link_libraries(${LIBRARY_TARGET_NAME}
     INTERFACE
     ${EXTERNAL_LIBS}
 )
+
+# System is for blocking out the warnings, these are mostly external libs
 target_include_directories(${LIBRARY_TARGET_NAME}
+    SYSTEM
     PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}/include
-
     /usr/local/include
     PRIVATE
     ${sdl3_SOURCE_DIR}/include
+    ${freetype_SOURCE_DIR}/include
+)
+
+# don't hide warnings
+target_include_directories(${LIBRARY_TARGET_NAME}
+    PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 install(DIRECTORY ${FOLDERS_TO_COPY}

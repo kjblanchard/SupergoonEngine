@@ -12,8 +12,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-typedef union SDL_Event SDL_Event;
+#include <Supergoon/events.h>
 
 void InitializeKeyboardSystem(void);
 void UpdateKeyboardSystem(void);

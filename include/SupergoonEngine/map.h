@@ -4,7 +4,6 @@
 extern "C" {
 #endif
 
-
 typedef struct Tileset {
 	char name[64];
 	int firstgid;
@@ -36,7 +35,7 @@ typedef struct Tilemap {
 	int tileset_count;
 	Tileset* tilesets;	// Array of tilesets
 	int num_objects;
-	TiledObject* objects;
+	struct TiledObject* objects;
 	int layer_count;
 	LayerGroup groups[2];  // Array of tilesets
 } Tilemap;

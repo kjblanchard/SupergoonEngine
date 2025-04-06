@@ -8,8 +8,7 @@
  * @copyright Copyright (c) 2025
  *
  */
-
-typedef union SDL_Event Event;
+#include <Supergoon/events.h>
 
 /**
  * @brief Set the Start Function object

@@ -44,6 +44,7 @@ static bool Start(void) {
 	}
 	sgInitializeDebugLogFile();
 	InitializeKeyboardSystem();
+	InitializeGraphicsSystem();
 	geInitializeJoysticks();
 	InitializeLuaEngine();
 	InitializeEventEngine();

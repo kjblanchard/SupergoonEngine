@@ -1,6 +1,9 @@
 #include <Supergoon/UI/ui.h>
+#include <Supergoon/UI/uiimage.h>
 #include <Supergoon/UI/uiobject.h>
+#include <Supergoon/UI/uitext.h>
 #include <Supergoon/graphics.h>
+#include <Supergoon/log.h>
 #include <SupergoonEngine/ui.h>
 #include <assert.h>
 
@@ -15,15 +18,20 @@ static void drawUIObject(UIObject* object) {
 		return;
 	}
 	switch (object->Type) {
+		case UIObjectTypesImage:
+			DrawUIImage(object);
+			break;
+		case UIObjectTypesText:
+			UITextDraw(object);
 		default:
-// Draw debug box in imgui
-#ifdef imgui
-			if (object->Flags & UIObjectFlagDebugBox) {
-				DrawRect(&object->Location);
-			}
-#endif
 			break;
 	}
+// Draw debug box in imgui
+#ifdef imgui
+	if (object->Flags & UIObjectFlagDebugBox) {
+		DrawRect(&object->Location);
+	}
+#endif
 	for (size_t i = 0; i < object->ChildrenCount; i++) {
 		drawUIObject(object->Children[i]);
 	}
@@ -62,6 +70,10 @@ static void onDirtyUIObject(UIObject* object) {
 	object->Location.y = yFromParent + object->YOffset;
 	qsort(object->Children, object->ChildrenCount, sizeof(UIObject*), compareUIObjectsLayer);
 	switch (object->Type) {
+		case UIObjectTypesText:
+			UITextOnDirty(object);
+			break;
+
 		default:
 			break;
 	}
@@ -93,6 +105,7 @@ void InitializeUISystem(void) {
 	_rootUIObject->Location.h = _logicalHeight;
 	_rootUIObject->Name = strdup("Root Panel");
 	_rootUIObject->Flags |= UIObjectFlagActive | UIObjectFlagVisible | UIObjectFlagDirty;
+	InitializeUITextSystem();
 }
 
 void UpdateUISystem(void) {
@@ -114,6 +127,17 @@ void AddUIObject(UIObject* child, UIObject* parent) {
 	parent->Children = newChildren;
 	parent->Children[parent->ChildrenCount++] = child;
 	child->Parent = parent;
+	// Load based on type
+	switch (child->Type) {
+		case UIObjectTypesText:
+			UITextLoad(child);
+			MeasureText(child);
+
+			break;
+
+		default:
+			break;
+	}
 }
 
 void ShutdownUISystem(void) {

@@ -10,8 +10,8 @@
  */
 #pragma once
 #include <Supergoon/Primitives/Color.h>
+#include <Supergoon/Primitives/rectangle.h>
 typedef struct SDL_Texture Texture;
-typedef struct SDL_FRect RectangleF;
 
 /**
  * @brief Draws a rectangle on the screen, currently doesn't take any params hah..
@@ -36,6 +36,8 @@ void DrawTexture(Texture* texture, RectangleF* dst, RectangleF* src);
  */
 Texture* CreateRenderTargetTexture(int width, int height, sgColor color);
 
+void ClearRenderTargetTexture(Texture* texture, sgColor* color);
+
 /**
  * @brief Draws a texture on a render target texture.  Useful for creating something that you can draw with, Used by engine for bg1 and bg2
  * Make sure dst was created with CreateRenderTargetTexture
@@ -55,3 +57,8 @@ void DrawTextureToRenderTargetTexture(Texture* dst, Texture* src, RectangleF* ds
  * @return Texture* Loaded texture, or null if failure
  */
 Texture* CreateTextureFromIndexedBMP(const char* filename);
+
+void InitializeGraphicsSystem(void);
+void UnloadTexture(Texture* texture);
+void UnloadUnusedTextures(void);
+void UnloadAllTextures(void);

@@ -12,10 +12,10 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#include <Supergoon/graphics.h>
 
 typedef struct SDL_Window Window;
 typedef struct SDL_Renderer Renderer;
-typedef struct SDL_Texture Texture;
 
 /**
  * @brief Set the Window Options object

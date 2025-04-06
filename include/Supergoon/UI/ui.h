@@ -2,7 +2,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-typedef struct UIObject UIObject;
+#include <Supergoon/UI/uiobject.h>
 
 void AddUIObject(UIObject* child, UIObject* parent);
 #ifdef __cplusplus

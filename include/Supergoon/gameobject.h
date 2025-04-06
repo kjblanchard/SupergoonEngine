@@ -2,15 +2,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-typedef struct GameObject GameObject;
-
-extern GameObject* CurrentGameObject;
-#define GetCurrentGameObject(Type) ((Type*)CurrentGameObject.Userdata)
-// Userdata could be tiledmap, or anything really.
-typedef void (*GameObjectCreateFunc)(void* userdata, GameObject* go);
-typedef void (*GameObjectStartFunc)(GameObject* go);
-typedef void (*GameObjectUpdateFunc)(GameObject* go);
-typedef void (*GameObjectDestroyFunc)(GameObject* go);
 
 typedef enum GameObjectFlags {
 	GameObjectFlagLoaded = 1 << 0,
@@ -30,6 +21,14 @@ typedef struct GameObject {
 	float H;
 	void* Userdata;
 } GameObject;
+
+extern GameObject* CurrentGameObject;
+#define GetCurrentGameObject(Type) ((Type*)CurrentGameObject.Userdata)
+// Userdata could be tiledmap, or anything really.
+typedef void (*GameObjectCreateFunc)(void* userdata, GameObject* go);
+typedef void (*GameObjectStartFunc)(GameObject* go);
+typedef void (*GameObjectUpdateFunc)(GameObject* go);
+typedef void (*GameObjectDestroyFunc)(GameObject* go);
 
 // GameObject set functions
 void ObjectSetCreateFunction(int type, GameObjectCreateFunc func);

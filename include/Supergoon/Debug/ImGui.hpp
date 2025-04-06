@@ -2,7 +2,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-typedef union SDL_Event Event;
+#include <Supergoon/events.h>
 
 void InitializeImGui(void);
 // Returns true if we should send this to the game, false if we should continue

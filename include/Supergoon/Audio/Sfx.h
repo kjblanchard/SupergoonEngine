@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 #define SFX_MAX_CHARS 255
-typedef struct sgStream sgStream;
+struct sgStream;
 
 typedef struct Sfx {
 	char Filename[SFX_MAX_CHARS];
@@ -22,7 +22,7 @@ Sfx* SfxNew(void);
 // Load all data from the sfx to the buffer for playing.
 void SfxLoad(Sfx*);
 // Put data from the buffer into the stream
-void SfxPlay(Sfx*, sgStream*);
+void SfxPlay(Sfx*, struct sgStream*);
 // void SfxPlayOneShot(const char* filename, sgStream*);
 // Frees a sfx
 void SfxDelete(Sfx*);
