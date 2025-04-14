@@ -1,5 +1,8 @@
 #include <Supergoon/UI/ui.h>
+#include <Supergoon/UI/uilayoutgroup.h>
 #include <Supergoon/UI/uiobject.h>
+#include <Supergoon/UI/uirect.h>
+#include <Supergoon/UI/uitext.h>
 #include <SupergoonEngine/ui.h>
 
 #include <Supergoon/Debug/Debug.hpp>
@@ -30,9 +33,13 @@ void DrawUIObjects(UIObject *uiObject) {
 		auto visibleLabel = "Visible ##" + string(uiObject->Name);
 		auto activeLabel = "Active ##" + string(uiObject->Name);
 		auto debugLabel = "DebugBox ##" + string(uiObject->Name);
+		auto priorityLabel = "Priority ##" + string(uiObject->Name);
+		auto superPriorityLabel = "Super Priority ##" + string(uiObject->Name);
 		auto isVisible = (uiObject->Flags & UIObjectFlagVisible) != 0;
 		auto isActive = (uiObject->Flags & UIObjectFlagActive) != 0;
 		auto isDebug = (uiObject->Flags & UIObjectFlagDebugBox) != 0;
+		auto isPriority = (uiObject->Flags & UIObjectFlagPriorityDraw) != 0;
+		auto isSuperPriority = (uiObject->Flags & UIObjectFlagSuperPriorityDraw) != 0;
 		ImGui::BeginDisabled();
 		ImGui::Text("X: %f, Y: %f", uiObject->Location.x, uiObject->Location.y);
 		ImGui::EndDisabled();
@@ -73,97 +80,68 @@ void DrawUIObjects(UIObject *uiObject) {
 		if (ImGui::DragFloat(panelHLabel.c_str(), &uiObject->Location.h, 1.0f)) {
 			uiObject->Flags |= UIObjectFlagDirty;
 		}
-		// if (ImGui::DragInt(panelLayerLabel.c_str(), &uiObject->_layer, 1, 0, 100)) {
-		// 	uiObject->SetDirty();
-		// }
-		// if (uiObject->WidgetType == (int)BuiltinWidgetTypes::Image) {
-		// 	auto imageObject = dynamic_cast<UIImage *>(uiObject);
-		// 	std::string childWLabel = "Child W##" + panelName;
-		// 	std::string childHLabel = "Child H##" + panelName;
-		// 	if (ImGui::DragFloat(childWLabel.c_str(), &imageObject->Bounds.W, 1.0f)) {
-		// 		uiObject->SetDirty();
-		// 	}
-		// 	if (ImGui::DragFloat(childHLabel.c_str(), &imageObject->Bounds.H, 1.0f)) {
-		// 		uiObject->SetDirty();
-		// 	}
-		// } else if (uiObject->WidgetType == (int)BuiltinWidgetTypes::Text) {
-		// 	assert((UIText *)uiObject);
-		// 	auto textUIObject = (UIText *)uiObject;
-		// 	std::string childW_label = "Width##" + panelName;
-		// 	std::string childH_label = "Height##" + panelName;
-		// 	std::string childXBounds = "TextBoundsX##" + panelName;
-		// 	std::string childYBounds = "TextBoundsY##" + panelName;
-		// 	std::string childWordWrapLabel = "WordWrap##" + panelName;
-		// 	std::string childCenterLabel = "Center##" + panelName;
-		// 	std::string childCenterLabelY = "CenterY##" + panelName;
-		// 	std::string childLettersToDraw = "Letters To Draw##" + panelName;
-		// 	std::string childDebugBoxCheckbox = "DebugBox##" + panelName;
-		// 	if (ImGui::DragFloat(childW_label.c_str(), &uiObject->Bounds.W, 1.0f, 0.0f, FLT_MAX)) {
-		// 		uiObject->SetDirty();
-		// 	}
-		// 	if (ImGui::DragFloat(childH_label.c_str(), &uiObject->Bounds.H, 1.0f, 0.0f, FLT_MAX)) {
-		// 		uiObject->SetDirty();
-		// 	}
-		// 	if (ImGui::Checkbox(childWordWrapLabel.c_str(), &textUIObject->WordWrap)) {
-		// 		uiObject->SetDirty();
-		// 	};
-		// 	ImGui::SameLine();
-		// 	if (ImGui::Checkbox(childCenterLabel.c_str(), &textUIObject->CenterTextX)) {
-		// 		uiObject->SetDirty();
-		// 	};
-		// 	ImGui::SameLine();
-		// 	if (ImGui::Checkbox(childCenterLabelY.c_str(), &textUIObject->_centerTextY)) {
-		// 		uiObject->SetDirty();
-		// 	};
-		// 	ImGui::SameLine();
-		// 	ImGui::Checkbox(childDebugBoxCheckbox.c_str(), &shouldDrawDebugBox);
-
-		// 	if (shouldDrawDebugBox) {
-		// 		Graphics::Instance()->DrawRect(textUIObject->Bounds, {255, 0, 0, 255});
-		// 	}
-		// 	if (ImGui::DragInt(childLettersToDraw.c_str(), &textUIObject->_currentLetters, 1, 0, textUIObject->TextPtr->_text.length())) {
-		// 		uiObject->SetDirty();
-		// 	}
-		// } else if (uiObject->WidgetType == (int)BuiltinWidgetTypes::HorizontalLayoutGroup) {
-		// 	assert((UIHorizontalLayoutGroup *)uiObject);
-		// 	auto horiGroup = (UIHorizontalLayoutGroup *)uiObject;
-		// 	std::string childSpaceLabel = "Space Y##" + panelName;
-		// 	if (ImGui::DragFloat(childSpaceLabel.c_str(), &horiGroup->XSpaceBetweenElements, 1.0f, -255, 255)) {
-		// 		uiObject->SetDirty();
-		// 	}
-		// 	// ImGui::End();
-		// } else if (uiObject->WidgetType == (int)BuiltinWidgetTypes::VerticalLayoutGroup) {
-		// 	assert((UIVerticalLayoutGroup *)uiObject);
-		// 	auto horiGroup = (UIVerticalLayoutGroup *)uiObject;
-		// 	std::string childSpaceLabel = "Space Y##" + panelName;
-		// 	if (ImGui::DragFloat(childSpaceLabel.c_str(), &horiGroup->YSpaceBetweenElements, 1.0f, -255, 255)) {
-		// 		uiObject->SetDirty();
-		// 	}
-		// } else if (uiObject->WidgetType == (int)BuiltinWidgetTypes::ProgressBar) {
-		// 	assert((UIProgressBar *)uiObject);
-		// 	auto progressBar = (UIProgressBar *)uiObject;
-		// 	std::string barOffsetXLabel = "BarOffsetX##" + panelName;
-		// 	std::string barOffsetYLabel = "BarOffsetY##" + panelName;
-		// 	std::string barXLabel = "BarWidth##" + panelName;
-		// 	std::string barYLabel = "BarHeight##" + panelName;
-		// 	std::string barPercentLabel = "BarPercent##" + panelName;
-		// if (ImGui::DragFloat(barOffsetXLabel.c_str(), &progressBar->BarOffset.X, 1.0f, 0.0f)) {
-		// 	progressBar->SetDirty();
-		// }
-		// if (ImGui::DragFloat(barOffsetYLabel.c_str(), &progressBar->BarOffset.Y, 1.0f, 0.0f)) {
-		// 	progressBar->SetDirty();
-		// }
-		// if (ImGui::DragFloat(barXLabel.c_str(), &progressBar->BarSize.X, 1.0f, 0.0f, 200)) {
-		// 	progressBar->SetDirty();
-		// }
-		// if (ImGui::DragFloat(barYLabel.c_str(), &progressBar->BarSize.Y, 1.0f, 0.0f, 200)) {
-		// 	progressBar->SetDirty();
-		// }
-		// if (ImGui::DragInt(barPercentLabel.c_str(), &progressBar->BarPercent, 1.0f, 0.0f)) {
-		// 	progressBar->SetDirty();
-		// }
-		// }
-
+		if (ImGui::Checkbox(priorityLabel.c_str(), &isPriority)) {
+			if (isPriority)
+				uiObject->Flags |= UIObjectFlagPriorityDraw;
+			else
+				uiObject->Flags &= ~UIObjectFlagPriorityDraw;
+			uiObject->Flags |= UIObjectFlagDirty;
+		}
+		ImGui::SameLine();
+		if (ImGui::Checkbox(superPriorityLabel.c_str(), &isSuperPriority)) {
+			if (isSuperPriority)
+				uiObject->Flags |= UIObjectFlagSuperPriorityDraw;
+			else
+				uiObject->Flags &= ~UIObjectFlagSuperPriorityDraw;
+			uiObject->Flags |= UIObjectFlagDirty;
+		}
+		if (uiObject->Type == UIObjectTypesText) {
+			auto textData = (UIText *)uiObject->Data;
+			assert(textData && "No text!");
+			auto numTextToDraw = "Num Text to Draw ##" + string(uiObject->Name);
+			auto maxNumText = strlen(textData->Text);
+			int data = textData->CurrentDrawnLetters;
+			if (ImGui::SliderInt(numTextToDraw.c_str(), &data, 0, maxNumText)) {
+				textData->NumLettersToDraw = data;
+				uiObject->Flags |= UIObjectFlagDirty;
+			}
+			auto centeredXText = "CenteredX ##" + string(uiObject->Name);
+			bool centeredX = textData->CenteredX;
+			bool centeredY = textData->CenteredY;
+			auto centeredYText = "CenteredY ##" + string(uiObject->Name);
+			if (ImGui::Checkbox(centeredXText.c_str(), &centeredX)) {
+				textData->CenteredX = true;
+				uiObject->Flags |= UIObjectFlagDirty;
+			}
+			if (ImGui::Checkbox(centeredYText.c_str(), &centeredY)) {
+				textData->CenteredY = true;
+				uiObject->Flags |= UIObjectFlagDirty;
+			}
+		} else if (uiObject->Type == UIObjectTypesRect) {
+			auto rectData = (UIRect *)uiObject->Data;
+			assert(rectData && "no rect!");
+			auto colorText = "Draw Color ##" + string(uiObject->Name);
+			static float color[4] = {(float)rectData->Color.R / 255.0f, (float)rectData->Color.G / 255.0f, (float)rectData->Color.B / 255.0f, (float)rectData->Color.A / 255.0f};
+			if (ImGui::ColorEdit4(colorText.c_str(), color, ImGuiColorEditFlags_AlphaBar)) {
+				rectData->Color.R = (uint8_t)(color[0] * 255.0f + 0.5f);
+				rectData->Color.G = (uint8_t)(color[1] * 255.0f + 0.5f);
+				rectData->Color.B = (uint8_t)(color[2] * 255.0f + 0.5f);
+				rectData->Color.A = (uint8_t)(color[3] * 255.0f + 0.5f);
+			};
+		} else if (uiObject->Type == UIObjectTypesLayoutGroup) {
+			auto hlgData = (UILayoutGroup *)uiObject->Data;
+			assert(hlgData && "no layout group!");
+			auto horizontalText = "Horizontal ##" + string(uiObject->Name);
+			auto isHorizontal = (bool)hlgData->IsHorizontal;
+			if (ImGui::Checkbox("Horizontal Layout", &isHorizontal)) {
+				hlgData->IsHorizontal = isHorizontal;
+				uiObject->Flags |= UIObjectFlagDirty;
+			}
+			auto spacingText = "Spacing ##" + string(uiObject->Name);
+			if (ImGui::SliderInt(spacingText.c_str(), &hlgData->Spacing, -500, 500)) {
+				uiObject->Flags |= UIObjectFlagDirty;
+			}
+		}
 		ImGui::Text("**__Children__**");
 		for (size_t i = 0; i < uiObject->ChildrenCount; i++) {
 			DrawUIObjects(uiObject->Children[i]);

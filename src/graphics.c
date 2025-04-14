@@ -63,18 +63,28 @@ Texture* LoadTextureFromSurface(struct SDL_Surface* surface) {
 
 void ClearRenderTargetTexture(Texture* texture, sgColor* color) {
 	SDL_Texture* currentRenderTarget = SDL_GetRenderTarget(_renderer);
+	sgColor currentColor;
+	SDL_GetRenderDrawColor(_renderer, &currentColor.R, &currentColor.G, &currentColor.B, &currentColor.A);
 	if (!SDL_SetRenderTarget(_renderer, texture)) {
 		sgLogError("Could not set renderer to texture target to clear");
 		return;
 	}
-	SDL_RenderClear(_renderer);
+	SDL_SetRenderDrawColor(_renderer, color->R, color->G, color->B, color->A);
+	if (!SDL_RenderClear(_renderer)) {
+		sgLogError("Could not clear texture, %s", SDL_GetError());
+	};
 	SDL_SetRenderTarget(_renderer, currentRenderTarget);
+	SDL_SetRenderDrawColor(_renderer, currentColor.R, currentColor.G, currentColor.B, currentColor.A);
 }
 
-void DrawRect(RectangleF* rect) {
+void DrawRect(RectangleF* rect, sgColor* color, int filled) {
 	assert(_renderer && "No renderer, make sure window is created");
-	SDL_SetRenderDrawColor(_renderer, 255, 255, 255, 255);
-	SDL_RenderRect(_renderer, rect);
+	SDL_SetRenderDrawColor(_renderer, color->R, color->G, color->B, color->A);
+	if (filled) {
+		SDL_RenderFillRect(_renderer, rect);
+	} else {
+		SDL_RenderRect(_renderer, rect);
+	}
 	SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
 }
 

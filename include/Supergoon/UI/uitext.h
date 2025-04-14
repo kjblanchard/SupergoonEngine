@@ -17,12 +17,16 @@ typedef struct UIText {
 	unsigned int FontSize;
 	//  Should we word wrap?
 	int WordWrap;
+	unsigned int TextSizeX;
+	unsigned int TextSizeY;
+	int CenteredX;
+	int CenteredY;
 	//  To know where we are at when drawing
 	int PenX, PenY;
 	//  For drawing to the Texture
 	unsigned int NumLettersToDraw, CurrentDrawnLetters;
 	//  For alignment purposes, set when measuring text pass so we know where to set the penx/y on newlines.
-	// unsigned int TextStartX, TextStartY;
+	int TextStartX, TextStartY;
 	// For word wrapping, so we know what characters we should word wrap with
 	unsigned int NumWordWrapCharacters;
 	// For word wrapping, so we know what characters we should word wrap with

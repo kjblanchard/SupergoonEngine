@@ -6,8 +6,10 @@ extern "C" {
 
 typedef enum UIObjectTypes {
 	UIObjectTypesPanel,
+	UIObjectTypesRect,
 	UIObjectTypesImage,
 	UIObjectTypesText,
+	UIObjectTypesLayoutGroup,
 
 } UIObjectTypes;
 typedef enum UIObjectFlags {

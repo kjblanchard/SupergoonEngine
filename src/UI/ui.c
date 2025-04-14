@@ -1,6 +1,8 @@
 #include <Supergoon/UI/ui.h>
 #include <Supergoon/UI/uiimage.h>
+#include <Supergoon/UI/uilayoutgroup.h>
 #include <Supergoon/UI/uiobject.h>
+#include <Supergoon/UI/uirect.h>
 #include <Supergoon/UI/uitext.h>
 #include <Supergoon/graphics.h>
 #include <Supergoon/log.h>
@@ -23,13 +25,16 @@ static void drawUIObject(UIObject* object) {
 			break;
 		case UIObjectTypesText:
 			UITextDraw(object);
+		case UIObjectTypesRect:
+			UIRectDraw(object);
 		default:
 			break;
 	}
 // Draw debug box in imgui
 #ifdef imgui
 	if (object->Flags & UIObjectFlagDebugBox) {
-		DrawRect(&object->Location);
+		static sgColor debugColor = {255, 255, 255, 255};
+		DrawRect(&object->Location, &debugColor, false);
 	}
 #endif
 	for (size_t i = 0; i < object->ChildrenCount; i++) {
@@ -38,8 +43,22 @@ static void drawUIObject(UIObject* object) {
 }
 
 // Get the parents x and y, this could differ due to VLG, HLG, and anything that controls layout
-static void getParentXY(float* x, float* y, UIObject* parent) {
+static void getParentXY(float* x, float* y, UIObject* parent, UIObject* child) {
 	switch (parent->Type) {
+		case UIObjectTypesLayoutGroup: {
+			UILayoutGroup* layoutData = (UILayoutGroup*)parent->Data;
+			assert(layoutData && "No layout group data..");
+			unsigned int childNum = 0;
+			for (size_t i = 0; i < parent->ChildrenCount; i++) {
+				if (parent->Children[i] == child) {
+					childNum = i;
+					break;
+				}
+			}
+			*x = layoutData->IsHorizontal ? parent->Location.x + (layoutData->Spacing * childNum) : parent->Location.x;
+			*y = layoutData->IsHorizontal ? parent->Location.y : parent->Location.y + (layoutData->Spacing * childNum);
+			break;
+		}
 		default:
 			*x = parent->Location.x;
 			*y = parent->Location.y;
@@ -51,11 +70,11 @@ static int compareUIObjectsLayer(const void* a, const void* b) {
 	// Only dereference once to get the object.. qsort will populate both as whatever type the "array" is
 	UIObject* objA = *(UIObject**)a;
 	UIObject* objB = *(UIObject**)b;
-	// Give values to both a and b
-	int priorityA = (objA->Flags & UIObjectFlagSuperPriorityDraw) ? 2 : (objA->Flags & UIObjectFlagPriorityDraw) ? 1
-																												 : 0;
-	int priorityB = (objB->Flags & UIObjectFlagSuperPriorityDraw) ? 2 : (objB->Flags & UIObjectFlagPriorityDraw) ? 1
-																												 : 0;
+	int priorityA = ((objA->Flags & UIObjectFlagSuperPriorityDraw) ? 2 : 0) |
+					((objA->Flags & UIObjectFlagPriorityDraw) ? 1 : 0);
+
+	int priorityB = ((objB->Flags & UIObjectFlagSuperPriorityDraw) ? 2 : 0) |
+					((objB->Flags & UIObjectFlagPriorityDraw) ? 1 : 0);
 
 	return priorityA - priorityB;
 }
@@ -64,7 +83,9 @@ static int compareUIObjectsLayer(const void* a, const void* b) {
 static void onDirtyUIObject(UIObject* object) {
 	float xFromParent = 0, yFromParent = 0;
 	if (object->Parent) {
-		getParentXY(&xFromParent, &yFromParent, object->Parent);
+		// We need to resort the parents children on dirty too, in the case of a layer change on the child, etc
+		qsort(object->Parent->Children, object->Parent->ChildrenCount, sizeof(UIObject*), compareUIObjectsLayer);
+		getParentXY(&xFromParent, &yFromParent, object->Parent, object);
 	}
 	object->Location.x = xFromParent + object->XOffset;
 	object->Location.y = yFromParent + object->YOffset;
@@ -131,8 +152,6 @@ void AddUIObject(UIObject* child, UIObject* parent) {
 	switch (child->Type) {
 		case UIObjectTypesText:
 			UITextLoad(child);
-			MeasureText(child);
-
 			break;
 
 		default:

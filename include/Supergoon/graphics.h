@@ -17,7 +17,7 @@ typedef struct SDL_Texture Texture;
  * @brief Draws a rectangle on the screen, currently doesn't take any params hah..
  *
  */
-void DrawRect(RectangleF* rect);
+void DrawRect(RectangleF* rect, sgColor* color, int filled);
 /**
  * @brief Draws a texture to the screen, make sure we are in a drawstart.
  * @param texture

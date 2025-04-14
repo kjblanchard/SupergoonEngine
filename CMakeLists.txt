@@ -44,6 +44,7 @@ set(SRC_FILES
     src/Tweening/easing.c
     src/Tweening/tween.c
     src/UI/ui.c
+    src/UI/uirect.c
     src/UI/uiobject.c
     src/UI/uiimage.c
     src/UI/uitext.c
