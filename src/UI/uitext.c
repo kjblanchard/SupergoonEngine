@@ -5,7 +5,9 @@
 #include <SupergoonEngine/graphics.h>
 #include <SupergoonEngine/tools.h>
 #include <assert.h>
+#include <ft2build.h>
 #include <math.h>
+#include FT_FREETYPE_H
 #define MAX_LOADED_FONTS 12
 #define ASCII_CHAR_NUM 127
 static FT_Library _loadedLibrary = NULL;

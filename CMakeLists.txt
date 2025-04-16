@@ -12,9 +12,14 @@ if(UNIX OR APPLE)
         -Wextra
         -Wpedantic
         -Wdeprecated
-        -Wno-deprecated-redundant-constexpr-static-def
-        -Wno-deprecated-literal-operator
-        -Wno-macro-redefined
+
+        # -Wno-deprecated-redundant-constexpr-static-def
+        # -Wno-deprecated-literal-operator
+        # -Wno-macro-redefined
+        # -Wno-conversion
+        # Disable conversion if you want to check all the warnings, etc
+        -Wno-unused-parameter
+        -Wno-sign-compare
     )
 endif(UNIX OR APPLE)
 
@@ -48,6 +53,7 @@ set(SRC_FILES
     src/UI/uiobject.c
     src/UI/uiimage.c
     src/UI/uitext.c
+    src/Lua/ui.c
 )
 
 if(imgui)
@@ -126,7 +132,7 @@ if(SYSTEM_PACKAGES) # If we are using system packages, then we should try to fin
 
     if(FREETYPE_FOUND)
         list(APPEND EXTERNAL_LIBS ${FREETYPE_LIBRARY})
-        target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC /usr/local/include/freetype2)
+        target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC /usr/local/include/freetype2 /opt/homebrew/opt/freetype/include/freetype2 )
     endif(FREETYPE_FOUND)
 endif(SYSTEM_PACKAGES)
 

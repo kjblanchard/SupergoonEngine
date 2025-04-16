@@ -12,11 +12,15 @@
 #include <SupergoonEngine/gameobject.h>
 #include <SupergoonEngine/map.h>
 #include <SupergoonEngine/ui.h>
+
 // This is not needed, just for testing
 #include <Supergoon/graphics.h>
 #ifdef imgui
 #include <Supergoon/Debug/ImGui.hpp>
 #endif
+
+// this is not needed, and should be consolidated to one function
+#include <SupergoonEngine/Lua/ui.h>
 
 // Functions in Audio.c
 extern void initializeAudio(void);
@@ -54,6 +58,9 @@ static bool Start(void) {
 	initializeTweenEngine();
 	InitializeGameObjectSystem();
 	InitializeUISystem();
+	// should be consolidated
+	RegisterLuaUIFunctions();
+
 	return true;
 }
 static bool sdlEventLoop(void) {

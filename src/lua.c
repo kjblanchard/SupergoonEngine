@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 
-static lua_State *_luaState;
+lua_State *_luaState;
 
 void InitializeLuaEngine(void) {
 	_luaState = luaL_newstate();
@@ -70,6 +70,14 @@ int LuaGetTableLengthMap(void) {
 	return len;
 }
 
+int LuaGetTablei(int i) {
+	if (lua_istable(_luaState, i)) {
+		return lua_gettable(_luaState, 0);
+	} else {
+		return 0;
+	}
+}
+
 void LuaCopyString(const char *name, char *location, int strlen) {
 	lua_getfield(_luaState, -1, name);
 	strncpy(location, lua_tostring(_luaState, -1), strlen);
@@ -96,6 +104,9 @@ void LuaPopStack(int num) {
 int LuaGetIntFromStack(void) {
 	return lua_tointeger(_luaState, -1);
 }
+int LuaGetIntFromStacki(int i) {
+	return lua_tointeger(_luaState, i);
+}
 
 float LuaGetFloat(const char *field) {
 	lua_getfield(_luaState, -1, field);
@@ -113,6 +124,9 @@ const char *LuaGetString(const char *name) {
 	const char *str = lua_tostring(_luaState, -1);
 	lua_pop(_luaState, 1);
 	return str;
+}
+const char *LuaGetStringi(int i) {
+	return lua_tostring(_luaState, i);
 }
 
 int LuaGetIntFromTablei(int i) {
@@ -155,3 +169,25 @@ bool LuaIsFloat(int stackLocation) {
 	return lua_isnumber(_luaState, stackLocation);
 }
 
+bool LuaIsTable(int stackLocation) {
+	return lua_istable(_luaState, stackLocation);
+}
+
+float LuaGetFloatFromTableStacki(int i, const char *key) {
+	lua_getfield(_luaState, i, key);
+	float fieldFloat = lua_tonumber(_luaState, -1);
+	lua_pop(_luaState, 1);
+	return fieldFloat;
+}
+
+void LuaPushLightUserdata(void *data) {
+	lua_pushlightuserdata(_luaState, data);
+}
+
+void LuaPushNil(void) {
+	lua_pushnil(_luaState);
+}
+
+void *LuaGetLightUserdatai(int i) {
+	return lua_isuserdata(_luaState, i) ? lua_touserdata(_luaState, i) : NULL;
+}

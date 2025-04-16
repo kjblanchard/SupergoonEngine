@@ -1,9 +1,6 @@
 #pragma once
 #include <Supergoon/UI/uiobject.h>
 #include <Supergoon/graphics.h>
-#include <ft2build.h>
-// #include <ft2build.h>
-#include FT_FREETYPE_H
 #ifdef __cplusplus
 extern "C" {
 #endif
