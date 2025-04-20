@@ -15,6 +15,7 @@ void LuaPushTableFromFile(const char* path);
 int LuaGetInt(const char* field);
 int LuaGetIntFromStack(void);
 int LuaGetIntFromStacki(int i);
+int LuaGetBooli(int i);
 
 int LuaGetIntFromTablei(int i);
 float LuaGetFloat(const char* field);
@@ -50,6 +51,8 @@ int LuaIsString(int stackLocation);
 int LuaIsFloat(int stackLocation);
 int LuaIsInt(int stackLocation);
 int LuaIsTable(int stackLocation);
+int LuaIsNili(int stackLocation);
+int LuaIsBool(int stackLocation);
 void LuaPushNil();
 void LuaPushLightUserdata(void* data);
 // Ends the iteration

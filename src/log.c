@@ -2,7 +2,7 @@
 #include <Supergoon/log.h>
 #include <Supergoon/pch.h>
 
-#define MAX_LOG_SIZE 400
+#define MAX_LOG_SIZE 4000
 
 static void (*logFunc)(const char *, const char *, int) = NULL;
 

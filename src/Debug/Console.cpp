@@ -8,6 +8,10 @@
 static const int MAX_MESSAGES = 999;
 static bool scrollToBottom = false;
 static bool autoScroll = true;
+static bool showDebugMessages = false;
+static bool showInfoMessages = false;
+static bool showWarnMessages = true;
+static bool showErrorMessages = true;
 std::deque<std::pair<int, std::string>> consoleMessages;
 
 static void engineLogFunc(const char *time, const char *message, int logLevel) {
@@ -27,6 +31,14 @@ void ShowContentDebugWindow(void) {
 	}
 	ImGui::Checkbox("Autoscroll", &autoScroll);
 	ImGui::SameLine();
+	ImGui::Checkbox("Debug", &showDebugMessages);
+	ImGui::SameLine();
+	ImGui::Checkbox("Info", &showInfoMessages);
+	ImGui::SameLine();
+	ImGui::Checkbox("Warn", &showWarnMessages);
+	ImGui::SameLine();
+	ImGui::Checkbox("Error", &showErrorMessages);
+	ImGui::SameLine();
 	if (ImGui::Button("Clear Logs")) {
 		consoleMessages.clear();
 	}
@@ -36,6 +48,14 @@ void ShowContentDebugWindow(void) {
 	}
 	ImGui::BeginChild("##log", ImVec2(0.0f, 0.0f), ImGuiChildFlags_Borders, ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_AlwaysHorizontalScrollbar);
 	for (auto message : consoleMessages) {
+		auto messageLogLevel = message.first;
+		if ((messageLogLevel == Log_LDebug && !showDebugMessages) ||
+			(messageLogLevel == Log_LInfo && !showInfoMessages) ||
+			(messageLogLevel == Log_LWarn && !showWarnMessages) ||
+			(messageLogLevel == Log_LError && !showErrorMessages)) {
+			continue;
+		}
+
 		sgColor color = {255, 255, 255, 255};
 		std::string typeText = "Info - ";
 		if (message.first == Log_LWarn) {

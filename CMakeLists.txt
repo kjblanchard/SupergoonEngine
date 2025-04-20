@@ -54,6 +54,7 @@ set(SRC_FILES
     src/UI/uiimage.c
     src/UI/uitext.c
     src/Lua/ui.c
+    src/Lua/log.c
 )
 
 if(imgui)
@@ -252,6 +253,7 @@ target_include_directories(${LIBRARY_TARGET_NAME}
     PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
+
 install(DIRECTORY ${FOLDERS_TO_COPY}
     DESTINATION ${INSTALL_DIR}
     COMPONENT assets)

@@ -8,6 +8,23 @@
 
 lua_State *_luaState;
 
+static void setLuaPath(void) {
+	int value = lua_getglobal(_luaState, "package");
+	if (value == LUA_TNIL)
+		sgLogCritical("Could not get lua package, what the");
+	lua_getfield(_luaState, -1, "path");
+	const char *basePath = SDL_GetBasePath();
+	const char *nextPath = "assets/lua/?.lua;../Resources/assets/lua/?.lua";
+	const char *currentLuaPath = lua_tostring(_luaState, -1);  // grab path string from top of stack
+	size_t full_str_len = strlen(currentLuaPath) + strlen(nextPath) + strlen(basePath) + 2;
+	char full_str[full_str_len];
+	snprintf(full_str, full_str_len, "%s;%s%s", currentLuaPath, basePath, nextPath);
+	lua_pop(_luaState, 1);
+	lua_pushstring(_luaState, full_str);
+	lua_setfield(_luaState, -2, "path");
+	lua_pop(_luaState, 1);
+}
+
 void InitializeLuaEngine(void) {
 	_luaState = luaL_newstate();
 	if (_luaState == NULL) {
@@ -15,6 +32,7 @@ void InitializeLuaEngine(void) {
 		return;
 	}
 	luaL_openlibs(_luaState);
+	setLuaPath();
 }
 
 void LuaRunFile(const char *path) {
@@ -22,9 +40,10 @@ void LuaRunFile(const char *path) {
 	size_t size = strlen(basePath) + strlen(path) + 1;
 	char fullPath[size];
 	snprintf(fullPath, size, "%s%s", basePath, path);
+
 	if (luaL_dofile(_luaState, fullPath) != 0) {
 		const char *luaError = lua_tostring(_luaState, -1);
-		sgLogCritical("Lua error: %s", luaError);
+		sgLogError("Lua error: %s", luaError);
 	}
 }
 
@@ -106,6 +125,10 @@ int LuaGetIntFromStack(void) {
 }
 int LuaGetIntFromStacki(int i) {
 	return lua_tointeger(_luaState, i);
+}
+
+int LuaGetBooli(int i) {
+	return lua_toboolean(_luaState, i);
 }
 
 float LuaGetFloat(const char *field) {
@@ -190,4 +213,10 @@ void LuaPushNil(void) {
 
 void *LuaGetLightUserdatai(int i) {
 	return lua_isuserdata(_luaState, i) ? lua_touserdata(_luaState, i) : NULL;
+}
+int LuaIsNili(int stackLocation) {
+	return lua_isnil(_luaState, stackLocation);
+}
+int LuaIsBool(int stackLocation) {
+	return lua_isboolean(_luaState, stackLocation);
 }

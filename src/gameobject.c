@@ -50,7 +50,7 @@ void AddGameObjectFromTiledMap(TiledObject* object) {
 	CurrentGameObject->Type = object->ObjectType;
 	CurrentGameObject->X = CurrentGameObject->Y = CurrentGameObject->W = CurrentGameObject->H = 0;
 	CurrentGameObject->Userdata = NULL;
-	sgLogWarn("Load GameObject from map");
+	sgLogDebug("Load GameObject from map");
 	if (_gameObjectTypes[CurrentGameObject->Type].CreateFunc) {
 		_gameObjectTypes[CurrentGameObject->Type].CreateFunc(object, CurrentGameObject);
 	}

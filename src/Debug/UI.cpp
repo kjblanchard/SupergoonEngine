@@ -110,12 +110,10 @@ void DrawUIObjects(UIObject *uiObject) {
 			bool centeredY = textData->CenteredY;
 			auto centeredYText = "CenteredY ##" + string(uiObject->Name);
 			if (ImGui::Checkbox(centeredXText.c_str(), &centeredX)) {
-				textData->CenteredX = true;
-				uiObject->Flags |= UIObjectFlagDirty;
+				SetCenteredX(uiObject, centeredX);
 			}
 			if (ImGui::Checkbox(centeredYText.c_str(), &centeredY)) {
-				textData->CenteredY = true;
-				uiObject->Flags |= UIObjectFlagDirty;
+				SetCenteredY(uiObject, centeredY);
 			}
 		} else if (uiObject->Type == UIObjectTypesRect) {
 			auto rectData = (UIRect *)uiObject->Data;

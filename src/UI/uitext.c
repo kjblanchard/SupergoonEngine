@@ -332,6 +332,25 @@ static void drawLetter(UIObject* obj, UIText* text) {
 	text->PenX += getLetterAdvance(text, text->CurrentDrawnLetters);
 }
 
+static void redrawText(UIObject* object, UIText* text) {
+	SDL_DestroyTexture(text->Texture);
+	text->Texture = CreateRenderTargetTexture(object->Location.w, object->Location.h, (sgColor){0, 0, 0, 0});
+	text->PenX = 0;
+	text->CurrentDrawnLetters = 0;
+	text->NumWordWrapCharacters = 0;
+	MeasureText(object);
+	if (text->CenteredX) {
+		text->PenX = getCenteredXPenLoc(object, text);
+	}
+	if (text->CenteredY) {
+		text->PenY = getCenteredYPenLoc(object, text);
+
+	} else {
+		text->PenY = (text->Font->FontFace->ascender * text->FontSize) / text->Font->FontFace->units_per_EM;
+	}
+	object->Flags |= UIObjectFlagDirty;
+}
+
 void UITextOnDirty(UIObject* object) {
 	if (object->Type != UIObjectTypesText) {
 		return;
@@ -346,21 +365,7 @@ void UITextOnDirty(UIObject* object) {
 	float w, h;
 	SDL_GetTextureSize(text->Texture, &w, &h);
 	if (object->Location.h != h || object->Location.w != w) {
-		SDL_DestroyTexture(text->Texture);
-		text->Texture = CreateRenderTargetTexture(object->Location.w, object->Location.h, (sgColor){255, 0, 0, 255});
-		text->PenX = 0;
-		text->CurrentDrawnLetters = 0;
-		text->NumWordWrapCharacters = 0;
-		MeasureText(object);
-		if (text->CenteredX) {
-			text->PenX = getCenteredXPenLoc(object, text);
-		}
-		if (text->CenteredY) {
-			text->PenY = getCenteredYPenLoc(object, text);
-
-		} else {
-			text->PenY = (text->Font->FontFace->ascender * text->FontSize) / text->Font->FontFace->units_per_EM;
-		}
+		redrawText(object, text);
 	}
 
 	// If there is more letters to draw than the current, clear the texture and start from 0
@@ -404,4 +409,29 @@ void UITextLoad(UIObject* object) {
 		// Set the Y to be the full ascender, so the first line doesn't get offset above.  Probably not the best place for this.
 		text->PenY = (text->Font->FontFace->ascender * text->FontSize) / text->Font->FontFace->units_per_EM;
 	}
+}
+
+static void setCentered(UIObject* obj, bool centered, bool x) {
+	UIText* text = obj->Data;
+	text->CenteredX = x ? centered : text->CenteredX;
+	text->CenteredY = !x ? centered : text->CenteredY;
+	redrawText(obj, text);
+}
+
+void SetCenteredX(UIObject* uiobject, int centered) {
+	if (!uiobject) {
+		return;
+	}
+	UIText* text = (UIText*)uiobject->Data;
+	assert(text && "No text?");
+	setCentered(uiobject, centered, true);
+}
+
+void SetCenteredY(UIObject* uiobject, int centered) {
+	if (!uiobject) {
+		return;
+	}
+	UIText* text = (UIText*)uiobject->Data;
+	assert(text && "No text?");
+	setCentered(uiobject, centered, false);
 }

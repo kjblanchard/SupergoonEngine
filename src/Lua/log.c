@@ -1,0 +1,38 @@
+#include <Supergoon/log.h>
+#include <Supergoon/lua.h>
+#include <lauxlib.h>
+#include <lua.h>
+
+static int log(lua_State* L) {
+	if (LuaGetStackSize() != 2 || !LuaIsString(1) || !LuaIsInt(2)) {
+		return 0;
+	}
+	int logType = LuaGetIntFromStacki(2);
+	switch (logType) {
+		case Log_LDebug:
+			sgLogDebug(LuaGetStringi(1));
+			break;
+		case Log_LCritical:
+			sgLogCritical(LuaGetStringi(1));
+			break;
+		case Log_LError:
+			sgLogError(LuaGetStringi(1));
+			break;
+		case Log_LInfo:
+			sgLogInfo(LuaGetStringi(1));
+			break;
+		default:
+			sgLogWarn(LuaGetStringi(1));
+			break;
+	}
+	return 0;
+}
+
+static const luaL_Reg uiLib[] = {
+	{"Log", log},
+	{NULL, NULL}};
+
+void RegisterLuaLogFunctions(void) {
+	luaL_newlib(_luaState, uiLib);
+	lua_setglobal(_luaState, "cLog");
+}

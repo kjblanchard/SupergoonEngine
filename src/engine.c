@@ -20,6 +20,7 @@
 #endif
 
 // this is not needed, and should be consolidated to one function
+#include <SupergoonEngine/Lua/log.h>
 #include <SupergoonEngine/Lua/ui.h>
 
 // Functions in Audio.c
@@ -60,6 +61,7 @@ static bool Start(void) {
 	InitializeUISystem();
 	// should be consolidated
 	RegisterLuaUIFunctions();
+	RegisterLuaLogFunctions();
 
 	return true;
 }

@@ -36,6 +36,8 @@ void InitializeUITextSystem();
 
 void MeasureText(UIObject* uiobject);
 void SetFont(const char* fontName, unsigned int size);
+void SetCenteredX(UIObject* uiobject, int centered);
+void SetCenteredY(UIObject* uiobject, int centered);
 void UITextLoad(UIObject* object);
 void UITextOnDirty(UIObject* object);
 void UITextDraw(UIObject* object);
