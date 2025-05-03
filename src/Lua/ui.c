@@ -64,9 +64,9 @@ static int createImage(lua_State* state) {
 static int createText(lua_State* state) {
 	// args - name, loc table, parent userdata, text string,
 	// text fontName, int font size, bool centerX, centerY, wordwrap
-	if (LuaGetStackSize() != 9 || !LuaIsString(1) || !LuaIsTable(2) ||
+	if (LuaGetStackSize() != 10 || !LuaIsString(1) || !LuaIsTable(2) ||
 		!LuaIsString(4) || !LuaIsString(5) || !LuaIsInt(6) || !LuaIsBool(7) ||
-		!LuaIsBool(8) || !LuaIsBool(9)) {
+		!LuaIsBool(8) || !LuaIsBool(9) || !LuaIsTable(10)) {
 		sgLogError("Could not create text from lua, bad params");
 		LuaPushNil();
 		return 1;
@@ -83,6 +83,10 @@ static int createText(lua_State* state) {
 	textData->NumLettersToDraw = UINT_MAX;
 	textData->Text = LuaAllocateStringStack(4);
 	AddUIObject(obj, obj->Parent);
+	textData->Color.R = (uint8_t)LuaGetFloatFromTableStacki(10, "r");
+	textData->Color.G = (uint8_t)LuaGetFloatFromTableStacki(10, "g");
+	textData->Color.B = (uint8_t)LuaGetFloatFromTableStacki(10, "b");
+	textData->Color.A = (uint8_t)LuaGetFloatFromTableStacki(10, "a");
 	LuaPushLightUserdata(obj);
 	return 1;
 }

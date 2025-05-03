@@ -112,9 +112,19 @@ void DrawUIObjects(UIObject *uiObject) {
 			if (ImGui::Checkbox(centeredXText.c_str(), &centeredX)) {
 				SetCenteredX(uiObject, centeredX);
 			}
+			ImGui::SameLine();
 			if (ImGui::Checkbox(centeredYText.c_str(), &centeredY)) {
 				SetCenteredY(uiObject, centeredY);
 			}
+			auto colorText = "Text Texture Color ##" + string(uiObject->Name);
+			static float color[4] = {(float)textData->Color.R / 255.0f, (float)textData->Color.G / 255.0f, (float)textData->Color.B / 255.0f, (float)textData->Color.A / 255.0f};
+			if (ImGui::ColorEdit4(colorText.c_str(), color, ImGuiColorEditFlags_AlphaBar)) {
+				SetTextColor(uiObject,
+							 (uint8_t)(color[0] * 255.0f + 0.5f),
+							 (uint8_t)(color[1] * 255.0f + 0.5f),
+							 (uint8_t)(color[2] * 255.0f + 0.5f),
+							 (uint8_t)(color[3] * 255.0f + 0.5f));
+			};
 		} else if (uiObject->Type == UIObjectTypesRect) {
 			auto rectData = (UIRect *)uiObject->Data;
 			assert(rectData && "no rect!");

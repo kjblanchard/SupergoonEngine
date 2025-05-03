@@ -30,8 +30,6 @@ extern void audioUpdate(void);
 // Function in tween.c
 extern void initializeTweenEngine(void);
 extern void updateTweens(void);
-// Texting, in map.c
-extern Texture *bg1Texture;
 
 static geClock _clock;
 static void (*_startFunc)(void) = NULL;
@@ -105,11 +103,7 @@ static void Update(void) {
 		if (_updateFunc) _updateFunc();
 		UpdateUISystem();
 		DrawStart();
-		// Draw the backgrounds
-		if (bg1Texture) {
-			RectangleF src = {0, 0, 512, 288};
-			DrawTexture(bg1Texture, &src, &src);
-		}
+		drawCurrentMap();
 		if (_drawFunc) _drawFunc();
 		DrawUISystem();
 		DrawEnd();

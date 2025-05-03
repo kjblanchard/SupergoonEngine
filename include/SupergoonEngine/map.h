@@ -4,6 +4,33 @@
 extern "C" {
 #endif
 
+// typedef struct AnimatedTileInstance {
+// 	// Where to draw this,
+// 	RectangleF dstRect;
+// } AnimatedTileInstance;
+
+// Frame data for tile animation
+typedef struct TileAnimationFrameData {
+	unsigned int tileId;
+	RectangleF srcRect;
+	unsigned int msTime;
+} TileAnimationFrameData;
+
+// The animated tile, it contains all of the tile
+typedef struct AnimatedTile {
+	// ID of the animated tile, if we get this then we know that we have to load a animated tile when creating the BG.
+	unsigned int gid;
+	// How many frames are in this animation
+	unsigned int numTilesInAnimation;
+	// The frame animation info
+	TileAnimationFrameData* animatedTileFrameData;
+	// Current timeon the animation
+	unsigned int currentMSTime;
+	// This is created when we are creating the map, so that we know where to draw these.
+	RectangleF* DrawRectangles;
+	unsigned int currentNumTileInstances;
+} AnimatedTile;
+
 typedef struct Tileset {
 	char name[64];
 	int firstgid;
@@ -13,6 +40,8 @@ typedef struct Tileset {
 	Texture* tilesetTexture;
 	int imagewidth;
 	int imageheight;
+	AnimatedTile* animatedTiles;
+	unsigned int numAnimatedTiles;
 } Tileset;
 
 typedef struct TileLayer {
@@ -42,6 +71,7 @@ typedef struct Tilemap {
 
 // You must free this, do not pass .lua into this and yes do it, should be called from the engine only.
 Tilemap* parseTiledTilemap(const char* tiledFilename);
+void drawCurrentMap(void);
 void createBackgroundsFromTilemap(Tilemap* map);
 void freeTiledTilemap(Tilemap* map);
 

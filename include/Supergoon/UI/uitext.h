@@ -1,4 +1,5 @@
 #pragma once
+#include <Supergoon/Primitives/Color.h>
 #include <Supergoon/UI/uiobject.h>
 #include <Supergoon/graphics.h>
 #ifdef __cplusplus
@@ -28,12 +29,14 @@ typedef struct UIText {
 	unsigned int NumWordWrapCharacters;
 	// For word wrapping, so we know what characters we should word wrap with
 	unsigned int* WordWrapCharacters;
+	sgColor Color;
 	// Texture with the rendered text to be drawn
 	Texture* Texture;
 } UIText;
 
 void InitializeUITextSystem();
 
+void SetTextColor(UIObject* uiobject, int r, int g, int b, int a);
 void MeasureText(UIObject* uiobject);
 void SetFont(const char* fontName, unsigned int size);
 void SetCenteredX(UIObject* uiobject, int centered);

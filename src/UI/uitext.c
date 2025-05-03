@@ -22,6 +22,20 @@ typedef struct LoadedFont {
 static LoadedFont _loadedFonts[MAX_LOADED_FONTS];
 static LoadedFont* _currentFont = NULL;
 
+void SetTextColor(UIObject* uiobject, int r, int g, int b, int a) {
+	if (!uiobject) {
+		return;
+	}
+	UIText* text = (UIText*)uiobject->Data;
+	assert(text && "No text?");
+	if (!SDL_SetTextureColorMod(text->Texture, r, g, b)) {
+		sgLogError("Could not mod color %s", SDL_GetError());
+	}
+	if (!SDL_SetTextureAlphaMod(text->Texture, a)) {
+		sgLogError("Could not mod alpha, %s", SDL_GetError());
+	}
+}
+
 void InitializeUITextSystem(void) {
 	if (!_loadedLibrary) {
 		if (FT_Init_FreeType(&_loadedLibrary)) {
@@ -333,8 +347,13 @@ static void drawLetter(UIObject* obj, UIText* text) {
 }
 
 static void redrawText(UIObject* object, UIText* text) {
-	SDL_DestroyTexture(text->Texture);
+	if (text->Texture) {
+		SDL_DestroyTexture(text->Texture);
+	}
 	text->Texture = CreateRenderTargetTexture(object->Location.w, object->Location.h, (sgColor){0, 0, 0, 0});
+	if (text->Color.R != 0 || text->Color.G != 0 || text->Color.B != 0 || text->Color.A != 0) {
+		SetTextColor(object, text->Color.R, text->Color.G, text->Color.B, text->Color.A);
+	}
 	text->PenX = 0;
 	text->CurrentDrawnLetters = 0;
 	text->NumWordWrapCharacters = 0;
@@ -359,7 +378,7 @@ void UITextOnDirty(UIObject* object) {
 	assert(object && text && text->Font && "no font loaded for text to load");
 	// If text texture is not loaded, load it.
 	if (text && !text->Texture) {
-		text->Texture = CreateRenderTargetTexture(object->Location.w, object->Location.h, (sgColor){0, 0, 0, 0});
+		redrawText(object, text);
 	}
 	// Recreate texture if the size has changed
 	float w, h;
