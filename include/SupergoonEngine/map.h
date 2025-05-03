@@ -29,6 +29,7 @@ typedef struct AnimatedTile {
 	// This is created when we are creating the map, so that we know where to draw these.
 	RectangleF* DrawRectangles;
 	unsigned int currentNumTileInstances;
+	unsigned int currentAnimationFrame;
 } AnimatedTile;
 
 typedef struct Tileset {

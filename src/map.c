@@ -19,9 +19,6 @@ static Tilemap* _currentMap = NULL;
 static Texture* bg1Texture = NULL;
 // BG texture above the character
 static Texture* bg2Texture = NULL;
-// // Animated tiles in the tilemap
-// static AnimatedTile* _currentMapAnimatedTiles = NULL;
-// static size_t _currentNumAnimatedTiles = 0;
 
 Tilemap* parseTiledTilemap(const char* tiledFilename) {
 	char name[50];
@@ -58,11 +55,11 @@ Tilemap* parseTiledTilemap(const char* tiledFilename) {
 			LuaPushTableToStack("animation");
 			animatedTile->numTilesInAnimation = LuaGetTableLength();
 			animatedTile->animatedTileFrameData = calloc(tileset->animatedTiles->numTilesInAnimation, sizeof(TileAnimationFrameData));
-			for (size_t k = 0; k < tileset->animatedTiles->numTilesInAnimation; k++) {
+			for (size_t k = 0; k < animatedTile->numTilesInAnimation; k++) {
 				LuaPushTableObjectToStacki(k);	// Actual animated tile table is on there now
 				TileAnimationFrameData* frameData = &animatedTile->animatedTileFrameData[k];
 				frameData->msTime = LuaGetInt("duration");
-				frameData->tileId = LuaGetInt("tileid");
+				frameData->tileId = LuaGetInt("tileid") + tileset->firstgid;
 				GetRectForGid(frameData->tileId, tileset, &frameData->srcRect);
 				LuaPopStack(1);	 // remove animated tile frame table from stack
 			}
@@ -237,7 +234,7 @@ void createBackgroundsFromTilemap(Tilemap* map) {
 					if (tileGid == srcTileset->animatedTiles[k].gid) {
 						AnimatedTile* animatedTile = &srcTileset->animatedTiles[k];
 						++animatedTile->currentNumTileInstances;
-						void* newSpace = realloc(animatedTile->DrawRectangles, sizeof(RectangleF) * animatedTile->currentNumTileInstances);
+						RectangleF* newSpace = realloc(animatedTile->DrawRectangles, sizeof(RectangleF) * animatedTile->currentNumTileInstances);
 						if (!newSpace) {
 							sgLogError("Could not realloc, what in the world probably broken?");
 							continue;
@@ -311,25 +308,44 @@ void LoadObjectsFromMap(void) {
 }
 
 static void drawAnimatedTiles(void) {
-	// for (size_t i = 0; i < _currentNumAnimatedTiles; i++) {
-	// 	AnimatedTile* tile = &_currentMapAnimatedTiles[i];
-	// 	// tile->CurrentTime += DeltaTimeMilliseconds;
-	// 	bool complete = false;
-	// 	while (!complete) {
-	// 		complete = true;
-	// 	}
-	// }
+	// Update the animated tiles
+	for (size_t i = 0; i < _currentMap->tileset_count; i++) {
+		Tileset* tileset = &_currentMap->tilesets[i];
+		for (size_t j = 0; j < tileset->numAnimatedTiles; j++) {
+			AnimatedTile* animatedTile = &tileset->animatedTiles[j];
+			animatedTile->currentMSTime += DeltaTimeMilliseconds;
+			while (true) {
+				TileAnimationFrameData* currentFrame = &animatedTile->animatedTileFrameData[animatedTile->currentAnimationFrame];
+				if (animatedTile->currentMSTime >= currentFrame->msTime) {
+					animatedTile->currentMSTime -= currentFrame->msTime;
+					animatedTile->currentAnimationFrame = animatedTile->currentAnimationFrame + 1 >= animatedTile->numTilesInAnimation ? 0 : animatedTile->currentAnimationFrame + 1;
+				} else {
+					break;
+				}
+			}
+		}
+	}
+	// Draw the animated tiles
+	for (size_t i = 0; i < _currentMap->tileset_count; i++) {
+		Tileset* tileset = &_currentMap->tilesets[i];
+		for (size_t j = 0; j < tileset->numAnimatedTiles; j++) {
+			AnimatedTile* animatedTile = &tileset->animatedTiles[j];
+			for (size_t k = 0; k < animatedTile->currentNumTileInstances; k++) {
+				DrawTexture(tileset->tilesetTexture, &animatedTile->DrawRectangles[k], &animatedTile->animatedTileFrameData[animatedTile->currentAnimationFrame].srcRect);
+			}
+		}
+	}
 }
 
 void drawCurrentMap(void) {
 	// TODO, main camera? First we draw the background, use the main camera offset, currently set it to 0/0 and screensize.
 	if (bg1Texture) {
-		RectangleF src = {0, 0, 512, 288};
+		RectangleF src = {0, 0, 480, 270};
 		DrawTexture(bg1Texture, &src, &src);
 	}
 	drawAnimatedTiles();
 	if (bg2Texture) {
-		RectangleF src = {0, 0, 512, 288};
+		RectangleF src = {0, 0, 480, 270};
 		DrawTexture(bg1Texture, &src, &src);
 	}
 }
