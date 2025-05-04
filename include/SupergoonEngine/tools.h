@@ -15,6 +15,13 @@ extern "C" {
 		}                                                                                      \
 	} while (0)
 
+int sgasprintf(char** strp, const char* fmt, ...);
+
+#ifdef _WIN32
+// No native asprintf on Windows, use your own
+#define asprintf sgasprintf
+#endif
+
 #ifdef __cplusplus
 }
 #endif

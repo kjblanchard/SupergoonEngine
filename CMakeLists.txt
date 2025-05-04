@@ -41,6 +41,7 @@ set(SRC_FILES
     src/window.c
     src/graphics.c
     src/filesystem.c
+    src/tools.c
     src/events.c
     src/Audio/Bgm.c
     src/Audio/Sfx.c

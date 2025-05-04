@@ -58,7 +58,6 @@ void DrawTextureToRenderTargetTexture(Texture* dst, Texture* src, RectangleF* ds
  */
 Texture* CreateTextureFromIndexedBMP(const char* filename);
 
-void InitializeGraphicsSystem(void);
 void UnloadTexture(Texture* texture);
 void UnloadUnusedTextures(void);
 void UnloadAllTextures(void);

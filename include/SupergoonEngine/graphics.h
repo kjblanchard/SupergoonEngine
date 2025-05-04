@@ -19,6 +19,8 @@ extern bool _holes;
 extern size_t _numTexturesInCache;
 
 Texture* LoadTextureFromSurface(struct SDL_Surface* surface);
+void initializeGraphicsSystem(void);
+void shutdownGraphicsSystem(void);
 
 #ifdef __cplusplus
 }

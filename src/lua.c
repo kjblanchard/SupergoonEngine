@@ -106,6 +106,13 @@ void LuaCopyString(const char *name, char *location, int strlen) {
 void LuaCopyStringStack(int stackLocation, char *location, int strlen) {
 	strncpy(location, lua_tostring(_luaState, stackLocation), strlen);
 }
+char *LuaAllocateString(const char *fieldName) {
+	lua_getfield(_luaState, -1, fieldName);
+	const char *fieldString = lua_tostring(_luaState, -1);
+	char *allocatedString = strdup(fieldString);
+	lua_pop(_luaState, 1);
+	return allocatedString;
+}
 
 char *LuaAllocateStringStack(int stackLocation) {
 	const char *string = lua_tostring(_luaState, stackLocation);

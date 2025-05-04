@@ -1,17 +1,29 @@
+/**
+ * @file map.h
+ * @author Kevin Blanchard (kevin@supergoon.com)
+ * @brief Loading Tiled maps and TiledObjects C API
+ * @version 0.1
+ * @date 2025-05-04
+ *
+ * @copyright Copyright (c) 2025
+ *
+ */
 #pragma once
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+// Tiled properties can be of many types, use this before accessing the union on the property.
 typedef enum TiledPropertyTypes {
 	TiledPropertyTypeInt,
 	TiledPropertyTypeFloat,
 	TiledPropertyTypeString,
 } TiledPropertyTypes;
 
+// Tiled property, probably use this in your gameobject load functions
 typedef struct TiledProperty {
 	TiledPropertyTypes PropertyType;
-	char Name[64];
+	char* Name;
 	union {
 		int IntData;
 		float FloatData;
@@ -19,19 +31,27 @@ typedef struct TiledProperty {
 	} Data;
 } TiledProperty;
 
+// Tiled Object, this should be used in your gameobject load functions most likely.
 typedef struct TiledObject {
-	char Name[64];
+	char* Name;
 	int Id;
 	int Height;
 	int Width;
 	int X;
 	int Y;
 	int ObjectType;
-	int PropertyNum;
+	int NumProperties;
 	TiledProperty* Properties;
 } TiledObject;
 
+typedef void (*TiledMapLoadFunction)(void);
+
+void SetTiledBeforeLoadFunction(TiledMapLoadFunction func);
+void SetTiledAfterLoadFunction(TiledMapLoadFunction func);
+
+// Loads a tiled map and prepares it to be drawn. You can set a before and after load function to be called.
 void LoadMap(const char* map);
+// Load the objects from the map into the gameobjects. All gameobjects will be cleared unless they are marked donotdestroy when a map changes.
 void LoadObjectsFromMap(void);
 #ifdef __cplusplus
 }

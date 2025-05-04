@@ -10,6 +10,7 @@
 #include <Supergoon/state.h>
 #include <Supergoon/window.h>
 #include <SupergoonEngine/gameobject.h>
+#include <SupergoonEngine/graphics.h>
 #include <SupergoonEngine/map.h>
 #include <SupergoonEngine/ui.h>
 
@@ -47,7 +48,7 @@ static bool Start(void) {
 	}
 	sgInitializeDebugLogFile();
 	InitializeKeyboardSystem();
-	InitializeGraphicsSystem();
+	initializeGraphicsSystem();
 	geInitializeJoysticks();
 	InitializeLuaEngine();
 	InitializeEventEngine();
@@ -112,10 +113,12 @@ static void Update(void) {
 }
 
 static void Quit(void) {
+	shutdownMapSystem();
 	sgCloseDebugLogFile();
 	ShutdownJoystickSystem();
 	sgCloseLua();
 	closeAudio();
+	shutdownGraphicsSystem();
 	CloseWindow();
 	ShutdownUISystem();
 }

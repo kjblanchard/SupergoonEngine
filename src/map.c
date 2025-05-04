@@ -6,8 +6,74 @@
 #include <Supergoon/state.h>
 #include <SupergoonEngine/gameobject.h>
 #include <SupergoonEngine/map.h>
+#include <SupergoonEngine/tools.h>
 #include <stdio.h>
 #include <string.h>
+
+// Frame data for tile animation
+typedef struct TileAnimationFrame {
+	unsigned int Id;
+	RectangleF SrcRect;
+	unsigned int MsTime;
+} TileAnimationFrame;
+
+// A animated tile from tiled. One instance of this per animated tile in tiled, and it will be updated each frame.
+typedef struct AnimatedTile {
+	// Global ID of the animated tile, if we get this then we know that we have to load a animated tile when creating the BG.
+	unsigned int GID;
+	// How many frames are in this animation
+	unsigned int NumFrames;
+	// All of the frames, use NumFrames for iterations
+	TileAnimationFrame* TileFrames;
+	// Current time on the animation
+	unsigned int CurrentMSOnFrame;
+	// The rectangles where to draw this animated tile, used in draw function
+	RectangleF* DrawRectangles;
+	unsigned int NumDrawRectangles;
+	unsigned int CurrentFrame;
+} AnimatedTile;
+
+// Tiled tileset
+typedef struct Tileset {
+	char* Name;
+	int FirstGid;
+	int TileWidth;
+	int TileHeight;
+	char* Image;
+	Texture* TilesetTexture;
+	int ImageWidth;
+	int ImageHeight;
+	AnimatedTile* AnimatedTiles;
+	unsigned int NumAnimatedTiles;
+} Tileset;
+
+// A tile layer in tiled.  Just has a bunch of ints for gids for tiles to draw, and a width and height of the layer.
+typedef struct TileLayer {
+	int Width;
+	int Height;
+	int* Data;	// Dynamically allocated array for tile IDs
+} TileLayer;
+
+// A tiled layer group, that contains a bunch of tile layers.  We use this for the map BG1 and BG1 groups.
+typedef struct LayerGroup {
+	char* Name;
+	int NumLayers;
+	TileLayer* Layers;
+} LayerGroup;
+
+// Tiled tilemap, contains the objects, Groups, etc
+typedef struct Tilemap {
+	int Width;
+	int Height;
+	int TileWidth;
+	int TileHeight;
+	int NumTilesets;
+	Tileset* Tilesets;
+	int NumObjects;
+	struct TiledObject* Objects;
+	int NumLayers;
+	LayerGroup LayerGroups[2];
+} Tilemap;
 
 static void handleTiledLayerGroup(Tilemap* map);
 static void handleTiledObjectGroup(Tilemap* map);
@@ -16,64 +82,61 @@ static void GetRectForGid(int gid, Tileset* tileset, RectangleF* rect);
 // Current map that will be drawn, if it exists.
 static Tilemap* _currentMap = NULL;
 // BG texture below the character
-static Texture* bg1Texture = NULL;
+static Texture* _bg1Texture = NULL;
 // BG texture above the character
-static Texture* bg2Texture = NULL;
+static Texture* _bg2Texture = NULL;
+static TiledMapLoadFunction _beforeLoadFunc = NULL;
+static TiledMapLoadFunction _afterLoadFunc = NULL;
 
-Tilemap* parseTiledTilemap(const char* tiledFilename) {
-	char name[50];
-	snprintf(name, sizeof(name), "assets/tiled/%s.lua", tiledFilename);
-	LuaPushTableFromFile(name);
-	Tilemap* map = malloc(sizeof(*map));
-	map->width = LuaGetInt("width");
-	map->height = LuaGetInt("height");
-	map->tilewidth = LuaGetInt("tilewidth");
-	map->tileheight = LuaGetInt("tileheight");
-	LuaPushTableToStack("tilesets");
-	map->tileset_count = LuaGetTableLength();
-	map->tilesets = calloc(map->tileset_count, sizeof(Tileset));
-	for (int i = 0; i < map->tileset_count; i++) {
-		Tileset* tileset = &map->tilesets[i];
-		LuaPushTableObjectToStacki(i);
-		LuaCopyString("name", map->tilesets[i].name, sizeof(map->tilesets[i].name));
-		map->tilesets[i].firstgid = LuaGetInt("firstgid");
-		map->tilesets[i].tilewidth = LuaGetInt("tilewidth");
-		map->tilesets[i].tileheight = LuaGetInt("tileheight");
-		LuaCopyString("image", map->tilesets[i].image, sizeof(map->tilesets[i].image));
-		map->tilesets[i].imagewidth = LuaGetInt("imagewidth");
-		map->tilesets[i].imageheight = LuaGetInt("imageheight");
-		// Create all of the animated tiles.
-		LuaPushTableToStack("tiles");
-		tileset->numAnimatedTiles = LuaGetTableLength();
-		tileset->animatedTiles = calloc(tileset->numAnimatedTiles, sizeof(AnimatedTile));
-		for (size_t j = 0; j < tileset->numAnimatedTiles; j++) {
-			LuaPushTableObjectToStacki(j);	// Actual animated tile is on there now
-			AnimatedTile* animatedTile = &tileset->animatedTiles[j];
-			animatedTile->gid = LuaGetInt("id") + tileset->firstgid;
-			// // For some reason, gid on tiled is one higher than gid in tileset?
-			// animatedTile->gid++;
-			LuaPushTableToStack("animation");
-			animatedTile->numTilesInAnimation = LuaGetTableLength();
-			animatedTile->animatedTileFrameData = calloc(tileset->animatedTiles->numTilesInAnimation, sizeof(TileAnimationFrameData));
-			for (size_t k = 0; k < animatedTile->numTilesInAnimation; k++) {
-				LuaPushTableObjectToStacki(k);	// Actual animated tile table is on there now
-				TileAnimationFrameData* frameData = &animatedTile->animatedTileFrameData[k];
-				frameData->msTime = LuaGetInt("duration");
-				frameData->tileId = LuaGetInt("tileid") + tileset->firstgid;
-				GetRectForGid(frameData->tileId, tileset, &frameData->srcRect);
-				LuaPopStack(1);	 // remove animated tile frame table from stack
-			}
-			LuaPopStack(1);	 // remove tileAnimation table from stack
-			LuaPopStack(1);	 // remove animated tile table from stack
+static void createAnimatedTiles(Tilemap* map, Tileset* tileset) {
+	LuaPushTableToStack("tiles");
+	tileset->NumAnimatedTiles = LuaGetTableLength();
+	tileset->AnimatedTiles = calloc(tileset->NumAnimatedTiles, sizeof(AnimatedTile));
+	for (size_t j = 0; j < tileset->NumAnimatedTiles; j++) {
+		LuaPushTableObjectToStacki(j);	// Actual animated tile is on there now
+		AnimatedTile* animatedTile = &tileset->AnimatedTiles[j];
+		animatedTile->GID = LuaGetInt("id") + tileset->FirstGid;  // GID is the local ID plus the first gid, since it's global
+		LuaPushTableToStack("animation");
+		animatedTile->NumFrames = LuaGetTableLength();
+		animatedTile->TileFrames = calloc(animatedTile->NumFrames, sizeof(TileAnimationFrame));
+		for (size_t k = 0; k < animatedTile->NumFrames; k++) {
+			LuaPushTableObjectToStacki(k);	// Actual animated tile table is on there now
+			TileAnimationFrame* frameData = &animatedTile->TileFrames[k];
+			frameData->MsTime = LuaGetInt("duration");
+			frameData->Id = LuaGetInt("tileid") + tileset->FirstGid;  // GID is the local ID plus the first gid, since it's global
+			GetRectForGid(frameData->Id, tileset, &frameData->SrcRect);
+			LuaPopStack(1);	 // remove animated tile frame table from stack
 		}
+		LuaPopStack(1);	 // remove tileAnimation table from stack
+		LuaPopStack(1);	 // remove animated tile table from stack
+	}
+	LuaPopStack(1);	 // remove tiles table from stack
+}
 
-		LuaPopStack(1);	 // remove tiles table from stack
+static void createTilesets(Tilemap* map) {
+	LuaPushTableToStack("tilesets");
+	map->NumTilesets = LuaGetTableLength();
+	map->Tilesets = calloc(map->NumTilesets, sizeof(Tileset));
+	for (int i = 0; i < map->NumTilesets; i++) {
+		Tileset* tileset = &map->Tilesets[i];
+		LuaPushTableObjectToStacki(i);
+		tileset->Name = LuaAllocateString("name");
+		tileset->FirstGid = LuaGetInt("firstgid");
+		tileset->TileWidth = LuaGetInt("tilewidth");
+		tileset->TileHeight = LuaGetInt("tileheight");
+		tileset->Image = LuaAllocateString("image");
+		tileset->ImageWidth = LuaGetInt("imagewidth");
+		tileset->ImageHeight = LuaGetInt("imageheight");
+		createAnimatedTiles(map, tileset);
 		LuaPopStack(1);	 // remove tileset table from stack
 	}
-	LuaPopStack(1);
+	LuaPopStack(1);	 // remove tilesets table from stack
+}
+
+static void createLayers(Tilemap* map) {
 	LuaPushTableToStack("layers");
-	map->layer_count = LuaGetTableLength();
-	for (int i = 0; i < map->layer_count; i++) {
+	map->NumLayers = LuaGetTableLength();
+	for (int i = 0; i < map->NumLayers; i++) {
 		LuaPushTableObjectToStacki(i);
 		const char* layerType = LuaGetString("type");
 		if (strcmp(layerType, "objectgroup") == 0) {
@@ -81,21 +144,36 @@ Tilemap* parseTiledTilemap(const char* tiledFilename) {
 		} else if (strcmp(layerType, "group") == 0) {
 			handleTiledLayerGroup(map);
 		}
-		LuaPopStack(1);
+		LuaPopStack(1);	 // remove layer object table from stack
 	}
-	LuaPopStack(2);	  // Layers and the actual table
+	LuaPopStack(1);	 // layers table
+}
+
+static Tilemap* parseTiledTilemap(const char* tiledFilename) {
+	char* name;
+	asprintf(&name, "assets/tiled/%s.lua", tiledFilename);
+	LuaPushTableFromFile(name);
+	SDL_free(name);
+	Tilemap* map = malloc(sizeof(*map));
+	map->Width = LuaGetInt("width");
+	map->Height = LuaGetInt("height");
+	map->TileWidth = LuaGetInt("tilewidth");
+	map->TileHeight = LuaGetInt("tileheight");
+	createTilesets(map);
+	createLayers(map);
+	LuaPopStack(1);	  // tiled map table
 	LuaClearStack();  // for good measure :)
 	return map;
 }
 
 static void createTileLayer(TileLayer* layer) {
-	layer->width = LuaGetInt("width");
-	layer->height = LuaGetInt("height");
-	int data_length = layer->width * layer->height;
-	layer->data = calloc(data_length, sizeof(int));
+	layer->Width = LuaGetInt("width");
+	layer->Height = LuaGetInt("height");
+	int data_length = layer->Width * layer->Height;
+	layer->Data = calloc(data_length, sizeof(int));
 	LuaPushTableToStack("data");
 	for (int i = 0; i < data_length; i++) {
-		layer->data[i] = LuaGetIntFromTablei(i);
+		layer->Data[i] = LuaGetIntFromTablei(i);
 	}
 	LuaPopStack(1);
 }
@@ -103,8 +181,8 @@ static void createTileLayer(TileLayer* layer) {
 static void handleTiledLayerGroup(Tilemap* map) {
 	const char* name = LuaGetString("name");
 	int groupNum = (strcmp(name, "bg1") == 0) ? 0 : 1;
-	LayerGroup* group = &map->groups[groupNum];
-	strncpy(group->Name, name, sizeof(group->Name));
+	LayerGroup* group = &map->LayerGroups[groupNum];
+	group->Name = strdup(name);
 	LuaPushTableToStack("layers");
 	group->NumLayers = LuaGetTableLength();
 	group->Layers = calloc(group->NumLayers, sizeof(TileLayer));
@@ -117,12 +195,12 @@ static void handleTiledLayerGroup(Tilemap* map) {
 }
 
 static void loadTilesetTextures(Tilemap* map) {
-	for (size_t i = 0; i < (size_t)map->tileset_count; i++) {
+	for (size_t i = 0; i < (size_t)map->NumTilesets; i++) {
 		// Remove the .bmp from the name for easier loading with function
-		int nameLen = strlen(map->tilesets[i].image);
+		int nameLen = strlen(map->Tilesets[i].Image);
 		// Subtract .bmp (4) chars
-		map->tilesets[i].image[nameLen - 4] = '\0';
-		map->tilesets[i].tilesetTexture = CreateTextureFromIndexedBMP(map->tilesets[i].image);
+		map->Tilesets[i].Image[nameLen - 4] = '\0';
+		map->Tilesets[i].TilesetTexture = CreateTextureFromIndexedBMP(map->Tilesets[i].Image);
 	}
 }
 
@@ -138,32 +216,32 @@ static TiledPropertyTypes getPropertyTypeForStack(void) {
 
 static void handleTiledObjectEntities(Tilemap* map) {
 	LuaPushTableToStack("objects");
-	map->num_objects = LuaGetTableLength();
-	map->objects = calloc(map->num_objects, sizeof(TiledObject));
-	for (size_t i = 0; i < (size_t)map->num_objects; i++) {
-		TiledObject* object = &map->objects[i];
+	map->NumObjects = LuaGetTableLength();
+	map->Objects = calloc(map->NumObjects, sizeof(TiledObject));
+	for (size_t i = 0; i < (size_t)map->NumObjects; i++) {
+		TiledObject* object = &map->Objects[i];
 		LuaPushTableObjectToStacki(i);
 		object->Id = LuaGetInt("id");
-		LuaCopyString("name", object->Name, sizeof(object->Name));
+		object->Name = LuaAllocateString("name");
 		object->ObjectType = atoi(LuaGetString("type"));
 		object->X = LuaGetFloat("x");
 		object->Y = LuaGetFloat("y");
 		object->Width = LuaGetFloat("width");
 		object->Height = LuaGetFloat("height");
 		LuaPushTableToStack("properties");
-		object->PropertyNum = LuaGetTableLengthMap();
-		if (object->PropertyNum == 0) {
+		object->NumProperties = LuaGetTableLengthMap();
+		if (object->NumProperties == 0) {
 			LuaPopStack(2);
 			continue;
 		}
-		object->Properties = calloc(object->PropertyNum, sizeof(TiledProperty));
+		object->Properties = calloc(object->NumProperties, sizeof(TiledProperty));
 		LuaStartTableKeyValueIteration();
-		for (size_t j = 0; j < (size_t)object->PropertyNum; j++) {
+		for (size_t j = 0; j < (size_t)object->NumProperties; j++) {
 			if (!LuaNextTableKeyValueIterate()) {
 				break;
 			}
 			TiledProperty* property = &object->Properties[j];
-			LuaCopyStringStack(-2, property->Name, sizeof(property->Name));
+			property->Name = LuaAllocateStringStack(-2);
 			property->PropertyType = getPropertyTypeForStack();
 			if (property->PropertyType == TiledPropertyTypeInt) {
 				property->Data.IntData = LuaGetIntFromStack();
@@ -191,58 +269,58 @@ static void handleTiledObjectGroup(Tilemap* map) {
 static Tileset* GetTilesetForGID(int gid, Tilemap* map) {
 	int highestGID = 0;
 	Tileset* highestGIDTileset = NULL;
-	for (size_t i = 0; i < (size_t)map->tileset_count; i++) {
-		if (gid >= map->tilesets[i].firstgid && map->tilesets[i].firstgid >= highestGID) {
-			highestGID = map->tilesets[i].firstgid;
-			highestGIDTileset = &map->tilesets[i];
+	for (size_t i = 0; i < (size_t)map->NumTilesets; i++) {
+		if (gid >= map->Tilesets[i].FirstGid && map->Tilesets[i].FirstGid >= highestGID) {
+			highestGID = map->Tilesets[i].FirstGid;
+			highestGIDTileset = &map->Tilesets[i];
 		}
 	}
 	return highestGIDTileset;
 }
 
 static void GetRectForGid(int gid, Tileset* tileset, RectangleF* rect) {
-	int tilemapGid = gid - tileset->firstgid;
-	int x = (tilemapGid % (tileset->imagewidth / tileset->tilewidth)) * tileset->tilewidth;
-	int y = (tilemapGid / (tileset->imagewidth / tileset->tilewidth)) * tileset->tileheight;
+	int tilemapGid = gid - tileset->FirstGid;
+	int x = (tilemapGid % (tileset->ImageWidth / tileset->TileWidth)) * tileset->TileWidth;
+	int y = (tilemapGid / (tileset->ImageWidth / tileset->TileWidth)) * tileset->TileHeight;
 	rect->x = x;
 	rect->y = y;
-	rect->w = tileset->tilewidth;
-	rect->h = tileset->tileheight;
+	rect->w = tileset->TileWidth;
+	rect->h = tileset->TileHeight;
 }
 
-void createBackgroundsFromTilemap(Tilemap* map) {
-	int mapWidth = map->width * map->tilewidth;
-	int mapHeight = map->height * map->tileheight;
-	bg1Texture = CreateRenderTargetTexture(mapWidth, mapHeight, (sgColor){255, 255, 255, 255});
+static void createBackgroundsFromTilemap(Tilemap* map) {
+	int mapWidth = map->Width * map->TileWidth;
+	int mapHeight = map->Height * map->TileHeight;
+	_bg1Texture = CreateRenderTargetTexture(mapWidth, mapHeight, (sgColor){255, 255, 255, 255});
 	// Load the tileset textures so that we can use them to draw with.
 	loadTilesetTextures(map);
-	LayerGroup* bg1LayerGroup = &map->groups[0];
-	RectangleF dstRect = {0, 0, map->tilewidth, map->tileheight};
+	LayerGroup* bg1LayerGroup = &map->LayerGroups[0];
+	RectangleF dstRect = {0, 0, map->TileWidth, map->TileHeight};
 	RectangleF srcRect = {0, 0, 0, 0};
 	for (size_t i = 0; i < (size_t)bg1LayerGroup->NumLayers; i++) {
 		TileLayer* layer = &bg1LayerGroup->Layers[i];
-		for (int y = 0; y < layer->height; ++y) {
-			for (int x = 0; x < layer->width; ++x) {
-				int index = (y * layer->width) + x;
-				int tileGid = layer->data[index];
+		for (int y = 0; y < layer->Height; ++y) {
+			for (int x = 0; x < layer->Width; ++x) {
+				int index = (y * layer->Width) + x;
+				int tileGid = layer->Data[index];
 				if (tileGid == 0)
 					continue;
 				Tileset* srcTileset = GetTilesetForGID(tileGid, map);
 				// Handle animated tiles?
 				bool isAnimatedTile = false;
-				for (size_t k = 0; k < srcTileset->numAnimatedTiles; k++) {
-					if (tileGid == srcTileset->animatedTiles[k].gid) {
-						AnimatedTile* animatedTile = &srcTileset->animatedTiles[k];
-						++animatedTile->currentNumTileInstances;
-						RectangleF* newSpace = realloc(animatedTile->DrawRectangles, sizeof(RectangleF) * animatedTile->currentNumTileInstances);
+				for (size_t k = 0; k < srcTileset->NumAnimatedTiles; k++) {
+					if (tileGid == srcTileset->AnimatedTiles[k].GID) {
+						AnimatedTile* animatedTile = &srcTileset->AnimatedTiles[k];
+						++animatedTile->NumDrawRectangles;
+						RectangleF* newSpace = realloc(animatedTile->DrawRectangles, sizeof(RectangleF) * animatedTile->NumDrawRectangles);
 						if (!newSpace) {
 							sgLogError("Could not realloc, what in the world probably broken?");
 							continue;
 						}
 						animatedTile->DrawRectangles = newSpace;
-						RectangleF* dstRectPtr = &animatedTile->DrawRectangles[animatedTile->currentNumTileInstances - 1];
-						dstRectPtr->x = x * map->tilewidth;
-						dstRectPtr->y = y * map->tileheight;
+						RectangleF* dstRectPtr = &animatedTile->DrawRectangles[animatedTile->NumDrawRectangles - 1];
+						dstRectPtr->x = x * map->TileWidth;
+						dstRectPtr->y = y * map->TileHeight;
 						dstRectPtr->w = dstRect.w;
 						dstRectPtr->h = dstRect.h;
 						isAnimatedTile = true;
@@ -253,42 +331,91 @@ void createBackgroundsFromTilemap(Tilemap* map) {
 					continue;
 				}
 				GetRectForGid(tileGid, srcTileset, &srcRect);
-				Texture* srcTexture = srcTileset->tilesetTexture;
-				dstRect.x = x * map->tilewidth;
-				dstRect.y = y * map->tileheight;
-				DrawTextureToRenderTargetTexture(bg1Texture, srcTexture, &dstRect, &srcRect);
+				Texture* srcTexture = srcTileset->TilesetTexture;
+				dstRect.x = x * map->TileWidth;
+				dstRect.y = y * map->TileHeight;
+				DrawTextureToRenderTargetTexture(_bg1Texture, srcTexture, &dstRect, &srcRect);
 			}
 		}
 	}
 }
 
-void freeTiledTilemap(Tilemap* map) {
+static void freeTiledTilemap(Tilemap* map) {
 	for (size_t i = 0; i < 2; i++) {
-		for (size_t j = 0; j < (size_t)map->groups[i].NumLayers; j++) {
-			SDL_free(map->groups[i].Layers[j].data);
+		for (size_t j = 0; j < (size_t)map->LayerGroups[i].NumLayers; j++) {
+			SDL_free(map->LayerGroups[i].Layers[j].Data);
 		}
-		SDL_free(map->groups[i].Layers);
+		SDL_free(map->LayerGroups[i].Name);
+		SDL_free(map->LayerGroups[i].Layers);
 	}
 
-	if (map->num_objects > 0) {
-		for (size_t i = 0; i < (size_t)map->num_objects; i++) {
-			SDL_free(map->objects[i].Properties);
+	if (map->NumObjects > 0) {
+		for (size_t i = 0; i < (size_t)map->NumObjects; i++) {
+			for (size_t j = 0; j < map->Objects[i].NumProperties; j++) {
+				SDL_free(map->Objects[i].Properties[j].Name);
+			}
+			SDL_free(map->Objects[i].Name);
+			SDL_free(map->Objects[i].Properties);
 		}
-		SDL_free(map->objects);
+		SDL_free(map->Objects);
 	}
 	// each tileset has a list of animated tiles, and also each of those has a list of frames
-	for (size_t i = 0; i < map->tileset_count; i++) {
-		Tileset* tileset = &map->tilesets[i];
-		for (size_t j = 0; j < tileset->numAnimatedTiles; j++) {
-			AnimatedTile* animatedTile = &tileset->animatedTiles[j];
-			for (size_t k = 0; k < animatedTile->numTilesInAnimation; k++) {
-				SDL_free(animatedTile->animatedTileFrameData);
+	for (size_t i = 0; i < map->NumTilesets; i++) {
+		Tileset* tileset = &map->Tilesets[i];
+		for (size_t j = 0; j < tileset->NumAnimatedTiles; j++) {
+			AnimatedTile* animatedTile = &tileset->AnimatedTiles[j];
+			SDL_free(animatedTile->TileFrames);
+			SDL_free(animatedTile->DrawRectangles);
+		}
+		SDL_free(tileset->Name);
+		SDL_free(tileset->Image);
+		SDL_free(tileset->AnimatedTiles);
+	}
+	SDL_free(map->Tilesets);
+	SDL_free(map);
+}
+
+static void drawAnimatedTiles(void) {
+	// Update the animated tiles
+	for (size_t i = 0; i < _currentMap->NumTilesets; i++) {
+		Tileset* tileset = &_currentMap->Tilesets[i];
+		for (size_t j = 0; j < tileset->NumAnimatedTiles; j++) {
+			AnimatedTile* animatedTile = &tileset->AnimatedTiles[j];
+			animatedTile->CurrentMSOnFrame += DeltaTimeMilliseconds;
+			while (true) {
+				TileAnimationFrame* currentFrame = &animatedTile->TileFrames[animatedTile->CurrentFrame];
+				if (animatedTile->CurrentMSOnFrame >= currentFrame->MsTime) {
+					animatedTile->CurrentMSOnFrame -= currentFrame->MsTime;
+					animatedTile->CurrentFrame = animatedTile->CurrentFrame + 1 >= animatedTile->NumFrames ? 0 : animatedTile->CurrentFrame + 1;
+				} else {
+					break;
+				}
 			}
 		}
-		SDL_free(tileset->animatedTiles);
 	}
-	SDL_free(map->tilesets);
-	SDL_free(map);
+	// Draw the animated tiles
+	for (size_t i = 0; i < _currentMap->NumTilesets; i++) {
+		Tileset* tileset = &_currentMap->Tilesets[i];
+		for (size_t j = 0; j < tileset->NumAnimatedTiles; j++) {
+			AnimatedTile* animatedTile = &tileset->AnimatedTiles[j];
+			for (size_t k = 0; k < animatedTile->NumDrawRectangles; k++) {
+				DrawTexture(tileset->TilesetTexture, &animatedTile->DrawRectangles[k], &animatedTile->TileFrames[animatedTile->CurrentFrame].SrcRect);
+			}
+		}
+	}
+}
+
+void drawCurrentMap(void) {
+	// TODO, main camera? First we draw the background, use the main camera offset, currently set it to 0/0 and screensize.
+	if (_bg1Texture) {
+		RectangleF src = {0, 0, 480, 270};
+		DrawTexture(_bg1Texture, &src, &src);
+	}
+	drawAnimatedTiles();
+	if (_bg2Texture) {
+		RectangleF src = {0, 0, 480, 270};
+		DrawTexture(_bg1Texture, &src, &src);
+	}
 }
 
 void LoadMap(const char* mapName) {
@@ -302,50 +429,35 @@ void LoadMap(const char* mapName) {
 }
 
 void LoadObjectsFromMap(void) {
-	for (size_t i = 0; i < (size_t)_currentMap->num_objects; i++) {
-		AddGameObjectFromTiledMap(&_currentMap->objects[i]);
+	for (size_t i = 0; i < (size_t)_currentMap->NumObjects; i++) {
+		AddGameObjectFromTiledMap(&_currentMap->Objects[i]);
 	}
 }
 
-static void drawAnimatedTiles(void) {
-	// Update the animated tiles
-	for (size_t i = 0; i < _currentMap->tileset_count; i++) {
-		Tileset* tileset = &_currentMap->tilesets[i];
-		for (size_t j = 0; j < tileset->numAnimatedTiles; j++) {
-			AnimatedTile* animatedTile = &tileset->animatedTiles[j];
-			animatedTile->currentMSTime += DeltaTimeMilliseconds;
-			while (true) {
-				TileAnimationFrameData* currentFrame = &animatedTile->animatedTileFrameData[animatedTile->currentAnimationFrame];
-				if (animatedTile->currentMSTime >= currentFrame->msTime) {
-					animatedTile->currentMSTime -= currentFrame->msTime;
-					animatedTile->currentAnimationFrame = animatedTile->currentAnimationFrame + 1 >= animatedTile->numTilesInAnimation ? 0 : animatedTile->currentAnimationFrame + 1;
-				} else {
-					break;
-				}
-			}
-		}
+void SetTiledBeforeLoadFunction(TiledMapLoadFunction func) {
+	if (!func) {
+		sgLogWarn("Setting a bad load func for before load");
+		return;
 	}
-	// Draw the animated tiles
-	for (size_t i = 0; i < _currentMap->tileset_count; i++) {
-		Tileset* tileset = &_currentMap->tilesets[i];
-		for (size_t j = 0; j < tileset->numAnimatedTiles; j++) {
-			AnimatedTile* animatedTile = &tileset->animatedTiles[j];
-			for (size_t k = 0; k < animatedTile->currentNumTileInstances; k++) {
-				DrawTexture(tileset->tilesetTexture, &animatedTile->DrawRectangles[k], &animatedTile->animatedTileFrameData[animatedTile->currentAnimationFrame].srcRect);
-			}
-		}
-	}
+	_beforeLoadFunc = func;
 }
 
-void drawCurrentMap(void) {
-	// TODO, main camera? First we draw the background, use the main camera offset, currently set it to 0/0 and screensize.
-	if (bg1Texture) {
-		RectangleF src = {0, 0, 480, 270};
-		DrawTexture(bg1Texture, &src, &src);
+void SetTiledAfterLoadFunction(TiledMapLoadFunction func) {
+	if (!func) {
+		sgLogWarn("Setting a bad load func for after load");
+		return;
 	}
-	drawAnimatedTiles();
-	if (bg2Texture) {
-		RectangleF src = {0, 0, 480, 270};
-		DrawTexture(bg1Texture, &src, &src);
+	_afterLoadFunc = func;
+}
+
+void shutdownMapSystem(void) {
+	if (_bg1Texture) {
+		UnloadTexture(_bg1Texture);
+	}
+	if (_bg2Texture) {
+		UnloadTexture(_bg2Texture);
+	}
+	if (_currentMap) {
+		freeTiledTilemap(_currentMap);
 	}
 }

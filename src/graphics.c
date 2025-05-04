@@ -15,7 +15,7 @@ TextureCacheItem* _textureCache = NULL;
 bool _holes = false;
 size_t _numTexturesInCache = 0;
 static size_t _firstHole = 0;
-static size_t _textureCacheSize = 8;
+static size_t _textureCacheSize = 0;
 
 static Texture* getTextureFromCache(const char* name) {
 	for (size_t i = 0; i < _numTexturesInCache; i++) {
@@ -62,8 +62,12 @@ Texture* LoadTextureFromSurface(struct SDL_Surface* surface) {
 }
 
 void ClearRenderTargetTexture(Texture* texture, sgColor* color) {
+	if (!texture || !color) {
+		sgLogError("Null texture or color passed to ClearRenderTargetTexture");
+		return;
+	}
 	SDL_Texture* currentRenderTarget = SDL_GetRenderTarget(_renderer);
-	sgColor currentColor;
+	sgColor currentColor = {0};
 	SDL_GetRenderDrawColor(_renderer, &currentColor.R, &currentColor.G, &currentColor.B, &currentColor.A);
 	if (!SDL_SetRenderTarget(_renderer, texture)) {
 		sgLogError("Could not set renderer to texture target to clear");
@@ -93,6 +97,7 @@ Texture* CreateRenderTargetTexture(int width, int height, sgColor color) {
 	Texture* image = SDL_CreateTexture(_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, width, height);
 	if (!image) {
 		sgLogError("Error creating image, %s", SDL_GetError());
+		return NULL;
 	}
 	if (!SDL_SetRenderTarget(_renderer, image)) {
 		sgLogError("Error setting render target when creating render target texture, %s", SDL_GetError());
@@ -186,8 +191,16 @@ void UnloadAllTextures(void) {
 		unloadTexture(i);
 	}
 	_holes = false;
+	SDL_free(_textureCache);
+	_textureCache = NULL;
+	_numTexturesInCache = 0;
 }
 
-void InitializeGraphicsSystem(void) {
+void initializeGraphicsSystem(void) {
+	_textureCacheSize = 4;
 	RESIZE_ARRAY(_textureCache, _textureCacheSize, TextureCacheItem);
+}
+
+void shutdownGraphicsSystem(void) {
+	UnloadAllTextures();
 }

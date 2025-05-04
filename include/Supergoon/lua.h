@@ -35,6 +35,7 @@ float LuaGetFloatFromTableStacki(int i, const char* key);
 void LuaCopyString(const char* name, char* location, int strlen);
 // Does not pop off, please do the needful
 void LuaCopyStringStack(int stackLocation, char* location, int strlen);
+char* LuaAllocateString(const char* fieldName);
 // String at location must be freed, allocates memory to it.
 char* LuaAllocateStringStack(int stackLocation);
 const char* LuaGetString(const char* name);
