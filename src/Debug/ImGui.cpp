@@ -22,8 +22,11 @@ void InitializeImGui(void) {
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
 	// io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;  // IF using Docking Branch
-	static auto thing = std::string(SDL_GetPrefPath("Supergoon Games", "EscapeTheFate")) + "debug.ini";
+	// static auto thing = std::string(SDL_GetPrefPath("Supergoon Games", "EscapeTheFate")) + "debug.ini";
+	char* prefPath = SDL_GetPrefPath("Supergoon Games", "EscapeTheFate");
+	static auto thing = std::string(prefPath) + "debug.ini";
 	io.IniFilename = thing.c_str();
+	SDL_free(prefPath);
 	ImGui_ImplSDL3_InitForSDLRenderer(_window, _renderer);
 	ImGui_ImplSDLRenderer3_Init(_renderer);
 	InitializeDebug();
@@ -31,7 +34,8 @@ void InitializeImGui(void) {
 
 bool HandleImGuiEvent(Event* event) {
 	ImGui_ImplSDL3_ProcessEvent(event);
-	return _isFocusedLastFrame;
+	// return _isFocusedLastFrame; //TODO this was used to try and only focus the game, however it broke the audio events..
+	return true;
 }
 
 void StartImGuiFrame(void) {
@@ -48,4 +52,10 @@ void DrawImGui(void) {
 	ImGui::ShowDemoWindow();
 	ImGui::Render();
 	ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), _renderer);
+}
+
+void ShutdownImGui(void) {
+	ImGui_ImplSDLRenderer3_Shutdown();	// Shut down SDL Renderer binding
+	ImGui_ImplSDL3_Shutdown();			// Shut down SDL binding
+	ImGui::DestroyContext();
 }

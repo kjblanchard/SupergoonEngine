@@ -30,3 +30,7 @@ void GetFilenameWithExeFilepath(char *buffer, size_t bufferSize, const char *fil
 		sgLogWarn("Path is likely incorrect, buffer passed is not log enough for %s", filename);
 	}
 }
+
+void shutdownEngineFilesystem(void) {
+	SDL_free(_systemFilePath);
+}

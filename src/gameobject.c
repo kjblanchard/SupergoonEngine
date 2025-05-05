@@ -3,6 +3,7 @@
 #include <Supergoon/map.h>
 #include <SupergoonEngine/gameobject.h>
 #include <SupergoonEngine/map.h>
+#include <stdlib.h>
 
 size_t _firstGameObjectHole = 0;
 size_t _currentId = 0;

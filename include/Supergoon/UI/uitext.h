@@ -34,7 +34,8 @@ typedef struct UIText {
 	Texture* Texture;
 } UIText;
 
-void InitializeUITextSystem();
+void InitializeUITextSystem(void);
+void ShutdownUITextSystem(void);
 
 void SetTextColor(UIObject* uiobject, int r, int g, int b, int a);
 void MeasureText(UIObject* uiobject);

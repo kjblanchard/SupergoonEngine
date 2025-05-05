@@ -10,6 +10,7 @@ bool HandleImGuiEvent(Event* event);
 void StartImGuiFrame(void);
 void DrawImGui(void);
 void EndImGuiFrame(void);
+void ShutdownImGui(void);
 #ifdef __cplusplus
 }
 #endif

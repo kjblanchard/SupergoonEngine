@@ -31,6 +31,8 @@ extern void audioUpdate(void);
 // Function in tween.c
 extern void initializeTweenEngine(void);
 extern void updateTweens(void);
+// Function in filesystem.c
+extern void shutdownEngineFilesystem(void);
 
 static geClock _clock;
 static void (*_startFunc)(void) = NULL;
@@ -71,15 +73,18 @@ static bool sdlEventLoop(void) {
 		switch (event.type) {
 			case SDL_EVENT_QUIT:
 				return true;
-				break;
 		}
 #ifdef imgui
 		if (!HandleImGuiEvent(&event)) {
 			continue;
 		}
 #endif
-		if (_handleEventFunc) quit = _handleEventFunc(&event);
+		if (_handleEventFunc) {
+			quit = _handleEventFunc(&event);
+		}
 		HandleEvents(&event);
+		// if (_handleEventFunc) quit = _handleEventFunc(&event);
+		// HandleEvents(&event);
 	}
 	return quit;
 }
@@ -121,6 +126,8 @@ static void Quit(void) {
 	shutdownGraphicsSystem();
 	CloseWindow();
 	ShutdownUISystem();
+	shutdownEngineFilesystem();
+	SDL_Quit();
 }
 
 void SetStartFunction(void (*startFunc)(void)) {

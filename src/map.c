@@ -370,6 +370,7 @@ static void freeTiledTilemap(Tilemap* map) {
 		SDL_free(tileset->Name);
 		SDL_free(tileset->Image);
 		SDL_free(tileset->AnimatedTiles);
+		UnloadTexture(tileset->TilesetTexture);
 	}
 	SDL_free(map->Tilesets);
 	SDL_free(map);

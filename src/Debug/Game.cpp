@@ -1,3 +1,6 @@
+#include <Supergoon/Imgui/imgui.h>
+#include <Supergoon/Imgui/imgui_impl_sdl3.h>
+#include <Supergoon/Imgui/imgui_impl_sdlrenderer3.h>
 #include <Supergoon/window.h>
 
 #include <Supergoon/Debug/Debug.hpp>

@@ -58,6 +58,7 @@ Texture* LoadTextureFromSurface(struct SDL_Surface* surface) {
 		sgLogError("Could not create texture from surface %s!", SDL_GetError());
 	}
 	SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST);
+	SDL_DestroySurface(surface);
 	return texture;
 }
 
@@ -133,7 +134,8 @@ Texture* CreateTextureFromIndexedBMP(const char* filename) {
 		printf("Failed to set color key: %s\n", SDL_GetError());
 	}
 
-	texture = SDL_CreateTextureFromSurface(_renderer, surface);
+	// texture = SDL_CreateTextureFromSurface(_renderer, surface);
+	texture = LoadTextureFromSurface(surface);
 	if (!texture) {
 		sgLogError("Could not load texture from surface, %s: %s", fullFilepath, SDL_GetError());
 		return NULL;

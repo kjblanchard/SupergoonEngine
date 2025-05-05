@@ -1,4 +1,8 @@
 #include <SupergoonEngine/tools.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 int sgasprintf(char **strp, const char *fmt, ...) {
 	va_list args;

@@ -8,6 +8,7 @@
 #include <Supergoon/log.h>
 #include <SupergoonEngine/ui.h>
 #include <assert.h>
+#include <stdlib.h>
 
 // used in debug ui panel
 UIObject* _rootUIObject = NULL;

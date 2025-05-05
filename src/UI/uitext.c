@@ -1,3 +1,4 @@
+#include <SDL3/SDL.h>
 #include <Supergoon/UI/uiobject.h>
 #include <Supergoon/UI/uitext.h>
 #include <Supergoon/filesystem.h>
@@ -453,4 +454,20 @@ void SetCenteredY(UIObject* uiobject, int centered) {
 	UIText* text = (UIText*)uiobject->Data;
 	assert(text && "No text?");
 	setCentered(uiobject, centered, false);
+}
+
+void ShutdownUITextSystem(void) {
+	for (size_t i = 0; i < MAX_LOADED_FONTS; i++) {
+		LoadedFont* font = &_loadedFonts[i];
+		if (!font) {
+			break;
+		}
+		SDL_free(font->FontName);
+		for (size_t j = 0; j < ASCII_CHAR_NUM; j++) {
+			UnloadTexture(font->GlyphTextures[j]);
+		}
+		FT_Done_Face(font->FontFace);
+	}
+
+	FT_Done_FreeType(_loadedLibrary);
 }

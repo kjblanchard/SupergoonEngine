@@ -84,13 +84,23 @@ endif()
 add_library(${LIBRARY_TARGET_NAME} STATIC
     ${SRC_FILES}
 )
+
+
 set(SKIP_INSTALL_ALL ON CACHE BOOL "We don't want any of these external packages to install anything")
 set(CMAKE_DEBUG_POSTFIX "" CACHE STRING " Don't use the d for debug packages" FORCE)
 set(CMAKE_DEBUG_TARGET_PROPERTIES "DEBUG_OUTPUT" "" CACHE STRING "Don't use the d for debug packages" FORCE)
 
-target_precompile_headers(${LIBRARY_TARGET_NAME} PRIVATE
-    "$<$<COMPILE_LANGUAGE:C>:${CMAKE_CURRENT_SOURCE_DIR}/include/Supergoon/pch.h>"
-    "$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/include/Supergoon/pch.hpp>")
+# PCH settings.. to compile with xcode, you likely nee dset_source_files and just the CXX one, otherwise use both.
+
+# set_source_files_properties(
+#     ${CMAKE_CURRENT_SOURCE_DIR}/include/Supergoon/pch.hpp
+#     PROPERTIES
+#     LANGUAGE CXX
+# )
+    # target_precompile_headers(${LIBRARY_TARGET_NAME} PRIVATE
+    #     "$<$<COMPILE_LANGUAGE:C>:${CMAKE_CURRENT_SOURCE_DIR}/include/Supergoon/pch.h>"
+    #     "$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/include/Supergoon/pch.hpp>")
+
 
 if(SYSTEM_PACKAGES) # If we are using system packages, then we should try to find them.
     find_package(SDL3 CONFIG COMPONENTS SDL3-shared)
