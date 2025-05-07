@@ -196,10 +196,8 @@ static void handleTiledLayerGroup(Tilemap* map) {
 
 static void loadTilesetTextures(Tilemap* map) {
 	for (size_t i = 0; i < (size_t)map->NumTilesets; i++) {
-		// Remove the .bmp from the name for easier loading with function
 		int nameLen = strlen(map->Tilesets[i].Image);
-		// Subtract .bmp (4) chars
-		map->Tilesets[i].Image[nameLen - 4] = '\0';
+		map->Tilesets[i].Image[nameLen - 4] = '\0';	 // Subtract .bmp (4) chars for easier loading with function below
 		map->Tilesets[i].TilesetTexture = CreateTextureFromIndexedBMP(map->Tilesets[i].Image);
 	}
 }
@@ -288,11 +286,41 @@ static void GetRectForGid(int gid, Tileset* tileset, RectangleF* rect) {
 	rect->h = tileset->TileHeight;
 }
 
+/**
+ * @brief Get the Animated Tile For Gid object
+ * @param gid gid to search for
+ * @param tileset tileset to search in for animated tiles gid
+ * @return AnimatedTile* the tile, or null if it isn't found
+ */
+static AnimatedTile* getAnimatedTileForGid(unsigned int gid, Tileset* tileset) {
+	for (size_t i = 0; i < tileset->NumAnimatedTiles; i++) {
+		if (gid == tileset->AnimatedTiles[i].GID) {
+			return &tileset->AnimatedTiles[i];
+		}
+	}
+	return NULL;
+}
+
+// Animated tiles do not get drawn to the map, instead they get added to the animated tile draw rectangles array.
+static void handleAnimatedTile(Tilemap* map, Tileset* srcTileset, RectangleF* dstRect, AnimatedTile* animatedTile) {
+	++animatedTile->NumDrawRectangles;
+	RectangleF* newSpace = realloc(animatedTile->DrawRectangles, sizeof(RectangleF) * animatedTile->NumDrawRectangles);
+	if (!newSpace) {
+		sgLogError("Could not realloc, what in the world probably broken?");
+		return;
+	}
+	animatedTile->DrawRectangles = newSpace;
+	RectangleF* dstRectPtr = &animatedTile->DrawRectangles[animatedTile->NumDrawRectangles - 1];
+	dstRectPtr->x = dstRect->x;
+	dstRectPtr->y = dstRect->y;
+	dstRectPtr->w = dstRect->w;
+	dstRectPtr->h = dstRect->h;
+}
+
 static void createBackgroundsFromTilemap(Tilemap* map) {
 	int mapWidth = map->Width * map->TileWidth;
 	int mapHeight = map->Height * map->TileHeight;
 	_bg1Texture = CreateRenderTargetTexture(mapWidth, mapHeight, (sgColor){255, 255, 255, 255});
-	// Load the tileset textures so that we can use them to draw with.
 	loadTilesetTextures(map);
 	LayerGroup* bg1LayerGroup = &map->LayerGroups[0];
 	RectangleF dstRect = {0, 0, map->TileWidth, map->TileHeight};
@@ -306,34 +334,15 @@ static void createBackgroundsFromTilemap(Tilemap* map) {
 				if (tileGid == 0)
 					continue;
 				Tileset* srcTileset = GetTilesetForGID(tileGid, map);
-				// Handle animated tiles?
-				bool isAnimatedTile = false;
-				for (size_t k = 0; k < srcTileset->NumAnimatedTiles; k++) {
-					if (tileGid == srcTileset->AnimatedTiles[k].GID) {
-						AnimatedTile* animatedTile = &srcTileset->AnimatedTiles[k];
-						++animatedTile->NumDrawRectangles;
-						RectangleF* newSpace = realloc(animatedTile->DrawRectangles, sizeof(RectangleF) * animatedTile->NumDrawRectangles);
-						if (!newSpace) {
-							sgLogError("Could not realloc, what in the world probably broken?");
-							continue;
-						}
-						animatedTile->DrawRectangles = newSpace;
-						RectangleF* dstRectPtr = &animatedTile->DrawRectangles[animatedTile->NumDrawRectangles - 1];
-						dstRectPtr->x = x * map->TileWidth;
-						dstRectPtr->y = y * map->TileHeight;
-						dstRectPtr->w = dstRect.w;
-						dstRectPtr->h = dstRect.h;
-						isAnimatedTile = true;
-						break;
-					}
-				}
-				if (isAnimatedTile) {
+				dstRect.x = x * map->TileWidth;
+				dstRect.y = y * map->TileHeight;
+				AnimatedTile* animatedTile = getAnimatedTileForGid(tileGid, srcTileset);
+				if (animatedTile) {
+					handleAnimatedTile(map, srcTileset, &dstRect, animatedTile);
 					continue;
 				}
 				GetRectForGid(tileGid, srcTileset, &srcRect);
 				Texture* srcTexture = srcTileset->TilesetTexture;
-				dstRect.x = x * map->TileWidth;
-				dstRect.y = y * map->TileHeight;
 				DrawTextureToRenderTargetTexture(_bg1Texture, srcTexture, &dstRect, &srcRect);
 			}
 		}
@@ -348,7 +357,6 @@ static void freeTiledTilemap(Tilemap* map) {
 		SDL_free(map->LayerGroups[i].Name);
 		SDL_free(map->LayerGroups[i].Layers);
 	}
-
 	if (map->NumObjects > 0) {
 		for (size_t i = 0; i < (size_t)map->NumObjects; i++) {
 			for (size_t j = 0; j < map->Objects[i].NumProperties; j++) {

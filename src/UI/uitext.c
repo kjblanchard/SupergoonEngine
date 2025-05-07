@@ -471,3 +471,14 @@ void ShutdownUITextSystem(void) {
 
 	FT_Done_FreeType(_loadedLibrary);
 }
+
+void DestroyUIText(UIObject* object) {
+	if (!object) {
+		return;
+	}
+	UIText* text = (UIText*)object->Data;
+	assert(text && "No text?");
+	SDL_free(text->Text);
+	UnloadTexture(text->Texture);
+	SDL_free(text->WordWrapCharacters);
+}

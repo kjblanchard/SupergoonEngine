@@ -45,6 +45,7 @@ void SetCenteredY(UIObject* uiobject, int centered);
 void UITextLoad(UIObject* object);
 void UITextOnDirty(UIObject* object);
 void UITextDraw(UIObject* object);
+void DestroyUIText(UIObject* object);
 
 #ifdef __cplusplus
 }

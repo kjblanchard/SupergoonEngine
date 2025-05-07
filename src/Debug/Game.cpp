@@ -16,6 +16,11 @@ extern int _logicalHeight;
 Texture* _imguiGameTexture;
 bool _isFocusedLastFrame = true;
 static u_int8_t _frames = 0;
+int _gameImagePosX = 0;
+int _gameImagePosY = 0;
+float _gameImageScale = 0;
+int _gameImageWidth = 0;
+int _gameImageHeight = 0;
 
 void ShowGameDebugWindow(void) {
 	if (_frames < 2) {
@@ -32,20 +37,20 @@ void ShowGameDebugWindow(void) {
 		return;
 	}
 	ImVec2 imguiWindowSize = ImGui::GetContentRegionAvail();
-	int scaleX = imguiWindowSize.x / _logicalWidth;	  // Integer division for X axis
-	int scaleY = imguiWindowSize.y / _logicalHeight;  // Integer division for Y axis
-
-	// Choose the smaller scale factor to maintain aspect ratio
-	int scale = (scaleX < scaleY) ? scaleX : scaleY;
-
-	// Step 2: Calculate the scaled size (what SDL would render to the screen)
+	int scaleX = imguiWindowSize.x / _logicalWidth;
+	int scaleY = imguiWindowSize.y / _logicalHeight;
+	int scale = (scaleX < scaleY) ? scaleX : scaleY; // Choose the smaller scale factor to maintain aspect ratio
 	int scaledWidth = _logicalWidth * scale;
 	int scaledHeight = _logicalHeight * scale;
-
-	// Step 3: Render the SDL_Texture in ImGui with the same scaling
 	ImVec2 imguiSize(scaledWidth, scaledHeight);  // Use the scaled size
 	auto tex = (ImTextureID)(intptr_t)_imguiGameTexture;
 	ImGui::Image(tex, imguiSize);
+	ImVec2 imageTopLeft = ImGui::GetItemRectMin();
 	_isFocusedLastFrame = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootWindow);
+	_gameImagePosX = (int)(imageTopLeft.x);
+	_gameImagePosY = (int)(imageTopLeft.y);
+	_gameImageScale = scale;
+	_gameImageWidth = scaledWidth;
+	_gameImageHeight = scaledHeight;
 	ImGui::End();
 }

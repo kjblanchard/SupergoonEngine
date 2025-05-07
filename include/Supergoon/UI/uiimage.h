@@ -11,6 +11,7 @@ typedef struct UIImageData {
 } UIImageData;
 
 void DrawUIImage(UIObject* uiobject);
+void DestroyUIImage(UIObject* uiobject);
 #ifdef __cplusplus
 }
 #endif

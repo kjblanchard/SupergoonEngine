@@ -36,8 +36,9 @@ set(SRC_FILES
     src/state.c
     src/map.c
     src/gameobject.c
-    src/input/joystick.c
-    src/input/keyboard.c
+    src/Input/joystick.c
+    src/Input/keyboard.c
+    src/Input/mouse.c
     src/window.c
     src/graphics.c
     src/filesystem.c

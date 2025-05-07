@@ -1,13 +1,29 @@
+#include <Supergoon/UI/uiimage.h>
 #include <Supergoon/UI/uiobject.h>
+#include <Supergoon/UI/uitext.h>
 
 void UIObjectFree(UIObject* object) {
 	// Clear all children based on type
 	switch (object->Type) {
 		default:
 			break;
+		case UIObjectTypesText:
+			DestroyUIText(object);
+			break;
+		case UIObjectTypesImage:
+			DestroyUIImage(object);
+			break;
 	}
-	for (size_t i = 0; i < object->ChildrenCount; i++) {
-		UIObjectFree(object->Children[i]);
+	if (object->Data) {
+		SDL_free(object->Data);
+		object->Data = NULL;
+	}
+	if (object->ChildrenCount > 0) {
+		for (size_t i = 0; i < object->ChildrenCount; i++) {
+			UIObjectFree(object->Children[i]);
+		}
+		SDL_free(object->Children);
+		object->Children = NULL;
 	}
 	if (object->Name) {
 		SDL_free(object->Name);
