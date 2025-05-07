@@ -15,6 +15,20 @@ static int _windowHeight = 0;
 // Used in debug, so non static
 int _logicalWidth = 0;
 int _logicalHeight = 0;
+// scale values
+// top left of the game, for use fine finding mouse coords
+int _gameImagePosX = 0;
+// top left of the game, for use fine finding mouse coords
+int _gameImagePosY = 0;
+// Scale factor of the game image
+float _gameImageScale = 0;
+// Actual width of the game window
+int _gameImageWidth = 0;
+// actual height of the game window
+int _gameImageHeight = 0;
+int _renderTargetWidth = 0;
+int _renderTargetHeight = 0;
+
 Texture* _imguiGameTexture;
 static const char* _windowName = NULL;
 #ifdef imgui
@@ -32,6 +46,27 @@ void SetWindowOptions(int width, int height, const char* name) {
 void SetScalingOptions(int worldWidth, int worldHeight) {
 	_logicalWidth = worldWidth;
 	_logicalHeight = worldHeight;
+}
+
+static void onWindowResize(void) {
+	// TODO Cache all window information, this should be updated if the window size changes, currently it doesn't ever.
+	int windowW, windowH;
+	SDL_GetRenderOutputSize(_renderer, &windowW, &windowH);
+	int scaleX = windowW / _logicalWidth;
+	int scaleY = windowH / _logicalHeight;
+	int scale = (scaleX < scaleY) ? scaleX : scaleY;
+	_gameImageScale = (float)scale;
+	_gameImageWidth = _logicalWidth * scale;
+	_gameImageHeight = _logicalHeight * scale;
+	_gameImagePosX = (windowW - _gameImageWidth) / 2;
+	_gameImagePosY = (windowH - _gameImageHeight) / 2;
+	//  Create texture that the game will be drawn to.  ImGui will Draw to this in the Game window, otherwise the game will draw to this.
+	_renderTargetWidth = _logicalWidth ? _logicalWidth : _windowWidth;
+	_renderTargetHeight = _logicalHeight ? _logicalHeight : _windowHeight;
+	if (_imguiGameTexture) {
+		UnloadTexture(_imguiGameTexture);
+	}
+	_imguiGameTexture = CreateRenderTargetTexture(_renderTargetWidth, _renderTargetHeight, (sgColor){0, 0, 0, 255});
 }
 
 void CreateWindow(void) {
@@ -56,11 +91,7 @@ void CreateWindow(void) {
 		SDL_SetRenderLogicalPresentation(_renderer, _logicalWidth, _logicalHeight, SDL_LOGICAL_PRESENTATION_INTEGER_SCALE);
 	}
 #endif
-	//  Create texture that the game will be drawn to.  ImGui will Draw to this in the Game window, otherwise the game will draw to this.
-	int renderTargetWidth = _logicalWidth ? _logicalWidth : _windowWidth;
-	int renderTargetHeight = _logicalHeight ? _logicalHeight : _windowHeight;
-	_imguiGameTexture = CreateRenderTargetTexture(renderTargetWidth, renderTargetHeight, (sgColor){0, 0, 0, 255});
-	// testTexture = CreateTextureFromIndexedBMP("player1");
+	onWindowResize();
 }
 
 void DrawStart(void) {
@@ -82,8 +113,8 @@ void DrawEnd(void) {
 	// DrawTexture(testTexture, &dst, &dst);
 	SDL_SetRenderTarget(_renderer, NULL);
 #ifndef imgui
-	SDL_FRect dest = {0, 0, _windowWidth, _windowHeight};
-	SDL_RenderTexture(_renderer, _imguiGameTexture, NULL, NULL);
+	SDL_FRect dest = {0, 0, _renderTargetWidth, _renderTargetHeight};
+	SDL_RenderTexture(_renderer, _imguiGameTexture, &dest, &dest);
 #else
 	DrawImGui();
 #endif
@@ -101,8 +132,7 @@ int WindowWidth(void) {
 	return _windowWidth;
 }
 void CloseWindow(void) {
-	// SDL_DestroyTexture(testTexture);
-	SDL_DestroyTexture(_imguiGameTexture);
+	UnloadTexture(_imguiGameTexture);
 	SDL_DestroyRenderer(_renderer);
 	SDL_DestroyWindow(_window);
 }

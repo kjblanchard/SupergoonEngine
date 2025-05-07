@@ -13,14 +13,10 @@ typedef struct GamePad {
 } GamePad;
 
 #define MAX_GAMEPADS 4
-const float DEADZONE = 0.2f;  // Deadzone threshold
+const float DEADZONE = 0.2f;
 static int _numGamePads;
 static void CountPluggedInControllers(void);
 GamePad _connectedGamepads[MAX_GAMEPADS];
-
-int geGamepadMaxPads(void) {
-	return MAX_GAMEPADS;
-}
 
 static void InitializeEngineGamepad(int padId, int playerNum) {
 	if (_connectedGamepads[padId].Gamepad)
@@ -59,7 +55,7 @@ void geHandleJoystickEvent(const SDL_Event *event) {
 				quit.type = SDL_EVENT_QUIT;
 				SDL_PushEvent(&quit);
 			}
-			sgLogWarn("Button pressed! %d", event->gbutton.button);
+			sgLogDebug("Button pressed! %d", event->gbutton.button);
 			for (int i = 0; i < _numGamePads; i++) {
 				if (event->gbutton.which == SDL_GetJoystickID(SDL_GetGamepadJoystick(_connectedGamepads[i].Gamepad))) {
 					_connectedGamepads[i].thisFrameButtons[event->gbutton.button] = true;
