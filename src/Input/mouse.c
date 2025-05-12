@@ -2,6 +2,25 @@
 #include <Supergoon/Input/mouse.h>
 #include <SupergoonEngine/window.h>
 
+static bool _lastFrameMouseButtons[3] = {false};
+static bool _thisFrameMouseButtons[3] = {false};
+
+void handleMouseEvent(const SDL_Event* event) {
+	if (!(event->type == SDL_EVENT_MOUSE_BUTTON_DOWN || event->type == SDL_EVENT_MOUSE_BUTTON_UP)) {
+		return;
+	}
+	bool buttonPressed = event->type == SDL_EVENT_MOUSE_BUTTON_DOWN ? true : false;
+	int buttonNum = event->button.button == SDL_BUTTON_LEFT ? 0 : event->button.button == SDL_BUTTON_RIGHT ? 1
+																										   : 2;
+	_thisFrameMouseButtons[buttonNum] = buttonPressed;
+}
+
+void updateMouseSystem(void) {
+	for (int i = 0; i < 3; ++i) {
+		_lastFrameMouseButtons[i] = _thisFrameMouseButtons[i];
+	}
+}
+
 void GetGameMousePos(float* x, float* y) {
 	float mouseX, mouseY;
 	SDL_GetMouseState(&mouseX, &mouseY);
@@ -26,4 +45,16 @@ int IsMouseOverlapRect(int x, int y, int width, int height) {
 
 	return (logicX >= x && logicX < x + width &&
 			logicY >= y && logicY < y + height);
+}
+
+int IsMouseButtonJustPressed(int button) {
+	return _thisFrameMouseButtons[button] && !_lastFrameMouseButtons[button];
+}
+
+int IsMouseButtonJustReleased(int button) {
+	return !_thisFrameMouseButtons[button] && _lastFrameMouseButtons[button];
+}
+
+int IsMouseButtonHeldDown(int button) {
+	return _thisFrameMouseButtons[button];
 }

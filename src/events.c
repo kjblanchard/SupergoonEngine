@@ -7,6 +7,8 @@
 extern void audioEventHandler(Event *event);
 // Function in tween.c
 void handleTweenEvents(Event *event);
+// Functions in mouce.c
+void handleMouseEvent(const SDL_Event *event);
 BuiltinEventTypes BuiltinEventIds;
 static int (*_customEventHandler)(Event *event) = NULL;
 
@@ -33,6 +35,7 @@ void PushEvent(uint32_t eventType, int eventCode, void *data, void *data2) {
 int HandleEvents(Event *event) {
 	audioEventHandler(event);
 	handleTweenEvents(event);
+	handleMouseEvent(event);
 	return false;
 }
 

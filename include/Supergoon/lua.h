@@ -19,8 +19,11 @@ int LuaGetBooli(int i);
 
 int LuaGetIntFromTablei(int i);
 float LuaGetFloat(const char* field);
+float LuaGetFloati(int i);
 float LuaGetFloatFromStack(void);
+void LuaPushTableFromRegistryByName(const char* tableName);
 void LuaPushTableToStack(const char* tableFieldName);
+void LuaPushTableToStacki(int i);
 // If a table is on the stack, you will push the table at i on the stack
 // Remember lua table indexes start at 1, so this will add 1.
 void LuaPushTableObjectToStacki(int i);

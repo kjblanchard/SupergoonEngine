@@ -21,8 +21,13 @@
 #endif
 
 // this is not needed, and should be consolidated to one function
+#include <SupergoonEngine/Lua/audio.h>
 #include <SupergoonEngine/Lua/log.h>
+#include <SupergoonEngine/Lua/object.h>
 #include <SupergoonEngine/Lua/ui.h>
+
+// Functions in mouce.c
+void updateMouseSystem(void);
 
 // Functions in Audio.c
 extern void initializeAudio(void);
@@ -63,6 +68,8 @@ static bool Start(void) {
 	// should be consolidated
 	RegisterLuaUIFunctions();
 	RegisterLuaLogFunctions();
+	RegisterLuaAudioFunctions();
+	RegisterLuaObjectFunctions();
 
 	return true;
 }
@@ -114,6 +121,7 @@ static void Update(void) {
 		DrawUISystem();
 		DrawEnd();
 		geUpdateControllerLastFrame();
+		updateMouseSystem();
 	}
 }
 

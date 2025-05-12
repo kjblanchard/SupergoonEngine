@@ -55,8 +55,11 @@ set(SRC_FILES
     src/UI/uiobject.c
     src/UI/uiimage.c
     src/UI/uitext.c
+    src/UI/uibutton.c
     src/Lua/ui.c
     src/Lua/log.c
+    src/Lua/audio.c
+    src/Lua/object.c
 )
 
 if(imgui)

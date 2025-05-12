@@ -10,6 +10,7 @@ typedef enum UIObjectTypes {
 	UIObjectTypesImage,
 	UIObjectTypesText,
 	UIObjectTypesLayoutGroup,
+	UIObjectTypesButton,
 
 } UIObjectTypes;
 typedef enum UIObjectFlags {

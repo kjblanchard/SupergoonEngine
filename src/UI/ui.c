@@ -1,4 +1,5 @@
 #include <Supergoon/UI/ui.h>
+#include <Supergoon/UI/uibutton.h>
 #include <Supergoon/UI/uiimage.h>
 #include <Supergoon/UI/uilayoutgroup.h>
 #include <Supergoon/UI/uiobject.h>
@@ -113,6 +114,9 @@ static void updateUIObject(UIObject* object) {
 		onDirtyUIObject(object);
 	}
 	switch (object->Type) {
+		case UIObjectTypesButton:
+			UpdateUIButton(object);
+			break;
 		default:
 			break;
 	}

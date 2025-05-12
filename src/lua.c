@@ -66,6 +66,22 @@ int LuaGetInt(const char *field) {
 	return fieldInt;
 }
 
+void LuaPushTableFromRegistryByName(const char *tableName) {
+	lua_getfield(_luaState, LUA_REGISTRYINDEX, tableName);	// pushes the table onto the stack
+	// Optionally, you can check it's a table if needed:
+	if (!lua_istable(_luaState, -1)) {
+		lua_pop(_luaState, 1);	// remove non-table
+		luaL_error(_luaState, "Registry value '%s' is not a table", tableName);
+	}
+}
+
+void LuaPushTableToStacki(int i) {
+	if (!lua_istable(_luaState, i)) {
+		sgLogWarn("Table pushed is not a real lua table, what even");
+	}
+	lua_pushvalue(_luaState, i);
+}
+
 void LuaPushTableToStack(const char *tableFieldName) {
 	lua_getfield(_luaState, -1, tableFieldName);
 	if (!lua_istable(_luaState, -1)) {
@@ -143,6 +159,10 @@ float LuaGetFloat(const char *field) {
 	float fieldFloat = lua_tonumber(_luaState, -1);
 	lua_pop(_luaState, 1);
 	return fieldFloat;
+}
+
+int LuaGetFloati(int i) {
+	return lua_tonumber(_luaState, i);
 }
 
 float LuaGetFloatFromStack(void) {
