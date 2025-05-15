@@ -32,6 +32,7 @@ int LuaGetTableLength(void);
 // Table must be on stack, used for key/value tables
 int LuaGetTableLengthMap(void);
 int LuaGetTablei(int i);
+// Get light userdata at stack position i, or null if not userdata.
 void* LuaGetLightUserdatai(int i);
 // i is stack location of table, const char* is key.. so not directly on stack -1.
 float LuaGetFloatFromTableStacki(int i, const char* key);
@@ -59,8 +60,19 @@ int LuaIsNili(int stackLocation);
 int LuaIsBool(int stackLocation);
 void LuaPushNil();
 void LuaPushLightUserdata(void* data);
+void LuaPushFloat(float data);
 // Ends the iteration
 void LuaEndTableKeyValueIteration(void);
+void LuaEnsureRegistryTable(const char* registryKey);
+int LuaRegistryGetSubTableEntry(const char* registryKey, int subKey);
+void LuaRegistrySetSubTableEntry(const char* registryKey, int subKey, int valueIndex);
+void LuaGetLuaFuncAtIndex(int index);
+// Gets the number of items on the stack, remember that the index starts at 1.
+int LuaGetStack(void);
+int LuaRemoveIndex(int index);
+// Moves the tip to the index passed in, pushing everything else up.  Useful for if you pass func args first.
+void LuaMoveStackTipToIndex(int index);
+void RunLuaFunctionOnStack(int numArgs);
 void sgCloseLua(void);
 #ifdef __cplusplus
 }

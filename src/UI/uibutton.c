@@ -14,7 +14,7 @@ void UpdateUIButton(UIObject* obj) {
 		bool justHovered = buttonData->MouseOverLastFrame ? false : true;
 		buttonData->ButtonHoverEvent(obj, justHovered);
 	}
-	if (buttonData->ButtonClickEvent || IsMouseButtonJustPressed(MouseButtonsLeftClick)) {
+	if (buttonData->ButtonClickEvent && IsMouseButtonJustPressed(MouseButtonsLeftClick)) {
 		buttonData->ButtonClickEvent(obj);
 	}
 	buttonData->MouseOverLastFrame = true;

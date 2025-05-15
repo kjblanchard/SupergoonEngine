@@ -161,7 +161,7 @@ float LuaGetFloat(const char *field) {
 	return fieldFloat;
 }
 
-int LuaGetFloati(int i) {
+float LuaGetFloati(int i) {
 	return lua_tonumber(_luaState, i);
 }
 
@@ -246,4 +246,68 @@ int LuaIsNili(int stackLocation) {
 }
 int LuaIsBool(int stackLocation) {
 	return lua_isboolean(_luaState, stackLocation);
+}
+
+void LuaRegistrySetSubTableEntry(const char *registryKey, int subKey, int valueIndex) {
+	lua_getfield(_luaState, LUA_REGISTRYINDEX, registryKey);  // registry table on top or nil
+	lua_pushinteger(_luaState, subKey);						  // subkey to get from this
+	lua_pushvalue(_luaState, valueIndex);					  // copy value (from anywhere on stack)
+	lua_settable(_luaState, -3);							  // registry[subKey] = value
+	lua_pop(_luaState, 1);									  // pop registry table
+}
+
+void LuaEnsureRegistryTable(const char *registryKey) {
+	lua_getfield(_luaState, LUA_REGISTRYINDEX, registryKey);
+	if (!lua_istable(_luaState, -1)) {
+		lua_pop(_luaState, 1);	  // pop non-table
+		lua_newtable(_luaState);  // create new table
+		lua_setfield(_luaState, LUA_REGISTRYINDEX, registryKey);
+	}
+	lua_pop(_luaState, 1);
+}
+
+bool LuaRegistryGetSubTableEntry(const char *registryKey, int subKey) {
+	lua_getfield(_luaState, LUA_REGISTRYINDEX, registryKey);  // push registry[registryKey]
+	if (!lua_istable(_luaState, -1)) {
+		lua_pop(_luaState, 1);
+		return false;
+	}
+	lua_pushinteger(_luaState, subKey);
+	lua_gettable(_luaState, -2);		// push registry[registryKey][subKey]
+	lua_remove(_luaState, -2);			// remove registry table, leave just result
+	return lua_istable(_luaState, -1);	// or lua_isfunction(), if expecting a func
+}
+
+// Table must be directly on the stack, index can be anywhere.
+void LuaGetLuaFuncAtIndex(int index) {
+	lua_rawgeti(_luaState, -1, index);	// get function at index (1 = click, 2 = hover)
+	if (!lua_isfunction(_luaState, -1)) {
+		sgLogWarn("No function was pushed, what the, pop everything");
+		lua_pop(_luaState, 3);
+		return;
+	}
+}
+
+int LuaGetStack(void) {
+	return lua_gettop(_luaState);
+}
+
+int LuaRemoveIndex(int index) {
+	lua_remove(_luaState, index);
+}
+
+void RunLuaFunctionOnStack(int numArgs) {
+	if (lua_pcall(_luaState, numArgs, 0, 0) != LUA_OK) {
+		const char *err = lua_tostring(_luaState, -1);
+		sgLogWarn("Button func error: %s\n", err);
+		lua_pop(_luaState, 1);	// pop func
+	}
+}
+
+void LuaMoveStackTipToIndex(int index) {
+	lua_insert(_luaState, index);  // Rearrage the stack so that the function is before the actual arguments.
+}
+
+void LuaPushFloat(float data) {
+	lua_pushnumber(_luaState, data);
 }

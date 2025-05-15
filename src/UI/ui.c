@@ -16,6 +16,7 @@ UIObject* _rootUIObject = NULL;
 //  defined in window, used for initial size of the root panel.
 extern int _logicalWidth;
 extern int _logicalHeight;
+unsigned int _nextObjectId = 0;
 
 static void drawUIObject(UIObject* object) {
 	if (!object || !(object->Flags & UIObjectFlagVisible)) {
@@ -162,6 +163,7 @@ void AddUIObject(UIObject* child, UIObject* parent) {
 		default:
 			break;
 	}
+	++_nextObjectId;
 }
 
 void ShutdownUISystem(void) {

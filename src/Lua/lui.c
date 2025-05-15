@@ -28,6 +28,7 @@ static UIObject* createUIObject(void) {
 	testObj->Location.h = LuaGetFloatFromTableStacki(2, "h");
 	testObj->Parent = LuaGetLightUserdatai(3);
 	testObj->Flags |= UIObjectFlagActive | UIObjectFlagVisible | UIObjectFlagDirty;
+	testObj->Id = _nextObjectId;
 	return testObj;
 }
 
@@ -138,29 +139,16 @@ static int createLayoutGroup(lua_State* state) {
 }
 
 static void callButtonFuncByIndex(int objId, int index, int argCount) {
-	lua_getfield(_luaState, LUA_REGISTRYINDEX, LUA_BUTTON_FUNCS_KEY);  // funcsTable
-	lua_pushinteger(_luaState, objId);
-	lua_gettable(_luaState, -2);  // funcsTable[objId]
-
-	if (!lua_istable(_luaState, -1)) {
-		lua_pop(_luaState, 2);
+	LuaRegistryGetSubTableEntry(LUA_BUTTON_FUNCS_KEY, objId);  // Push the function table from the lua registry
+	if (!LuaIsTable(-1)) {
+		sgLogWarn("There is no table on the stack, returning");
 		return;
 	}
-
-	lua_rawgeti(_luaState, -1, index);	// get function at index (1 = click, 2 = hover)
-	if (!lua_isfunction(_luaState, -1)) {
-		lua_pop(_luaState, 3);
-		return;
-	}
-
-	// Push args (if any already on the stack before calling this)
-	if (lua_pcall(_luaState, argCount, 0, 0) != LUA_OK) {
-		const char* err = lua_tostring(_luaState, -1);
-		fprintf(stderr, "Button func error: %s\n", err);
-		lua_pop(_luaState, 1);
-	}
-
-	lua_pop(_luaState, 2);	// pop funcsTable[objId] and funcsTable
+	LuaGetLuaFuncAtIndex(index);  // Push the function to the top of the stack
+	LuaRemoveIndex(-2);			  // Remove the table with the funcs
+	int pushLoc = LuaGetStackSize() - argCount;
+	LuaMoveStackTipToIndex(pushLoc);
+	RunLuaFunctionOnStack(argCount);
 }
 
 static void buttonPress(UIObject* obj) {
@@ -180,7 +168,7 @@ static void buttonHover(UIObject* obj, int justHovered) {
 
 static int createButton(lua_State* state) {
 	// args - name, loc table, parent userdata, funcsTable
-	if (LuaGetStackSize() != 4 || !LuaIsString(1) || !LuaIsTable(2) || !LuaIsInt(4) || !LuaIsTable(5)) {
+	if (LuaGetStackSize() != 4 || !LuaIsString(1) || !LuaIsTable(2) || !LuaIsTable(4)) {
 		sgLogError("Could not create button from lua, bad params passed in");
 		LuaPushNil();
 		return 1;
@@ -190,18 +178,54 @@ static int createButton(lua_State* state) {
 	UIButton* buttonData = SDL_calloc(1, sizeof(*buttonData));
 	obj->Data = buttonData;
 	buttonData->MouseOverLastFrame = false;
-	// We need to get the functions from the stack, store them in lua ref if it's there, otherwise don't
-	LuaPushTableToStacki(5);
-	LuaPushTableFromRegistryByName(LUA_BUTTON_FUNCS_KEY);
-	lua_pushinteger(_luaState, obj->Id);  // key
-	lua_pushvalue(_luaState, -2);		  // value (funcsTable)
-	lua_settable(_luaState, -3);		  // global[objId] = funcsTable
-	lua_pop(_luaState, 1);				  // pop global table
+	LuaRegistrySetSubTableEntry(LUA_BUTTON_FUNCS_KEY, obj->Id, 4);
 	buttonData->ButtonClickEvent = buttonPress;
 	buttonData->ButtonHoverEvent = buttonHover;
 	AddUIObject(obj, obj->Parent);
 	LuaPushLightUserdata(obj);
 	return 1;
+}
+
+static int getUIObjectLocation(lua_State* state) {
+	UIObject* object = LuaGetLightUserdatai(1);
+	if (object == NULL) {
+		LuaPushNil();
+		sgLogWarn("Trying to get a bad object from uiobjectlocation");
+		return 1;
+	}
+	LuaPushFloat(object->Location.x);
+	LuaPushFloat(object->Location.y);
+	return 2;
+}
+
+static int getUIObjectSize(lua_State* state) {
+	UIObject* object = LuaGetLightUserdatai(1);
+	if (object == NULL) {
+		LuaPushNil();
+		sgLogWarn("Trying to get a bad object from uiobjectlocation");
+		return 1;
+	}
+	LuaPushFloat(object->Location.w);
+	LuaPushFloat(object->Location.h);
+	return 2;
+}
+
+static int setUIObjectLocation(lua_State* state) {
+	if (LuaGetStackSize() != 3 || !LuaIsFloat(2) || !LuaIsFloat(3)) {
+		sgLogError("Could not set object location");
+		return 0;
+	}
+	UIObject* object = LuaGetLightUserdatai(1);
+	if (object == NULL) {
+		sgLogWarn("Trying to get a bad object from uiobjectlocation");
+		return 0;
+	}
+	// object->XOffset = object->Parent->Location.x - LuaGetFloati(2);
+	// object->YOffset = object->Parent->Location.y - LuaGetFloati(3);
+	object->XOffset = LuaGetFloati(2) - object->Parent->Location.x;
+	object->YOffset = LuaGetFloati(3) - object->Parent->Location.y;
+	object->Flags |= UIObjectFlagDirty;
+	return 0;
 }
 
 static const luaL_Reg uiLib[] = {
@@ -211,6 +235,9 @@ static const luaL_Reg uiLib[] = {
 	{"CreateRect", createRect},
 	{"CreateLayoutGroup", createLayoutGroup},
 	{"CreateButton", createButton},
+	{"GetObjectLocation", getUIObjectLocation},
+	{"GetObjectSize", getUIObjectSize},
+	{"SetObjectLocation", setUIObjectLocation},
 	{NULL, NULL}};
 
 void RegisterLuaUIFunctions(void) {
