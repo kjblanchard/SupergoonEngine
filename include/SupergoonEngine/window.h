@@ -24,6 +24,7 @@ extern int _gameImageHeight;
 extern SDL_Renderer* _renderer;
 extern int _logicalWidth;
 extern int _logicalHeight;
+void handleWindowEvents();
 #ifdef __cplusplus
 }
 #endif

@@ -420,7 +420,9 @@ void drawCurrentMap(void) {
 		RectangleF src = {0, 0, 480, 270};
 		DrawTexture(_bg1Texture, &src, &src);
 	}
-	drawAnimatedTiles();
+	if (_currentMap) {
+		drawAnimatedTiles();
+	}
 	if (_bg2Texture) {
 		RectangleF src = {0, 0, 480, 270};
 		DrawTexture(_bg1Texture, &src, &src);

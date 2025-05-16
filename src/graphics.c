@@ -168,12 +168,15 @@ void UnloadTexture(Texture* texture) {
 		if (_textureCache[i].References && _textureCache[i].Texture == texture) {
 			--_textureCache[i].References;
 			if (_textureCache[i].References == 0) {
+				unloadTexture(i);
 				_holes = true;
 			}
 			return;
 		}
 	}
-	sgLogWarn("Trying to unload a texture not in the cache, how even: %d", texture);
+	sgLogDebug("Deleting texture in cache, render target?: %d", texture);
+	SDL_DestroyTexture(texture);
+	texture = NULL;
 }
 
 void UnloadUnusedTextures(void) {

@@ -2,6 +2,7 @@
 #include <Supergoon/graphics.h>
 #include <Supergoon/log.h>
 #include <Supergoon/window.h>
+typedef union SDL_Event Event;
 #ifdef imgui
 #include <Supergoon/Debug/ImGui.hpp>
 
@@ -36,21 +37,51 @@ static const char* _windowName = NULL;
 extern bool _isGameSimulatorRunning;
 #endif
 // static Texture* testTexture = NULL;
+static void onWindowResize(void);
+
+void windowEventHandler(Event* event) {
+	if (!(event->type == SDL_EVENT_WINDOW_RESIZED)) {
+		return;
+	}
+	if (event->type == SDL_EVENT_WINDOW_RESIZED) {
+		SDL_GetWindowSizeInPixels(_window, &_windowWidth, &_windowHeight);
+		onWindowResize();
+	}
+}
 
 void SetWindowOptions(int width, int height, const char* name) {
 	_windowWidth = width;
 	_windowHeight = height;
+#ifdef imgui
+	// Make the window start bigger if we are debugging.
+	_windowWidth *= 2;
+	_windowHeight *= 2;
+#endif
 	_windowName = name;
+	if (_window) {
+		onWindowResize();
+	}
 }
 
 void SetScalingOptions(int worldWidth, int worldHeight) {
 	_logicalWidth = worldWidth;
 	_logicalHeight = worldHeight;
+	if (_window) {
+		onWindowResize();
+	}
 }
 
 static void onWindowResize(void) {
 	// TODO Cache all window information, this should be updated if the window size changes, currently it doesn't ever.
+	SDL_SetWindowSize(_window, _windowWidth, _windowHeight);
+	SDL_SetWindowTitle(_window, _windowName);
+#ifndef imgui
+	if (_logicalHeight && _logicalWidth) {
+		SDL_SetRenderLogicalPresentation(_renderer, _logicalWidth, _logicalHeight, SDL_LOGICAL_PRESENTATION_INTEGER_SCALE);
+	}
+#endif
 	int windowW, windowH;
+	// TODO if for some reason the display is drawn offscreen, it will become letterboxed, not sure if problem
 	SDL_GetRenderOutputSize(_renderer, &windowW, &windowH);
 	int scaleX = windowW / _logicalWidth;
 	int scaleY = windowH / _logicalHeight;
@@ -61,8 +92,8 @@ static void onWindowResize(void) {
 	_gameImagePosX = (windowW - _gameImageWidth) / 2;
 	_gameImagePosY = (windowH - _gameImageHeight) / 2;
 	//  Create texture that the game will be drawn to.  ImGui will Draw to this in the Game window, otherwise the game will draw to this.
-	_renderTargetWidth = _logicalWidth ? _logicalWidth : _windowWidth;
-	_renderTargetHeight = _logicalHeight ? _logicalHeight : _windowHeight;
+	_renderTargetWidth = _logicalWidth ? _logicalWidth : windowW;
+	_renderTargetHeight = _logicalHeight ? _logicalHeight : windowH;
 	if (_imguiGameTexture) {
 		UnloadTexture(_imguiGameTexture);
 	}
@@ -86,10 +117,6 @@ void CreateWindow(void) {
 	}
 #ifdef imgui
 	InitializeImGui();
-#else
-	if (_logicalHeight && _logicalWidth) {
-		SDL_SetRenderLogicalPresentation(_renderer, _logicalWidth, _logicalHeight, SDL_LOGICAL_PRESENTATION_INTEGER_SCALE);
-	}
 #endif
 	onWindowResize();
 }

@@ -22,8 +22,10 @@
 
 // this is not needed, and should be consolidated to one function
 #include <SupergoonEngine/Lua/audio.h>
+#include <SupergoonEngine/Lua/engine.h>
 #include <SupergoonEngine/Lua/log.h>
 #include <SupergoonEngine/Lua/object.h>
+#include <SupergoonEngine/Lua/scene.h>
 #include <SupergoonEngine/Lua/ui.h>
 
 // Functions in mouce.c
@@ -70,7 +72,9 @@ static bool Start(void) {
 	RegisterLuaLogFunctions();
 	RegisterLuaAudioFunctions();
 	RegisterLuaObjectFunctions();
-
+	RegisterLuaSceneFuncs();
+	RegisterLuaEngineFunctions();
+	//
 	return true;
 }
 static bool sdlEventLoop(void) {
