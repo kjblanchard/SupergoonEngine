@@ -2,6 +2,26 @@
 #include <Supergoon/UI/uiobject.h>
 #include <Supergoon/UI/uitext.h>
 
+static void removeObjectFromParent(UIObject* object) {
+	UIObject* parent = object->Parent;
+	int childToRemove = -1;
+	for (size_t i = 0; i < parent->ChildrenCount; i++) {
+		UIObject* child = parent->Children[i];
+		if (child != object) {
+			continue;
+		}
+		childToRemove = i;
+		break;
+	}
+	if (childToRemove == -1) {
+		return;
+	}
+	for (size_t i = childToRemove; i < parent->ChildrenCount - 1; i++) {
+		parent->Children[i] = parent->Children[i + 1];
+	}
+	--parent->ChildrenCount;
+}
+
 void UIObjectFree(UIObject* object) {
 	// Clear all children based on type
 	switch (object->Type) {
@@ -28,6 +48,9 @@ void UIObjectFree(UIObject* object) {
 	if (object->Name) {
 		SDL_free(object->Name);
 		object->Name = NULL;
+	}
+	if (object->Parent) {
+		removeObjectFromParent(object);
 	}
 	SDL_free(object);
 	object = NULL;

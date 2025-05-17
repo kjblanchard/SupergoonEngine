@@ -94,11 +94,8 @@ void GameObjectSystemUpdate(void) {
 }
 
 void ShutdownGameObjectSystem(void) {
-	for (size_t i = 0; i < _sizeGameObjects; i++) {
-		if (_gameObjects[i].Userdata) {
-			SDL_free(_gameObjects[i].Userdata);
-		}
-	}
+	SetGameobjectsToBeDeleted(true);
+	DestroyGameObjects();
 	SDL_free(_gameObjects);
 }
 
@@ -115,4 +112,57 @@ void ObjectSetUpdateFunction(int type, GameObjectUpdateFunc func) {
 }
 void ObjectSetDestroyFunction(int type, GameObjectDestroyFunc func) {
 	_gameObjectTypes[type].DestroyFunc = func;
+}
+
+void LoadGameObjects(void) {
+	for (size_t i = 0; i < _numGameObjects; i++) {
+		CurrentGameObject = &_gameObjects[i];
+		if (!(CurrentGameObject->Flags & GameObjectFlagLoaded)) {
+			sgLogWarn("Gameobject is not loaded from tiled, sending null is as userdata");
+			if (_gameObjectTypes[CurrentGameObject->Type].CreateFunc) {
+				_gameObjectTypes[CurrentGameObject->Type].CreateFunc(NULL, CurrentGameObject);
+			}
+			CurrentGameObject->Flags |= GameObjectFlagLoaded;
+		}
+	}
+}
+
+// Starts all gameobjects, should be called after Load
+void StartGameObjects(void) {
+	for (size_t i = 0; i < _numGameObjects; i++) {
+		CurrentGameObject = &_gameObjects[i];
+		if (!(CurrentGameObject->Flags & GameObjectFlagStarted)) {
+			if (_gameObjectTypes[CurrentGameObject->Type].StartFunc) {
+				sgLogDebug("Starting gameobject function");
+				_gameObjectTypes[CurrentGameObject->Type].StartFunc(CurrentGameObject);
+			}
+			CurrentGameObject->Flags |= GameObjectFlagStarted;
+		}
+	}
+}
+
+// Destroys all gameobjects that are not donot destroy, unless force is set
+void DestroyGameObjects(void) {
+	for (size_t i = 0; i < _numGameObjects; i++) {
+		if (!(_gameObjects[i].Flags & GameObjectFlagToBeDestroyed)) {
+			continue;
+		}
+		if (_gameObjects[i].Userdata) {
+			if (_gameObjectTypes[_gameObjects[i].Type].DestroyFunc) {
+				_gameObjectTypes[_gameObjects[i].Type].DestroyFunc(&_gameObjects[i]);
+			}
+			SDL_free(_gameObjects[i].Userdata);
+			_gameObjects[i].Userdata = NULL;
+		}
+		_firstGameObjectHole = _firstGameObjectHole < i ? _firstGameObjectHole : i;
+	}
+}
+
+void SetGameobjectsToBeDeleted(int forceDestroy) {
+	for (size_t i = 0; i < _sizeGameObjects; i++) {
+		if ((_gameObjects[i].Flags & GameObjectFlagDoNotDestroy) && !forceDestroy) {
+			continue;
+		}
+		_gameObjects[i].Flags |= GameObjectFlagToBeDestroyed;
+	}
 }

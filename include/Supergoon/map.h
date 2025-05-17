@@ -44,11 +44,6 @@ typedef struct TiledObject {
 	TiledProperty* Properties;
 } TiledObject;
 
-typedef void (*TiledMapLoadFunction)(void);
-
-void SetTiledBeforeLoadFunction(TiledMapLoadFunction func);
-void SetTiledAfterLoadFunction(TiledMapLoadFunction func);
-
 // Loads a tiled map and prepares it to be drawn. You can set a before and after load function to be called.
 void LoadMap(const char* map);
 // Load the objects from the map into the gameobjects. All gameobjects will be cleared unless they are marked donotdestroy when a map changes.

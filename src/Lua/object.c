@@ -1,9 +1,11 @@
 #include <Supergoon/gameobject.h>
+#include <Supergoon/log.h>
 #include <Supergoon/lua.h>
 #include <SupergoonEngine/Lua/object.h>
 #include <SupergoonEngine/gameobject.h>
 #include <lauxlib.h>
 #include <lua.h>
+#include <stdbool.h>
 
 static int LuaCreateObjectFuncs[MAX_GAMEOBJECT_TYPES] = {0};
 static int LuaStartObjectFuncs[MAX_GAMEOBJECT_TYPES] = {0};
@@ -64,8 +66,24 @@ static int l_register_object_functions(lua_State* L) {
 	return 0;
 }
 
+static int setAllGameobjectsToBeDestroyed(lua_State* L) {
+	bool force = false;
+	if (!LuaIsBool(1)) {
+		sgLogWarn("No bool sent it for destroying all gameobjects, setting to false");
+	}
+	force = LuaGetBooli(1);
+
+	SetGameobjectsToBeDeleted(force);
+}
+
+static int destroyObjects(lua_State* L) {
+	DestroyGameObjects();
+}
+
 static const luaL_Reg objectLib[] = {
 	{"NewGameObjectType", l_register_object_functions},
+	{"SetDestroyGameObjects", setAllGameobjectsToBeDestroyed},
+	{"DestroyGameObjects", destroyObjects},
 	{NULL, NULL}};
 
 void RegisterLuaObjectFunctions(void) {

@@ -63,6 +63,7 @@ typedef struct LayerGroup {
 
 // Tiled tilemap, contains the objects, Groups, etc
 typedef struct Tilemap {
+	char* BaseFilename;
 	int Width;
 	int Height;
 	int TileWidth;
@@ -81,12 +82,12 @@ static void handleTiledObjectGroup(Tilemap* map);
 static void GetRectForGid(int gid, Tileset* tileset, RectangleF* rect);
 // Current map that will be drawn, if it exists.
 static Tilemap* _currentMap = NULL;
+#define MAX_PREVIOUS_MAPS_CACHE 2
+static Tilemap* _previousMaps[MAX_PREVIOUS_MAPS_CACHE] = {NULL};
 // BG texture below the character
 static Texture* _bg1Texture = NULL;
 // BG texture above the character
 static Texture* _bg2Texture = NULL;
-static TiledMapLoadFunction _beforeLoadFunc = NULL;
-static TiledMapLoadFunction _afterLoadFunc = NULL;
 
 static void createAnimatedTiles(Tilemap* map, Tileset* tileset) {
 	LuaPushTableToStack("tiles");
@@ -155,6 +156,7 @@ static Tilemap* parseTiledTilemap(const char* tiledFilename) {
 	LuaPushTableFromFile(name);
 	SDL_free(name);
 	Tilemap* map = malloc(sizeof(*map));
+	map->BaseFilename = strdup(tiledFilename);
 	map->Width = LuaGetInt("width");
 	map->Height = LuaGetInt("height");
 	map->TileWidth = LuaGetInt("tilewidth");
@@ -320,6 +322,9 @@ static void handleAnimatedTile(Tilemap* map, Tileset* srcTileset, RectangleF* ds
 static void createBackgroundsFromTilemap(Tilemap* map) {
 	int mapWidth = map->Width * map->TileWidth;
 	int mapHeight = map->Height * map->TileHeight;
+	if (_bg1Texture) {
+		UnloadTexture(_bg1Texture);
+	}
 	_bg1Texture = CreateRenderTargetTexture(mapWidth, mapHeight, (sgColor){255, 255, 255, 255});
 	loadTilesetTextures(map);
 	LayerGroup* bg1LayerGroup = &map->LayerGroups[0];
@@ -381,7 +386,9 @@ static void freeTiledTilemap(Tilemap* map) {
 		UnloadTexture(tileset->TilesetTexture);
 	}
 	SDL_free(map->Tilesets);
+	SDL_free(map->BaseFilename);
 	SDL_free(map);
+	map = NULL;
 }
 
 static void drawAnimatedTiles(void) {
@@ -429,13 +436,54 @@ void drawCurrentMap(void) {
 	}
 }
 
-void LoadMap(const char* mapName) {
-	// TODO Maybe we cache a few of these?  currently we reload every map change.
-	if (_currentMap) {
-		freeTiledTilemap(_currentMap);
-		_currentMap = NULL;
+static Tilemap* checkCache(const char* mapName) {
+	unsigned int cacheSize = 0;
+	Tilemap* returnMap = NULL;
+	int foundIndex = -1;
+	// Check for a cache hit and get current cache size
+	for (size_t i = 0; i < MAX_PREVIOUS_MAPS_CACHE; i++) {
+		if (_previousMaps[i] == NULL) {
+			break;
+		}
+		if (strcmp(mapName, _previousMaps[i]->BaseFilename) == 0) {
+			returnMap = _previousMaps[i];
+			foundIndex = i;
+			break;
+		}
+		++cacheSize;
 	}
-	_currentMap = parseTiledTilemap(mapName);
+	// If cache hit, remove and return it
+	if (foundIndex >= 0) {
+		for (size_t i = foundIndex; i < cacheSize - 1; i++) {
+			_previousMaps[i] = _previousMaps[i + 1];
+		}
+		_previousMaps[cacheSize - 1] = NULL;
+		return returnMap;
+	}
+	// Cache _currentMap only if it’s not the same as the map being loaded
+	if (_currentMap && strcmp(mapName, _currentMap->BaseFilename) != 0) {
+		if (cacheSize == MAX_PREVIOUS_MAPS_CACHE) {
+			freeTiledTilemap(_previousMaps[cacheSize - 1]);
+		}
+		for (size_t i = cacheSize; i > 0; i--) {
+			_previousMaps[i] = _previousMaps[i - 1];
+		}
+		_previousMaps[0] = _currentMap;
+	} else {
+		return _currentMap;
+	}
+	return NULL;
+}
+
+void LoadMap(const char* mapName) {
+	Tilemap* nextMap = checkCache(mapName);
+	if (_currentMap && nextMap == _currentMap) {
+		return;
+	}
+	if (!nextMap) {
+		nextMap = parseTiledTilemap(mapName);
+	}
+	_currentMap = nextMap;
 	createBackgroundsFromTilemap(_currentMap);
 }
 
@@ -443,22 +491,6 @@ void LoadObjectsFromMap(void) {
 	for (size_t i = 0; i < (size_t)_currentMap->NumObjects; i++) {
 		AddGameObjectFromTiledMap(&_currentMap->Objects[i]);
 	}
-}
-
-void SetTiledBeforeLoadFunction(TiledMapLoadFunction func) {
-	if (!func) {
-		sgLogWarn("Setting a bad load func for before load");
-		return;
-	}
-	_beforeLoadFunc = func;
-}
-
-void SetTiledAfterLoadFunction(TiledMapLoadFunction func) {
-	if (!func) {
-		sgLogWarn("Setting a bad load func for after load");
-		return;
-	}
-	_afterLoadFunc = func;
 }
 
 void shutdownMapSystem(void) {
@@ -470,5 +502,13 @@ void shutdownMapSystem(void) {
 	}
 	if (_currentMap) {
 		freeTiledTilemap(_currentMap);
+		_currentMap = NULL;
+	}
+	for (size_t i = 0; i < MAX_PREVIOUS_MAPS_CACHE; i++) {
+		if (_previousMaps[i] == NULL) {
+			break;
+		}
+		freeTiledTilemap(_previousMaps[i]);
+		_previousMaps[i] = NULL;
 	}
 }

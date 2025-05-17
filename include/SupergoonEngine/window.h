@@ -9,8 +9,9 @@
  *
  */
 #pragma once
-typedef struct SDL_Renderer SDL_Renderer;
+typedef struct SDL_Renderer Renderer;
 typedef struct SDL_Texture Texture;
+typedef struct SDL_Window Window;
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -21,9 +22,10 @@ extern int _gameImagePosY;
 extern float _gameImageScale;
 extern int _gameImageWidth;
 extern int _gameImageHeight;
-extern SDL_Renderer* _renderer;
+extern Renderer* _renderer;
 extern int _logicalWidth;
 extern int _logicalHeight;
+extern Window* _window;
 void handleWindowEvents();
 #ifdef __cplusplus
 }

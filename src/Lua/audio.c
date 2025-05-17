@@ -13,8 +13,19 @@ static int PlaySfx(lua_State* L) {
 	return 0;
 }
 
+static int playBgm(lua_State* L) {
+	if (LuaGetStackSize() != 2 || !LuaIsString(1) || !LuaIsFloat(2)) {
+		return 0;
+	}
+	SetBgmTrack(0);
+	LoadBgm(LuaGetStringi(1), LuaGetFloati(2), -1);
+	PlayBgm();
+	return 0;
+}
+
 static const luaL_Reg audioLib[] = {
 	{"PlaySfx", PlaySfx},
+	{"PlayBgm", playBgm},
 	{NULL, NULL}};
 
 void RegisterLuaAudioFunctions(void) {

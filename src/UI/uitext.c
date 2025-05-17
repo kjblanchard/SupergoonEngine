@@ -90,7 +90,7 @@ static void loadTexturesForFont(LoadedFont* font) {
 		if (!result) {
 			sgLogWarn("Could not set, error %s;", SDL_GetError());
 		}
-		font->GlyphTextures[i] = LoadTextureFromSurface(surface);
+		font->GlyphTextures[i] = loadTextureFromSurface(surface);
 	}
 }
 

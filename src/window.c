@@ -107,11 +107,10 @@ void CreateWindow(void) {
 	const char* name = (_windowName != NULL) ? _windowName : "Game";
 
 #ifdef imgui
-	// Make the window start bigger if we are debugging.
-	_windowWidth *= 2;
-	_windowHeight *= 2;
-#endif
 	int flags = SDL_WINDOW_RESIZABLE;
+#else
+	int flags = 0;
+#endif
 	if (!SDL_CreateWindowAndRenderer(name, _windowWidth, _windowHeight, flags, &_window, &_renderer)) {
 		sgLogCritical("Could not load window, error, %s", SDL_GetError());
 	}
@@ -119,6 +118,7 @@ void CreateWindow(void) {
 	InitializeImGui();
 #endif
 	onWindowResize();
+	SDL_SetWindowPosition(_window, 0, 0);
 }
 
 void DrawStart(void) {

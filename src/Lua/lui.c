@@ -228,6 +228,18 @@ static int setUIObjectLocation(lua_State* state) {
 	return 0;
 }
 
+static int destroyObject(lua_State* state) {
+	if (LuaGetStackSize() != 1) {
+		sgLogWarn("Bad destroy panel params");
+		return 0;
+	}
+	UIObject* freeThing = LuaGetLightUserdatai(1);
+	if (freeThing) {
+		UIObjectFree(freeThing);
+	}
+	return 0;
+}
+
 static const luaL_Reg uiLib[] = {
 	{"CreatePanel", createPanel},
 	{"CreateImage", createImage},
@@ -238,6 +250,7 @@ static const luaL_Reg uiLib[] = {
 	{"GetObjectLocation", getUIObjectLocation},
 	{"GetObjectSize", getUIObjectSize},
 	{"SetObjectLocation", setUIObjectLocation},
+	{"DestroyUIObject", destroyObject},
 	{NULL, NULL}};
 
 void RegisterLuaUIFunctions(void) {

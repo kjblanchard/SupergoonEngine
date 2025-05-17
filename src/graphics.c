@@ -4,12 +4,9 @@
 #include <Supergoon/window.h>
 #include <SupergoonEngine/graphics.h>
 #include <SupergoonEngine/tools.h>
+#include <SupergoonEngine/window.h>
 #include <assert.h>
 #include <stdlib.h>
-
-// defined in window.c
-extern Window* _window;
-extern Renderer* _renderer;
 
 TextureCacheItem* _textureCache = NULL;
 bool _holes = false;
@@ -19,7 +16,7 @@ static size_t _textureCacheSize = 0;
 
 static Texture* getTextureFromCache(const char* name) {
 	for (size_t i = 0; i < _numTexturesInCache; i++) {
-		if (strcmp(name, _textureCache[i].name) == 0) {
+		if (_textureCache[i].name && strcmp(name, _textureCache[i].name) == 0) {
 			++_textureCache[i].References;
 			return _textureCache[i].Texture;
 		}
@@ -52,7 +49,15 @@ static void addTextureToCache(Texture* texture, const char* name) {
 	}
 }
 
-Texture* LoadTextureFromSurface(struct SDL_Surface* surface) {
+static void unloadTexture(int i) {
+	SDL_DestroyTexture(_textureCache[i].Texture);
+	SDL_free(_textureCache[i].name);
+	_textureCache[i].name = NULL;
+	_textureCache[i].Texture = NULL;
+	_holes = true;
+}
+
+Texture* loadTextureFromSurface(struct SDL_Surface* surface) {
 	Texture* texture = SDL_CreateTextureFromSurface(_renderer, surface);
 	if (!texture) {
 		sgLogError("Could not create texture from surface %s!", SDL_GetError());
@@ -133,9 +138,7 @@ Texture* CreateTextureFromIndexedBMP(const char* filename) {
 	if (!SDL_SetSurfaceColorKey(surface, true, SDL_MapSurfaceRGB(surface, transparentColor.r, transparentColor.g, transparentColor.b))) {
 		printf("Failed to set color key: %s\n", SDL_GetError());
 	}
-
-	// texture = SDL_CreateTextureFromSurface(_renderer, surface);
-	texture = LoadTextureFromSurface(surface);
+	texture = loadTextureFromSurface(surface);
 	if (!texture) {
 		sgLogError("Could not load texture from surface, %s: %s", fullFilepath, SDL_GetError());
 		return NULL;
@@ -143,6 +146,7 @@ Texture* CreateTextureFromIndexedBMP(const char* filename) {
 	addTextureToCache(texture, filename);
 	return texture;
 }
+
 void DrawTextureToRenderTargetTexture(Texture* dst, Texture* src, RectangleF* dstRect, RectangleF* srcRect) {
 	Texture* currentRenderTarget = SDL_GetRenderTarget(_renderer);
 	bool result = SDL_SetRenderTarget(_renderer, dst);
@@ -156,25 +160,17 @@ void DrawTextureToRenderTargetTexture(Texture* dst, Texture* src, RectangleF* ds
 	SDL_SetRenderTarget(_renderer, currentRenderTarget);
 }
 
-static void unloadTexture(int i) {
-	SDL_DestroyTexture(_textureCache[i].Texture);
-	SDL_free(_textureCache[i].name);
-	_textureCache[i].name = NULL;
-	_textureCache[i].Texture = NULL;
-}
-
 void UnloadTexture(Texture* texture) {
 	for (size_t i = 0; i < _numTexturesInCache; i++) {
 		if (_textureCache[i].References && _textureCache[i].Texture == texture) {
 			--_textureCache[i].References;
 			if (_textureCache[i].References == 0) {
 				unloadTexture(i);
-				_holes = true;
 			}
 			return;
 		}
 	}
-	sgLogDebug("Deleting texture in cache, render target?: %d", texture);
+	sgLogDebug("Deleting texture not in cache, render target?: %d", texture);
 	SDL_DestroyTexture(texture);
 	texture = NULL;
 }
@@ -186,19 +182,17 @@ void UnloadUnusedTextures(void) {
 	for (size_t i = 0; i < _numTexturesInCache; i++) {
 		if (_textureCache[i].References == 0) {
 			unloadTexture(i);
+			_firstHole = i < _firstHole ? i : _firstHole;
 		}
 	}
-	_holes = false;
 }
 
 void UnloadAllTextures(void) {
 	for (size_t i = 0; i < _numTexturesInCache; i++) {
 		unloadTexture(i);
 	}
-	_holes = false;
-	SDL_free(_textureCache);
-	_textureCache = NULL;
-	_numTexturesInCache = 0;
+	_holes = true;
+	_firstHole = 0;
 }
 
 void initializeGraphicsSystem(void) {
@@ -208,4 +202,7 @@ void initializeGraphicsSystem(void) {
 
 void shutdownGraphicsSystem(void) {
 	UnloadAllTextures();
+	SDL_free(_textureCache);
+	_textureCache = NULL;
+	_numTexturesInCache = 0;
 }
