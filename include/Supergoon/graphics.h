@@ -57,6 +57,8 @@ void DrawTextureToRenderTargetTexture(Texture* dst, Texture* src, RectangleF* ds
  * @return Texture* Loaded texture, or null if failure
  */
 Texture* CreateTextureFromIndexedBMP(const char* filename);
+// newALpha should be between 0 and 255, it's a uint8t.. other than that who knows what will happen.
+void SetTextureAlpha(Texture* texture, int newAlpha);
 
 void UnloadTexture(Texture* texture);
 void UnloadUnusedTextures(void);

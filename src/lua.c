@@ -311,3 +311,11 @@ void LuaMoveStackTipToIndex(int index) {
 void LuaPushFloat(float data) {
 	lua_pushnumber(_luaState, data);
 }
+
+void LuaPushBool(int boolean) {
+	lua_pushboolean(_luaState, boolean);
+}
+
+int LuaIsLuaFunc(int stackLocation) {
+	return lua_isfunction(_luaState, stackLocation);
+}

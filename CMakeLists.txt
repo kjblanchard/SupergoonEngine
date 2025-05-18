@@ -35,6 +35,7 @@ set(SRC_FILES
     src/clock.c
     src/state.c
     src/map.c
+    src/effects.c
     src/gameobject.c
     src/Input/joystick.c
     src/Input/keyboard.c
@@ -62,6 +63,7 @@ set(SRC_FILES
     src/Lua/audio.c
     src/Lua/object.c
     src/Lua/lengine.c
+    src/Lua/leffects.c
 )
 
 if(imgui)

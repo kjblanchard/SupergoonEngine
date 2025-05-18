@@ -22,6 +22,7 @@
 
 // this is not needed, and should be consolidated to one function
 #include <SupergoonEngine/Lua/audio.h>
+#include <SupergoonEngine/Lua/effects.h>
 #include <SupergoonEngine/Lua/engine.h>
 #include <SupergoonEngine/Lua/log.h>
 #include <SupergoonEngine/Lua/object.h>
@@ -74,6 +75,7 @@ static bool Start(void) {
 	RegisterLuaObjectFunctions();
 	RegisterLuaSceneFuncs();
 	RegisterLuaEngineFunctions();
+	RegisterLuaEffectsFunctions();
 	//
 	return true;
 }

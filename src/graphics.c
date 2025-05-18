@@ -206,3 +206,7 @@ void shutdownGraphicsSystem(void) {
 	_textureCache = NULL;
 	_numTexturesInCache = 0;
 }
+
+void SetTextureAlpha(Texture* texture, int newAlpha) {
+	SDL_SetTextureAlphaMod(texture, newAlpha);
+}

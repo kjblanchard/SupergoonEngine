@@ -58,6 +58,8 @@ int LuaIsInt(int stackLocation);
 int LuaIsTable(int stackLocation);
 int LuaIsNili(int stackLocation);
 int LuaIsBool(int stackLocation);
+int LuaIsLuaFunc(int stackLocation);
+void LuaPushBool(int boolean);
 void LuaPushNil();
 void LuaPushLightUserdata(void* data);
 void LuaPushFloat(float data);
