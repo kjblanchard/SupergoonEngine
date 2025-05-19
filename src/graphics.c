@@ -198,6 +198,10 @@ void UnloadAllTextures(void) {
 void initializeGraphicsSystem(void) {
 	_textureCacheSize = 4;
 	RESIZE_ARRAY(_textureCache, _textureCacheSize, TextureCacheItem);
+	int result = SDL_SetRenderDrawBlendMode(_renderer, SDL_BLENDMODE_BLEND);
+	if(!result) {
+		sgLogWarn("Could not set blendmode..");
+	}
 }
 
 void shutdownGraphicsSystem(void) {
@@ -208,5 +212,8 @@ void shutdownGraphicsSystem(void) {
 }
 
 void SetTextureAlpha(Texture* texture, int newAlpha) {
-	SDL_SetTextureAlphaMod(texture, newAlpha);
+	int result = SDL_SetTextureAlphaMod(texture, newAlpha);
+	if (!result) {
+		sgLogWarn("Could not set texture alpha, %s", SDL_GetError());
+	}
 }

@@ -1,21 +1,22 @@
 #include <SDL3/SDL_filesystem.h>
 #include <Supergoon/log.h>
+#include <Supergoon/lua.h>
 #include <lauxlib.h>
 #include <lua.h>
 #include <lualib.h>
 #include <stdio.h>
 #include <string.h>
 
-lua_State *_luaState;
+LuaState _luaState = NULL;
 
 static void setLuaPath(void) {
 	int value = lua_getglobal(_luaState, "package");
 	if (value == LUA_TNIL)
 		sgLogCritical("Could not get lua package, what the");
 	lua_getfield(_luaState, -1, "path");
-	const char *basePath = SDL_GetBasePath();
-	const char *nextPath = "assets/lua/?.lua;../Resources/assets/lua/?.lua";
-	const char *currentLuaPath = lua_tostring(_luaState, -1);  // grab path string from top of stack
+	const char* basePath = SDL_GetBasePath();
+	const char* nextPath = "assets/lua/?.lua;../Resources/assets/lua/?.lua";
+	const char* currentLuaPath = lua_tostring(_luaState, -1);  // grab path string from top of stack
 	size_t full_str_len = strlen(currentLuaPath) + strlen(nextPath) + strlen(basePath) + 2;
 	char full_str[full_str_len];
 	snprintf(full_str, full_str_len, "%s;%s%s", currentLuaPath, basePath, nextPath);
@@ -35,287 +36,270 @@ void InitializeLuaEngine(void) {
 	setLuaPath();
 }
 
-void LuaRunFile(const char *path) {
-	const char *basePath = SDL_GetBasePath();
+void LuaRunFile(const char* path) {
+	const char* basePath = SDL_GetBasePath();
 	size_t size = strlen(basePath) + strlen(path) + 1;
 	char fullPath[size];
 	snprintf(fullPath, size, "%s%s", basePath, path);
 
 	if (luaL_dofile(_luaState, fullPath) != 0) {
-		const char *luaError = lua_tostring(_luaState, -1);
+		const char* luaError = lua_tostring(_luaState, -1);
 		sgLogError("Lua error: %s", luaError);
 	}
 }
 
-int LuaGetStackSize(void) {
-	return lua_gettop(_luaState);
+int LuaGetStackSize(LuaState L) {
+	return lua_gettop(L);
 }
 
-void LuaPushTableFromFile(const char *path) {
-	LuaRunFile(path);
-	if (!lua_istable(_luaState, -1)) {
-		printf("map.lua did not return a table!\n");
-		lua_pop(_luaState, 1);
-	}
+void LuaPopStack(LuaState L, int num) {
+	lua_pop(L, num);
 }
 
-int LuaGetInt(const char *field) {
-	lua_getfield(_luaState, -1, field);
-	int fieldInt = lua_tointeger(_luaState, -1);
-	lua_pop(_luaState, 1);
-	return fieldInt;
+void LuaClearStack(LuaState L) {
+	lua_settop(L, 0);
 }
-
-void LuaPushTableFromRegistryByName(const char *tableName) {
-	lua_getfield(_luaState, LUA_REGISTRYINDEX, tableName);	// pushes the table onto the stack
-	// Optionally, you can check it's a table if needed:
-	if (!lua_istable(_luaState, -1)) {
-		lua_pop(_luaState, 1);	// remove non-table
-		luaL_error(_luaState, "Registry value '%s' is not a table", tableName);
-	}
+// Gets the number of items on the stack, remember that the index starts at 1.
+int LuaGetStack(LuaState L) {
+	return lua_gettop(L);
 }
-
-void LuaPushTableToStacki(int i) {
-	if (!lua_istable(_luaState, i)) {
-		sgLogWarn("Table pushed is not a real lua table, what even");
-	}
-	lua_pushvalue(_luaState, i);
+int LuaRemoveIndex(LuaState L, int index) {
+	lua_remove(L, index);
 }
-
-void LuaPushTableToStack(const char *tableFieldName) {
-	lua_getfield(_luaState, -1, tableFieldName);
-	if (!lua_istable(_luaState, -1)) {
-		sgLogWarn("Table pushed is not a real lua table, what did you do");
-	}
+// Moves the tip to the index passed in, pushing everything else up.  Useful for if you pass func args first.
+void LuaMoveStackTipToIndex(LuaState L, int index) {
+	lua_insert(L, index);  // Rearrage the stack so that the function is before the actual arguments.
 }
-
-int LuaGetTableLength(void) {
-	// return lua_objlen(_luaState, -1);
-	return lua_rawlen(_luaState, -1);
-}
-
-int LuaGetTableLengthMap(void) {
-	int len = 0;
-	lua_pushnil(_luaState);
-	while (lua_next(_luaState, -2) != 0) {
-		++len;
-		lua_pop(_luaState, 1);
-	}
-	lua_pop(_luaState, 1);
-	return len;
-}
-
-int LuaGetTablei(int i) {
-	if (lua_istable(_luaState, i)) {
-		return lua_gettable(_luaState, 0);
-	} else {
-		return 0;
-	}
-}
-
-void LuaCopyString(const char *name, char *location, int strlen) {
-	lua_getfield(_luaState, -1, name);
-	strncpy(location, lua_tostring(_luaState, -1), strlen);
-	lua_pop(_luaState, 1);
-}
-
-void LuaCopyStringStack(int stackLocation, char *location, int strlen) {
-	strncpy(location, lua_tostring(_luaState, stackLocation), strlen);
-}
-char *LuaAllocateString(const char *fieldName) {
-	lua_getfield(_luaState, -1, fieldName);
-	const char *fieldString = lua_tostring(_luaState, -1);
-	char *allocatedString = strdup(fieldString);
-	lua_pop(_luaState, 1);
-	return allocatedString;
-}
-
-char *LuaAllocateStringStack(int stackLocation) {
-	const char *string = lua_tostring(_luaState, stackLocation);
-	return strdup(string);
-}
-
-void LuaPushTableObjectToStacki(int i) {
-	lua_rawgeti(_luaState, -1, i + 1);
-}
-
-void LuaPopStack(int num) {
-	lua_pop(_luaState, num);
-}
-
-int LuaGetIntFromStack(void) {
-	return lua_tointeger(_luaState, -1);
-}
-int LuaGetIntFromStacki(int i) {
-	return lua_tointeger(_luaState, i);
-}
-
-int LuaGetBooli(int i) {
-	return lua_toboolean(_luaState, i);
-}
-
-float LuaGetFloat(const char *field) {
-	lua_getfield(_luaState, -1, field);
-	float fieldFloat = lua_tonumber(_luaState, -1);
-	lua_pop(_luaState, 1);
-	return fieldFloat;
-}
-
-float LuaGetFloati(int i) {
-	return lua_tonumber(_luaState, i);
-}
-
-float LuaGetFloatFromStack(void) {
-	return lua_tonumber(_luaState, -1);
-}
-
-const char *LuaGetString(const char *name) {
-	lua_getfield(_luaState, -1, name);
-	const char *str = lua_tostring(_luaState, -1);
-	lua_pop(_luaState, 1);
-	return str;
-}
-const char *LuaGetStringi(int i) {
-	return lua_tostring(_luaState, i);
-}
-
-int LuaGetIntFromTablei(int i) {
-	lua_rawgeti(_luaState, -1, i + 1);
-	int value = lua_tointeger(_luaState, -1);
-	lua_pop(_luaState, 1);
-	return value;
-}
-
-void LuaClearStack(void) {
-	lua_settop(_luaState, 0);
-}
-
 void sgCloseLua(void) {
 	lua_close(_luaState);
 }
 
-void LuaStartTableKeyValueIteration(void) {
-	lua_pushnil(_luaState);
-	lua_pushnil(_luaState);
+// Tables
+void LuaPushTableFromFile(LuaState L, const char* path) {
+	LuaRunFile(path);
+	if (!lua_istable(L, -1)) {
+		printf("map.lua did not return a table!\n");
+		lua_pop(L, 1);
+	}
 }
-
-int LuaNextTableKeyValueIterate(void) {
-	return lua_next(_luaState, -2);
+int LuaGetIntFromTablei(LuaState L, int i) {
+	lua_rawgeti(L, -1, i + 1);
+	int value = lua_tointeger(_luaState, -1);
+	lua_pop(L, 1);
+	return value;
 }
-
-void LuaEndTableKeyValueIteration(void) {
+void LuaPushTableFromRegistryByName(LuaState L, const char* tableName) {
+	lua_getfield(L, LUA_REGISTRYINDEX, tableName);	// pushes the table onto the stack
+	// Optionally, you can check it's a table if needed:
+	if (!lua_istable(L, -1)) {
+		lua_pop(L, 1);	// remove non-table
+		luaL_error(L, "Registry value '%s' is not a table", tableName);
+	}
+}
+void LuaPushTableToStack(LuaState L, const char* tableFieldName) {
+	lua_getfield(L, -1, tableFieldName);
+	if (!lua_istable(L, -1)) {
+		sgLogWarn("Table pushed is not a real lua table, what did you do");
+	}
+}
+void LuaPushTableToStacki(LuaState L, int i) {
+	if (!lua_istable(L, i)) {
+		sgLogWarn("Table pushed is not a real lua table, what even");
+	}
+	lua_pushvalue(L, i);
+}
+// If a table is on the stack, you will push the table at i on the stack
+// Remember lua table indexes start at 1, so this will add 1.
+void LuaPushTableObjectToStacki(LuaState L, int i) {
+	lua_rawgeti(L, -1, i + 1);
+}
+// Table must be on stack, and an array table
+int LuaGetTableLength(LuaState L) {
+	return lua_rawlen(L, -1);
+}
+// Table must be on stack, used for key/value tables
+int LuaGetTableLengthMap(LuaState L) {
+	int len = 0;
+	lua_pushnil(L);
+	while (lua_next(L, -2) != 0) {
+		++len;
+		lua_pop(L, 1);
+	}
+	lua_pop(L, 1);
+	return len;
+}
+int LuaGetTablei(LuaState L, int i) {
+	if (lua_istable(L, i)) {
+		return lua_gettable(L, 0);
+	} else {
+		return 0;
+	}
+}
+// Starts the table iteration for lua tables that are key/value pairs, returns if there is any more values left
+// This pushes two values to the table for iteration, The key is -2, value is -1.  Key is used for iteration, so don't pop it off, use stopiteration when done, only pop value
+void LuaStartTableKeyValueIteration(LuaState L) {
+	lua_pushnil(L);
+	lua_pushnil(L);
+}
+// Goes to the next item in the table, returns if there is any more values left
+// You must pop the value off before next iteration.
+int LuaNextTableKeyValueIterate(LuaState L) {
+	return lua_next(L, -2);
+}
+// Ends the iteration
+void LuaEndTableKeyValueIteration(LuaState L) {
 	// Removes the nil from the start table iteration
-	lua_pop(_luaState, 1);
-}
-bool LuaIsString(int stackLocation) {
-	return lua_isstring(_luaState, stackLocation);
+	lua_pop(L, 1);
 }
 
-bool LuaIsInt(int stackLocation) {
-	return lua_isinteger(_luaState, stackLocation);
+// Ints
+int LuaGetInt(LuaState L, const char* field) {
+	lua_getfield(L, -1, field);
+	int fieldInt = lua_tointeger(L, -1);
+	lua_pop(L, 1);
+	return fieldInt;
 }
-
-bool LuaIsFloat(int stackLocation) {
-	return lua_isnumber(_luaState, stackLocation);
+int LuaGetIntFromStack(LuaState L) {
+	return lua_tointeger(L, -1);
 }
-
-bool LuaIsTable(int stackLocation) {
-	return lua_istable(_luaState, stackLocation);
+int LuaGetIntFromStacki(LuaState L, int i) {
+	return lua_tointeger(L, i);
 }
-
-float LuaGetFloatFromTableStacki(int i, const char *key) {
-	lua_getfield(_luaState, i, key);
-	float fieldFloat = lua_tonumber(_luaState, -1);
-	lua_pop(_luaState, 1);
+// Bools
+int LuaGetBooli(LuaState L, int i) {
+	return lua_toboolean(L, i);
+}
+// Floats
+float LuaGetFloat(LuaState L, const char* field) {
+	lua_getfield(L, -1, field);
+	float fieldFloat = lua_tonumber(L, -1);
+	lua_pop(L, 1);
 	return fieldFloat;
 }
-
-void LuaPushLightUserdata(void *data) {
-	lua_pushlightuserdata(_luaState, data);
+float LuaGetFloati(LuaState L, int i) {
+	return lua_tonumber(L, i);
 }
-
-void LuaPushNil(void) {
-	lua_pushnil(_luaState);
+float LuaGetFloatFromStack(LuaState L) {
+	return lua_tonumber(L, -1);
 }
-
-void *LuaGetLightUserdatai(int i) {
-	return lua_isuserdata(_luaState, i) ? lua_touserdata(_luaState, i) : NULL;
+float LuaGetFloatFromTableStacki(LuaState L, int i, const char* key) {
+	lua_getfield(L, i, key);
+	float fieldFloat = lua_tonumber(L, -1);
+	lua_pop(L, 1);
+	return fieldFloat;
 }
-int LuaIsNili(int stackLocation) {
-	return lua_isnil(_luaState, stackLocation);
+// Strings
+// i is stack location of table, const char* is key.. so not directly on stack -1.
+void LuaCopyString(LuaState L, const char* name, char* location, int strlen) {
+	lua_getfield(L, -1, name);
+	strncpy(location, lua_tostring(L, -1), strlen);
+	lua_pop(L, 1);
 }
-int LuaIsBool(int stackLocation) {
-	return lua_isboolean(_luaState, stackLocation);
+// Does not pop off, please do the needful
+void LuaCopyStringStack(LuaState L, int stackLocation, char* location, int strlen) {
+	strncpy(location, lua_tostring(L, stackLocation), strlen);
 }
-
-void LuaRegistrySetSubTableEntry(const char *registryKey, int subKey, int valueIndex) {
-	lua_getfield(_luaState, LUA_REGISTRYINDEX, registryKey);  // registry table on top or nil
-	lua_pushinteger(_luaState, subKey);						  // subkey to get from this
-	lua_pushvalue(_luaState, valueIndex);					  // copy value (from anywhere on stack)
-	lua_settable(_luaState, -3);							  // registry[subKey] = value
-	lua_pop(_luaState, 1);									  // pop registry table
+char* LuaAllocateString(LuaState L, const char* fieldName) {
+	lua_getfield(L, -1, fieldName);
+	const char* fieldString = lua_tostring(L, -1);
+	char* allocatedString = strdup(fieldString);
+	lua_pop(L, 1);
+	return allocatedString;
 }
-
-void LuaEnsureRegistryTable(const char *registryKey) {
-	lua_getfield(_luaState, LUA_REGISTRYINDEX, registryKey);
-	if (!lua_istable(_luaState, -1)) {
-		lua_pop(_luaState, 1);	  // pop non-table
-		lua_newtable(_luaState);  // create new table
-		lua_setfield(_luaState, LUA_REGISTRYINDEX, registryKey);
+// String at location must be freed, allocates memory to it.
+char* LuaAllocateStringStack(LuaState L, int stackLocation) {
+	const char* string = lua_tostring(L, stackLocation);
+	return strdup(string);
+}
+const char* LuaGetString(LuaState L, const char* name) {
+	lua_getfield(L, -1, name);
+	const char* str = lua_tostring(L, -1);
+	lua_pop(L, 1);
+	return str;
+}
+const char* LuaGetStringi(LuaState L, int i) {
+	return lua_tostring(L, i);
+}
+// Get light userdata at stack position i, or null if not userdata.
+void* LuaGetLightUserdatai(LuaState L, int i) {
+	return lua_isuserdata(L, i) ? lua_touserdata(L, i) : NULL;
+}
+// CheckStacks
+int LuaIsString(LuaState L, int stackLocation) {
+	return lua_isstring(L, stackLocation);
+}
+int LuaIsFloat(LuaState L, int stackLocation) {
+	return lua_isnumber(L, stackLocation);
+}
+int LuaIsInt(LuaState L, int stackLocation) {
+	return lua_isinteger(L, stackLocation);
+}
+int LuaIsTable(LuaState L, int stackLocation) {
+	return lua_istable(L, stackLocation);
+}
+int LuaIsNili(LuaState L, int stackLocation) {
+	return lua_isnil(L, stackLocation);
+}
+int LuaIsBool(LuaState L, int stackLocation) {
+	return lua_isboolean(L, stackLocation);
+}
+int LuaIsLuaFunc(LuaState L, int stackLocation) {
+	return lua_isfunction(L, stackLocation);
+}
+// Push to stack
+void LuaPushBool(LuaState L, int boolean) {
+	lua_pushboolean(L, boolean);
+}
+void LuaPushNil(LuaState L) {
+	lua_pushnil(L);
+}
+void LuaPushLightUserdata(LuaState L, void* data) {
+	lua_pushlightuserdata(L, data);
+}
+void LuaPushFloat(LuaState L, float data) {
+	lua_pushnumber(L, data);
+}
+// Registry
+void LuaEnsureRegistryTable(LuaState L, const char* registryKey) {
+	lua_getfield(L, LUA_REGISTRYINDEX, registryKey);
+	if (!lua_istable(L, -1)) {
+		lua_pop(L, 1);	  // pop non-table
+		lua_newtable(L);  // create new table
+		lua_setfield(L, LUA_REGISTRYINDEX, registryKey);
 	}
-	lua_pop(_luaState, 1);
+	lua_pop(L, 1);
 }
-
-bool LuaRegistryGetSubTableEntry(const char *registryKey, int subKey) {
-	lua_getfield(_luaState, LUA_REGISTRYINDEX, registryKey);  // push registry[registryKey]
-	if (!lua_istable(_luaState, -1)) {
-		lua_pop(_luaState, 1);
+int LuaRegistryGetSubTableEntry(LuaState L, const char* registryKey, int subKey) {
+	lua_getfield(L, LUA_REGISTRYINDEX, registryKey);  // push registry[registryKey]
+	if (!lua_istable(L, -1)) {
+		lua_pop(L, 1);
 		return false;
 	}
-	lua_pushinteger(_luaState, subKey);
-	lua_gettable(_luaState, -2);		// push registry[registryKey][subKey]
-	lua_remove(_luaState, -2);			// remove registry table, leave just result
-	return lua_istable(_luaState, -1);	// or lua_isfunction(), if expecting a func
+	lua_pushinteger(L, subKey);
+	lua_gettable(L, -2);		// push registry[registryKey][subKey]
+	lua_remove(L, -2);			// remove registry table, leave just result
+	return lua_istable(L, -1);	// or lua_isfunction(), if expecting a func
 }
-
-// Table must be directly on the stack, index can be anywhere.
-void LuaGetLuaFuncAtIndex(int index) {
-	lua_rawgeti(_luaState, -1, index);	// get function at index (1 = click, 2 = hover)
-	if (!lua_isfunction(_luaState, -1)) {
+void LuaRegistrySetSubTableEntry(LuaState L, const char* registryKey, int subKey, int valueIndex) {
+	lua_getfield(L, LUA_REGISTRYINDEX, registryKey);  // registry table on top or nil
+	lua_pushinteger(L, subKey);						  // subkey to get from this
+	lua_pushvalue(L, valueIndex);					  // copy value (from anywhere on stack)
+	lua_settable(L, -3);							  // registry[subKey] = value
+	lua_pop(L, 1);									  // pop registry table
+}
+// Functions
+void LuaGetLuaFuncAtIndex(LuaState L, int index) {
+	lua_rawgeti(L, -1, index);	// get function at index (1 = click, 2 = hover)
+	if (!lua_isfunction(L, -1)) {
 		sgLogWarn("No function was pushed, what the, pop everything");
-		lua_pop(_luaState, 3);
+		lua_pop(L, 3);
 		return;
 	}
 }
-
-int LuaGetStack(void) {
-	return lua_gettop(_luaState);
-}
-
-int LuaRemoveIndex(int index) {
-	lua_remove(_luaState, index);
-}
-
-void RunLuaFunctionOnStack(int numArgs) {
-	if (lua_pcall(_luaState, numArgs, 0, 0) != LUA_OK) {
-		const char *err = lua_tostring(_luaState, -1);
+void RunLuaFunctionOnStack(LuaState L, int numArgs) {
+	if (lua_pcall(L, numArgs, 0, 0) != LUA_OK) {
+		const char* err = lua_tostring(L, -1);
 		sgLogWarn("Button func error: %s\n", err);
-		lua_pop(_luaState, 1);	// pop func
+		lua_pop(L, 1);	// pop func
 	}
-}
-
-void LuaMoveStackTipToIndex(int index) {
-	lua_insert(_luaState, index);  // Rearrage the stack so that the function is before the actual arguments.
-}
-
-void LuaPushFloat(float data) {
-	lua_pushnumber(_luaState, data);
-}
-
-void LuaPushBool(int boolean) {
-	lua_pushboolean(_luaState, boolean);
-}
-
-int LuaIsLuaFunc(int stackLocation) {
-	return lua_isfunction(_luaState, stackLocation);
 }

@@ -5,8 +5,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+// used im game.cpp
+int _screenFadeInt = 255;
 static bool _currentlyFading = false;
-static uint8_t _screenFadeInt = 255;
 static void fadeScreenStartFunc(void* userdata) {
 	_currentlyFading = true;
 }
@@ -27,7 +28,7 @@ static void fadeScreen(bool fadeIn, float fadeoutTimeInSeconds) {
 	StartTween(tween);
 }
 
-int IsScreenFading() {
+int IsScreenFading(void) {
 	return _currentlyFading;
 }
 

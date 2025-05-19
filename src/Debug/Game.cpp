@@ -8,6 +8,7 @@
 #include <Supergoon/Debug/Game.hpp>
 bool _isFocusedLastFrame = true;
 static u_int8_t _frames = 0;
+extern uint8_t _screenFadeInt;
 
 void ShowGameDebugWindow(void) {
 	if (_frames < 2) {
@@ -31,7 +32,8 @@ void ShowGameDebugWindow(void) {
 	int scaledHeight = _logicalHeight * scale;
 	ImVec2 imguiSize(scaledWidth, scaledHeight);  // Use the scaled size
 	auto tex = (ImTextureID)(intptr_t)_imguiGameTexture;
-	ImGui::Image(tex, imguiSize);
+	float alpha = _screenFadeInt / 255.0f;
+	ImGui::Image(tex, imguiSize, ImVec2(0, 0), ImVec2(1, 1), ImVec4(1, 1, 1, alpha));
 	ImVec2 imageTopLeft = ImGui::GetItemRectMin();
 	_isFocusedLastFrame = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootWindow);
 	// Set info for game window use for size of game.

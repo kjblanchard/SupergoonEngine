@@ -90,110 +90,110 @@ static Texture* _bg1Texture = NULL;
 static Texture* _bg2Texture = NULL;
 
 static void createAnimatedTiles(Tilemap* map, Tileset* tileset) {
-	LuaPushTableToStack("tiles");
-	tileset->NumAnimatedTiles = LuaGetTableLength();
+	LuaPushTableToStack(_luaState, "tiles");
+	tileset->NumAnimatedTiles = LuaGetTableLength(_luaState);
 	tileset->AnimatedTiles = calloc(tileset->NumAnimatedTiles, sizeof(AnimatedTile));
 	for (size_t j = 0; j < tileset->NumAnimatedTiles; j++) {
-		LuaPushTableObjectToStacki(j);	// Actual animated tile is on there now
+		LuaPushTableObjectToStacki(_luaState, j);  // Actual animated tile is on there now
 		AnimatedTile* animatedTile = &tileset->AnimatedTiles[j];
-		animatedTile->GID = LuaGetInt("id") + tileset->FirstGid;  // GID is the local ID plus the first gid, since it's global
-		LuaPushTableToStack("animation");
-		animatedTile->NumFrames = LuaGetTableLength();
+		animatedTile->GID = LuaGetInt(_luaState, "id") + tileset->FirstGid;	 // GID is the local ID plus the first gid, since it's global
+		LuaPushTableToStack(_luaState, "animation");
+		animatedTile->NumFrames = LuaGetTableLength(_luaState);
 		animatedTile->TileFrames = calloc(animatedTile->NumFrames, sizeof(TileAnimationFrame));
 		for (size_t k = 0; k < animatedTile->NumFrames; k++) {
-			LuaPushTableObjectToStacki(k);	// Actual animated tile table is on there now
+			LuaPushTableObjectToStacki(_luaState, k);  // Actual animated tile table is on there now
 			TileAnimationFrame* frameData = &animatedTile->TileFrames[k];
-			frameData->MsTime = LuaGetInt("duration");
-			frameData->Id = LuaGetInt("tileid") + tileset->FirstGid;  // GID is the local ID plus the first gid, since it's global
+			frameData->MsTime = LuaGetInt(_luaState, "duration");
+			frameData->Id = LuaGetInt(_luaState, "tileid") + tileset->FirstGid;	 // GID is the local ID plus the first gid, since it's global
 			GetRectForGid(frameData->Id, tileset, &frameData->SrcRect);
-			LuaPopStack(1);	 // remove animated tile frame table from stack
+			LuaPopStack(_luaState, 1);	// remove animated tile frame table from stack
 		}
-		LuaPopStack(1);	 // remove tileAnimation table from stack
-		LuaPopStack(1);	 // remove animated tile table from stack
+		LuaPopStack(_luaState, 1);	// remove tileAnimation table from stack
+		LuaPopStack(_luaState, 1);	// remove animated tile table from stack
 	}
-	LuaPopStack(1);	 // remove tiles table from stack
+	LuaPopStack(_luaState, 1);	// remove tiles table from stack
 }
 
 static void createTilesets(Tilemap* map) {
-	LuaPushTableToStack("tilesets");
-	map->NumTilesets = LuaGetTableLength();
+	LuaPushTableToStack(_luaState, "tilesets");
+	map->NumTilesets = LuaGetTableLength(_luaState);
 	map->Tilesets = calloc(map->NumTilesets, sizeof(Tileset));
 	for (int i = 0; i < map->NumTilesets; i++) {
 		Tileset* tileset = &map->Tilesets[i];
-		LuaPushTableObjectToStacki(i);
-		tileset->Name = LuaAllocateString("name");
-		tileset->FirstGid = LuaGetInt("firstgid");
-		tileset->TileWidth = LuaGetInt("tilewidth");
-		tileset->TileHeight = LuaGetInt("tileheight");
-		tileset->Image = LuaAllocateString("image");
-		tileset->ImageWidth = LuaGetInt("imagewidth");
-		tileset->ImageHeight = LuaGetInt("imageheight");
+		LuaPushTableObjectToStacki(_luaState, i);
+		tileset->Name = LuaAllocateString(_luaState, "name");
+		tileset->FirstGid = LuaGetInt(_luaState, "firstgid");
+		tileset->TileWidth = LuaGetInt(_luaState, "tilewidth");
+		tileset->TileHeight = LuaGetInt(_luaState, "tileheight");
+		tileset->Image = LuaAllocateString(_luaState, "image");
+		tileset->ImageWidth = LuaGetInt(_luaState, "imagewidth");
+		tileset->ImageHeight = LuaGetInt(_luaState, "imageheight");
 		createAnimatedTiles(map, tileset);
-		LuaPopStack(1);	 // remove tileset table from stack
+		LuaPopStack(_luaState, 1);	// remove tileset table from stack
 	}
-	LuaPopStack(1);	 // remove tilesets table from stack
+	LuaPopStack(_luaState, 1);	// remove tilesets table from stack
 }
 
 static void createLayers(Tilemap* map) {
-	LuaPushTableToStack("layers");
-	map->NumLayers = LuaGetTableLength();
+	LuaPushTableToStack(_luaState, "layers");
+	map->NumLayers = LuaGetTableLength(_luaState);
 	for (int i = 0; i < map->NumLayers; i++) {
-		LuaPushTableObjectToStacki(i);
-		const char* layerType = LuaGetString("type");
+		LuaPushTableObjectToStacki(_luaState, i);
+		const char* layerType = LuaGetString(_luaState, "type");
 		if (strcmp(layerType, "objectgroup") == 0) {
 			handleTiledObjectGroup(map);
 		} else if (strcmp(layerType, "group") == 0) {
 			handleTiledLayerGroup(map);
 		}
-		LuaPopStack(1);	 // remove layer object table from stack
+		LuaPopStack(_luaState, 1);	// remove layer object table from stack
 	}
-	LuaPopStack(1);	 // layers table
+	LuaPopStack(_luaState, 1);	// layers table
 }
 
 static Tilemap* parseTiledTilemap(const char* tiledFilename) {
 	char* name;
 	asprintf(&name, "assets/tiled/%s.lua", tiledFilename);
-	LuaPushTableFromFile(name);
+	LuaPushTableFromFile(_luaState, name);
 	SDL_free(name);
 	Tilemap* map = malloc(sizeof(*map));
 	map->BaseFilename = strdup(tiledFilename);
-	map->Width = LuaGetInt("width");
-	map->Height = LuaGetInt("height");
-	map->TileWidth = LuaGetInt("tilewidth");
-	map->TileHeight = LuaGetInt("tileheight");
+	map->Width = LuaGetInt(_luaState, "width");
+	map->Height = LuaGetInt(_luaState, "height");
+	map->TileWidth = LuaGetInt(_luaState, "tilewidth");
+	map->TileHeight = LuaGetInt(_luaState, "tileheight");
 	createTilesets(map);
 	createLayers(map);
-	LuaPopStack(1);	  // tiled map table
-	LuaClearStack();  // for good measure :)
+	LuaPopStack(_luaState, 1);	// tiled map table
+	LuaClearStack(_luaState);	// for good measure :)
 	return map;
 }
 
 static void createTileLayer(TileLayer* layer) {
-	layer->Width = LuaGetInt("width");
-	layer->Height = LuaGetInt("height");
+	layer->Width = LuaGetInt(_luaState, "width");
+	layer->Height = LuaGetInt(_luaState, "height");
 	int data_length = layer->Width * layer->Height;
 	layer->Data = calloc(data_length, sizeof(int));
-	LuaPushTableToStack("data");
+	LuaPushTableToStack(_luaState, "data");
 	for (int i = 0; i < data_length; i++) {
-		layer->Data[i] = LuaGetIntFromTablei(i);
+		layer->Data[i] = LuaGetIntFromTablei(_luaState, i);
 	}
-	LuaPopStack(1);
+	LuaPopStack(_luaState, 1);
 }
 
 static void handleTiledLayerGroup(Tilemap* map) {
-	const char* name = LuaGetString("name");
+	const char* name = LuaGetString(_luaState, "name");
 	int groupNum = (strcmp(name, "bg1") == 0) ? 0 : 1;
 	LayerGroup* group = &map->LayerGroups[groupNum];
 	group->Name = strdup(name);
-	LuaPushTableToStack("layers");
-	group->NumLayers = LuaGetTableLength();
+	LuaPushTableToStack(_luaState, "layers");
+	group->NumLayers = LuaGetTableLength(_luaState);
 	group->Layers = calloc(group->NumLayers, sizeof(TileLayer));
 	for (size_t i = 0; i < (size_t)group->NumLayers; i++) {
-		LuaPushTableObjectToStacki(i);
+		LuaPushTableObjectToStacki(_luaState, i);
 		createTileLayer(&group->Layers[i]);
-		LuaPopStack(1);
+		LuaPopStack(_luaState, 1);
 	}
-	LuaPopStack(1);
+	LuaPopStack(_luaState, 1);
 }
 
 static void loadTilesetTextures(Tilemap* map) {
@@ -205,9 +205,9 @@ static void loadTilesetTextures(Tilemap* map) {
 }
 
 static TiledPropertyTypes getPropertyTypeForStack(void) {
-	if (LuaIsInt(-1)) {
+	if (LuaIsInt(_luaState, -1)) {
 		return TiledPropertyTypeInt;
-	} else if (LuaIsFloat(-1)) {
+	} else if (LuaIsFloat(_luaState, -1)) {
 		return TiledPropertyTypeFloat;
 	} else {
 		return TiledPropertyTypeString;
@@ -215,51 +215,51 @@ static TiledPropertyTypes getPropertyTypeForStack(void) {
 }
 
 static void handleTiledObjectEntities(Tilemap* map) {
-	LuaPushTableToStack("objects");
-	map->NumObjects = LuaGetTableLength();
+	LuaPushTableToStack(_luaState, "objects");
+	map->NumObjects = LuaGetTableLength(_luaState);
 	map->Objects = calloc(map->NumObjects, sizeof(TiledObject));
 	for (size_t i = 0; i < (size_t)map->NumObjects; i++) {
 		TiledObject* object = &map->Objects[i];
-		LuaPushTableObjectToStacki(i);
-		object->Id = LuaGetInt("id");
-		object->Name = LuaAllocateString("name");
-		object->ObjectType = atoi(LuaGetString("type"));
-		object->X = LuaGetFloat("x");
-		object->Y = LuaGetFloat("y");
-		object->Width = LuaGetFloat("width");
-		object->Height = LuaGetFloat("height");
-		LuaPushTableToStack("properties");
-		object->NumProperties = LuaGetTableLengthMap();
+		LuaPushTableObjectToStacki(_luaState, i);
+		object->Id = LuaGetInt(_luaState, "id");
+		object->Name = LuaAllocateString(_luaState, "name");
+		object->ObjectType = atoi(LuaGetString(_luaState, "type"));
+		object->X = LuaGetFloat(_luaState, "x");
+		object->Y = LuaGetFloat(_luaState, "y");
+		object->Width = LuaGetFloat(_luaState, "width");
+		object->Height = LuaGetFloat(_luaState, "height");
+		LuaPushTableToStack(_luaState, "properties");
+		object->NumProperties = LuaGetTableLengthMap(_luaState);
 		if (object->NumProperties == 0) {
-			LuaPopStack(2);
+			LuaPopStack(_luaState, 2);
 			continue;
 		}
 		object->Properties = calloc(object->NumProperties, sizeof(TiledProperty));
-		LuaStartTableKeyValueIteration();
+		LuaStartTableKeyValueIteration(_luaState);
 		for (size_t j = 0; j < (size_t)object->NumProperties; j++) {
-			if (!LuaNextTableKeyValueIterate()) {
+			if (!LuaNextTableKeyValueIterate(_luaState)) {
 				break;
 			}
 			TiledProperty* property = &object->Properties[j];
-			property->Name = LuaAllocateStringStack(-2);
+			property->Name = LuaAllocateStringStack(_luaState, -2);
 			property->PropertyType = getPropertyTypeForStack();
 			if (property->PropertyType == TiledPropertyTypeInt) {
-				property->Data.IntData = LuaGetIntFromStack();
+				property->Data.IntData = LuaGetIntFromStack(_luaState);
 			} else if (property->PropertyType == TiledPropertyTypeFloat) {
-				property->Data.FloatData = LuaGetFloatFromStack();
+				property->Data.FloatData = LuaGetFloatFromStack(_luaState);
 			} else {
-				property->Data.StringData = LuaAllocateStringStack(-1);
+				property->Data.StringData = LuaAllocateStringStack(_luaState, -1);
 			}
-			LuaPopStack(1);
+			LuaPopStack(_luaState, 1);
 		}
-		LuaEndTableKeyValueIteration();
-		LuaPopStack(2);
+		LuaEndTableKeyValueIteration(_luaState);
+		LuaPopStack(_luaState, 2);
 	}
-	LuaPopStack(1);
+	LuaPopStack(_luaState, 1);
 }
 
 static void handleTiledObjectGroup(Tilemap* map) {
-	const char* name = LuaGetString("name");
+	const char* name = LuaGetString(_luaState, "name");
 	if (strcmp(name, "entities") != 0) {
 		return;
 	}

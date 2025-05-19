@@ -19,14 +19,14 @@ void initButtonFuncTable(lua_State* L) {
 	lua_setfield(L, LUA_REGISTRYINDEX, LUA_BUTTON_FUNCS_KEY);  // Store in registry with key
 }
 
-static UIObject* createUIObject(void) {
+static UIObject* createUIObject(LuaState L) {
 	UIObject* testObj = SDL_calloc(1, sizeof(*testObj));
-	testObj->Name = strdup(LuaGetStringi(1));
-	testObj->XOffset = LuaGetFloatFromTableStacki(2, "x");
-	testObj->YOffset = LuaGetFloatFromTableStacki(2, "y");
-	testObj->Location.w = LuaGetFloatFromTableStacki(2, "w");
-	testObj->Location.h = LuaGetFloatFromTableStacki(2, "h");
-	testObj->Parent = LuaGetLightUserdatai(3);
+	testObj->Name = strdup(LuaGetStringi(L, 1));
+	testObj->XOffset = LuaGetFloatFromTableStacki(L, 2, "x");
+	testObj->YOffset = LuaGetFloatFromTableStacki(L, 2, "y");
+	testObj->Location.w = LuaGetFloatFromTableStacki(L, 2, "w");
+	testObj->Location.h = LuaGetFloatFromTableStacki(L, 2, "h");
+	testObj->Parent = LuaGetLightUserdatai(L, 3);
 	testObj->Flags |= UIObjectFlagActive | UIObjectFlagVisible | UIObjectFlagDirty;
 	testObj->Id = _nextObjectId;
 	return testObj;
@@ -34,14 +34,14 @@ static UIObject* createUIObject(void) {
 
 static int createPanel(lua_State* state) {
 	// args - name, loc table, parent userdata
-	if (LuaGetStackSize() != 3 || !LuaIsString(1) || !LuaIsTable(2)) {
+	if (LuaGetStackSize(state) != 3 || !LuaIsString(state, 1) || !LuaIsTable(state, 2)) {
 		sgLogError("Could not create panel from lua, bad params");
-		LuaPushNil();
+		LuaPushNil(state);
 		return 1;
 	}
-	UIObject* obj = createUIObject();
+	UIObject* obj = createUIObject(state);
 	obj->Type = UIObjectTypesPanel;
-	LuaPushLightUserdata(obj);
+	LuaPushLightUserdata(state, obj);
 	AddUIObject(obj, obj->Parent);
 	return 1;
 }
@@ -49,191 +49,191 @@ static int createPanel(lua_State* state) {
 // return cUI.CreateImage(name, rect, parentPanel, filename, srcRect)
 static int createImage(lua_State* state) {
 	// args - name, loc table, parent userdata, filename, src rect
-	if (LuaGetStackSize() != 5 || !LuaIsString(1) || !LuaIsTable(2) || !LuaIsString(4) || !(LuaIsTable(5) || lua_isnil(_luaState, 5))) {
+	if (LuaGetStackSize(state) != 5 || !LuaIsString(state, 1) || !LuaIsTable(state, 2) || !LuaIsString(state, 4) || !(LuaIsTable(state, 5) || lua_isnil(state, 5))) {
 		sgLogError("Could not create image from lua, bad params");
-		LuaPushNil();
+		LuaPushNil(state);
 		return 1;
 	}
-	UIObject* obj = createUIObject();
+	UIObject* obj = createUIObject(state);
 	obj->Type = UIObjectTypesImage;
 	UIImageData* image = SDL_malloc(sizeof(*image));
-	image->Texture = CreateTextureFromIndexedBMP(LuaGetStringi(4));
+	image->Texture = CreateTextureFromIndexedBMP(LuaGetStringi(state, 4));
 	obj->Data = image;
-	if (!LuaIsNili(5)) {
-		image->SrcRect.x = LuaGetFloatFromTableStacki(5, "x");
-		image->SrcRect.y = LuaGetFloatFromTableStacki(5, "y");
-		image->SrcRect.w = LuaGetFloatFromTableStacki(5, "w");
-		image->SrcRect.h = LuaGetFloatFromTableStacki(5, "h");
+	if (!LuaIsNili(state, 5)) {
+		image->SrcRect.x = LuaGetFloatFromTableStacki(state, 5, "x");
+		image->SrcRect.y = LuaGetFloatFromTableStacki(state, 5, "y");
+		image->SrcRect.w = LuaGetFloatFromTableStacki(state, 5, "w");
+		image->SrcRect.h = LuaGetFloatFromTableStacki(state, 5, "h");
 	}
 	AddUIObject(obj, obj->Parent);
-	LuaPushLightUserdata(obj);
+	LuaPushLightUserdata(state, obj);
 	return 1;
 }
 
-static int createText(lua_State* state) {
+static int createText(lua_State* L) {
 	// args - name, loc table, parent userdata, text string,
 	// text fontName, int font size, bool centerX, centerY, wordwrap
-	if (LuaGetStackSize() != 10 || !LuaIsString(1) || !LuaIsTable(2) ||
-		!LuaIsString(4) || !LuaIsString(5) || !LuaIsInt(6) || !LuaIsBool(7) ||
-		!LuaIsBool(8) || !LuaIsBool(9) || !LuaIsTable(10)) {
+	if (LuaGetStackSize(L) != 10 || !LuaIsString(L, 1) || !LuaIsTable(L, 2) ||
+		!LuaIsString(L, 4) || !LuaIsString(L, 5) || !LuaIsInt(L, 6) || !LuaIsBool(L, 7) ||
+		!LuaIsBool(L, 8) || !LuaIsBool(L, 9) || !LuaIsTable(L, 10)) {
 		sgLogError("Could not create text from lua, bad params");
-		LuaPushNil();
+		LuaPushNil(L);
 		return 1;
 	}
-	UIObject* obj = createUIObject();
+	UIObject* obj = createUIObject(L);
 	obj->Type = UIObjectTypesText;
-	SetFont(LuaGetStringi(5), LuaGetIntFromStacki(6));
+	SetFont(LuaGetStringi(L, 5), LuaGetIntFromStacki(L, 6));
 	UIText* textData = SDL_calloc(1, sizeof(*textData));
 	obj->Data = textData;
-	textData->CenteredX = LuaGetBooli(7);
-	textData->CenteredY = LuaGetBooli(8);
-	textData->WordWrap = LuaGetBooli(9);
-	textData->FontSize = LuaGetIntFromStacki(6);
+	textData->CenteredX = LuaGetBooli(L, 7);
+	textData->CenteredY = LuaGetBooli(L, 8);
+	textData->WordWrap = LuaGetBooli(L, 9);
+	textData->FontSize = LuaGetIntFromStacki(L, 6);
 	textData->NumLettersToDraw = UINT_MAX;
-	textData->Text = LuaAllocateStringStack(4);
+	textData->Text = LuaAllocateStringStack(L, 4);
 	AddUIObject(obj, obj->Parent);
-	textData->Color.R = (uint8_t)LuaGetFloatFromTableStacki(10, "r");
-	textData->Color.G = (uint8_t)LuaGetFloatFromTableStacki(10, "g");
-	textData->Color.B = (uint8_t)LuaGetFloatFromTableStacki(10, "b");
-	textData->Color.A = (uint8_t)LuaGetFloatFromTableStacki(10, "a");
-	LuaPushLightUserdata(obj);
+	textData->Color.R = (uint8_t)LuaGetFloatFromTableStacki(L, 10, "r");
+	textData->Color.G = (uint8_t)LuaGetFloatFromTableStacki(L, 10, "g");
+	textData->Color.B = (uint8_t)LuaGetFloatFromTableStacki(L, 10, "b");
+	textData->Color.A = (uint8_t)LuaGetFloatFromTableStacki(L, 10, "a");
+	LuaPushLightUserdata(L, obj);
 	return 1;
 }
-static int createRect(lua_State* state) {
+static int createRect(lua_State* L) {
 	// args - name, loc table, parent userdata, table color
-	if (LuaGetStackSize() != 4 || !LuaIsString(1) || !LuaIsTable(2) ||
-		!LuaIsTable(4)) {
+	if (LuaGetStackSize(L) != 4 || !LuaIsString(L, 1) || !LuaIsTable(L, 2) ||
+		!LuaIsTable(L, 4)) {
 		sgLogError("Could not create rect from lua, bad params");
-		LuaPushNil();
+		LuaPushNil(L);
 		return 1;
 	}
-	UIObject* obj = createUIObject();
+	UIObject* obj = createUIObject(L);
 	obj->Type = UIObjectTypesRect;
 	UIRect* rectData = SDL_calloc(1, sizeof(*rectData));
-	rectData->Color.R = (uint8_t)LuaGetFloatFromTableStacki(4, "r");
-	rectData->Color.G = (uint8_t)LuaGetFloatFromTableStacki(4, "g");
-	rectData->Color.B = (uint8_t)LuaGetFloatFromTableStacki(4, "b");
-	rectData->Color.A = (uint8_t)LuaGetFloatFromTableStacki(4, "a");
+	rectData->Color.R = (uint8_t)LuaGetFloatFromTableStacki(L, 4, "r");
+	rectData->Color.G = (uint8_t)LuaGetFloatFromTableStacki(L, 4, "g");
+	rectData->Color.B = (uint8_t)LuaGetFloatFromTableStacki(L, 4, "b");
+	rectData->Color.A = (uint8_t)LuaGetFloatFromTableStacki(L, 4, "a");
 	obj->Data = rectData;
 	AddUIObject(obj, obj->Parent);
-	LuaPushLightUserdata(obj);
+	LuaPushLightUserdata(L, obj);
 	return 1;
 }
 
-static int createLayoutGroup(lua_State* state) {
+static int createLayoutGroup(lua_State* L) {
 	// args - name, loc table, parent userdata, spacing int, bool IsHorizontal
-	if (LuaGetStackSize() != 5 || !LuaIsString(1) || !LuaIsTable(2) || !LuaIsInt(4) || !LuaIsBool(5)) {
+	if (LuaGetStackSize(L) != 5 || !LuaIsString(L, 1) || !LuaIsTable(L, 2) || !LuaIsInt(L, 4) || !LuaIsBool(L, 5)) {
 		sgLogError("Could not create layoutGroup from lua, bad params");
-		LuaPushNil();
+		LuaPushNil(L);
 		return 1;
 	}
-	UIObject* obj = createUIObject();
+	UIObject* obj = createUIObject(L);
 	obj->Type = UIObjectTypesLayoutGroup;
 	UILayoutGroup* layoutGroupData = SDL_calloc(1, sizeof(*layoutGroupData));
 	obj->Data = layoutGroupData;
-	layoutGroupData->Spacing = LuaGetIntFromStacki(4);
-	layoutGroupData->IsHorizontal = LuaGetBooli(5);
+	layoutGroupData->Spacing = LuaGetIntFromStacki(L, 4);
+	layoutGroupData->IsHorizontal = LuaGetBooli(L, 5);
 	AddUIObject(obj, obj->Parent);
-	LuaPushLightUserdata(obj);
+	LuaPushLightUserdata(L, obj);
 	return 1;
 }
 
-static void callButtonFuncByIndex(int objId, int index, int argCount) {
-	LuaRegistryGetSubTableEntry(LUA_BUTTON_FUNCS_KEY, objId);  // Push the function table from the lua registry
-	if (!LuaIsTable(-1)) {
+static void callButtonFuncByIndex(LuaState L, int objId, int index, int argCount) {
+	LuaRegistryGetSubTableEntry(L, LUA_BUTTON_FUNCS_KEY, objId);  // Push the function table from the lua registry
+	if (!LuaIsTable(L, -1)) {
 		sgLogWarn("There is no table on the stack, returning");
 		return;
 	}
-	LuaGetLuaFuncAtIndex(index);  // Push the function to the top of the stack
-	LuaRemoveIndex(-2);			  // Remove the table with the funcs
-	int pushLoc = LuaGetStackSize() - argCount;
-	LuaMoveStackTipToIndex(pushLoc);
-	RunLuaFunctionOnStack(argCount);
+	LuaGetLuaFuncAtIndex(L, index);	 // Push the function to the top of the stack
+	LuaRemoveIndex(L, -2);			 // Remove the table with the funcs
+	int pushLoc = LuaGetStackSize(L) - argCount;
+	LuaMoveStackTipToIndex(L, pushLoc);
+	RunLuaFunctionOnStack(L, argCount);
 }
 
 static void buttonPress(UIObject* obj) {
 	if (obj) {
-		lua_pushlightuserdata(_luaState, obj);	// arg
-		callButtonFuncByIndex(obj->Id, 1, 1);	// index 1 = click, 0 args
+		lua_pushlightuserdata(_luaState, obj);			  // arg
+		callButtonFuncByIndex(_luaState, obj->Id, 1, 1);  // index 1 = click, 0 args
 	}
 }
 
 static void buttonHover(UIObject* obj, int justHovered) {
 	if (obj) {
-		lua_pushlightuserdata(_luaState, obj);	  // arg
-		lua_pushboolean(_luaState, justHovered);  // arg
-		callButtonFuncByIndex(obj->Id, 2, 2);	  // index 2 = hover, 1 arg
+		lua_pushlightuserdata(_luaState, obj);			  // arg
+		lua_pushboolean(_luaState, justHovered);		  // arg
+		callButtonFuncByIndex(_luaState, obj->Id, 2, 2);  // index 2 = hover, 1 arg
 	}
 }
 
-static int createButton(lua_State* state) {
+static int createButton(lua_State* L) {
 	// args - name, loc table, parent userdata, funcsTable
-	if (LuaGetStackSize() != 4 || !LuaIsString(1) || !LuaIsTable(2) || !LuaIsTable(4)) {
+	if (LuaGetStackSize(L) != 4 || !LuaIsString(L, 1) || !LuaIsTable(L, 2) || !LuaIsTable(L, 4)) {
 		sgLogError("Could not create button from lua, bad params passed in");
-		LuaPushNil();
+		LuaPushNil(L);
 		return 1;
 	}
-	UIObject* obj = createUIObject();
+	UIObject* obj = createUIObject(L);
 	obj->Type = UIObjectTypesButton;
 	UIButton* buttonData = SDL_calloc(1, sizeof(*buttonData));
 	obj->Data = buttonData;
 	buttonData->MouseOverLastFrame = false;
-	LuaRegistrySetSubTableEntry(LUA_BUTTON_FUNCS_KEY, obj->Id, 4);
+	LuaRegistrySetSubTableEntry(L, LUA_BUTTON_FUNCS_KEY, obj->Id, 4);
 	buttonData->ButtonClickEvent = buttonPress;
 	buttonData->ButtonHoverEvent = buttonHover;
 	AddUIObject(obj, obj->Parent);
-	LuaPushLightUserdata(obj);
+	LuaPushLightUserdata(L, obj);
 	return 1;
 }
 
-static int getUIObjectLocation(lua_State* state) {
-	UIObject* object = LuaGetLightUserdatai(1);
+static int getUIObjectLocation(lua_State* L) {
+	UIObject* object = LuaGetLightUserdatai(L, 1);
 	if (object == NULL) {
-		LuaPushNil();
+		LuaPushNil(L);
 		sgLogWarn("Trying to get a bad object from uiobjectlocation");
 		return 1;
 	}
-	LuaPushFloat(object->Location.x);
-	LuaPushFloat(object->Location.y);
+	LuaPushFloat(L, object->Location.x);
+	LuaPushFloat(L, object->Location.y);
 	return 2;
 }
 
-static int getUIObjectSize(lua_State* state) {
-	UIObject* object = LuaGetLightUserdatai(1);
+static int getUIObjectSize(lua_State* L) {
+	UIObject* object = LuaGetLightUserdatai(L, 1);
 	if (object == NULL) {
-		LuaPushNil();
+		LuaPushNil(L);
 		sgLogWarn("Trying to get a bad object from uiobjectlocation");
 		return 1;
 	}
-	LuaPushFloat(object->Location.w);
-	LuaPushFloat(object->Location.h);
+	LuaPushFloat(L, object->Location.w);
+	LuaPushFloat(L, object->Location.h);
 	return 2;
 }
 
-static int setUIObjectLocation(lua_State* state) {
-	if (LuaGetStackSize() != 3 || !LuaIsFloat(2) || !LuaIsFloat(3)) {
+static int setUIObjectLocation(lua_State* L) {
+	if (LuaGetStackSize(L) != 3 || !LuaIsFloat(L, 2) || !LuaIsFloat(L, 3)) {
 		sgLogError("Could not set object location");
 		return 0;
 	}
-	UIObject* object = LuaGetLightUserdatai(1);
+	UIObject* object = LuaGetLightUserdatai(L, 1);
 	if (object == NULL) {
 		sgLogWarn("Trying to get a bad object from uiobjectlocation");
 		return 0;
 	}
 	// object->XOffset = object->Parent->Location.x - LuaGetFloati(2);
 	// object->YOffset = object->Parent->Location.y - LuaGetFloati(3);
-	object->XOffset = LuaGetFloati(2) - object->Parent->Location.x;
-	object->YOffset = LuaGetFloati(3) - object->Parent->Location.y;
+	object->XOffset = LuaGetFloati(L, 2) - object->Parent->Location.x;
+	object->YOffset = LuaGetFloati(L, 3) - object->Parent->Location.y;
 	object->Flags |= UIObjectFlagDirty;
 	return 0;
 }
 
-static int destroyObject(lua_State* state) {
-	if (LuaGetStackSize() != 1) {
+static int destroyObject(lua_State* L) {
+	if (LuaGetStackSize(L) != 1) {
 		sgLogWarn("Bad destroy panel params");
 		return 0;
 	}
-	UIObject* freeThing = LuaGetLightUserdatai(1);
+	UIObject* freeThing = LuaGetLightUserdatai(L, 1);
 	if (freeThing) {
 		UIObjectFree(freeThing);
 	}

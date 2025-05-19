@@ -11,11 +11,11 @@ static int loadMap(lua_State* L) {
 	// TODO since using coroutine, we have to use L.. noooooo
 	lua_State* previous = _luaState;
 	_luaState = L;
-	if (LuaGetStackSize() != 1 || !LuaIsString(1)) {
+	if (LuaGetStackSize(L) != 1 || !LuaIsString(L, 1)) {
 		sgLogWarn("Bad parameters passed into load map from lua");
 		return 0;
 	}
-	LoadMap(LuaGetStringi(1));
+	LoadMap(LuaGetStringi(L, 1));
 	_luaState = previous;
 	return 0;
 }

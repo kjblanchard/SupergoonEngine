@@ -4,25 +4,26 @@
 #include <lua.h>
 
 static int log(lua_State* L) {
-	if (LuaGetStackSize() != 2 || !LuaIsString(1) || !LuaIsInt(2)) {
+	if (LuaGetStackSize(L) != 2 || !LuaIsString(L, 1) || !LuaIsInt(L, 2)) {
+		sgLogWarn("Bad log function params!");
 		return 0;
 	}
-	int logType = LuaGetIntFromStacki(2);
+	int logType = LuaGetIntFromStacki(L, 2);
 	switch (logType) {
 		case Log_LDebug:
-			sgLogDebug(LuaGetStringi(1));
+			sgLogDebug(LuaGetStringi(L, 1));
 			break;
 		case Log_LCritical:
-			sgLogCritical(LuaGetStringi(1));
+			sgLogCritical(LuaGetStringi(L, 1));
 			break;
 		case Log_LError:
-			sgLogError(LuaGetStringi(1));
+			sgLogError(LuaGetStringi(L, 1));
 			break;
 		case Log_LInfo:
-			sgLogInfo(LuaGetStringi(1));
+			sgLogInfo(LuaGetStringi(L, 1));
 			break;
 		default:
-			sgLogWarn(LuaGetStringi(1));
+			sgLogWarn(LuaGetStringi(L, 1));
 			break;
 	}
 	return 0;

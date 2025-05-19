@@ -68,16 +68,18 @@ static int l_register_object_functions(lua_State* L) {
 
 static int setAllGameobjectsToBeDestroyed(lua_State* L) {
 	bool force = false;
-	if (!LuaIsBool(1)) {
+	if (!LuaIsBool(L, 1)) {
 		sgLogWarn("No bool sent it for destroying all gameobjects, setting to false");
 	}
-	force = LuaGetBooli(1);
+	force = LuaGetBooli(L, 1);
 
 	SetGameobjectsToBeDeleted(force);
+	return 0;
 }
 
 static int destroyObjects(lua_State* L) {
 	DestroyGameObjects();
+	return 0;
 }
 
 static const luaL_Reg objectLib[] = {

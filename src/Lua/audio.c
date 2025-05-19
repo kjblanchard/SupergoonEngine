@@ -4,21 +4,21 @@
 #include <lua.h>
 
 static int PlaySfx(lua_State* L) {
-	if (LuaGetStackSize() != 2 || !LuaIsString(1) || !LuaIsFloat(2)) {
+	if (LuaGetStackSize(L) != 2 || !LuaIsString(L, 1) || !LuaIsFloat(L, 2)) {
 		return 0;
 	}
-	const char* name = LuaGetStringi(1);
-	float volume = LuaGetFloati(2);
-	PlaySfxOneShot(LuaGetStringi(1), LuaGetFloati(2));
+	const char* name = LuaGetStringi(L, 1);
+	float volume = LuaGetFloati(L, 2);
+	PlaySfxOneShot(LuaGetStringi(L, 1), LuaGetFloati(L, 2));
 	return 0;
 }
 
 static int playBgm(lua_State* L) {
-	if (LuaGetStackSize() != 2 || !LuaIsString(1) || !LuaIsFloat(2)) {
+	if (LuaGetStackSize(L) != 2 || !LuaIsString(L, 1) || !LuaIsFloat(L, 2)) {
 		return 0;
 	}
 	SetBgmTrack(0);
-	LoadBgm(LuaGetStringi(1), LuaGetFloati(2), -1);
+	LoadBgm(LuaGetStringi(L, 1), LuaGetFloati(L, 2), -1);
 	PlayBgm();
 	return 0;
 }

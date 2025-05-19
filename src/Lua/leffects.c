@@ -4,25 +4,25 @@
 #include <lauxlib.h>
 #include <lua.h>
 static int fadeoutScreen(lua_State* L) {
-	if (LuaGetStackSize() != 1 || !LuaGetFloati(1)) {
+	if (LuaGetStackSize(L) != 1 || !LuaGetFloati(L, 1)) {
 		sgLogWarn("Tried to fadeout with improper values");
 		return 0;
 	}
-	FadeoutScreen(LuaGetFloati(1));
+	FadeoutScreen(LuaGetFloati(L, 1));
 	return 0;
 }
 
 static int fadeinScreen(lua_State* L) {
-	if (LuaGetStackSize() != 1 || !LuaGetFloati(1)) {
+	if (LuaGetStackSize(L) != 1 || !LuaGetFloati(L, 1)) {
 		sgLogWarn("Tried to fadeout with improper values");
 		return 0;
 	}
-	FadeinScreen(LuaGetFloati(1));
+	FadeinScreen(LuaGetFloati(L, 1));
 	return 0;
 }
 
 static int isScreenFading(lua_State* L) {
-	LuaPushBool(IsScreenFading());
+	LuaPushBool(L, IsScreenFading());
 	return 1;
 }
 
