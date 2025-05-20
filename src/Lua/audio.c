@@ -7,8 +7,8 @@ static int PlaySfx(lua_State* L) {
 	if (LuaGetStackSize(L) != 2 || !LuaIsString(L, 1) || !LuaIsFloat(L, 2)) {
 		return 0;
 	}
-	const char* name = LuaGetStringi(L, 1);
-	float volume = LuaGetFloati(L, 2);
+	// const char* name = LuaGetStringi(L, 1);
+	// float volume = LuaGetFloati(L, 2);
 	PlaySfxOneShot(LuaGetStringi(L, 1), LuaGetFloati(L, 2));
 	return 0;
 }

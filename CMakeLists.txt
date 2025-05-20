@@ -83,6 +83,7 @@ if(imgui)
         src/Debug/Tween.cpp
         src/Debug/Game.cpp
         src/Debug/UI.cpp
+        src/Debug/Scene.cpp
         src/Debug/Debug.cpp # For showing all the windows
 
         # src/Debug/Audio.cpp

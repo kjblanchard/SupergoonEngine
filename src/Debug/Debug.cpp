@@ -4,6 +4,7 @@
 #include <Supergoon/Debug/Debug.hpp>
 #include <Supergoon/Debug/Game.hpp>
 #include <Supergoon/Debug/Graphics.hpp>
+#include <Supergoon/Debug/Scene.hpp>
 #include <Supergoon/Debug/Tween.hpp>
 #include <Supergoon/Debug/UI.hpp>
 #include <Supergoon/pch.hpp>
@@ -15,6 +16,7 @@ void ShowWidgets() {
 	ShowGameDebugWindow();
 	ShowUIDebugWindow();
 	ShowGraphicsDebugWindow();
+	ShowSceneDebugWindow();
 }
 
 int GetDefaultWindowFlags() {
@@ -47,4 +49,5 @@ int GetDefaultWindowFlags() {
 void InitializeDebug() {
 	InitializeContentDebugWindow();
 	InitializeAudioDebugWindow();
+	InitializeSceneDebugWindow();
 }

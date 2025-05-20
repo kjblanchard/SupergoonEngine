@@ -90,14 +90,14 @@ static Texture* _bg1Texture = NULL;
 static Texture* _bg2Texture = NULL;
 
 static void createAnimatedTiles(Tilemap* map, Tileset* tileset) {
-	LuaPushTableToStack(_luaState, "tiles");
+	LuaGetTable(_luaState, "tiles");
 	tileset->NumAnimatedTiles = LuaGetTableLength(_luaState);
 	tileset->AnimatedTiles = calloc(tileset->NumAnimatedTiles, sizeof(AnimatedTile));
 	for (size_t j = 0; j < tileset->NumAnimatedTiles; j++) {
 		LuaPushTableObjectToStacki(_luaState, j);  // Actual animated tile is on there now
 		AnimatedTile* animatedTile = &tileset->AnimatedTiles[j];
 		animatedTile->GID = LuaGetInt(_luaState, "id") + tileset->FirstGid;	 // GID is the local ID plus the first gid, since it's global
-		LuaPushTableToStack(_luaState, "animation");
+		LuaGetTable(_luaState, "animation");
 		animatedTile->NumFrames = LuaGetTableLength(_luaState);
 		animatedTile->TileFrames = calloc(animatedTile->NumFrames, sizeof(TileAnimationFrame));
 		for (size_t k = 0; k < animatedTile->NumFrames; k++) {
@@ -115,7 +115,7 @@ static void createAnimatedTiles(Tilemap* map, Tileset* tileset) {
 }
 
 static void createTilesets(Tilemap* map) {
-	LuaPushTableToStack(_luaState, "tilesets");
+	LuaGetTable(_luaState, "tilesets");
 	map->NumTilesets = LuaGetTableLength(_luaState);
 	map->Tilesets = calloc(map->NumTilesets, sizeof(Tileset));
 	for (int i = 0; i < map->NumTilesets; i++) {
@@ -135,7 +135,7 @@ static void createTilesets(Tilemap* map) {
 }
 
 static void createLayers(Tilemap* map) {
-	LuaPushTableToStack(_luaState, "layers");
+	LuaGetTable(_luaState, "layers");
 	map->NumLayers = LuaGetTableLength(_luaState);
 	for (int i = 0; i < map->NumLayers; i++) {
 		LuaPushTableObjectToStacki(_luaState, i);
@@ -173,7 +173,7 @@ static void createTileLayer(TileLayer* layer) {
 	layer->Height = LuaGetInt(_luaState, "height");
 	int data_length = layer->Width * layer->Height;
 	layer->Data = calloc(data_length, sizeof(int));
-	LuaPushTableToStack(_luaState, "data");
+	LuaGetTable(_luaState, "data");
 	for (int i = 0; i < data_length; i++) {
 		layer->Data[i] = LuaGetIntFromTablei(_luaState, i);
 	}
@@ -185,7 +185,7 @@ static void handleTiledLayerGroup(Tilemap* map) {
 	int groupNum = (strcmp(name, "bg1") == 0) ? 0 : 1;
 	LayerGroup* group = &map->LayerGroups[groupNum];
 	group->Name = strdup(name);
-	LuaPushTableToStack(_luaState, "layers");
+	LuaGetTable(_luaState, "layers");
 	group->NumLayers = LuaGetTableLength(_luaState);
 	group->Layers = calloc(group->NumLayers, sizeof(TileLayer));
 	for (size_t i = 0; i < (size_t)group->NumLayers; i++) {
@@ -199,7 +199,11 @@ static void handleTiledLayerGroup(Tilemap* map) {
 static void loadTilesetTextures(Tilemap* map) {
 	for (size_t i = 0; i < (size_t)map->NumTilesets; i++) {
 		int nameLen = strlen(map->Tilesets[i].Image);
-		map->Tilesets[i].Image[nameLen - 4] = '\0';	 // Subtract .bmp (4) chars for easier loading with function below
+		char* imageName = map->Tilesets[i].Image;
+		// remove bmp extension if needed
+		if (nameLen >= 4 && strcmp(imageName + nameLen - 4, ".bmp") == 0) {
+			imageName[nameLen - 4] = '\0';
+		}
 		map->Tilesets[i].TilesetTexture = CreateTextureFromIndexedBMP(map->Tilesets[i].Image);
 	}
 }
@@ -215,7 +219,7 @@ static TiledPropertyTypes getPropertyTypeForStack(void) {
 }
 
 static void handleTiledObjectEntities(Tilemap* map) {
-	LuaPushTableToStack(_luaState, "objects");
+	LuaGetTable(_luaState, "objects");
 	map->NumObjects = LuaGetTableLength(_luaState);
 	map->Objects = calloc(map->NumObjects, sizeof(TiledObject));
 	for (size_t i = 0; i < (size_t)map->NumObjects; i++) {
@@ -228,7 +232,7 @@ static void handleTiledObjectEntities(Tilemap* map) {
 		object->Y = LuaGetFloat(_luaState, "y");
 		object->Width = LuaGetFloat(_luaState, "width");
 		object->Height = LuaGetFloat(_luaState, "height");
-		LuaPushTableToStack(_luaState, "properties");
+		LuaGetTable(_luaState, "properties");
 		object->NumProperties = LuaGetTableLengthMap(_luaState);
 		if (object->NumProperties == 0) {
 			LuaPopStack(_luaState, 2);
@@ -347,6 +351,9 @@ static void createBackgroundsFromTilemap(Tilemap* map) {
 					continue;
 				}
 				GetRectForGid(tileGid, srcTileset, &srcRect);
+				// if (!srcTileset->TilesetTexture) {
+				// 	srcTileset->TilesetTexture = CreateTextureFromIndexedBMP(srcTileset->Image);
+				// }
 				Texture* srcTexture = srcTileset->TilesetTexture;
 				DrawTextureToRenderTargetTexture(_bg1Texture, srcTexture, &dstRect, &srcRect);
 			}
@@ -448,6 +455,7 @@ static Tilemap* checkCache(const char* mapName) {
 		if (strcmp(mapName, _previousMaps[i]->BaseFilename) == 0) {
 			returnMap = _previousMaps[i];
 			foundIndex = i;
+			++cacheSize;
 			break;
 		}
 		++cacheSize;

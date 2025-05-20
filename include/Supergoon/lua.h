@@ -15,15 +15,16 @@ void LuaPopStack(LuaState L, int num);
 void LuaClearStack(LuaState L);
 // Gets the number of items on the stack, remember that the index starts at 1.
 int LuaGetStack(LuaState L);
-int LuaRemoveIndex(LuaState L, int index);
+void LuaRemoveIndex(LuaState L, int index);
 // Moves the tip to the index passed in, pushing everything else up.  Useful for if you pass func args first.
 void LuaMoveStackTipToIndex(LuaState L, int index);
 void sgCloseLua(void);
 // Tables
 void LuaPushTableFromFile(LuaState L, const char* path);
 int LuaGetIntFromTablei(LuaState L, int i);
+const char* LuaGetStringFromTablei(LuaState L, int i);
+float LuaGetFloatFromTablei(LuaState L, int i);
 void LuaPushTableFromRegistryByName(LuaState L, const char* tableName);
-void LuaPushTableToStack(LuaState L, const char* tableFieldName);
 void LuaPushTableToStacki(LuaState L, int i);
 // If a table is on the stack, you will push the table at i on the stack
 // Remember lua table indexes start at 1, so this will add 1.
@@ -32,6 +33,8 @@ void LuaPushTableObjectToStacki(LuaState L, int i);
 int LuaGetTableLength(LuaState L);
 // Table must be on stack, used for key/value tables
 int LuaGetTableLengthMap(LuaState L);
+// Gets the table from field of the table on the tip of the stack (-1)
+void LuaGetTable(LuaState L, const char* tableFieldName);
 int LuaGetTablei(LuaState L, int i);
 // Starts the table iteration for lua tables that are key/value pairs, returns if there is any more values left
 // This pushes two values to the table for iteration, The key is -2, value is -1.  Key is used for iteration, so don't pop it off, use stopiteration when done, only pop value
@@ -78,12 +81,14 @@ void LuaPushBool(LuaState L, int boolean);
 void LuaPushNil(LuaState L);
 void LuaPushLightUserdata(LuaState L, void* data);
 void LuaPushFloat(LuaState L, float data);
+void LuaPushString(LuaState L, const char* data);
 // Registry
 void LuaEnsureRegistryTable(LuaState L, const char* registryKey);
 int LuaRegistryGetSubTableEntry(LuaState L, const char* registryKey, int subKey);
 void LuaRegistrySetSubTableEntry(LuaState L, const char* registryKey, int subKey, int valueIndex);
 // Functions
 void LuaGetLuaFuncAtIndex(LuaState L, int index);
+void LuaGetLuaFunc(LuaState L, const char* field);
 void RunLuaFunctionOnStack(LuaState L, int numArgs);
 
 #ifdef __cplusplus

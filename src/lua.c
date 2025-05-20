@@ -63,7 +63,7 @@ void LuaClearStack(LuaState L) {
 int LuaGetStack(LuaState L) {
 	return lua_gettop(L);
 }
-int LuaRemoveIndex(LuaState L, int index) {
+void LuaRemoveIndex(LuaState L, int index) {
 	lua_remove(L, index);
 }
 // Moves the tip to the index passed in, pushing everything else up.  Useful for if you pass func args first.
@@ -88,18 +88,30 @@ int LuaGetIntFromTablei(LuaState L, int i) {
 	lua_pop(L, 1);
 	return value;
 }
+
+const char* LuaGetStringFromTablei(LuaState L, int i) {
+	lua_rawgeti(L, -1, i + 1);
+	const char* value = lua_tostring(_luaState, -1);
+	if (value == NULL) {
+		sgLogDebug("nil value in string, returning empty ");
+		value = "";
+	}
+	lua_pop(L, 1);
+	return value;
+}
+
+float LuaGetFloatFromTablei(LuaState L, int i) {
+	lua_rawgeti(L, -1, i + 1);
+	float value = lua_tonumber(_luaState, -1);
+	lua_pop(L, 1);
+	return value;
+}
 void LuaPushTableFromRegistryByName(LuaState L, const char* tableName) {
 	lua_getfield(L, LUA_REGISTRYINDEX, tableName);	// pushes the table onto the stack
 	// Optionally, you can check it's a table if needed:
 	if (!lua_istable(L, -1)) {
 		lua_pop(L, 1);	// remove non-table
 		luaL_error(L, "Registry value '%s' is not a table", tableName);
-	}
-}
-void LuaPushTableToStack(LuaState L, const char* tableFieldName) {
-	lua_getfield(L, -1, tableFieldName);
-	if (!lua_istable(L, -1)) {
-		sgLogWarn("Table pushed is not a real lua table, what did you do");
 	}
 }
 void LuaPushTableToStacki(LuaState L, int i) {
@@ -119,14 +131,25 @@ int LuaGetTableLength(LuaState L) {
 }
 // Table must be on stack, used for key/value tables
 int LuaGetTableLengthMap(LuaState L) {
+	if (!lua_istable(L, -1)) {
+		sgLogWarn("Table is not on tip of stack!");
+		return 0;
+	}
 	int len = 0;
 	lua_pushnil(L);
+
 	while (lua_next(L, -2) != 0) {
 		++len;
 		lua_pop(L, 1);
 	}
 	lua_pop(L, 1);
 	return len;
+}
+void LuaGetTable(LuaState L, const char* tableFieldName) {
+	lua_getfield(L, -1, tableFieldName);
+	if (!lua_istable(L, -1)) {
+		sgLogWarn("Table pushed is not a real lua table, what did you do");
+	}
 }
 int LuaGetTablei(LuaState L, int i) {
 	if (lua_istable(L, i)) {
@@ -259,6 +282,9 @@ void LuaPushLightUserdata(LuaState L, void* data) {
 void LuaPushFloat(LuaState L, float data) {
 	lua_pushnumber(L, data);
 }
+void LuaPushString(LuaState L, const char* data) {
+	lua_pushstring(L, data);
+}
 // Registry
 void LuaEnsureRegistryTable(LuaState L, const char* registryKey) {
 	lua_getfield(L, LUA_REGISTRYINDEX, registryKey);
@@ -290,6 +316,14 @@ void LuaRegistrySetSubTableEntry(LuaState L, const char* registryKey, int subKey
 // Functions
 void LuaGetLuaFuncAtIndex(LuaState L, int index) {
 	lua_rawgeti(L, -1, index);	// get function at index (1 = click, 2 = hover)
+	if (!lua_isfunction(L, -1)) {
+		sgLogWarn("No function was pushed, what the, pop everything");
+		lua_pop(L, 3);
+		return;
+	}
+}
+void LuaGetLuaFunc(LuaState L, const char* field) {
+	lua_getfield(L, -1, field);
 	if (!lua_isfunction(L, -1)) {
 		sgLogWarn("No function was pushed, what the, pop everything");
 		lua_pop(L, 3);
