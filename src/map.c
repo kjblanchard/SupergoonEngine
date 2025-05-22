@@ -198,12 +198,16 @@ static void handleTiledLayerGroup(Tilemap* map) {
 
 static void loadTilesetTextures(Tilemap* map) {
 	for (size_t i = 0; i < (size_t)map->NumTilesets; i++) {
+		if (map->Tilesets[i].TilesetTexture != NULL) {
+			continue;
+		}
 		int nameLen = strlen(map->Tilesets[i].Image);
 		char* imageName = map->Tilesets[i].Image;
 		// remove bmp extension if needed
 		if (nameLen >= 4 && strcmp(imageName + nameLen - 4, ".bmp") == 0) {
 			imageName[nameLen - 4] = '\0';
 		}
+		// TODO this makes an additional reference, and if it's cached, it never actually reduces it.
 		map->Tilesets[i].TilesetTexture = CreateTextureFromIndexedBMP(map->Tilesets[i].Image);
 	}
 }
@@ -323,6 +327,7 @@ static void handleAnimatedTile(Tilemap* map, Tileset* srcTileset, RectangleF* ds
 	dstRectPtr->h = dstRect->h;
 }
 
+// Called every time we load a map, as the bg1 and bg2 textures must be redrawn.
 static void createBackgroundsFromTilemap(Tilemap* map) {
 	int mapWidth = map->Width * map->TileWidth;
 	int mapHeight = map->Height * map->TileHeight;
@@ -351,9 +356,6 @@ static void createBackgroundsFromTilemap(Tilemap* map) {
 					continue;
 				}
 				GetRectForGid(tileGid, srcTileset, &srcRect);
-				// if (!srcTileset->TilesetTexture) {
-				// 	srcTileset->TilesetTexture = CreateTextureFromIndexedBMP(srcTileset->Image);
-				// }
 				Texture* srcTexture = srcTileset->TilesetTexture;
 				DrawTextureToRenderTargetTexture(_bg1Texture, srcTexture, &dstRect, &srcRect);
 			}
@@ -444,6 +446,9 @@ void drawCurrentMap(void) {
 }
 
 static Tilemap* checkCache(const char* mapName) {
+	if (!_currentMap) {
+		return NULL;
+	}
 	unsigned int cacheSize = 0;
 	Tilemap* returnMap = NULL;
 	int foundIndex = -1;
@@ -460,13 +465,13 @@ static Tilemap* checkCache(const char* mapName) {
 		}
 		++cacheSize;
 	}
-	// If cache hit, remove and return it
+	// If cache hit, remove it as it will be set as the current map.
 	if (foundIndex >= 0) {
 		for (size_t i = foundIndex; i < cacheSize - 1; i++) {
 			_previousMaps[i] = _previousMaps[i + 1];
 		}
 		_previousMaps[cacheSize - 1] = NULL;
-		return returnMap;
+		// return returnMap;
 	}
 	// Cache _currentMap only if it’s not the same as the map being loaded
 	if (_currentMap && strcmp(mapName, _currentMap->BaseFilename) != 0) {
@@ -480,7 +485,7 @@ static Tilemap* checkCache(const char* mapName) {
 	} else {
 		return _currentMap;
 	}
-	return NULL;
+	return returnMap;
 }
 
 void LoadMap(const char* mapName) {
