@@ -15,10 +15,10 @@ void geClockUpdate(geClock* c) {
 	if (frameTime > 0.25) frameTime = 0.25;	 // Avoid spiral of death
 	c->Previous = current;
 	c->Accumulator += frameTime;
+	_fixedTimestepSeconds = 1.0 / (double)_refreshRate;
 }
 
 bool geClockShouldUpdate(geClock* c) {
-	_fixedTimestepSeconds = 1.0 / (double)_refreshRate;
 	if (c->Accumulator >= _fixedTimestepSeconds) {
 		c->Accumulator -= _fixedTimestepSeconds;
 		return true;

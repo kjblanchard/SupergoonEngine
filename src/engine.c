@@ -45,8 +45,10 @@ extern void initializeTweenEngine(void);
 extern void updateTweens(void);
 // Function in filesystem.c
 extern void shutdownEngineFilesystem(void);
+Uint64 previousCounter;
+float deltaTimeSeconds;
 
-static geClock _clock;
+// static geClock _clock;
 static void (*_startFunc)(void) = NULL;
 static void (*_updateFunc)(void) = NULL;
 static void (*_drawFunc)(void) = NULL;
@@ -56,6 +58,7 @@ bool _isGameSimulatorRunning = true;
 #endif
 
 static bool Start(void) {
+	// geClockStart(&_clock);
 	if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMEPAD)) {
 		sgLogError("Could not init sdl, %s", SDL_GetError());
 		return false;
@@ -82,8 +85,8 @@ static bool Start(void) {
 	RegisterLuaEffectsFunctions();
 	RegisterLuaInputFunctions();
 	RegisterLuaSpriteFunctions();
-	//
-	geClockStart(&_clock);
+	previousCounter = SDL_GetPerformanceCounter();
+	deltaTimeSeconds = 0;
 	return true;
 }
 static bool sdlEventLoop(void) {
@@ -112,38 +115,36 @@ static bool sdlEventLoop(void) {
 static void Update(void) {
 	bool quit = false;
 	while (!quit) {
+		Uint64 now = SDL_GetPerformanceCounter();
+		deltaTimeSeconds = (now - previousCounter) / (float)SDL_GetPerformanceFrequency();
+		previousCounter = now;
+		DeltaTimeMilliseconds = deltaTimeSeconds * 1000;
+		DeltaTimeSeconds = deltaTimeSeconds;
 		quit = sdlEventLoop();
 		if (quit) {
 			break;
 		}
-#ifdef imgui
-		// If we are im imgui and the game is "paused", we should just Draw and update imgui.
-		if (!_isGameSimulatorRunning) {
-		}
-#endif
-		geClockUpdate(&_clock);
+		// #ifdef imgui
+		// 		// If we are im imgui and the game is "paused", we should just Draw and update imgui.
+		// 		if (!_isGameSimulatorRunning) {
+		// 		}
+		// #endif
 		UpdateKeyboardSystem();
-		DeltaTimeMilliseconds = geClockGetUpdateTimeMilliseconds();
-		DeltaTimeSeconds = geClockGetUpdateTimeSeconds();
 		audioUpdate();
-		// Update with accumulator
-		while (geClockShouldUpdate(&_clock)) {
-			Ticks += 1;
-			updateTweens();
-			PushGamestateToLua();
-			GameObjectSystemUpdate();
-			if (_updateFunc) _updateFunc();
-			UpdateUISystem();
-		}
-		float alpha = _clock.Accumulator / geClockGetUpdateTimeSeconds();
+		Ticks += 1;
+		updateTweens();
+		PushGamestateToLua();
+		GameObjectSystemUpdate();
+		if (_updateFunc) _updateFunc();
+		UpdateUISystem();
+		geUpdateControllerLastFrame();
+		updateMouseSystem();
 		DrawStart();
 		drawCurrentMap();
-		DrawSpriteSystem(alpha);
+		DrawSpriteSystem();
 		if (_drawFunc) _drawFunc();
 		DrawUISystem();
 		DrawEnd();
-		geUpdateControllerLastFrame();
-		updateMouseSystem();
 	}
 }
 

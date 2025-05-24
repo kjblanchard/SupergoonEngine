@@ -69,7 +69,7 @@ void DestroySprite(Sprite* sprite) {
 // 		DrawTexture(sprite->Texture, &dst, &sprite->TextureSourceRect);
 // 	}
 // }
-void DrawSpriteSystem(float alpha) {
+void DrawSpriteSystem() {
 	for (size_t i = 0; i < _numSprites; i++) {
 		Sprite* sprite = &_sprites[i];
 		if (!sprite || !sprite->Texture || !(sprite->Flags & SpriteFlagVisible)) {
@@ -80,13 +80,15 @@ void DrawSpriteSystem(float alpha) {
 		float interpY = 0;
 
 		if (sprite->Parent) {
-			interpX = sprite->Parent->pX + alpha * (sprite->Parent->X - sprite->Parent->pX);
-			interpY = sprite->Parent->pY + alpha * (sprite->Parent->Y - sprite->Parent->pY);
+			interpX = sprite->Parent->X;
+			interpY = sprite->Parent->Y;
+			// interpX = sprite->Parent->pX + alpha * (sprite->Parent->X - sprite->Parent->pX);
+			// interpY = sprite->Parent->pY + alpha * (sprite->Parent->Y - sprite->Parent->pY);
 		}
 
 		RectangleF dst = sprite->OffsetAndSizeRectF;
-		dst.x = (int)SDL_roundf(interpX + dst.x);
-		dst.y = (int)SDL_roundf(interpY + dst.y);
+		dst.x = interpX + dst.x;
+		dst.y = interpY + dst.y;
 		// dst.x = interpX + dst.x;
 		// dst.y = interpY + dst.y;
 

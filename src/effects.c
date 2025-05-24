@@ -1,6 +1,7 @@
 #include <Supergoon/Tweening/tween.h>
 #include <Supergoon/effects.h>
 #include <Supergoon/graphics.h>
+#include <Supergoon/log.h>
 #include <SupergoonEngine/window.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -19,6 +20,7 @@ static void fadeScreenEndFunc(void* userdata) {
 }
 static void fadeScreen(bool fadeIn, float fadeoutTimeInSeconds) {
 	if (_currentlyFading) {
+		sgLogWarn("Trying to fade but we are already fading, doing nothing");
 		return;
 	}
 	int startValue = fadeIn ? 0 : 255;

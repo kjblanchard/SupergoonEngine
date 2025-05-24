@@ -434,10 +434,10 @@ void drawCurrentMap(void) {
 	// TODO, main camera? First we draw the background, use the main camera offset, currently set it to 0/0 and screensize.
 	if (_bg1Texture) {
 		RectangleF src = {0, 0, 480, 270};
-		// DrawTexture(_bg1Texture, &src, &src);
+		DrawTexture(_bg1Texture, &src, &src);
 	}
 	if (_currentMap) {
-		// drawAnimatedTiles();
+		drawAnimatedTiles();
 	}
 	if (_bg2Texture) {
 		RectangleF src = {0, 0, 480, 270};

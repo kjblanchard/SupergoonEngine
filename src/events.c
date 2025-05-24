@@ -35,7 +35,7 @@ void PushEvent(uint32_t eventType, int eventCode, void *data, void *data2) {
 
 int HandleEvents(Event *event) {
 	audioEventHandler(event);
-	handleTweenEvents(event);
+	// handleTweenEvents(event);
 	handleMouseEvent(event);
 	windowEventHandler(event);
 	return false;
