@@ -18,7 +18,7 @@ static void createObject(void* userdata, GameObject* go) {
 		lua_pushlightuserdata(_luaState, go);
 		if (lua_pcall(_luaState, 2, 0, 0) != LUA_OK) {
 			const char* err = lua_tostring(_luaState, -1);
-			fprintf(stderr, "Error in CreateObject: %s\n", err);
+			sgLogError("Error in create gameobject %s", err);
 			lua_pop(_luaState, 1);
 		}
 	}
@@ -29,7 +29,7 @@ static void startObject(GameObject* go) {
 		lua_pushlightuserdata(_luaState, go);
 		if (lua_pcall(_luaState, 1, 0, 0) != LUA_OK) {
 			const char* err = lua_tostring(_luaState, -1);
-			fprintf(stderr, "Error in CreateObject: %s\n", err);
+			sgLogError("Error in start gameobject %s", err);
 			lua_pop(_luaState, 1);
 		}
 	}
@@ -40,7 +40,7 @@ static void updateObject(GameObject* go) {
 		lua_pushlightuserdata(_luaState, go);
 		if (lua_pcall(_luaState, 1, 0, 0) != LUA_OK) {
 			const char* err = lua_tostring(_luaState, -1);
-			fprintf(stderr, "Error in CreateObject: %s\n", err);
+			sgLogError("Error in update gameobject %s", err);
 			lua_pop(_luaState, 1);
 		}
 	}
@@ -77,6 +77,55 @@ static int setAllGameobjectsToBeDestroyed(lua_State* L) {
 	return 0;
 }
 
+static int getGameobjectPosition(lua_State* L) {
+	if (LuaGetStackSize(L) != 1) {
+		sgLogWarn("Bad args trying to get go position from lua");
+		LuaPushNil(L);
+		return 1;
+	}
+	GameObject* go = (GameObject*)LuaGetLightUserdatai(L, 1);
+	if (!go) {
+		sgLogWarn("Bad cast from go Lua");
+		LuaPushNil(L);
+		return 1;
+	}
+	LuaPushFloat(L, go->X);
+	LuaPushFloat(L, go->Y);
+	return 2;
+}
+
+static int setGameobjectPosition(lua_State* L) {
+	if (LuaGetStackSize(L) != 3 || !LuaIsFloat(L, 2) || !LuaIsFloat(L, 3)) {
+		sgLogWarn("Bad args trying to set go position from lua");
+		return 0;
+	}
+	GameObject* go = (GameObject*)LuaGetLightUserdatai(L, 1);
+	if (!go) {
+		sgLogWarn("Bad cast from go Lua");
+		return 0;
+	}
+	go->X = LuaGetFloati(L, 2);
+	go->Y = LuaGetFloati(L, 3);
+	return 0;
+}
+
+static int getGameobjectSize(lua_State* L) {
+	if (LuaGetStackSize(L) != 1) {
+		sgLogWarn("Bad args trying to get go position from lua");
+		LuaPushNil(L);
+		return 1;
+	}
+	GameObject* go = (GameObject*)LuaGetLightUserdatai(L, 1);
+	if (!go) {
+		sgLogWarn("Bad cast from go Lua");
+		LuaPushNil(L);
+		return 1;
+	}
+	LuaPushFloat(L, go->W);
+	LuaPushFloat(L, go->H);
+	return 2;
+}
+
 static int destroyObjects(lua_State* L) {
 	DestroyGameObjects();
 	return 0;
@@ -85,6 +134,9 @@ static int destroyObjects(lua_State* L) {
 static const luaL_Reg objectLib[] = {
 	{"NewGameObjectType", l_register_object_functions},
 	{"SetDestroyGameObjects", setAllGameobjectsToBeDestroyed},
+	{"Position", getGameobjectPosition},
+	{"SetPosition", setGameobjectPosition},
+	{"Size", getGameobjectSize},
 	{"DestroyGameObjects", destroyObjects},
 	{NULL, NULL}};
 

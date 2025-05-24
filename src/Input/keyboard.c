@@ -27,6 +27,10 @@ int IsKeyboardKeyJustReleased(const int key) {
 	return !_currentKeyboardState[key] && _previousKeyboardState[key];
 }
 
+int IsKeyboardKeyDown(const int key) {
+	return _currentKeyboardState[key];
+}
+
 void UpdateKeyboardSystem(void) {
 	memcpy(_previousKeyboardState, _currentKeyboardState, sizeof(Uint8) * SDL_SCANCODE_COUNT);
 	memcpy(_currentKeyboardState, SDL_GetKeyboardState(NULL), sizeof(Uint8) * SDL_SCANCODE_COUNT);

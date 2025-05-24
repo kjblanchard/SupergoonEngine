@@ -26,6 +26,9 @@ extern Renderer* _renderer;
 extern int _logicalWidth;
 extern int _logicalHeight;
 extern Window* _window;
+extern int _refreshRate;
+extern int _vsyncEnabled;
+int getRefreshRate(void);
 void handleWindowEvents();
 #ifdef __cplusplus
 }

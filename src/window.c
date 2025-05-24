@@ -2,6 +2,7 @@
 #include <Supergoon/graphics.h>
 #include <Supergoon/log.h>
 #include <Supergoon/window.h>
+#include <SupergoonEngine/window.h>
 typedef union SDL_Event Event;
 #ifdef imgui
 #include <Supergoon/Debug/ImGui.hpp>
@@ -29,6 +30,8 @@ int _gameImageWidth = 0;
 int _gameImageHeight = 0;
 int _renderTargetWidth = 0;
 int _renderTargetHeight = 0;
+int _refreshRate = 0;
+int _vsyncEnabled = true;
 
 Texture* _imguiGameTexture;
 static const char* _windowName = NULL;
@@ -114,6 +117,8 @@ void CreateWindow(void) {
 	if (!SDL_CreateWindowAndRenderer(name, _windowWidth, _windowHeight, flags, &_window, &_renderer)) {
 		sgLogCritical("Could not load window, error, %s", SDL_GetError());
 	}
+	SDL_SetRenderVSync(_renderer, _vsyncEnabled);
+	getRefreshRate();
 #ifdef imgui
 	InitializeImGui();
 #endif
@@ -162,4 +167,17 @@ void CloseWindow(void) {
 	UnloadTexture(_imguiGameTexture);
 	SDL_DestroyRenderer(_renderer);
 	SDL_DestroyWindow(_window);
+}
+
+int getRefreshRate(void) {
+	int displayIndex = SDL_GetDisplayForWindow(_window);
+	const SDL_DisplayMode* mode = SDL_GetCurrentDisplayMode(displayIndex);
+	if (!mode) {
+		sgLogWarn("Failed to get display mode, %s", SDL_GetError());
+		_refreshRate = 60;
+		return _refreshRate;
+	}
+	_refreshRate = mode->refresh_rate;
+	if (_refreshRate == 0) _refreshRate = 60;
+	return _refreshRate;
 }

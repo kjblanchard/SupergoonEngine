@@ -22,10 +22,10 @@ void initButtonFuncTable(lua_State* L) {
 static UIObject* createUIObject(LuaState L) {
 	UIObject* testObj = SDL_calloc(1, sizeof(*testObj));
 	testObj->Name = strdup(LuaGetStringi(L, 1));
-	testObj->XOffset = LuaGetFloatFromTableStacki(L, 2, "x");
-	testObj->YOffset = LuaGetFloatFromTableStacki(L, 2, "y");
-	testObj->Location.w = LuaGetFloatFromTableStacki(L, 2, "w");
-	testObj->Location.h = LuaGetFloatFromTableStacki(L, 2, "h");
+	testObj->XOffset = LuaGetFloatFromTableStackiKey(L, 2, "x");
+	testObj->YOffset = LuaGetFloatFromTableStackiKey(L, 2, "y");
+	testObj->Location.w = LuaGetFloatFromTableStackiKey(L, 2, "w");
+	testObj->Location.h = LuaGetFloatFromTableStackiKey(L, 2, "h");
 	testObj->Parent = LuaGetLightUserdatai(L, 3);
 	testObj->Flags |= UIObjectFlagActive | UIObjectFlagVisible | UIObjectFlagDirty;
 	testObj->Id = _nextObjectId;
@@ -60,10 +60,10 @@ static int createImage(lua_State* state) {
 	image->Texture = CreateTextureFromIndexedBMP(LuaGetStringi(state, 4));
 	obj->Data = image;
 	if (!LuaIsNili(state, 5)) {
-		image->SrcRect.x = LuaGetFloatFromTableStacki(state, 5, "x");
-		image->SrcRect.y = LuaGetFloatFromTableStacki(state, 5, "y");
-		image->SrcRect.w = LuaGetFloatFromTableStacki(state, 5, "w");
-		image->SrcRect.h = LuaGetFloatFromTableStacki(state, 5, "h");
+		image->SrcRect.x = LuaGetFloatFromTableStackiKey(state, 5, "x");
+		image->SrcRect.y = LuaGetFloatFromTableStackiKey(state, 5, "y");
+		image->SrcRect.w = LuaGetFloatFromTableStackiKey(state, 5, "w");
+		image->SrcRect.h = LuaGetFloatFromTableStackiKey(state, 5, "h");
 	}
 	AddUIObject(obj, obj->Parent);
 	LuaPushLightUserdata(state, obj);
@@ -92,10 +92,10 @@ static int createText(lua_State* L) {
 	textData->NumLettersToDraw = UINT_MAX;
 	textData->Text = LuaAllocateStringStack(L, 4);
 	AddUIObject(obj, obj->Parent);
-	textData->Color.R = (uint8_t)LuaGetFloatFromTableStacki(L, 10, "r");
-	textData->Color.G = (uint8_t)LuaGetFloatFromTableStacki(L, 10, "g");
-	textData->Color.B = (uint8_t)LuaGetFloatFromTableStacki(L, 10, "b");
-	textData->Color.A = (uint8_t)LuaGetFloatFromTableStacki(L, 10, "a");
+	textData->Color.R = (uint8_t)LuaGetFloatFromTableStackiKey(L, 10, "r");
+	textData->Color.G = (uint8_t)LuaGetFloatFromTableStackiKey(L, 10, "g");
+	textData->Color.B = (uint8_t)LuaGetFloatFromTableStackiKey(L, 10, "b");
+	textData->Color.A = (uint8_t)LuaGetFloatFromTableStackiKey(L, 10, "a");
 	LuaPushLightUserdata(L, obj);
 	return 1;
 }
@@ -110,10 +110,10 @@ static int createRect(lua_State* L) {
 	UIObject* obj = createUIObject(L);
 	obj->Type = UIObjectTypesRect;
 	UIRect* rectData = SDL_calloc(1, sizeof(*rectData));
-	rectData->Color.R = (uint8_t)LuaGetFloatFromTableStacki(L, 4, "r");
-	rectData->Color.G = (uint8_t)LuaGetFloatFromTableStacki(L, 4, "g");
-	rectData->Color.B = (uint8_t)LuaGetFloatFromTableStacki(L, 4, "b");
-	rectData->Color.A = (uint8_t)LuaGetFloatFromTableStacki(L, 4, "a");
+	rectData->Color.R = (uint8_t)LuaGetFloatFromTableStackiKey(L, 4, "r");
+	rectData->Color.G = (uint8_t)LuaGetFloatFromTableStackiKey(L, 4, "g");
+	rectData->Color.B = (uint8_t)LuaGetFloatFromTableStackiKey(L, 4, "b");
+	rectData->Color.A = (uint8_t)LuaGetFloatFromTableStackiKey(L, 4, "a");
 	obj->Data = rectData;
 	AddUIObject(obj, obj->Parent);
 	LuaPushLightUserdata(L, obj);

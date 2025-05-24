@@ -55,7 +55,8 @@ int LuaGetBooli(LuaState L, int i);
 float LuaGetFloat(LuaState L, const char* field);
 float LuaGetFloati(LuaState L, int i);
 float LuaGetFloatFromStack(LuaState L);
-float LuaGetFloatFromTableStacki(LuaState L, int i, const char* key);
+// Gets a float from a table at position i with field name of key
+float LuaGetFloatFromTableStackiKey(LuaState L, int i, const char* key);
 // Strings
 // i is stack location of table, const char* is key.. so not directly on stack -1.
 void LuaCopyString(LuaState L, const char* name, char* location, int strlen);

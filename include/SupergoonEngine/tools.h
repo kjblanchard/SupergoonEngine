@@ -1,4 +1,5 @@
 #pragma once
+#include <Supergoon/log.h>
 #ifdef __cplusplus
 extern "C" {
 #endif

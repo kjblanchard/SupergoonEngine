@@ -53,6 +53,7 @@ void AddGameObjectFromTiledMap(TiledObject* object) {
 	CurrentGameObject->Userdata = NULL;
 	sgLogDebug("Load GameObject from map");
 	if (_gameObjectTypes[CurrentGameObject->Type].CreateFunc) {
+		sgLogDebug("create gameobject function");
 		_gameObjectTypes[CurrentGameObject->Type].CreateFunc(object, CurrentGameObject);
 	}
 	CurrentGameObject->Flags |= GameObjectFlagActive;
@@ -69,6 +70,8 @@ void InitializeGameObjectSystem(void) {
 void GameObjectSystemUpdate(void) {
 	for (size_t i = 0; i < _numGameObjects; i++) {
 		CurrentGameObject = &_gameObjects[i];
+		CurrentGameObject->pX = CurrentGameObject->X;
+		CurrentGameObject->pY = CurrentGameObject->Y;
 		// Gameobject is not active, continue to next.
 		if (!CurrentGameObject->Flags || !(CurrentGameObject->Flags & GameObjectFlagActive)) {
 			continue;

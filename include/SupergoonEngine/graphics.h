@@ -25,6 +25,7 @@ typedef struct TextureCacheItem {
 
 } TextureCacheItem;
 extern TextureCacheItem* _textureCache;
+extern size_t _firstCacheHole;
 extern bool _holes;
 extern size_t _numTexturesInCache;
 void initializeGraphicsSystem(void);

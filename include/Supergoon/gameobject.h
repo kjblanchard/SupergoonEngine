@@ -16,6 +16,8 @@ typedef struct GameObject {
 	unsigned int Id;
 	unsigned int Type;
 	GameObjectFlags Flags;
+	float pX;
+	float pY;
 	float X;
 	float Y;
 	float W;

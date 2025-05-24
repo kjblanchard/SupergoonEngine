@@ -8,6 +8,7 @@
 #include <Supergoon/Debug/Tween.hpp>
 #include <Supergoon/Debug/UI.hpp>
 #include <Supergoon/pch.hpp>
+extern void ShowPerformanceWindow(void);
 
 void ShowWidgets() {
 	ShowContentDebugWindow();
@@ -17,6 +18,7 @@ void ShowWidgets() {
 	ShowUIDebugWindow();
 	ShowGraphicsDebugWindow();
 	ShowSceneDebugWindow();
+	ShowPerformanceWindow();
 }
 
 int GetDefaultWindowFlags() {

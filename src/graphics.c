@@ -11,7 +11,7 @@
 TextureCacheItem* _textureCache = NULL;
 bool _holes = false;
 size_t _numTexturesInCache = 0;
-static size_t _firstHole = 0;
+size_t _firstCacheHole = 0;
 static size_t _textureCacheSize = 0;
 
 static Texture* getTextureFromCache(const char* name) {
@@ -25,17 +25,17 @@ static Texture* getTextureFromCache(const char* name) {
 }
 
 static void addTextureToCache(Texture* texture, const char* name) {
-	size_t insertLocation = _holes ? _firstHole : _numTexturesInCache;
+	size_t insertLocation = _holes ? _firstCacheHole : _numTexturesInCache;
 	if (_holes) {
-		for (size_t i = _firstHole + 1; i < _numTexturesInCache; i++) {
+		for (size_t i = _firstCacheHole + 1; i < _numTexturesInCache; i++) {
 			if (_textureCache[i].References == 0) {
-				_firstHole = i;
+				_firstCacheHole = i;
 				break;
 			}
 		}
-		if (_firstHole == insertLocation) {
+		if (_firstCacheHole == insertLocation) {
 			_holes = false;
-			_firstHole = 0;
+			_firstCacheHole = 0;
 		}
 	}
 	if (_numTexturesInCache > _textureCacheSize / 2) {
@@ -182,7 +182,7 @@ void UnloadUnusedTextures(void) {
 	for (size_t i = 0; i < _numTexturesInCache; i++) {
 		if (_textureCache[i].References == 0) {
 			unloadTexture(i);
-			_firstHole = i < _firstHole ? i : _firstHole;
+			_firstCacheHole = i < _firstCacheHole ? i : _firstCacheHole;
 		}
 	}
 }
@@ -192,14 +192,14 @@ void UnloadAllTextures(void) {
 		unloadTexture(i);
 	}
 	_holes = true;
-	_firstHole = 0;
+	_firstCacheHole = 0;
 }
 
 void initializeGraphicsSystem(void) {
 	_textureCacheSize = 4;
 	RESIZE_ARRAY(_textureCache, _textureCacheSize, TextureCacheItem);
 	int result = SDL_SetRenderDrawBlendMode(_renderer, SDL_BLENDMODE_BLEND);
-	if(!result) {
+	if (!result) {
 		sgLogWarn("Could not set blendmode..");
 	}
 }

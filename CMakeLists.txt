@@ -37,6 +37,7 @@ set(SRC_FILES
     src/map.c
     src/effects.c
     src/gameobject.c
+    src/sprite.c
     src/Input/joystick.c
     src/Input/keyboard.c
     src/Input/mouse.c
@@ -64,6 +65,8 @@ set(SRC_FILES
     src/Lua/object.c
     src/Lua/lengine.c
     src/Lua/leffects.c
+    src/Lua/linput.c
+    src/Lua/lsprite.c
 )
 
 if(imgui)
@@ -84,6 +87,7 @@ if(imgui)
         src/Debug/Game.cpp
         src/Debug/UI.cpp
         src/Debug/Scene.cpp
+        src/Debug/Performance.cpp
         src/Debug/Debug.cpp # For showing all the windows
 
         # src/Debug/Audio.cpp

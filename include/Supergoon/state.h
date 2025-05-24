@@ -8,6 +8,7 @@
  * @copyright Copyright (c) 2025
  *
  */
+#include <stdint.h>
 #pragma once
 extern float DeltaTimeSeconds;
 extern float DeltaTimeMilliseconds;

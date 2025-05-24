@@ -11,9 +11,11 @@ extern "C" {
  */
 typedef struct geClock {
 	uint64_t Previous;
+	double Accumulator;
 } geClock;
 void geClockStart(geClock* c);
 void geClockUpdate(geClock* c);
+bool geClockShouldUpdate(geClock* c);
 double geClockGetUpdateTimeMilliseconds(void);
 double geClockGetUpdateTimeSeconds(void);
 #ifdef __cplusplus

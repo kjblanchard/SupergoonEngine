@@ -205,7 +205,7 @@ float LuaGetFloati(LuaState L, int i) {
 float LuaGetFloatFromStack(LuaState L) {
 	return lua_tonumber(L, -1);
 }
-float LuaGetFloatFromTableStacki(LuaState L, int i, const char* key) {
+float LuaGetFloatFromTableStackiKey(LuaState L, int i, const char* key) {
 	lua_getfield(L, i, key);
 	float fieldFloat = lua_tonumber(L, -1);
 	lua_pop(L, 1);

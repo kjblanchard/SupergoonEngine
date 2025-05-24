@@ -32,11 +32,6 @@ static int setScalingOptions(lua_State* L) {
 	return 0;
 }
 
-static int getDeltaTime(lua_State* L) {
-	LuaPushFloat(L, DeltaTimeSeconds);
-	return 1;
-}
-
 static void updateFunc(void) {
 	if (_updateFuncRef != LUA_REFNIL) {
 		lua_rawgeti(_luaState, LUA_REGISTRYINDEX, _updateFuncRef);
@@ -61,11 +56,21 @@ static int setUpdateFunc(lua_State* L) {
 static const luaL_Reg sceneLib[] = {
 	{"SetWindowOptions", setWindowOptions},
 	{"SetScalingOptions", setScalingOptions},
-	{"DeltaTime", getDeltaTime},
 	{"SetUpdateFunc", setUpdateFunc},
 	{NULL, NULL}};
 
 void RegisterLuaEngineFunctions(void) {
 	luaL_newlib(_luaState, sceneLib);
 	lua_setglobal(_luaState, "cEngine");
+}
+
+void PushGamestateToLua(void) {
+	lua_getglobal(_luaState, "cEngine");  // Push the cEngine table
+	lua_pushnumber(_luaState, DeltaTimeSeconds);
+	lua_setfield(_luaState, -2, "DeltaTimeSeconds");
+	lua_pushnumber(_luaState, DeltaTimeMilliseconds);
+	lua_setfield(_luaState, -2, "DeltaTimeMilliseconds");
+	lua_pushinteger(_luaState, Ticks);
+	lua_setfield(_luaState, -2, "Ticks");
+	lua_pop(_luaState, 1);	// Pop the cEngine table
 }

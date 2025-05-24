@@ -18,7 +18,8 @@ void InitializeKeyboardSystem(void);
 void UpdateKeyboardSystem(void);
 int IsKeyboardKeyJustReleased(const int key);
 int IsKeyboardKeyJustPressed(const int key);
-int IsKeyboardKeyHeldDown(int key);
+int IsKeyboardKeyHeldDown(const int key);
+int IsKeyboardKeyDown(const int key);
 
 #ifdef __cplusplus
 }

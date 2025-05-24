@@ -7,11 +7,13 @@
 #include <Supergoon/events.h>
 #include <Supergoon/log.h>
 #include <Supergoon/lua.h>
+#include <Supergoon/sprite.h>
 #include <Supergoon/state.h>
 #include <Supergoon/window.h>
 #include <SupergoonEngine/gameobject.h>
 #include <SupergoonEngine/graphics.h>
 #include <SupergoonEngine/map.h>
+#include <SupergoonEngine/sprite.h>
 #include <SupergoonEngine/ui.h>
 
 // This is not needed, just for testing
@@ -24,9 +26,11 @@
 #include <SupergoonEngine/Lua/audio.h>
 #include <SupergoonEngine/Lua/effects.h>
 #include <SupergoonEngine/Lua/engine.h>
+#include <SupergoonEngine/Lua/input.h>
 #include <SupergoonEngine/Lua/log.h>
 #include <SupergoonEngine/Lua/object.h>
 #include <SupergoonEngine/Lua/scene.h>
+#include <SupergoonEngine/Lua/sprite.h>
 #include <SupergoonEngine/Lua/ui.h>
 
 // Functions in mouce.c
@@ -62,11 +66,11 @@ static bool Start(void) {
 	geInitializeJoysticks();
 	InitializeLuaEngine();
 	InitializeEventEngine();
-	geClockStart(&_clock);
 	CreateWindow();
 	initializeAudio();
 	initializeTweenEngine();
 	InitializeGameObjectSystem();
+	InitializeSpriteSystem();
 	InitializeUISystem();
 	// should be consolidated
 	RegisterLuaUIFunctions();
@@ -76,7 +80,10 @@ static bool Start(void) {
 	RegisterLuaSceneFuncs();
 	RegisterLuaEngineFunctions();
 	RegisterLuaEffectsFunctions();
+	RegisterLuaInputFunctions();
+	RegisterLuaSpriteFunctions();
 	//
+	geClockStart(&_clock);
 	return true;
 }
 static bool sdlEventLoop(void) {
@@ -106,23 +113,32 @@ static void Update(void) {
 	bool quit = false;
 	while (!quit) {
 		quit = sdlEventLoop();
-		UpdateKeyboardSystem();
-		geClockUpdate(&_clock);
-		DeltaTimeMilliseconds = geClockGetUpdateTimeMilliseconds();
-		DeltaTimeSeconds = geClockGetUpdateTimeSeconds();
-		Ticks += 1;
+		if (quit) {
+			break;
+		}
 #ifdef imgui
 		// If we are im imgui and the game is "paused", we should just Draw and update imgui.
 		if (!_isGameSimulatorRunning) {
 		}
 #endif
+		geClockUpdate(&_clock);
+		UpdateKeyboardSystem();
+		DeltaTimeMilliseconds = geClockGetUpdateTimeMilliseconds();
+		DeltaTimeSeconds = geClockGetUpdateTimeSeconds();
 		audioUpdate();
-		updateTweens();
-		GameObjectSystemUpdate();
-		if (_updateFunc) _updateFunc();
-		UpdateUISystem();
+		// Update with accumulator
+		while (geClockShouldUpdate(&_clock)) {
+			Ticks += 1;
+			updateTweens();
+			PushGamestateToLua();
+			GameObjectSystemUpdate();
+			if (_updateFunc) _updateFunc();
+			UpdateUISystem();
+		}
+		float alpha = _clock.Accumulator / geClockGetUpdateTimeSeconds();
 		DrawStart();
 		drawCurrentMap();
+		DrawSpriteSystem(alpha);
 		if (_drawFunc) _drawFunc();
 		DrawUISystem();
 		DrawEnd();
@@ -133,6 +149,7 @@ static void Update(void) {
 
 static void Quit(void) {
 	shutdownMapSystem();
+	ShutdownSpriteSystem();
 	sgCloseDebugLogFile();
 	ShutdownJoystickSystem();
 	sgCloseLua();
