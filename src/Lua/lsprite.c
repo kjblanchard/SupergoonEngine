@@ -3,6 +3,7 @@
 #include <Supergoon/lua.h>
 #include <Supergoon/sprite.h>
 #include <SupergoonEngine/Lua/sprite.h>
+#include <SupergoonEngine/sprite.h>
 #include <lauxlib.h>
 #include <lua.h>
 
@@ -27,9 +28,18 @@ static int newSprite(lua_State* L) {
 	LuaPushLightUserdata(L, sprite);
 	return 1;
 }
+static int destroySprite(lua_State* L) {
+	if (LuaGetStackSize(L) != 1) {
+		sgLogWarn("Bad args passed to destroy sprite from lua!");
+		return 0;
+	}
+	DestroySprite(LuaGetLightUserdatai(L, 1));
+	return 0;
+}
 
 static const luaL_Reg spriteLib[] = {
 	{"NewSprite", newSprite},
+	{"DestroySprite", destroySprite},
 	{NULL, NULL}};
 
 void RegisterLuaSpriteFunctions(void) {

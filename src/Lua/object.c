@@ -10,6 +10,7 @@
 static int LuaCreateObjectFuncs[MAX_GAMEOBJECT_TYPES] = {0};
 static int LuaStartObjectFuncs[MAX_GAMEOBJECT_TYPES] = {0};
 static int LuaUpdateObjectFuncs[MAX_GAMEOBJECT_TYPES] = {0};
+static int LuaDestroyObjectFuncs[MAX_GAMEOBJECT_TYPES] = {0};
 
 static void createObject(void* userdata, GameObject* go) {
 	if (LuaCreateObjectFuncs[go->Type] != LUA_REFNIL) {
@@ -46,6 +47,18 @@ static void updateObject(GameObject* go) {
 	}
 }
 
+static void destroyObject(GameObject* go) {
+	if (LuaCreateObjectFuncs[go->Type] != LUA_REFNIL) {
+		lua_rawgeti(_luaState, LUA_REGISTRYINDEX, LuaDestroyObjectFuncs[go->Type]);
+		lua_pushlightuserdata(_luaState, go);
+		if (lua_pcall(_luaState, 1, 0, 0) != LUA_OK) {
+			const char* err = lua_tostring(_luaState, -1);
+			sgLogError("Error in update gameobject %s", err);
+			lua_pop(_luaState, 1);
+		}
+	}
+}
+
 static int l_register_object_functions(lua_State* L) {
 	int type = luaL_checkinteger(L, 1);
 	luaL_checktype(L, 2, LUA_TTABLE);  // Expects an array table
@@ -60,9 +73,13 @@ static int l_register_object_functions(lua_State* L) {
 	lua_rawgeti(L, 2, 3);
 	if (!lua_isfunction(L, -1)) return luaL_error(L, "Expected function at index 3 (update)");
 	LuaUpdateObjectFuncs[type] = luaL_ref(L, LUA_REGISTRYINDEX);
+	lua_rawgeti(L, 2, 4);
+	if (!lua_isfunction(L, -1)) return luaL_error(L, "Expected function at index 4 (update)");
+	LuaDestroyObjectFuncs[type] = luaL_ref(L, LUA_REGISTRYINDEX);
 	ObjectSetCreateFunction(type, createObject);
 	ObjectSetStartFunction(type, startObject);
 	ObjectSetUpdateFunction(type, updateObject);
+	ObjectSetDestroyFunction(type, destroyObject);
 	return 0;
 }
 

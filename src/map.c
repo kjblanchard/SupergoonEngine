@@ -155,7 +155,7 @@ static Tilemap* parseTiledTilemap(const char* tiledFilename) {
 	asprintf(&name, "assets/tiled/%s.lua", tiledFilename);
 	LuaPushTableFromFile(_luaState, name);
 	SDL_free(name);
-	Tilemap* map = malloc(sizeof(*map));
+	Tilemap* map = calloc(1, sizeof(*map));
 	map->BaseFilename = strdup(tiledFilename);
 	map->Width = LuaGetInt(_luaState, "width");
 	map->Height = LuaGetInt(_luaState, "height");

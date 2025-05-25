@@ -43,6 +43,10 @@ static GameObject* getFreeGameObject(void) {
 }
 
 void AddGameObjectFromTiledMap(TiledObject* object) {
+	// If we don't have a create function for this object type, do not create it..
+	if (!_gameObjectTypes[object->ObjectType].CreateFunc) {
+		return;
+	}
 	if (_numGameObjects + 1 > _sizeGameObjects / 2) {
 		resizeGameObjectArray();
 	}
@@ -51,11 +55,11 @@ void AddGameObjectFromTiledMap(TiledObject* object) {
 	CurrentGameObject->Type = object->ObjectType;
 	CurrentGameObject->X = CurrentGameObject->Y = CurrentGameObject->W = CurrentGameObject->H = 0;
 	CurrentGameObject->Userdata = NULL;
-	sgLogDebug("Load GameObject from map");
 	if (_gameObjectTypes[CurrentGameObject->Type].CreateFunc) {
 		sgLogDebug("create gameobject function");
 		_gameObjectTypes[CurrentGameObject->Type].CreateFunc(object, CurrentGameObject);
 	}
+	CurrentGameObject->Flags = 0;
 	CurrentGameObject->Flags |= GameObjectFlagActive;
 	CurrentGameObject->Flags |= GameObjectFlagLoaded;
 	++_numGameObjects;
@@ -73,7 +77,7 @@ void GameObjectSystemUpdate(void) {
 		CurrentGameObject->pX = CurrentGameObject->X;
 		CurrentGameObject->pY = CurrentGameObject->Y;
 		// Gameobject is not active, continue to next.
-		if (!CurrentGameObject->Flags || !(CurrentGameObject->Flags & GameObjectFlagActive)) {
+		if (!CurrentGameObject->Flags || !(CurrentGameObject->Flags & GameObjectFlagActive) || CurrentGameObject->Flags & GameObjectFlagDestroyed) {
 			continue;
 		}
 		if (!(CurrentGameObject->Flags & GameObjectFlagLoaded)) {
@@ -150,20 +154,21 @@ void DestroyGameObjects(void) {
 		if (!(_gameObjects[i].Flags & GameObjectFlagToBeDestroyed)) {
 			continue;
 		}
+		if (_gameObjectTypes[_gameObjects[i].Type].DestroyFunc) {
+			_gameObjectTypes[_gameObjects[i].Type].DestroyFunc(&_gameObjects[i]);
+		}
 		if (_gameObjects[i].Userdata) {
-			if (_gameObjectTypes[_gameObjects[i].Type].DestroyFunc) {
-				_gameObjectTypes[_gameObjects[i].Type].DestroyFunc(&_gameObjects[i]);
-			}
 			SDL_free(_gameObjects[i].Userdata);
 			_gameObjects[i].Userdata = NULL;
 		}
 		_firstGameObjectHole = _firstGameObjectHole < i ? _firstGameObjectHole : i;
+		_gameObjects[i].Flags = GameObjectFlagDestroyed;  // Set flag to only be destroyed
 	}
 }
 
 void SetGameobjectsToBeDeleted(int forceDestroy) {
-	for (size_t i = 0; i < _sizeGameObjects; i++) {
-		if ((_gameObjects[i].Flags & GameObjectFlagDoNotDestroy) && !forceDestroy) {
+	for (size_t i = 0; i < _numGameObjects; i++) {
+		if (_gameObjects[i].Flags & GameObjectFlagDestroyed || (_gameObjects[i].Flags & GameObjectFlagDoNotDestroy && !forceDestroy)) {
 			continue;
 		}
 		_gameObjects[i].Flags |= GameObjectFlagToBeDestroyed;

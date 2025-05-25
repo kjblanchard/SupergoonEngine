@@ -31,7 +31,8 @@ int _gameImageHeight = 0;
 int _renderTargetWidth = 0;
 int _renderTargetHeight = 0;
 int _refreshRate = 0;
-int _vsyncEnabled = true;
+int _vsyncEnabled = false;
+int TARGET_FPS = 60;
 
 Texture* _imguiGameTexture;
 static const char* _windowName = NULL;
@@ -117,7 +118,9 @@ void CreateWindow(void) {
 	if (!SDL_CreateWindowAndRenderer(name, _windowWidth, _windowHeight, flags, &_window, &_renderer)) {
 		sgLogCritical("Could not load window, error, %s", SDL_GetError());
 	}
-	SDL_SetRenderVSync(_renderer, _vsyncEnabled);
+	if (!SDL_SetRenderVSync(_renderer, _vsyncEnabled)) {
+		sgLogWarn("Could not set vsync, %s", SDL_GetError());
+	}
 	getRefreshRate();
 #ifdef imgui
 	InitializeImGui();

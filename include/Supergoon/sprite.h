@@ -18,6 +18,7 @@ typedef struct Sprite {
 } Sprite;
 
 Sprite* NewSprite(void);
+void DestroySprite(Sprite* sprite);
 #ifdef __cplusplus
 }
 #endif

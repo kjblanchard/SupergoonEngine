@@ -28,6 +28,7 @@ extern int _logicalHeight;
 extern Window* _window;
 extern int _refreshRate;
 extern int _vsyncEnabled;
+extern int TARGET_FPS;
 int getRefreshRate(void);
 void handleWindowEvents();
 #ifdef __cplusplus

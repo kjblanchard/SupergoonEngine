@@ -36,12 +36,16 @@ Sprite* NewSprite(void) {
 	Sprite* sprite = getFreeSprite();
 	sprite->Parent = NULL;
 	sprite->Texture = NULL;
+	sprite->Flags = 0;
 	sprite->TextureSourceRect = (RectangleF){0, 0, 0, 0};
 	sprite->OffsetAndSizeRectF = (RectangleF){0, 0, 0, 0};
 	return sprite;
 }
 
 void DestroySprite(Sprite* sprite) {
+	if (!sprite) {
+		sgLogWarn("Trying to destroy a null sprite!");
+	}
 	for (size_t i = 0; i < _numSprites; i++) {
 		if (sprite != &_sprites[i]) {
 			continue;
@@ -69,7 +73,7 @@ void DestroySprite(Sprite* sprite) {
 // 		DrawTexture(sprite->Texture, &dst, &sprite->TextureSourceRect);
 // 	}
 // }
-void DrawSpriteSystem() {
+void DrawSpriteSystem(void) {
 	for (size_t i = 0; i < _numSprites; i++) {
 		Sprite* sprite = &_sprites[i];
 		if (!sprite || !sprite->Texture || !(sprite->Flags & SpriteFlagVisible)) {
@@ -89,8 +93,10 @@ void DrawSpriteSystem() {
 		RectangleF dst = sprite->OffsetAndSizeRectF;
 		dst.x = interpX + dst.x;
 		dst.y = interpY + dst.y;
-		// dst.x = interpX + dst.x;
-		// dst.y = interpY + dst.y;
+		// dst.x = (int)SDL_roundf(dst.x);
+		// dst.y = (int)SDL_roundf(dst.y);
+		dst.x = SDL_roundf(dst.x);
+		dst.y = SDL_roundf(dst.y);
 
 		DrawTexture(sprite->Texture, &dst, &sprite->TextureSourceRect);
 	}

@@ -32,6 +32,9 @@
 #include <SupergoonEngine/Lua/scene.h>
 #include <SupergoonEngine/Lua/sprite.h>
 #include <SupergoonEngine/Lua/ui.h>
+// Test cap frame rate
+#include <SupergoonEngine/window.h>
+//
 
 // Functions in mouce.c
 void updateMouseSystem(void);
@@ -46,6 +49,7 @@ extern void updateTweens(void);
 // Function in filesystem.c
 extern void shutdownEngineFilesystem(void);
 Uint64 previousCounter;
+Uint64 _frequency;
 float deltaTimeSeconds;
 
 // static geClock _clock;
@@ -85,6 +89,7 @@ static bool Start(void) {
 	RegisterLuaEffectsFunctions();
 	RegisterLuaInputFunctions();
 	RegisterLuaSpriteFunctions();
+	_frequency = SDL_GetPerformanceFrequency();	 // ticks per second
 	previousCounter = SDL_GetPerformanceCounter();
 	deltaTimeSeconds = 0;
 	return true;
@@ -116,7 +121,7 @@ static void Update(void) {
 	bool quit = false;
 	while (!quit) {
 		Uint64 now = SDL_GetPerformanceCounter();
-		deltaTimeSeconds = (now - previousCounter) / (float)SDL_GetPerformanceFrequency();
+		deltaTimeSeconds = (now - previousCounter) / (float)_frequency;
 		previousCounter = now;
 		DeltaTimeMilliseconds = deltaTimeSeconds * 1000;
 		DeltaTimeSeconds = deltaTimeSeconds;
@@ -145,6 +150,15 @@ static void Update(void) {
 		if (_drawFunc) _drawFunc();
 		DrawUISystem();
 		DrawEnd();
+
+		// If we are doing a capped frame rate, we should also wait between frames.
+		Uint64 frame_end = SDL_GetPerformanceCounter();
+		Uint64 elapsed_ticks = frame_end - now;
+		Uint64 elapsed_ns = (elapsed_ticks * 1000000000ULL) / _frequency;
+		const Uint64 FRAME_DURATION_NS = 1000000000 / TARGET_FPS;
+		if (elapsed_ns < FRAME_DURATION_NS) {
+			SDL_DelayPrecise(FRAME_DURATION_NS - elapsed_ns);  // high-precision sleep
+		}
 	}
 }
 
