@@ -31,8 +31,10 @@ int _gameImageHeight = 0;
 int _renderTargetWidth = 0;
 int _renderTargetHeight = 0;
 int _refreshRate = 0;
-int _vsyncEnabled = false;
-int TARGET_FPS = 60;
+// Without vsync, there is always some kind of jitter.
+int _vsyncEnabled = true;
+// Target FPS 999 means there will be no delay in the engine, so probably use vsync
+int TARGET_FPS = 999;
 
 Texture* _imguiGameTexture;
 static const char* _windowName = NULL;

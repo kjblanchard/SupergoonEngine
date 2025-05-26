@@ -48,6 +48,8 @@ void ShowPerformanceWindow(void) {
 	ImGui::Text("Delta Time (ms) : Min: %.2f | Max: %.2f | Avg: %.2f", minDelta, maxDelta, avgDelta);
 	ImGui::Text("FPS             : Min: %.1f | Max: %.1f | Avg: %.1f", minFps, maxFps, avgFps);
 	ImGui::Text("VSync Modes:");
+	ImGui::SameLine();
+	ImGui::Text("Probably this isn't accurate at game startup, VSYNC / unlimited is typical.");
 	if (ImGui::RadioButton("VSync OFF", currentVsync == 0)) {
 		currentVsync = 0;
 		SDL_SetRenderVSync(_renderer, 0);  // 0 disables vsync
