@@ -80,9 +80,14 @@ void ShowPerformanceWindow(void) {
 		TARGET_FPS = 120;
 		frameCapChoice = 2;
 	}
-	if (ImGui::RadioButton("Unlimited", frameCapChoice == 3)) {
-		TARGET_FPS = 999;
+
+	if (ImGui::RadioButton("144 FPS", frameCapChoice == 3)) {
+		TARGET_FPS = 144;
 		frameCapChoice = 3;
+	}
+	if (ImGui::RadioButton("Unlimited", frameCapChoice == 4)) {
+		TARGET_FPS = 999;
+		frameCapChoice = 4;
 	}
 	ImGui::End();
 }
