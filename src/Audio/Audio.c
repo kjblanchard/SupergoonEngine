@@ -148,6 +148,7 @@ static void stopBgmInternal(Event* event) {
 }
 
 static void playBgmInternal(Event* event) {
+	UpdatePlayingBgmVolume();
 	bgmPlay(_bgmAssets[event->user.code].Bgm);
 }
 
@@ -270,7 +271,7 @@ void PlaySfxOneShot(const char* name, float volume) {
 		}
 	}
 	if (sfx) {
-		sfx->Volume = volume;
+		sfx->Volume = volume * _globalSfxVolume;
 		SfxPlay(sfx, stream);
 		return;
 	}
@@ -290,6 +291,6 @@ void PlaySfxOneShot(const char* name, float volume) {
 	memcpy(sfxAsset->Sfx.Filename, fullPathBuffer, SFX_MAX_CHARS);
 	sfxAsset->Sfx.Filename[SFX_MAX_CHARS - 1] = '\0';  // Ensure null termination f
 	SfxLoad(&sfxAsset->Sfx);
-	sfxAsset->Sfx.Volume = volume;
+	sfxAsset->Sfx.Volume = volume * _globalSfxVolume;
 	SfxPlay(&sfxAsset->Sfx, stream);
 }

@@ -91,6 +91,19 @@ void LuaRegistrySetSubTableEntry(LuaState L, const char* registryKey, int subKey
 void LuaGetLuaFuncAtIndex(LuaState L, int index);
 void LuaGetLuaFunc(LuaState L, const char* field);
 void RunLuaFunctionOnStack(LuaState L, int numArgs);
+// Helpers
+typedef enum LuaFunctionParameterTypes {
+	// Used if you don't want to check this type.
+	LuaFunctionParameterTypePass,
+	LuaFunctionParameterTypeInt,
+	LuaFunctionParameterTypeNumber,
+	LuaFunctionParameterTypeString,
+	LuaFunctionParameterTypeFunction,
+
+} LuaFunctionParameterTypes;
+int LuaCheckFunctionCallParamsAndTypes(LuaState L, int numArgsOnStack, ...);
+const char* LuaGetParamType(LuaFunctionParameterTypes paramType);
+const char* LuaGetTypeStringi(LuaState L, int pos);
 
 #ifdef __cplusplus
 }

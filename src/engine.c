@@ -150,15 +150,13 @@ static void Update(void) {
 		if (_drawFunc) _drawFunc();
 		DrawUISystem();
 		DrawEnd();
-
-		if (TARGET_FPS != 999) {
-			// If we are doing a capped frame rate, we should also wait between frames.
+		if (TARGET_FPS != 999) {  // If we are doing a capped frame rate, we should also wait between frames.
 			Uint64 frame_end = SDL_GetPerformanceCounter();
 			Uint64 elapsed_ticks = frame_end - now;
 			Uint64 elapsed_ns = (elapsed_ticks * 1000000000ULL) / _frequency;
 			const Uint64 FRAME_DURATION_NS = 1000000000 / TARGET_FPS;
 			if (elapsed_ns < FRAME_DURATION_NS) {
-				SDL_DelayPrecise(FRAME_DURATION_NS - elapsed_ns);  // high-precision sleep
+				SDL_DelayPrecise(FRAME_DURATION_NS - elapsed_ns);
 			}
 		}
 	}

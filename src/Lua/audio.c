@@ -23,9 +23,27 @@ static int playBgm(lua_State* L) {
 	return 0;
 }
 
+static int setBgmGlobalAudio(lua_State* L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 1, LuaFunctionParameterTypeNumber)) {
+		return 0;
+	}
+	SetGlobalBgmVolume(LuaGetFloati(L, 1));
+	return 0;
+}
+
+static int setSfxGlobalAudio(lua_State* L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 1, LuaFunctionParameterTypeNumber)) {
+		return 0;
+	}
+	SetGlobalSfxVolume(LuaGetFloati(L, 1));
+	return 0;
+}
+
 static const luaL_Reg audioLib[] = {
 	{"PlaySfx", PlaySfx},
 	{"PlayBgm", playBgm},
+	{"SetGlobalBgmVolume", setBgmGlobalAudio},
+	{"SetGlobalSfxVolume", setSfxGlobalAudio},
 	{NULL, NULL}};
 
 void RegisterLuaAudioFunctions(void) {

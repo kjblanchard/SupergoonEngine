@@ -1,3 +1,4 @@
+#include <Supergoon/Audio/Audio.h>
 #include <Supergoon/engine.h>
 #include <Supergoon/log.h>
 #include <Supergoon/lua.h>

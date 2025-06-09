@@ -14,6 +14,7 @@ using namespace std;
 #endif
 
 extern float _globalBgmVolume;
+extern float _globalSfxVolume;
 typedef struct AudioBgmAsset {
 	Bgm* Bgm;
 	float Volume;
@@ -106,6 +107,10 @@ void ShowAudioDebugWindow() {
 	}
 
 	if (ImGui::SliderFloat("Global Bgm Volume", &_globalBgmVolume, 0.0f, 1.0f)) {
+		UpdatePlayingBgmVolume();
+	}
+
+	if (ImGui::SliderFloat("Global Sfx Volume", &_globalSfxVolume, 0.0f, 1.0f)) {
 		UpdatePlayingBgmVolume();
 	}
 	// ImGui::SliderFloat("Global Sfx Volume", &Sound::Instance()->_globalSfxVolume, 0.0f, 1.0f);

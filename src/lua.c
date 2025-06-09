@@ -337,3 +337,71 @@ void RunLuaFunctionOnStack(LuaState L, int numArgs) {
 		lua_pop(L, 1);	// pop func
 	}
 }
+
+// int LuaCheckFunctionCallParamsAndTypes(LuaState L, int numArgsOnStack, ...) {
+int LuaCheckFunctionCallParamsAndTypes(LuaState L, int numArgsOnStack, ...) {
+	if (LuaGetStackSize(L) != numArgsOnStack) {
+		sgLogWarn("Bad number of arguments passed to C function from lua");
+		return false;
+	}
+	va_list argP;
+	LuaFunctionParameterTypes param = LuaFunctionParameterTypePass;
+	int luaPos = 0;
+	va_start(argP, numArgsOnStack);
+	for (size_t i = 0; i < numArgsOnStack; i++) {
+		param = va_arg(argP, LuaFunctionParameterTypes);
+		// param = *(LuaFunctionParameterTypes*)argP;
+		++luaPos;
+		if (!param) {
+			sgLogWarn("Could not get arg from vaargs, returning false");
+			return false;
+		}
+		switch (param) {
+			case LuaFunctionParameterTypeInt:
+				if (!LuaIsInt(L, luaPos)) {
+					goto rfalse;
+				}
+				continue;
+			case LuaFunctionParameterTypeNumber:
+				if (!LuaIsFloat(L, luaPos)) {
+					goto rfalse;
+				}
+				continue;
+			case LuaFunctionParameterTypeString:
+				if (!LuaIsString(L, luaPos)) {
+					goto rfalse;
+				}
+				continue;
+			case LuaFunctionParameterTypeFunction:
+				if (!LuaIsLuaFunc(L, luaPos)) {
+					goto rfalse;
+				}
+				continue;
+			case LuaFunctionParameterTypePass:
+			default:
+				continue;
+		}
+	}
+	return true;
+rfalse:
+	sgLogWarn("Bad parameter passed into lua function, expecting %s at pos %d but got %s", LuaGetParamType(param), luaPos, LuaGetTypeStringi(L, luaPos));
+	return false;
+}
+const char* LuaGetParamType(LuaFunctionParameterTypes paramType) {
+	switch (paramType) {
+		case LuaFunctionParameterTypeInt:
+			return "int";
+		case LuaFunctionParameterTypeNumber:
+			return "number";
+		case LuaFunctionParameterTypeString:
+			return "string";
+		case LuaFunctionParameterTypeFunction:
+			return "function";
+		default:
+			return "na";
+	}
+}
+
+const char* LuaGetTypeStringi(LuaState L, int pos) {
+	return luaL_typename(L, pos);
+}
