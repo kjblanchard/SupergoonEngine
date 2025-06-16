@@ -50,6 +50,7 @@ int LuaGetInt(LuaState L, const char* field);
 int LuaGetIntFromStack(LuaState L);
 int LuaGetIntFromStacki(LuaState L, int i);
 // Bools
+int LuaGetBool(LuaState L, const char* field);
 int LuaGetBooli(LuaState L, int i);
 // Floats
 float LuaGetFloat(LuaState L, const char* field);
@@ -82,6 +83,7 @@ void LuaPushBool(LuaState L, int boolean);
 void LuaPushNil(LuaState L);
 void LuaPushLightUserdata(LuaState L, void* data);
 void LuaPushFloat(LuaState L, float data);
+void LuaPushInt(LuaState L, int data);
 void LuaPushString(LuaState L, const char* data);
 // Registry
 void LuaEnsureRegistryTable(LuaState L, const char* registryKey);
@@ -99,10 +101,14 @@ typedef enum LuaFunctionParameterTypes {
 	LuaFunctionParameterTypeNumber,
 	LuaFunctionParameterTypeString,
 	LuaFunctionParameterTypeFunction,
+	LuaFUnctionParameterTypeUserdata,
 
 } LuaFunctionParameterTypes;
+// Checks to see if the stack has the specific number of arguments, with the following params.. use TypePass to skip checking that arg.
 int LuaCheckFunctionCallParamsAndTypes(LuaState L, int numArgsOnStack, ...);
+// Return string value of type, useful for debuggin
 const char* LuaGetParamType(LuaFunctionParameterTypes paramType);
+// Lua type at position i on stack
 const char* LuaGetTypeStringi(LuaState L, int pos);
 
 #ifdef __cplusplus

@@ -9,6 +9,7 @@ static size_t _firstSpriteHole = 0;
 static size_t _numSprites = 0;
 static size_t _sizeSprites = 4;
 static Sprite* _sprites;
+// TODO turn this into a macro to reuse easily.
 static Sprite* getFreeSprite(void) {
 	if (!_firstSpriteHole) {
 		if (_numSprites + 1 > _sizeSprites / 2) {
@@ -54,6 +55,7 @@ void DestroySprite(Sprite* sprite) {
 		sprite->Parent = NULL;
 		sprite->Flags = SpriteFlagDestroyed;
 		_firstSpriteHole = _firstSpriteHole < i ? _firstSpriteHole : i;
+		return;
 	}
 }
 

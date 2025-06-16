@@ -189,6 +189,12 @@ int LuaGetIntFromStacki(LuaState L, int i) {
 	return lua_tointeger(L, i);
 }
 // Bools
+int LuaGetBool(LuaState L, const char* field) {
+	lua_getfield(L, -1, field);
+	int fieldInt = lua_toboolean(L, -1);
+	lua_pop(L, 1);
+	return fieldInt;
+}
 int LuaGetBooli(LuaState L, int i) {
 	return lua_toboolean(L, i);
 }
@@ -282,6 +288,10 @@ void LuaPushLightUserdata(LuaState L, void* data) {
 void LuaPushFloat(LuaState L, float data) {
 	lua_pushnumber(L, data);
 }
+
+void LuaPushInt(LuaState L, int data) {
+	lua_pushinteger(L, data);
+}
 void LuaPushString(LuaState L, const char* data) {
 	lua_pushstring(L, data);
 }
@@ -346,10 +356,12 @@ int LuaCheckFunctionCallParamsAndTypes(LuaState L, int numArgsOnStack, ...) {
 	}
 	va_list argP;
 	LuaFunctionParameterTypes param = LuaFunctionParameterTypePass;
+
 	int luaPos = 0;
 	va_start(argP, numArgsOnStack);
 	for (size_t i = 0; i < numArgsOnStack; i++) {
-		param = va_arg(argP, LuaFunctionParameterTypes);
+		// param = va_arg(argP, LuaFunctionParameterTypes);
+		param = (LuaFunctionParameterTypes)va_arg(argP, int);
 		// param = *(LuaFunctionParameterTypes*)argP;
 		++luaPos;
 		if (!param) {
@@ -377,13 +389,20 @@ int LuaCheckFunctionCallParamsAndTypes(LuaState L, int numArgsOnStack, ...) {
 					goto rfalse;
 				}
 				continue;
+			case LuaFUnctionParameterTypeUserdata:
+				if (!lua_islightuserdata(L, luaPos)) {
+					goto rfalse;
+				}
+				continue;
 			case LuaFunctionParameterTypePass:
 			default:
 				continue;
 		}
 	}
+	va_end(argP);
 	return true;
 rfalse:
+	va_end(argP);
 	sgLogWarn("Bad parameter passed into lua function, expecting %s at pos %d but got %s", LuaGetParamType(param), luaPos, LuaGetTypeStringi(L, luaPos));
 	return false;
 }

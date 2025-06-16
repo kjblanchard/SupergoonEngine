@@ -50,6 +50,7 @@ set(SRC_FILES
     src/Audio/Sfx.c
     src/Audio/Stream.c
     src/Audio/Audio.c
+    src/Animation/Animator.c
     src/Tweening/easing.c
     src/Tweening/tween.c
     src/UI/ui.c
@@ -67,6 +68,7 @@ set(SRC_FILES
     src/Lua/leffects.c
     src/Lua/linput.c
     src/Lua/lsprite.c
+    src/Lua/lanimation.c
 )
 
 if(imgui)

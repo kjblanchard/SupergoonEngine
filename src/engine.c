@@ -10,6 +10,7 @@
 #include <Supergoon/sprite.h>
 #include <Supergoon/state.h>
 #include <Supergoon/window.h>
+#include <SupergoonEngine/Animation/animator.h>
 #include <SupergoonEngine/gameobject.h>
 #include <SupergoonEngine/graphics.h>
 #include <SupergoonEngine/map.h>
@@ -23,6 +24,7 @@
 #endif
 
 // this is not needed, and should be consolidated to one function
+#include <SupergoonEngine/Lua/animation.h>
 #include <SupergoonEngine/Lua/audio.h>
 #include <SupergoonEngine/Lua/effects.h>
 #include <SupergoonEngine/Lua/engine.h>
@@ -89,6 +91,7 @@ static bool Start(void) {
 	RegisterLuaEffectsFunctions();
 	RegisterLuaInputFunctions();
 	RegisterLuaSpriteFunctions();
+	RegisterLuaAnimationFunctions();
 	_frequency = SDL_GetPerformanceFrequency();	 // ticks per second
 	previousCounter = SDL_GetPerformanceCounter();
 	deltaTimeSeconds = 0;
@@ -134,16 +137,21 @@ static void Update(void) {
 		// 		if (!_isGameSimulatorRunning) {
 		// 		}
 		// #endif
+
+		// Update
 		UpdateKeyboardSystem();
 		audioUpdate();
 		Ticks += 1;
 		updateTweens();
+		UpdateAnimators();
+
 		PushGamestateToLua();
 		GameObjectSystemUpdate();
 		if (_updateFunc) _updateFunc();
 		UpdateUISystem();
 		geUpdateControllerLastFrame();
 		updateMouseSystem();
+		// Draw
 		DrawStart();
 		drawCurrentMap();
 		DrawSpriteSystem();
