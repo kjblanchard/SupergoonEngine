@@ -31,7 +31,7 @@ static AnimationData* findFreeAnimationData(void) {
 			return &_animationData.AnimationArray[i].Data;
 		}
 	}
-	RESIZE_ARRAY_FULL(_animationData.AnimationArray, _animationData.Count, _animationData.Size, AnimationDataRef);
+	RESIZE_ARRAY(_animationData.AnimationArray, _animationData.Count, _animationData.Size, AnimationDataRef);
 	AnimationDataRef* ref = &_animationData.AnimationArray[_animationData.Count];
 	memset(ref, 0, sizeof(AnimationDataRef));
 	ref->RefCount = 1;
@@ -134,7 +134,7 @@ static AnimatorHandle getFreeAnimator(void) {
 			return i;
 		}
 	}
-	RESIZE_ARRAY_FULL(_animators.Animators, _animators.Count, _animators.Size, Animator);
+	RESIZE_ARRAY(_animators.Animators, _animators.Count, _animators.Size, Animator);
 	memset(&_animators.Animators[_animators.Count], 0, sizeof(Animator));
 	return _animators.Count++;
 }

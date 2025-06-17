@@ -38,9 +38,7 @@ static void addTextureToCache(Texture* texture, const char* name) {
 			_firstCacheHole = 0;
 		}
 	}
-	if (_numTexturesInCache > _textureCacheSize / 2) {
-		RESIZE_ARRAY(_textureCache, _textureCacheSize, TextureCacheItem);
-	}
+	RESIZE_ARRAY(_textureCache, _numTexturesInCache, _textureCacheSize, TextureCacheItem);
 	_textureCache[insertLocation].References = 1;
 	_textureCache[insertLocation].Texture = texture;
 	_textureCache[insertLocation].name = strdup(name);
@@ -196,8 +194,7 @@ void UnloadAllTextures(void) {
 }
 
 void initializeGraphicsSystem(void) {
-	_textureCacheSize = 4;
-	RESIZE_ARRAY(_textureCache, _textureCacheSize, TextureCacheItem);
+	RESIZE_ARRAY(_textureCache, _numTexturesInCache, _textureCacheSize, TextureCacheItem);
 	int result = SDL_SetRenderDrawBlendMode(_renderer, SDL_BLENDMODE_BLEND);
 	if (!result) {
 		sgLogWarn("Could not set blendmode..");

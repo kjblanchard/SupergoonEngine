@@ -78,7 +78,6 @@ static bool Start(void) {
 	CreateWindow();
 	initializeAudio();
 	initializeTweenEngine();
-	InitializeGameObjectSystem();
 	InitializeSpriteSystem();
 	InitializeUISystem();
 	// should be consolidated

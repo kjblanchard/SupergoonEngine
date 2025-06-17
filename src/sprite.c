@@ -7,7 +7,7 @@
 #include <limits.h>
 #include <stdlib.h>
 
-static size_t _firstSpriteHole = (size_t)-1;  // CHANGED: Use -1 as sentinel for "no hole"
+static size_t _firstSpriteHole = NO_HOLE;  // CHANGED: Use -1 as sentinel for "no hole"
 static size_t _numSprites = 0;
 static size_t _sizeSprites = 0;
 static Sprite** _sprites;
@@ -15,7 +15,7 @@ static Sprite** _sprites;
 static Sprite* getFreeSprite(void) {
 	if (_firstSpriteHole == (size_t)-1) {  // CHANGED: Check sentinel value
 		int oldSize = _sizeSprites;
-		RESIZE_ARRAY_FULL(_sprites, _numSprites, _sizeSprites, Sprite*);
+		RESIZE_ARRAY(_sprites, _numSprites, _sizeSprites, Sprite*);
 		if (oldSize < _sizeSprites) {
 			for (size_t i = oldSize; i < _sizeSprites; i++) {
 				_sprites[i] = calloc(1, sizeof(Sprite));

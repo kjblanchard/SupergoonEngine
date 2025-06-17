@@ -4,7 +4,7 @@
 #include <lauxlib.h>
 #include <lua.h>
 static int fadeoutScreen(lua_State* L) {
-	if (LuaGetStackSize(L) != 1 || !LuaGetFloati(L, 1)) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 1, LuaFunctionParameterTypeNumber)) {
 		sgLogWarn("Tried to fadeout with improper values");
 		return 0;
 	}
@@ -13,7 +13,7 @@ static int fadeoutScreen(lua_State* L) {
 }
 
 static int fadeinScreen(lua_State* L) {
-	if (LuaGetStackSize(L) != 1 || !LuaGetFloati(L, 1)) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 1, LuaFunctionParameterTypeNumber)) {
 		sgLogWarn("Tried to fadeout with improper values");
 		return 0;
 	}

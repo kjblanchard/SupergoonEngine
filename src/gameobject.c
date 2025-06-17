@@ -6,31 +6,23 @@
 #include <SupergoonEngine/tools.h>
 #include <stdlib.h>
 
-size_t _firstGameObjectHole = (size_t)-1;  // sentinel for "no hole"
 size_t _currentId;
+GameObjectType _gameObjectTypes[MAX_GAMEOBJECT_TYPES];
+GameObject* CurrentGameObject;
+size_t _firstGameObjectHole = NO_HOLE;
 size_t _numGameObjects;
 size_t _sizeGameObjects;
 GameObject** _gameObjects;
-GameObjectType _gameObjectTypes[MAX_GAMEOBJECT_TYPES];
-GameObject* CurrentGameObject;
 
 static GameObject* getFreeGameObject(void) {
 	// If there are no holes, grab from the end of the array
-	if (_firstGameObjectHole == (size_t)-1) {
-		int oldSize = _sizeGameObjects;
-		// Check to see if we need to increase size
-		RESIZE_ARRAY_FULL(_gameObjects, _numGameObjects, _sizeGameObjects, GameObject*);
-		// If size is increased, then we need to allocate memory
-		if (oldSize < _sizeGameObjects) {
-			for (size_t i = oldSize; i < _sizeGameObjects; i++) {
-				_gameObjects[i] = calloc(1, sizeof(GameObject));
-			}
-		}
-		// return the gameobject and increment the number of gameobjects
+	if (_firstGameObjectHole == NO_HOLE) {
+		RESIZE_ARRAY_PTR_ALLOC(_gameObjects, _numGameObjects, _sizeGameObjects, GameObject);
 		return _gameObjects[_numGameObjects++];
 	}
+	// Get from hole and set next hole if there.
 	GameObject* returnGo = _gameObjects[_firstGameObjectHole];
-	size_t nextHole = (size_t)-1;
+	size_t nextHole = NO_HOLE;
 	for (size_t i = _firstGameObjectHole + 1; i < _numGameObjects; i++) {
 		if ((_gameObjects[i]->Flags & GameObjectFlagDestroyed)) {
 			nextHole = i;
@@ -46,11 +38,7 @@ void AddGameObjectFromTiledMap(TiledObject* object) {
 	if (!_gameObjectTypes[object->ObjectType].CreateFunc) {
 		return;
 	}
-	// Handle size changing for the initial array
-	// RESIZE_ARRAY_FULL(_gameObjects, _numGameObjects, _sizeGameObjects, GameObject*);
 	CurrentGameObject = getFreeGameObject();
-	// GameObjectHandle handle = getFreeGameObject();
-	// CurrentGameObject = &_gameObjects[handle];
 	CurrentGameObject->Id = _currentId++;
 	CurrentGameObject->Type = object->ObjectType;
 	CurrentGameObject->X = CurrentGameObject->Y = CurrentGameObject->W = CurrentGameObject->H = 0;
@@ -62,11 +50,6 @@ void AddGameObjectFromTiledMap(TiledObject* object) {
 	CurrentGameObject->Flags = 0;
 	CurrentGameObject->Flags |= GameObjectFlagActive;
 	CurrentGameObject->Flags |= GameObjectFlagLoaded;
-}
-
-void InitializeGameObjectSystem(void) {
-	// _gameObjects = calloc(_sizeGameObjects, sizeof(GameObject));
-	// memset(_gameObjectTypes, 0, sizeof(_gameObjectTypes));
 }
 
 void GameObjectSystemUpdate(void) {
@@ -159,7 +142,7 @@ void DestroyGameObjects(void) {
 			SDL_free(_gameObjects[i]->Userdata);
 			_gameObjects[i]->Userdata = NULL;
 		}
-		if (_firstGameObjectHole == (size_t)-1 || i < _firstGameObjectHole) {
+		if (_firstGameObjectHole == NO_HOLE || i < _firstGameObjectHole) {
 			_firstGameObjectHole = i;
 		}
 		_gameObjects[i]->Flags = GameObjectFlagDestroyed;  // Set flag to only be destroyed
