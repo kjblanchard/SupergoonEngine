@@ -5,7 +5,7 @@
 #include <SupergoonEngine/map.h>
 #include <stdlib.h>
 
-size_t _firstGameObjectHole = 0;
+size_t _firstGameObjectHole = (size_t)-1;  // sentinel for "no hole"
 size_t _currentId = 0;
 size_t _numGameObjects = 0;
 size_t _sizeGameObjects = 8;
@@ -27,11 +27,11 @@ static void resizeGameObjectArray(void) {
 }
 
 static GameObject* getFreeGameObject(void) {
-	if (!_firstGameObjectHole) {
+	if (_firstGameObjectHole == (size_t)-1) {
 		return &_gameObjects[_numGameObjects];
 	}
 	GameObject* returnGo = &_gameObjects[_firstGameObjectHole];
-	size_t nextHole = 0;
+	size_t nextHole = (size_t)-1;
 	for (size_t i = _firstGameObjectHole + 1; i < _numGameObjects; i++) {
 		if (!(_gameObjects[i].Flags & GameObjectFlagDestroyed)) {
 			nextHole = i;
@@ -67,7 +67,6 @@ void AddGameObjectFromTiledMap(TiledObject* object) {
 
 void InitializeGameObjectSystem(void) {
 	_gameObjects = calloc(_sizeGameObjects, sizeof(GameObject));
-	GameObjectType _gameObjectTypes[MAX_GAMEOBJECT_TYPES];
 	memset(_gameObjectTypes, 0, sizeof(_gameObjectTypes));
 }
 
@@ -161,7 +160,9 @@ void DestroyGameObjects(void) {
 			SDL_free(_gameObjects[i].Userdata);
 			_gameObjects[i].Userdata = NULL;
 		}
-		_firstGameObjectHole = _firstGameObjectHole < i ? _firstGameObjectHole : i;
+		if (_firstGameObjectHole == (size_t)-1 || i < _firstGameObjectHole) {
+			_firstGameObjectHole = i;
+		}
 		_gameObjects[i].Flags = GameObjectFlagDestroyed;  // Set flag to only be destroyed
 	}
 }

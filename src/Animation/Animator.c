@@ -19,7 +19,6 @@ static void cleanUsedAnimationData(AnimationData* data) {
 
 	SDL_free(data->meta.frameTags);
 	SDL_free(data->meta.image);
-	SDL_free(data->frames->filename);
 }
 
 // Finds free animation data and increases ref count
@@ -33,16 +32,35 @@ static AnimationData* findFreeAnimationData(void) {
 		}
 	}
 	RESIZE_ARRAY_FULL(_animationData.AnimationArray, _animationData.Count, _animationData.Size, AnimationDataRef);
-	++_animationData.AnimationArray[_animationData.Count++].RefCount;
-	memset(&_animationData.AnimationArray[_animationData.Count].Data, 0, sizeof(AnimationData));
-	return &_animationData.AnimationArray[_animationData.Count].Data;
+	AnimationDataRef* ref = &_animationData.AnimationArray[_animationData.Count];
+	memset(ref, 0, sizeof(AnimationDataRef));
+	ref->RefCount = 1;
+	++_animationData.Count;
+	return &ref->Data;
+	// RESIZE_ARRAY_FULL(_animationData.AnimationArray, _animationData.Count, _animationData.Size, AnimationDataRef);
+	// AnimationDataRef* ref = &_animationData.AnimationArray[_animationData.Count];
+	// memset(ref, 0, sizeof(AnimationDataRef));
+	// ref->RefCount = 1;
+	// return &ref->Data;
+	// memset(&_animationData.AnimationArray[_animationData.Count].Data, 0, sizeof(AnimationData));
+	// ++_animationData.AnimationArray[_animationData.Count++].RefCount;
+	// // memset(&_animationData.AnimationArray[_animationData.Count].Data, 0, sizeof(AnimationData));
+	// return &_animationData.AnimationArray[_animationData.Count].Data;
 }
 
 // Removes ref count of a ref data ptr
 static void removeAnimationDataRef(AnimationData* data) {
 	for (size_t i = 0; i < _animationData.Count; i++) {
-		if (&_animationData.AnimationArray[i].Data == data) {
-			--_animationData.AnimationArray[i].RefCount;
+		AnimationDataRef* thing = &_animationData.AnimationArray[i];
+		if (&thing->Data == data) {
+			if (_animationData.AnimationArray[i].RefCount > 0) {
+				--_animationData.AnimationArray[i].RefCount;
+			} else {
+				sgLogWarn("RefCount underflow attempted on animation data");
+			}
+			// if (_animationData.AnimationArray[i].RefCount == 0) {
+			// 	memset(&_animationData.AnimationArray[i].Data, 0, sizeof(AnimationData));
+			// }
 			return;
 		}
 	}
@@ -134,7 +152,7 @@ AnimatorHandle CreateAnimator(const char* filename) {
 		loadAsepriteData(anim->Data);
 		LuaPopStack(_luaState, 1);
 	}
-	return 0;
+	return handle;
 }
 
 static void updateAnimatorRect(Animator* animator) {
@@ -167,6 +185,7 @@ void PlayAnimation(AnimatorHandle animator, const char* anim) {
 void DestroyAnimator(AnimatorHandle animator) {
 	if (animator >= _animators.Count) {
 		sgLogWarn("Could not destroy, count not right");
+		return;
 	}
 	Animator* anim = &_animators.Animators[animator];
 	assert(anim && "No anim");
@@ -245,7 +264,8 @@ void updateAnimator(Animator* animator) {
 
 void UpdateAnimators(void) {
 	for (size_t i = 0; i < _animators.Count; i++) {
-		updateAnimator(&_animators.Animators[i]);
+		if (_animators.Animators[i].Data)
+			updateAnimator(&_animators.Animators[i]);
 	}
 }
 
