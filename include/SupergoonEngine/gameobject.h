@@ -1,5 +1,6 @@
 #pragma once
 #include <Supergoon/gameobject.h>
+#include <stdlib.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -16,6 +17,7 @@ typedef struct GameObjectType {
 	GameObjectUpdateFunc UpdateFunc;
 	GameObjectDestroyFunc DestroyFunc;
 } GameObjectType;
+
 /**
  * @brief Initializes the gameobject System
  *

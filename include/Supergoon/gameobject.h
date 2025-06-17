@@ -9,7 +9,7 @@ typedef enum GameObjectFlags {
 	GameObjectFlagActive = 1 << 2,
 	GameObjectFlagDoNotDestroy = 1 << 3,
 	GameObjectFlagDestroyed = 1 << 4,
-	GameObjectFlagToBeDestroyed = 1 << 4,
+	GameObjectFlagToBeDestroyed = 1 << 5,
 } GameObjectFlags;
 
 typedef struct GameObject {
@@ -24,7 +24,6 @@ typedef struct GameObject {
 	float H;
 	void* Userdata;
 } GameObject;
-
 extern GameObject* CurrentGameObject;
 #define GetCurrentGameObjectDataCasted(Type) ((Type*)CurrentGameObject.Userdata)
 // Userdata could be tiledmap, or anything really.

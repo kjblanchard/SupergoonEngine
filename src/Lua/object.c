@@ -143,6 +143,22 @@ static int getGameobjectSize(lua_State* L) {
 	return 2;
 }
 
+static int getGameobjectId(lua_State* L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 1, LuaFUnctionParameterTypeUserdata)) {
+		sgLogWarn("Bad args trying to get go position from lua");
+		LuaPushNil(L);
+		return 1;
+	}
+	GameObject* go = (GameObject*)LuaGetLightUserdatai(L, 1);
+	if (!go) {
+		sgLogWarn("Bad cast from go Lua");
+		LuaPushNil(L);
+		return 1;
+	}
+	LuaPushInt(L, go->Id);
+	return 1;
+}
+
 static int destroyObjects(lua_State* L) {
 	DestroyGameObjects();
 	return 0;
@@ -154,6 +170,7 @@ static const luaL_Reg objectLib[] = {
 	{"Position", getGameobjectPosition},
 	{"SetPosition", setGameobjectPosition},
 	{"Size", getGameobjectSize},
+	{"Id", getGameobjectId},
 	{"DestroyGameObjects", destroyObjects},
 	{NULL, NULL}};
 
