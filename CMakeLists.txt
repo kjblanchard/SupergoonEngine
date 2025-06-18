@@ -30,6 +30,7 @@ set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build libraries as static" FORCE)
 
 set(SRC_FILES
     src/engine.c
+    src/camera.c
     src/lua.c
     src/log.c
     src/clock.c
@@ -69,6 +70,8 @@ set(SRC_FILES
     src/Lua/linput.c
     src/Lua/lsprite.c
     src/Lua/lanimation.c
+    src/Lua/lcamera.c
+    src/Lua/scripting.c
 )
 
 if(imgui)

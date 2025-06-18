@@ -8,6 +8,7 @@
 #include <SupergoonEngine/Lua/engine.h>
 #include <SupergoonEngine/Lua/object.h>
 #include <SupergoonEngine/Lua/scene.h>
+#include <SupergoonEngine/camera.h>
 #include <SupergoonEngine/gameobject.h>
 #include <SupergoonEngine/window.h>
 #include <lauxlib.h>
@@ -29,7 +30,11 @@ static int setScalingOptions(lua_State* L) {
 		sgLogWarn("Bad parameters passed into scaling options from lua");
 		return 0;
 	}
-	SetScalingOptions(LuaGetIntFromStacki(L, 1), LuaGetIntFromStacki(L, 2));
+	int logX = LuaGetIntFromStacki(L, 1);
+	int logY = LuaGetIntFromStacki(L, 2);
+	SetScalingOptions(logX, logY);
+	// TODO, prolly should be it's own function too.
+	SetCameraSize(logX, logY);
 	return 0;
 }
 

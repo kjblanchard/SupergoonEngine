@@ -4,9 +4,11 @@
 #include <Supergoon/lua.h>
 #include <Supergoon/map.h>
 #include <Supergoon/state.h>
+#include <SupergoonEngine/camera.h>
 #include <SupergoonEngine/gameobject.h>
 #include <SupergoonEngine/map.h>
 #include <SupergoonEngine/tools.h>
+#include <SupergoonEngine/window.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -431,17 +433,16 @@ static void drawAnimatedTiles(void) {
 }
 
 void drawCurrentMap(void) {
-	// TODO, main camera? First we draw the background, use the main camera offset, currently set it to 0/0 and screensize.
+	RectangleF src = {CameraX, CameraY, _logicalWidth, _logicalHeight};
+	RectangleF dst = {0, 0, _logicalWidth, _logicalHeight};
 	if (_bg1Texture) {
-		RectangleF src = {0, 0, 480, 270};
-		DrawTexture(_bg1Texture, &src, &src);
+		DrawTexture(_bg1Texture, &dst, &src);
 	}
 	if (_currentMap) {
 		drawAnimatedTiles();
 	}
 	if (_bg2Texture) {
-		RectangleF src = {0, 0, 480, 270};
-		DrawTexture(_bg1Texture, &src, &src);
+		DrawTexture(_bg1Texture, &dst, &src);
 	}
 }
 
@@ -498,6 +499,7 @@ void LoadMap(const char* mapName) {
 	}
 	_currentMap = nextMap;
 	createBackgroundsFromTilemap(_currentMap);
+	SetCameraBounds(_currentMap->Width * _currentMap->TileWidth, _currentMap->Height * _currentMap->TileHeight);
 }
 
 void LoadObjectsFromMap(void) {

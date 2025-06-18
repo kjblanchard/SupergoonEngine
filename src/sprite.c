@@ -1,34 +1,25 @@
 #include <Supergoon/gameobject.h>
 #include <Supergoon/graphics.h>
 #include <Supergoon/sprite.h>
+#include <SupergoonEngine/camera.h>
 #include <SupergoonEngine/gameobject.h>
 #include <SupergoonEngine/sprite.h>
 #include <SupergoonEngine/tools.h>
 #include <limits.h>
 #include <stdlib.h>
 
-static size_t _firstSpriteHole = NO_HOLE;  // CHANGED: Use -1 as sentinel for "no hole"
+static size_t _firstSpriteHole = NO_HOLE;
 static size_t _numSprites = 0;
 static size_t _sizeSprites = 0;
 static Sprite** _sprites;
 
 static Sprite* getFreeSprite(void) {
-	if (_firstSpriteHole == (size_t)-1) {  // CHANGED: Check sentinel value
-		int oldSize = _sizeSprites;
-		RESIZE_ARRAY(_sprites, _numSprites, _sizeSprites, Sprite*);
-		if (oldSize < _sizeSprites) {
-			for (size_t i = oldSize; i < _sizeSprites; i++) {
-				_sprites[i] = calloc(1, sizeof(Sprite));
-			}
-		}
+	if (_firstSpriteHole == NO_HOLE) {
+		RESIZE_ARRAY_PTR_ALLOC(_sprites, _numSprites, _sizeSprites, Sprite);
 		return _sprites[_numSprites++];
 	}
-
-	// Reuse a destroyed sprite
 	Sprite* returnSprite = _sprites[_firstSpriteHole];
-
-	// Find next hole (if any)
-	size_t nextHole = (size_t)-1;
+	size_t nextHole = NO_HOLE;
 	for (size_t i = _firstSpriteHole + 1; i < _numSprites; i++) {
 		if (_sprites[i]->Flags & SpriteFlagDestroyed) {
 			nextHole = i;
@@ -39,13 +30,7 @@ static Sprite* getFreeSprite(void) {
 	return returnSprite;
 }
 
-void InitializeSpriteSystem(void) {
-	// RESIZE_ARRAY(_sprites, _sizeSprites, Sprite*);
-	// _firstSpriteHole = (size_t)-1;	// CHANGED: Initialize properly
-}
-
 Sprite* NewSprite(void) {
-	// SpriteHandle handle = getFreeSprite();
 	Sprite* sprite = getFreeSprite();
 	sprite->Parent = 0;
 	sprite->Texture = NULL;
@@ -60,47 +45,38 @@ void DestroySprite(Sprite* sprite) {
 		sgLogWarn("Trying to destroy a null sprite!");
 		return;
 	}
-
 	for (size_t i = 0; i < _numSprites; i++) {
 		if (sprite != _sprites[i]) {
 			continue;
 		}
-
 		UnloadTexture(sprite->Texture);
 		sprite->Parent = NULL;
 		sprite->Texture = NULL;
 		sprite->Flags = SpriteFlagDestroyed;
-
-		// CHANGED: Update hole tracker properly
-		if (_firstSpriteHole == (size_t)-1 || i < _firstSpriteHole) {
+		if (_firstSpriteHole == NO_HOLE || i < _firstSpriteHole) {
 			_firstSpriteHole = i;
 		}
-
 		return;
 	}
 }
 
 void DrawSpriteSystem(void) {
+	RectangleF dst = {0, 0, 0, 0};
 	for (size_t i = 0; i < _numSprites; i++) {
 		Sprite* sprite = _sprites[i];
 		if (!sprite || !sprite->Texture || !(sprite->Flags & SpriteFlagVisible)) {
 			continue;
 		}
-
-		float interpX = 0;
-		float interpY = 0;
-
+		float globalX = 0;
+		float globalY = 0;
 		if (sprite->Parent) {
-			interpX = sprite->Parent->X;
-			interpY = sprite->Parent->Y;
+			globalX = sprite->Parent->X;
+			globalY = sprite->Parent->Y;
 		}
-
-		RectangleF dst = sprite->OffsetAndSizeRectF;
-		dst.x = interpX + dst.x;
-		dst.y = interpY + dst.y;
-		dst.x = SDL_roundf(dst.x);
-		dst.y = SDL_roundf(dst.y);
-
+		dst.x = SDL_roundf(globalX + sprite->OffsetAndSizeRectF.x - CameraX);
+		dst.y = SDL_roundf(globalY + sprite->OffsetAndSizeRectF.y - CameraY);
+		dst.w = sprite->OffsetAndSizeRectF.w;
+		dst.h = sprite->OffsetAndSizeRectF.h;
 		DrawTexture(sprite->Texture, &dst, &sprite->TextureSourceRect);
 	}
 }

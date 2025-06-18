@@ -2,8 +2,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-void DrawSpriteSystem();
-void ShutdownSpriteSystem(void);
+void RegisterAllLuaFunctions(void);
 #ifdef __cplusplus
 }
 #endif
