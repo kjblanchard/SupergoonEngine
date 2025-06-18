@@ -14,6 +14,7 @@ extern "C" {
 #endif
 
 struct GameObject;
+#include <Supergoon/Primitives/rectangle.h>
 
 // Tiled properties can be of many types, use this before accessing the union on the property.
 typedef enum TiledPropertyTypes {
@@ -51,6 +52,7 @@ void LoadMap(const char* map);
 // Load the objects from the map into the gameobjects. All gameobjects will be cleared unless they are marked donotdestroy when a map changes.
 void LoadObjectsFromMap(void);
 void CheckGameobjectForCollisionWithSolids(struct GameObject* gameobject);
+void CheckRectForCollisionWithSolids(RectangleF* rect);
 #ifdef __cplusplus
 }
 #endif

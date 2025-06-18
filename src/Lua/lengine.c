@@ -14,7 +14,8 @@
 #include <lauxlib.h>
 #include <lua.h>
 
-static int _updateFuncRef = -1;
+static int _updateFuncRef = LUA_REFNIL;
+static int _drawFuncRef = LUA_REFNIL;
 
 static int setWindowOptions(lua_State* L) {
 	if (LuaGetStackSize(L) != 3 || !LuaIsInt(L, 1) || !LuaIsInt(L, 2) || !LuaIsString(L, 3)) {
@@ -49,6 +50,17 @@ static void updateFunc(void) {
 	}
 }
 
+static void drawFunc(void) {
+	if (_drawFuncRef != LUA_REFNIL) {
+		lua_rawgeti(_luaState, LUA_REGISTRYINDEX, _drawFuncRef);
+		if (lua_pcall(_luaState, 0, 0, 0) != LUA_OK) {
+			const char* err = lua_tostring(_luaState, -1);
+			fprintf(stderr, "Error in update func: %s\n", err);
+			lua_pop(_luaState, 1);
+		}
+	}
+}
+
 static int setUpdateFunc(lua_State* L) {
 	if (LuaGetStackSize(L) != 1 || !LuaIsLuaFunc(L, 1)) {
 		sgLogWarn("Bad parameters passed into setupda options from lua");
@@ -59,10 +71,39 @@ static int setUpdateFunc(lua_State* L) {
 	return 0;
 }
 
+static int setDrawFunc(lua_State* L) {
+	if (LuaGetStackSize(L) != 1 || !LuaIsLuaFunc(L, 1)) {
+		sgLogWarn("Bad parameters passed into setupda options from lua");
+		return 0;
+	}
+	_drawFuncRef = luaL_ref(_luaState, LUA_REGISTRYINDEX);
+	SetDrawFunction(drawFunc);
+	return 0;
+}
+
+static int drawRect(lua_State* L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 4, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeNumber)) {
+		sgLogWarn("Bad args passed into setDrawFunc");
+	}
+	DrawRect(&(RectangleF){LuaGetFloati(L, 1), LuaGetFloati(L, 2), LuaGetFloati(L, 3), LuaGetFloati(L, 4)}, &(sgColor){0, 255, 0, 255}, false);
+	return 0;
+}
+
+static int drawRectCamOffset(lua_State* L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 4, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeNumber)) {
+		sgLogWarn("Bad args passed into setDrawFunc");
+	}
+	DrawRect(&(RectangleF){LuaGetFloati(L, 1) - CameraX, LuaGetFloati(L, 2) - CameraY, LuaGetFloati(L, 3), LuaGetFloati(L, 4)}, &(sgColor){0, 255, 0, 255}, false);
+	return 0;
+}
+
 static const luaL_Reg sceneLib[] = {
 	{"SetWindowOptions", setWindowOptions},
 	{"SetScalingOptions", setScalingOptions},
 	{"SetUpdateFunc", setUpdateFunc},
+	{"SetDrawFunc", setDrawFunc},
+	{"DrawRect", drawRect},
+	{"DrawRectCamOffset", drawRectCamOffset},
 	{NULL, NULL}};
 
 void RegisterLuaEngineFunctions(void) {

@@ -167,7 +167,6 @@ static int destroyObjects(lua_State* L) {
 
 static int handleGameobjectSolids(lua_State* L) {
 	if (!LuaCheckFunctionCallParamsAndTypes(L, 1, LuaFUnctionParameterTypeUserdata)) {
-		sgLogWarn("Bad args");
 		LuaPushNil(L);
 		return 1;
 	}
@@ -181,6 +180,26 @@ static int handleGameobjectSolids(lua_State* L) {
 	return 0;
 }
 
+static int checkSolidsRect(lua_State* L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 1, LuaFunctionParameterTypeTable)) {
+		LuaPushNil(L);
+		LuaPushNil(L);
+		return 2;
+	}
+	RectangleF rect = {
+		LuaGetFloatFromTableStackiKey(L, 1, "x"),
+		LuaGetFloatFromTableStackiKey(L, 1, "y"),
+		LuaGetFloatFromTableStackiKey(L, 1, "w"),
+		LuaGetFloatFromTableStackiKey(L, 1, "h")};
+	CheckRectForCollisionWithSolids(&rect);
+	LuaPushNewTableToStack(L);
+	LuaPushFloatToTable(L, "x", rect.x);
+	LuaPushFloatToTable(L, "y", rect.y);
+	LuaPushFloatToTable(L, "w", rect.w);
+	LuaPushFloatToTable(L, "h", rect.h);
+	return 1;
+}
+
 static const luaL_Reg objectLib[] = {
 	{"NewGameObjectType", l_register_object_functions},
 	{"SetDestroyGameObjects", setAllGameobjectsToBeDestroyed},
@@ -190,6 +209,7 @@ static const luaL_Reg objectLib[] = {
 	{"Id", getGameobjectId},
 	{"DestroyGameObjects", destroyObjects},
 	{"CheckSolids", handleGameobjectSolids},
+	{"CheckSolidsRect", checkSolidsRect},
 	{NULL, NULL}};
 
 void RegisterLuaObjectFunctions(void) {

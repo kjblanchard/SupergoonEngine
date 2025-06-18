@@ -4,6 +4,7 @@
 #include <Supergoon/Debug/Console.hpp>
 #include <Supergoon/Debug/Debug.hpp>
 #include <Supergoon/Debug/Game.hpp>
+#include <Supergoon/Debug/GameObject.hpp>
 #include <Supergoon/Debug/Graphics.hpp>
 #include <Supergoon/Debug/Scene.hpp>
 #include <Supergoon/Debug/Tween.hpp>
@@ -21,6 +22,7 @@ void ShowWidgets() {
 	ShowSceneDebugWindow();
 	ShowPerformanceWindow();
 	ShowCollisionDebugWindow();
+	ShowGameObjectDebugWindow();
 }
 
 int GetDefaultWindowFlags() {

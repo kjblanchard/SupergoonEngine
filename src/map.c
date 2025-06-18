@@ -12,6 +12,8 @@
 #include <stdio.h>
 #include <string.h>
 
+const uint8_t NUM_WALLS = 4;
+
 // Frame data for tile animation
 typedef struct TileAnimationFrame {
 	unsigned int Id;
@@ -272,7 +274,8 @@ static void handleTiledObjectEntities(Tilemap* map) {
 static void handleTiledSolidObjects(Tilemap* map) {
 	LuaGetTable(_luaState, "objects");
 	map->NumSolids = LuaGetTableLength(_luaState);
-	map->Solids = calloc(map->NumSolids, sizeof(RectangleF));
+	// We are also adding solids for the walls of the map
+	map->Solids = calloc(map->NumSolids + NUM_WALLS, sizeof(RectangleF));
 	for (size_t i = 0; i < (size_t)map->NumSolids; i++) {
 		RectangleF* rect = &map->Solids[i];
 		LuaPushTableObjectToStacki(_luaState, i);
@@ -283,6 +286,17 @@ static void handleTiledSolidObjects(Tilemap* map) {
 		LuaPopStack(_luaState, 1);
 	}
 	LuaPopStack(_luaState, 1);
+	const int boxSize = 16;
+	int mapSizeX = map->Width * map->TileWidth;
+	int mapSizeY = map->Height * map->TileHeight;
+	RectangleF walls[] = {
+		{0, -boxSize, mapSizeX, boxSize},
+		{mapSizeX, 0, boxSize, mapSizeY},
+		{0, mapSizeY, mapSizeX, boxSize},
+		{-boxSize, 0, boxSize, mapSizeY},
+	};
+	memcpy(&map->Solids[map->NumSolids], walls, sizeof(walls));
+	map->NumSolids += NUM_WALLS;
 }
 
 static void handleTiledObjectGroup(Tilemap* map) {
@@ -561,7 +575,10 @@ void shutdownMapSystem(void) {
 
 void CheckGameobjectForCollisionWithSolids(GameObject* gameobject) {
 	SDL_FRect playerRect = {gameobject->X, gameobject->Y, gameobject->W, gameobject->H};
+	CheckRectForCollisionWithSolids(&playerRect);
+}
 
+void CheckRectForCollisionWithSolids(RectangleF* rect) {
 	for (int i = 0; i < _currentMap->NumSolids; i++) {
 		SDL_FRect solidRect = {
 			_currentMap->Solids[i].x,
@@ -569,14 +586,10 @@ void CheckGameobjectForCollisionWithSolids(GameObject* gameobject) {
 			_currentMap->Solids[i].w,
 			_currentMap->Solids[i].h};
 
-		if (SDL_HasRectIntersectionFloat(&playerRect, &solidRect)) {
+		if (SDL_HasRectIntersectionFloat(rect, &solidRect)) {
 			// Handle the collision: adjust player position
 			// This is just a simple axis-aligned response
-			ResolveCollision(&playerRect, &solidRect);
+			ResolveCollision(rect, &solidRect);
 		}
 	}
-
-	// After resolution, update the actual object position
-	gameobject->X = playerRect.x;
-	gameobject->Y = playerRect.y;
 }

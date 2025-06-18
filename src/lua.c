@@ -106,6 +106,17 @@ float LuaGetFloatFromTablei(LuaState L, int i) {
 	lua_pop(L, 1);
 	return value;
 }
+
+void LuaPushNewTableToStack(LuaState L) {
+	lua_newtable(L);
+}
+
+void LuaPushFloatToTable(LuaState L, const char* key, float value) {
+	lua_pushstring(L,key);
+	lua_pushnumber(L, value);
+	lua_settable(L, -3);
+}
+
 void LuaPushTableFromRegistryByName(LuaState L, const char* tableName) {
 	lua_getfield(L, LUA_REGISTRYINDEX, tableName);	// pushes the table onto the stack
 	// Optionally, you can check it's a table if needed:
@@ -394,6 +405,11 @@ int LuaCheckFunctionCallParamsAndTypes(LuaState L, int numArgsOnStack, ...) {
 					goto rfalse;
 				}
 				continue;
+			case LuaFunctionParameterTypeTable:
+				if (!LuaIsTable(L, luaPos)) {
+					goto rfalse;
+				}
+				continue;
 			case LuaFunctionParameterTypePass:
 			default:
 				continue;
@@ -416,8 +432,12 @@ const char* LuaGetParamType(LuaFunctionParameterTypes paramType) {
 			return "string";
 		case LuaFunctionParameterTypeFunction:
 			return "function";
+		case LuaFunctionParameterTypeTable:
+			return "table";
+		case LuaFUnctionParameterTypeUserdata:
+			return "userdata";
 		default:
-			return "na";
+			return "not implemented?";
 	}
 }
 

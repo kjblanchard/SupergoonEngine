@@ -4,6 +4,10 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+extern size_t _currentId;
+extern size_t _numGameObjects;
+extern size_t _sizeGameObjects;
+extern GameObject** _gameObjects;
 #define MAX_GAMEOBJECT_TYPES 64
 struct TiledObject;
 

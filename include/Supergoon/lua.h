@@ -24,6 +24,8 @@ void LuaPushTableFromFile(LuaState L, const char* path);
 int LuaGetIntFromTablei(LuaState L, int i);
 const char* LuaGetStringFromTablei(LuaState L, int i);
 float LuaGetFloatFromTablei(LuaState L, int i);
+void LuaPushNewTableToStack(LuaState L);
+void LuaPushFloatToTable(LuaState L, const char* key, float value);
 void LuaPushTableFromRegistryByName(LuaState L, const char* tableName);
 void LuaPushTableToStacki(LuaState L, int i);
 // If a table is on the stack, you will push the table at i on the stack
@@ -102,6 +104,7 @@ typedef enum LuaFunctionParameterTypes {
 	LuaFunctionParameterTypeString,
 	LuaFunctionParameterTypeFunction,
 	LuaFUnctionParameterTypeUserdata,
+	LuaFunctionParameterTypeTable,
 
 } LuaFunctionParameterTypes;
 // Checks to see if the stack has the specific number of arguments, with the following params.. use TypePass to skip checking that arg.
