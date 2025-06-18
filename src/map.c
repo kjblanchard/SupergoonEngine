@@ -76,6 +76,8 @@ typedef struct Tilemap {
 	struct TiledObject* Objects;
 	int NumLayers;
 	LayerGroup LayerGroups[2];
+	RectangleF* Solids;
+	int NumSolids;
 } Tilemap;
 
 static void handleTiledLayerGroup(Tilemap* map);
@@ -267,13 +269,29 @@ static void handleTiledObjectEntities(Tilemap* map) {
 	}
 	LuaPopStack(_luaState, 1);
 }
+static void handleTiledSolidObjects(Tilemap* map) {
+	LuaGetTable(_luaState, "objects");
+	map->NumSolids = LuaGetTableLength(_luaState);
+	map->Solids = calloc(map->NumSolids, sizeof(RectangleF));
+	for (size_t i = 0; i < (size_t)map->NumSolids; i++) {
+		RectangleF* rect = &map->Solids[i];
+		LuaPushTableObjectToStacki(_luaState, i);
+		rect->x = LuaGetFloat(_luaState, "x");
+		rect->y = LuaGetFloat(_luaState, "y");
+		rect->w = LuaGetFloat(_luaState, "width");
+		rect->h = LuaGetFloat(_luaState, "height");
+		LuaPopStack(_luaState, 1);
+	}
+	LuaPopStack(_luaState, 1);
+}
 
 static void handleTiledObjectGroup(Tilemap* map) {
 	const char* name = LuaGetString(_luaState, "name");
-	if (strcmp(name, "entities") != 0) {
-		return;
+	if (strcmp(name, "entities") == 0) {
+		handleTiledObjectEntities(map);
+	} else if (strcmp(name, "solid") == 0) {
+		handleTiledSolidObjects(map);
 	}
-	handleTiledObjectEntities(map);
 }
 
 static Tileset* GetTilesetForGID(int gid, Tilemap* map) {
@@ -526,4 +544,26 @@ void shutdownMapSystem(void) {
 		freeTiledTilemap(_previousMaps[i]);
 		_previousMaps[i] = NULL;
 	}
+}
+
+void CheckGameobjectForCollisionWithSolids(GameObject* gameobject) {
+	SDL_FRect playerRect = {gameobject->X, gameobject->Y, gameobject->W, gameobject->H};
+
+	for (int i = 0; i < _currentMap->NumSolids; i++) {
+		SDL_FRect solidRect = {
+			_currentMap->Solids[i].x,
+			_currentMap->Solids[i].y,
+			_currentMap->Solids[i].w,
+			_currentMap->Solids[i].h};
+
+		if (SDL_HasRectIntersectionFloat(&playerRect, &solidRect)) {
+			// Handle the collision: adjust player position
+			// This is just a simple axis-aligned response
+			ResolveCollision(&playerRect, &solidRect);
+		}
+	}
+
+	// After resolution, update the actual object position
+	gameobject->X = playerRect.x;
+	gameobject->Y = playerRect.y;
 }

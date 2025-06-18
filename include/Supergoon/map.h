@@ -13,6 +13,8 @@
 extern "C" {
 #endif
 
+struct GameObject;
+
 // Tiled properties can be of many types, use this before accessing the union on the property.
 typedef enum TiledPropertyTypes {
 	TiledPropertyTypeInt,
@@ -48,6 +50,7 @@ typedef struct TiledObject {
 void LoadMap(const char* map);
 // Load the objects from the map into the gameobjects. All gameobjects will be cleared unless they are marked donotdestroy when a map changes.
 void LoadObjectsFromMap(void);
+void CheckGameobjectForCollisionWithSolids(struct GameObject* gameobject);
 #ifdef __cplusplus
 }
 #endif

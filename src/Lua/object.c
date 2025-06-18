@@ -1,6 +1,7 @@
 #include <Supergoon/gameobject.h>
 #include <Supergoon/log.h>
 #include <Supergoon/lua.h>
+#include <Supergoon/map.h>
 #include <SupergoonEngine/Lua/object.h>
 #include <SupergoonEngine/gameobject.h>
 #include <lauxlib.h>
@@ -164,6 +165,22 @@ static int destroyObjects(lua_State* L) {
 	return 0;
 }
 
+static int handleGameobjectSolids(lua_State* L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 1, LuaFUnctionParameterTypeUserdata)) {
+		sgLogWarn("Bad args");
+		LuaPushNil(L);
+		return 1;
+	}
+	GameObject* go = (GameObject*)LuaGetLightUserdatai(L, 1);
+	if (!go) {
+		sgLogWarn("Bad cast from go Lua");
+		LuaPushNil(L);
+		return 1;
+	}
+	CheckGameobjectForCollisionWithSolids(go);
+	return 0;
+}
+
 static const luaL_Reg objectLib[] = {
 	{"NewGameObjectType", l_register_object_functions},
 	{"SetDestroyGameObjects", setAllGameobjectsToBeDestroyed},
@@ -172,6 +189,7 @@ static const luaL_Reg objectLib[] = {
 	{"Size", getGameobjectSize},
 	{"Id", getGameobjectId},
 	{"DestroyGameObjects", destroyObjects},
+	{"CheckSolids", handleGameobjectSolids},
 	{NULL, NULL}};
 
 void RegisterLuaObjectFunctions(void) {

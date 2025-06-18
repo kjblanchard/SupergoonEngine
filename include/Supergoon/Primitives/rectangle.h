@@ -6,6 +6,8 @@ extern "C" {
 
 typedef struct SDL_FRect RectangleF;
 typedef struct SDL_Rect Rectangle;
+
+void ResolveCollision(RectangleF* lhs, RectangleF* rhs);
 #ifdef __cplusplus
 }
 #endif

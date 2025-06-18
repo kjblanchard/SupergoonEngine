@@ -29,7 +29,6 @@ cmake_minimum_required(VERSION 3.22)
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build libraries as static" FORCE)
 
 set(SRC_FILES
-    src/engine.c
     src/camera.c
     src/lua.c
     src/log.c
@@ -47,6 +46,8 @@ set(SRC_FILES
     src/filesystem.c
     src/tools.c
     src/events.c
+    src/engine.c
+    src/Primitives/rectangle.c
     src/Audio/Bgm.c
     src/Audio/Sfx.c
     src/Audio/Stream.c
