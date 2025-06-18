@@ -1,5 +1,6 @@
 
 #include <Supergoon/Debug/Audio.hpp>
+#include <Supergoon/Debug/Collision.hpp>
 #include <Supergoon/Debug/Console.hpp>
 #include <Supergoon/Debug/Debug.hpp>
 #include <Supergoon/Debug/Game.hpp>
@@ -19,6 +20,7 @@ void ShowWidgets() {
 	ShowGraphicsDebugWindow();
 	ShowSceneDebugWindow();
 	ShowPerformanceWindow();
+	ShowCollisionDebugWindow();
 }
 
 int GetDefaultWindowFlags() {

@@ -462,6 +462,19 @@ void drawCurrentMap(void) {
 	if (_bg2Texture) {
 		DrawTexture(_bg1Texture, &dst, &src);
 	}
+#ifdef imgui
+	if (_currentMap) {
+		RectangleF rect;
+		for (size_t i = 0; i < _currentMap->NumSolids; i++) {
+			rect.x = _currentMap->Solids[i].x - CameraX;
+			rect.y = _currentMap->Solids[i].y - CameraY;
+			rect.w = _currentMap->Solids[i].w;
+			rect.h = _currentMap->Solids[i].h;
+			DrawRect(&rect, &(sgColor){255, 0, 0, 255}, false);
+		}
+	}
+
+#endif
 }
 
 static Tilemap* checkCache(const char* mapName) {

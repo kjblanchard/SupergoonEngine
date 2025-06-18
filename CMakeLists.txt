@@ -94,6 +94,7 @@ if(imgui)
         src/Debug/UI.cpp
         src/Debug/Scene.cpp
         src/Debug/Performance.cpp
+        src/Debug/Collision.cpp
         src/Debug/Debug.cpp # For showing all the windows
 
         # src/Debug/Audio.cpp
