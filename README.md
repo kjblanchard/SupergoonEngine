@@ -8,12 +8,12 @@
 ## Installation
 
 ## Libraries | Components
-- SDL3
-- lua
-- freetype
-- ogg
-- vorbis
-- imgui
+- SDL3 (windowing, input, renderer)
+- lua (scripting)
+- freetype (text)
+- ogg (sound)
+- vorbis (sound)
+- imgui (debug editor)
 
 ## Contributing
 
