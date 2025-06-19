@@ -1,0 +1,2 @@
+# Make it so github doesn't show stats for vendored files.
+src/Imgui/* linguist-vendored
