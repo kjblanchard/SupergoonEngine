@@ -286,6 +286,3 @@ target_include_directories(${LIBRARY_TARGET_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-install(DIRECTORY ${FOLDERS_TO_COPY}
-    DESTINATION ${INSTALL_DIR}
-    COMPONENT assets)

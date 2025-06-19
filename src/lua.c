@@ -15,7 +15,7 @@ static void setLuaPath(void) {
 		sgLogCritical("Could not get lua package, what the");
 	lua_getfield(_luaState, -1, "path");
 	const char* basePath = SDL_GetBasePath();
-	const char* nextPath = "assets/lua/?.lua;../Resources/assets/lua/?.lua";
+	const char* nextPath = "assets/lua/?.lua;../Resources/assets/lua/?.lua;assets/scripts/?.lua;../Resources/assets/scripts/?.lua";
 	const char* currentLuaPath = lua_tostring(_luaState, -1);  // grab path string from top of stack
 	size_t full_str_len = strlen(currentLuaPath) + strlen(nextPath) + strlen(basePath) + 2;
 	char full_str[full_str_len];
@@ -112,9 +112,46 @@ void LuaPushNewTableToStack(LuaState L) {
 }
 
 void LuaPushFloatToTable(LuaState L, const char* key, float value) {
-	lua_pushstring(L,key);
+	lua_pushstring(L, key);
 	lua_pushnumber(L, value);
 	lua_settable(L, -3);
+}
+
+void LuaPushIntToTable(LuaState L, const char* key, int value) {
+	lua_pushstring(L, key);
+	lua_pushinteger(L, value);
+	lua_settable(L, -3);
+}
+
+void LuaPushStringToTable(LuaState L, const char* key, const char* value) {
+	lua_pushstring(L, key);
+	lua_pushstring(L, value);
+	lua_settable(L, -3);
+}
+
+void LuaPushTableToTable(LuaState L, const char* key) {
+	// lua_pushstring(L, key);
+	// lua_pushvalue(L, -2);
+	// lua_settable(L, -3);
+	// // since we duplicated it with pushvalue, we should actually pop the table value too.
+	// lua_pop(L, 1);
+
+	// stack: [-1] properties table
+	//        [-2] main table
+	lua_pushstring(L, key);	 // [-1] key
+	lua_insert(L, -2);		 // move key below value
+	// stack is now:
+	// [-1] properties table
+	// [-2] key
+	// [-3] main table
+	lua_settable(L, -3);  // sets main_table[key] = properties
+}
+void LuaPushValueToArrayTable(LuaState L) {
+	int len = lua_rawlen(L, -2);  // length of the array table (at index -2)
+	// lua_pushvalue(L, -1);		  // duplicate the value to push
+	lua_rawseti(L, -2, len + 1);  // t[len+1] = value
+								  // since we duplicated it with pushvalue, we should actually pop the table value too.
+								  // lua_pop(L, 1);
 }
 
 void LuaPushTableFromRegistryByName(LuaState L, const char* tableName) {

@@ -25,7 +25,12 @@ int LuaGetIntFromTablei(LuaState L, int i);
 const char* LuaGetStringFromTablei(LuaState L, int i);
 float LuaGetFloatFromTablei(LuaState L, int i);
 void LuaPushNewTableToStack(LuaState L);
+// Table must be on tip of stack.
+void LuaPushTableToTable(LuaState L, const char* key);
+void LuaPushValueToArrayTable(LuaState L);
 void LuaPushFloatToTable(LuaState L, const char* key, float value);
+void LuaPushStringToTable(LuaState L, const char* key, const char* value);
+void LuaPushIntToTable(LuaState L, const char* key, int value);
 void LuaPushTableFromRegistryByName(LuaState L, const char* tableName);
 void LuaPushTableToStacki(LuaState L, int i);
 // If a table is on the stack, you will push the table at i on the stack

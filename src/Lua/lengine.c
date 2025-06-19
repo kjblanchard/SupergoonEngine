@@ -10,6 +10,7 @@
 #include <SupergoonEngine/Lua/scene.h>
 #include <SupergoonEngine/camera.h>
 #include <SupergoonEngine/gameobject.h>
+#include <SupergoonEngine/map.h>
 #include <SupergoonEngine/window.h>
 #include <lauxlib.h>
 #include <lua.h>
@@ -97,6 +98,14 @@ static int drawRectCamOffset(lua_State* L) {
 	return 0;
 }
 
+static int getCurrentMapName(lua_State* L) {
+	if (!_currentMap) {
+		return 0;
+	}
+	LuaPushString(L, _currentMap->BaseFilename);
+	return 1;
+}
+
 static const luaL_Reg sceneLib[] = {
 	{"SetWindowOptions", setWindowOptions},
 	{"SetScalingOptions", setScalingOptions},
@@ -104,6 +113,7 @@ static const luaL_Reg sceneLib[] = {
 	{"SetDrawFunc", setDrawFunc},
 	{"DrawRect", drawRect},
 	{"DrawRectCamOffset", drawRectCamOffset},
+	{"MapName", getCurrentMapName},
 	{NULL, NULL}};
 
 void RegisterLuaEngineFunctions(void) {

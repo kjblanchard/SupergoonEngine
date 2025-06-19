@@ -8,15 +8,45 @@
 #include <lua.h>
 #include <stdbool.h>
 
-static int LuaCreateObjectFuncs[MAX_GAMEOBJECT_TYPES] = {0};
-static int LuaStartObjectFuncs[MAX_GAMEOBJECT_TYPES] = {0};
-static int LuaUpdateObjectFuncs[MAX_GAMEOBJECT_TYPES] = {0};
-static int LuaDestroyObjectFuncs[MAX_GAMEOBJECT_TYPES] = {0};
+static int LuaCreateObjectFuncs[MAX_GAMEOBJECT_TYPES] = {LUA_REFNIL};
+static int LuaStartObjectFuncs[MAX_GAMEOBJECT_TYPES] = {LUA_REFNIL};
+static int LuaUpdateObjectFuncs[MAX_GAMEOBJECT_TYPES] = {LUA_REFNIL};
+static int LuaDestroyObjectFuncs[MAX_GAMEOBJECT_TYPES] = {LUA_REFNIL};
 
 static void createObject(void* userdata, GameObject* go) {
 	if (LuaCreateObjectFuncs[go->Type] != LUA_REFNIL) {
+		TiledObject* objectData = (TiledObject*)userdata;
+		if (!objectData) {
+			sgLogError("Could not create object properly, bad userdata");
+		}
+
 		lua_rawgeti(_luaState, LUA_REGISTRYINDEX, LuaCreateObjectFuncs[go->Type]);
-		lua_pushlightuserdata(_luaState, userdata);
+		// lua_pushlightuserdata(_luaState, userdata);
+		// We should push this as a table
+		LuaPushNewTableToStack(_luaState);
+		LuaPushFloatToTable(_luaState, "x", objectData->X);
+		LuaPushFloatToTable(_luaState, "y", objectData->Y);
+		LuaPushFloatToTable(_luaState, "w", objectData->Width);
+		LuaPushFloatToTable(_luaState, "h", objectData->Height);
+		// Create properties table
+		LuaPushNewTableToStack(_luaState);
+		for (size_t i = 0; i < objectData->NumProperties; i++) {
+			TiledProperty* prop = &objectData->Properties[i];
+			switch (prop->PropertyType) {
+				case TiledPropertyTypeFloat:
+					LuaPushFloatToTable(_luaState, prop->Name, prop->Data.FloatData);
+					break;
+				case TiledPropertyTypeInt:
+					LuaPushIntToTable(_luaState, prop->Name, prop->Data.IntData);
+					break;
+				case TiledPropertyTypeString:
+					LuaPushStringToTable(_luaState, prop->Name, prop->Data.StringData);
+					break;
+				default:
+					continue;
+			}
+		}
+		LuaPushTableToTable(_luaState, "properties");
 		lua_pushlightuserdata(_luaState, go);
 		if (lua_pcall(_luaState, 2, 0, 0) != LUA_OK) {
 			const char* err = lua_tostring(_luaState, -1);
@@ -26,7 +56,7 @@ static void createObject(void* userdata, GameObject* go) {
 	}
 }
 static void startObject(GameObject* go) {
-	if (LuaCreateObjectFuncs[go->Type] != LUA_REFNIL) {
+	if (LuaStartObjectFuncs[go->Type] != LUA_REFNIL) {
 		lua_rawgeti(_luaState, LUA_REGISTRYINDEX, LuaStartObjectFuncs[go->Type]);
 		lua_pushlightuserdata(_luaState, go);
 		if (lua_pcall(_luaState, 1, 0, 0) != LUA_OK) {
@@ -37,7 +67,7 @@ static void startObject(GameObject* go) {
 	}
 }
 static void updateObject(GameObject* go) {
-	if (LuaCreateObjectFuncs[go->Type] != LUA_REFNIL) {
+	if (LuaUpdateObjectFuncs[go->Type] != LUA_REFNIL) {
 		lua_rawgeti(_luaState, LUA_REGISTRYINDEX, LuaUpdateObjectFuncs[go->Type]);
 		lua_pushlightuserdata(_luaState, go);
 		if (lua_pcall(_luaState, 1, 0, 0) != LUA_OK) {
@@ -49,7 +79,7 @@ static void updateObject(GameObject* go) {
 }
 
 static void destroyObject(GameObject* go) {
-	if (LuaCreateObjectFuncs[go->Type] != LUA_REFNIL) {
+	if (LuaDestroyObjectFuncs[go->Type] != LUA_REFNIL) {
 		lua_rawgeti(_luaState, LUA_REGISTRYINDEX, LuaDestroyObjectFuncs[go->Type]);
 		lua_pushlightuserdata(_luaState, go);
 		if (lua_pcall(_luaState, 1, 0, 0) != LUA_OK) {
@@ -66,17 +96,34 @@ static int l_register_object_functions(lua_State* L) {
 	if (type < 0 || type >= MAX_GAMEOBJECT_TYPES)
 		return luaL_error(L, "Invalid object type");
 	lua_rawgeti(L, 2, 1);
-	if (!lua_isfunction(L, -1)) return luaL_error(L, "Expected function at index 1 (create)");
-	LuaCreateObjectFuncs[type] = luaL_ref(L, LUA_REGISTRYINDEX);
+	// if (!lua_isfunction(L, -1)) return luaL_error(L, "Expected function at index 1 (create)");
+	if (LuaIsLuaFunc(L, -1)) {
+		LuaCreateObjectFuncs[type] = luaL_ref(L, LUA_REGISTRYINDEX);
+	} else {
+		LuaCreateObjectFuncs[type] = LUA_REFNIL;
+	}
+
 	lua_rawgeti(L, 2, 2);
-	if (!lua_isfunction(L, -1)) return luaL_error(L, "Expected function at index 2 (start)");
-	LuaStartObjectFuncs[type] = luaL_ref(L, LUA_REGISTRYINDEX);
+	// if (!lua_isfunction(L, -1)) return luaL_error(L, "Expected function at index 2 (start)");
+	if (LuaIsLuaFunc(L, -1)) {
+		LuaStartObjectFuncs[type] = luaL_ref(L, LUA_REGISTRYINDEX);
+	} else {
+		LuaStartObjectFuncs[type] = LUA_REFNIL;
+	}
 	lua_rawgeti(L, 2, 3);
-	if (!lua_isfunction(L, -1)) return luaL_error(L, "Expected function at index 3 (update)");
-	LuaUpdateObjectFuncs[type] = luaL_ref(L, LUA_REGISTRYINDEX);
+	if (LuaIsLuaFunc(L, -1)) {
+		LuaUpdateObjectFuncs[type] = luaL_ref(L, LUA_REGISTRYINDEX);
+	} else {
+		LuaUpdateObjectFuncs[type] = LUA_REFNIL;
+	}
+	// if (!lua_isfunction(L, -1)) return luaL_error(L, "Expected function at index 3 (update)");
 	lua_rawgeti(L, 2, 4);
-	if (!lua_isfunction(L, -1)) return luaL_error(L, "Expected function at index 4 (update)");
-	LuaDestroyObjectFuncs[type] = luaL_ref(L, LUA_REGISTRYINDEX);
+	if (LuaIsLuaFunc(L, -1)) {
+		LuaDestroyObjectFuncs[type] = luaL_ref(L, LUA_REGISTRYINDEX);
+	} else {
+		LuaDestroyObjectFuncs[type] = LUA_REFNIL;
+	}
+	// if (!lua_isfunction(L, -1)) return luaL_error(L, "Expected function at index 4 (update)");
 	ObjectSetCreateFunction(type, createObject);
 	ObjectSetStartFunction(type, startObject);
 	ObjectSetUpdateFunction(type, updateObject);
@@ -124,6 +171,21 @@ static int setGameobjectPosition(lua_State* L) {
 	}
 	go->X = LuaGetFloati(L, 2);
 	go->Y = LuaGetFloati(L, 3);
+	return 0;
+}
+
+static int setGameobjectSize(lua_State* L) {
+	if (LuaGetStackSize(L) != 3 || !LuaIsFloat(L, 2) || !LuaIsFloat(L, 3)) {
+		sgLogWarn("Bad args trying to set go position from lua");
+		return 0;
+	}
+	GameObject* go = (GameObject*)LuaGetLightUserdatai(L, 1);
+	if (!go) {
+		sgLogWarn("Bad cast from go Lua");
+		return 0;
+	}
+	go->W = LuaGetFloati(L, 2);
+	go->H = LuaGetFloati(L, 3);
 	return 0;
 }
 
@@ -205,6 +267,7 @@ static const luaL_Reg objectLib[] = {
 	{"SetDestroyGameObjects", setAllGameobjectsToBeDestroyed},
 	{"Position", getGameobjectPosition},
 	{"SetPosition", setGameobjectPosition},
+	{"SetSize", setGameobjectSize},
 	{"Size", getGameobjectSize},
 	{"Id", getGameobjectId},
 	{"DestroyGameObjects", destroyObjects},

@@ -47,6 +47,10 @@ void AddGameObjectFromTiledMap(TiledObject* object) {
 		sgLogDebug("create gameobject function");
 		_gameObjectTypes[CurrentGameObject->Type].CreateFunc(object, CurrentGameObject);
 	}
+	CurrentGameObject->X = object->X;
+	CurrentGameObject->Y = object->Y;
+	CurrentGameObject->W = object->Width;
+	CurrentGameObject->H = object->Height;
 	CurrentGameObject->Flags = 0;
 	CurrentGameObject->Flags |= GameObjectFlagActive;
 	CurrentGameObject->Flags |= GameObjectFlagLoaded;
