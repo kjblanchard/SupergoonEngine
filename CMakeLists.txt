@@ -5,6 +5,7 @@ set(CMAKE_EXECUTABLE_SUFFIX ".html" CACHE STRING "Use html" FORCE)
 set(EXTERNAL_LIBS
     SDL3::SDL3-static
 )
+set(FOLDERS_TO_COPY scripting/)
 
 if(UNIX OR APPLE)
     list(APPEND COMPILE_OPTIONS
@@ -285,4 +286,8 @@ target_include_directories(${LIBRARY_TARGET_NAME}
     PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
+
+install(DIRECTORY ${FOLDERS_TO_COPY}
+    DESTINATION ${INSTALL_DIR}/assets/lua
+    COMPONENT assets)
 
