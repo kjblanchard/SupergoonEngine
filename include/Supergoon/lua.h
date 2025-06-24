@@ -103,6 +103,7 @@ void RunLuaFunctionOnStack(LuaState L, int numArgs);
 // Helpers
 typedef enum LuaFunctionParameterTypes {
 	// Used if you don't want to check this type.
+	LuaFunctionParameterTypeDefault,
 	LuaFunctionParameterTypePass,
 	LuaFunctionParameterTypeInt,
 	LuaFunctionParameterTypeNumber,

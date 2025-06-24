@@ -49,6 +49,7 @@ void ClearRenderTargetTexture(Texture* texture, sgColor* color);
  */
 
 void DrawTextureToRenderTargetTexture(Texture* dst, Texture* src, RectangleF* dstRect, RectangleF* srcRect);
+void TextureSize(Texture* texture, float* x, float* y);
 
 /**
  * @brief Loads a bmp from the assets/img folder

@@ -46,7 +46,6 @@ static int createPanel(lua_State* state) {
 	return 1;
 }
 
-// return cUI.CreateImage(name, rect, parentPanel, filename, srcRect)
 static int createImage(lua_State* state) {
 	// args - name, loc table, parent userdata, filename, src rect
 	if (LuaGetStackSize(state) != 5 || !LuaIsString(state, 1) || !LuaIsTable(state, 2) || !LuaIsString(state, 4) || !(LuaIsTable(state, 5) || lua_isnil(state, 5))) {
@@ -67,6 +66,87 @@ static int createImage(lua_State* state) {
 	}
 	AddUIObject(obj, obj->Parent);
 	LuaPushLightUserdata(state, obj);
+	return 1;
+}
+
+static int create9SliceImage(lua_State* L) {
+	// args - name, loc table, parent userdata, filename, alpha
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 5, LuaFunctionParameterTypeString, LuaFunctionParameterTypeTable, LuaFunctionParameterTypePass, LuaFunctionParameterTypeString, LuaFunctionParameterTypeTable)) {
+		LuaPushNil(L);
+		return 1;
+	}
+	UIObject* obj = createUIObject(L);
+	obj->Type = UIObjectTypesImage;
+	UIImageData* renderTargetImageData = SDL_malloc(sizeof(*renderTargetImageData));
+	Texture* renderTargetTexture = CreateRenderTargetTexture(obj->Location.w, obj->Location.h, (sgColor){255, 255, 255, 255});
+	Texture* nineSliceImageTexture = CreateTextureFromIndexedBMP(LuaGetStringi(L, 4));
+	renderTargetImageData->Texture = renderTargetTexture;
+	obj->Data = renderTargetImageData;
+	float nineSliceImageW;
+	float nineSliceImageH;
+	int r;
+	int g;
+	int b;
+	int a;
+	r = LuaGetFloatFromTableStackiKey(L, 5, "r");
+	g = LuaGetFloatFromTableStackiKey(L, 5, "g");
+	b = LuaGetFloatFromTableStackiKey(L, 5, "b");
+	a = LuaGetFloatFromTableStackiKey(L, 5, "a");
+	TextureSize(nineSliceImageTexture, &nineSliceImageW, &nineSliceImageH);
+	SetTextureAlpha(renderTargetTexture, a);
+	ClearRenderTargetTexture(renderTargetTexture, &(sgColor){r, g, b, a});
+	renderTargetImageData->SrcRect = (RectangleF){0, 0, obj->Location.w, obj->Location.h};
+	// renderTargetImageData->SrcRect = (RectangleF){0, 0, nineSliceImageW, nineSliceImageH};
+	// ClearRenderTargetTexture likely not needed
+	// TODO this should be param, as this is the size of the 9 slices
+	float sizeX = 8;
+	float sizeY = 9;
+	// / Draw the corners
+	// tl
+	RectangleF srcRect = {0, 0, sizeX, sizeY};
+	RectangleF dstRect = {0, 0, sizeX, sizeY};
+	DrawTextureToRenderTargetTexture(renderTargetTexture, nineSliceImageTexture, &dstRect, &srcRect);
+	// tr
+	srcRect = (RectangleF){nineSliceImageW - sizeX, 0, sizeX, sizeY};
+	dstRect = (RectangleF){obj->Location.w - sizeX, 0, sizeX, sizeY};
+	// dstRect = (RectangleF){64 - sizeX, 0, sizeX, sizeY};
+	DrawTextureToRenderTargetTexture(renderTargetTexture, nineSliceImageTexture, &dstRect, &srcRect);
+	// // bl
+	srcRect = (RectangleF){0, nineSliceImageH - sizeY, sizeX, sizeY};
+	dstRect = (RectangleF){0, obj->Location.h - sizeY, sizeX, sizeY};
+	DrawTextureToRenderTargetTexture(renderTargetTexture, nineSliceImageTexture, &dstRect, &srcRect);
+	// br
+	srcRect = (RectangleF){nineSliceImageW - sizeX, nineSliceImageH - sizeY, sizeX, sizeY};
+	dstRect = (RectangleF){obj->Location.w - sizeX, obj->Location.h - sizeY, sizeX, sizeY};
+	DrawTextureToRenderTargetTexture(renderTargetTexture, nineSliceImageTexture, &dstRect, &srcRect);
+	// draw the bars
+	int length = obj->Location.w - (sizeX);
+	int height = obj->Location.h - (sizeY);
+	// top
+	srcRect = (RectangleF){1 + sizeX, 0, 1, sizeY};
+	for (size_t i = sizeX; i < length; i++) {
+		dstRect = (RectangleF){(float)i, 0, 1, sizeY};
+		DrawTextureToRenderTargetTexture(renderTargetTexture, nineSliceImageTexture, &dstRect, &srcRect);
+	}
+	// bottom
+	for (size_t i = sizeX; i < length; i++) {
+		dstRect = (RectangleF){(float)i, obj->Location.h - sizeY + 4, 1, sizeY};
+		DrawTextureToRenderTargetTexture(renderTargetTexture, nineSliceImageTexture, &dstRect, &srcRect);
+	}
+	// left
+	srcRect = (RectangleF){0, sizeY + 1, sizeX, 1};
+	for (size_t i = sizeY; i < height; i++) {
+		dstRect = (RectangleF){0, (float)i, sizeX, 1};
+		DrawTextureToRenderTargetTexture(renderTargetTexture, nineSliceImageTexture, &dstRect, &srcRect);
+	}
+	// right
+	for (size_t i = sizeY; i < height; i++) {
+		dstRect = (RectangleF){obj->Location.w - sizeX + 3, (float)i, sizeX, 1};
+		DrawTextureToRenderTargetTexture(renderTargetTexture, nineSliceImageTexture, &dstRect, &srcRect);
+	}
+	UnloadTexture(nineSliceImageTexture);
+	AddUIObject(obj, obj->Parent);
+	LuaPushLightUserdata(L, obj);
 	return 1;
 }
 
@@ -243,6 +323,7 @@ static int destroyObject(lua_State* L) {
 static const luaL_Reg uiLib[] = {
 	{"CreatePanel", createPanel},
 	{"CreateImage", createImage},
+	{"Create9SliceImage", create9SliceImage},
 	{"CreateText", createText},
 	{"CreateRect", createRect},
 	{"CreateLayoutGroup", createLayoutGroup},

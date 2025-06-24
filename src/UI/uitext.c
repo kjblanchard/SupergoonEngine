@@ -116,7 +116,7 @@ static LoadedFont* getLoadedFont(const char* fontName, unsigned int size) {
 	}
 	fontToLoadInto->FontName = strdup(fontAndSize);
 	snprintf(fontAndSize, sizeof(fontAndSize), "assets/fonts/%s.ttf", fontName);
-	char fullFilepath[200];
+	char fullFilepath[1000];
 	GetFilenameWithExeFilepath(fullFilepath, sizeof(fullFilepath), fontAndSize);
 	int result = FT_New_Face(_loadedLibrary, fullFilepath, 0, &fontToLoadInto->FontFace);
 	// TODO probably should cleanup here even though it may never happen

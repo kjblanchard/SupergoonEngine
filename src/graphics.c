@@ -123,8 +123,8 @@ Texture* CreateTextureFromIndexedBMP(const char* filename) {
 	if (texture) {
 		return texture;
 	}
-	char name[50];
-	char fullFilepath[200];
+	char name[500];
+	char fullFilepath[1000];
 	snprintf(name, sizeof(name), "assets/img/%s.bmp", filename);
 	GetFilenameWithExeFilepath(fullFilepath, sizeof(fullFilepath), name);
 	SDL_Surface* surface = SDL_LoadBMP(fullFilepath);
@@ -195,10 +195,11 @@ void UnloadAllTextures(void) {
 
 void initializeGraphicsSystem(void) {
 	RESIZE_ARRAY(_textureCache, _numTexturesInCache, _textureCacheSize, TextureCacheItem);
-	int result = SDL_SetRenderDrawBlendMode(_renderer, SDL_BLENDMODE_BLEND);
-	if (!result) {
-		sgLogWarn("Could not set blendmode..");
-	}
+	// TODO not sure why we ever had this.
+	// int result = SDL_SetRenderDrawBlendMode(_renderer, SDL_BLENDMODE_BLEND);
+	// if (!result) {
+	// 	sgLogWarn("Could not set blendmode..");
+	// }
 }
 
 void shutdownGraphicsSystem(void) {
@@ -213,4 +214,8 @@ void SetTextureAlpha(Texture* texture, int newAlpha) {
 	if (!result) {
 		sgLogWarn("Could not set texture alpha, %s", SDL_GetError());
 	}
+}
+
+void TextureSize(Texture* texture, float* w, float* h) {
+	SDL_GetTextureSize(texture, w, h);
 }

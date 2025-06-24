@@ -45,6 +45,12 @@ local function CreateImage(name, rect, parentPanel, filename, srcRect)
     return cUI.CreateImage(name, rect, parentPanel, filename, srcRect)
 end
 
+local function Create9SliceImage(name, rect, parentPanel, filename, color)
+    rect = normalizeRect(rect)
+    color = normalizeColorRect(color)
+    return cUI.Create9SliceImage(name, rect, parentPanel, filename, color)
+end
+
 local function CreateText(name, rect, parentPanel, text, fontName, fontSize, centerX, centerY, wordwrap, color)
     rect = normalizeRect(rect)
     color = normalizeColorRect(color)
@@ -77,6 +83,8 @@ local function CreateUIObjectAndChildren(objTable, parentPtr, parentTable)
     local node = { data = nil, children = {} }
     if objTable.type == "image" then
         node.data = CreateImage(objTable.name, objTable.location, parentPtr, objTable.imageName, objTable.srcRect)
+    elseif objTable.type == "9slice" then
+        node.data = Create9SliceImage(objTable.name, objTable.location, parentPtr, objTable.imageName, objTable.color)
     elseif objTable.type == "text" then
         local thisFont = font
         local thisSize = fontSize
