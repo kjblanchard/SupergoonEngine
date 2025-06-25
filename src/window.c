@@ -89,8 +89,12 @@ static void onWindowResize(void) {
 	int windowW, windowH;
 	// TODO if for some reason the display is drawn offscreen, it will become letterboxed, not sure if problem
 	SDL_GetRenderOutputSize(_renderer, &windowW, &windowH);
+	int scaleX = 1.0;
+	int scaleY = 1.0;
+	if (_logicalWidth) {
 	int scaleX = windowW / _logicalWidth;
 	int scaleY = windowH / _logicalHeight;
+	}
 	int scale = (scaleX < scaleY) ? scaleX : scaleY;
 	_gameImageScale = (float)scale;
 	_gameImageWidth = _logicalWidth * scale;

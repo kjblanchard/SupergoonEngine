@@ -277,8 +277,13 @@ target_include_directories(${LIBRARY_TARGET_NAME}
     ${CMAKE_CURRENT_LIST_DIR}/include
     /usr/local/include
     PRIVATE
+    # linux builds
     ${sdl3_SOURCE_DIR}/include
     ${freetype_SOURCE_DIR}/include
+    ${lib_lua_SOURCE_DIR}/lua-5.4.5/include
+    ${lib_vorbis_SOURCE_DIR}/include
+    ${lib_ogg_SOURCE_DIR}/include
+    ${lib_ogg_BINARY_DIR}/include
 )
 
 # don't hide warnings

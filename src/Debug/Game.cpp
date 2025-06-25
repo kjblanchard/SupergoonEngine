@@ -7,7 +7,7 @@
 #include <Supergoon/Debug/Debug.hpp>
 #include <Supergoon/Debug/Game.hpp>
 bool _isFocusedLastFrame = true;
-static u_int8_t _frames = 0;
+static uint8_t _frames = 0;
 extern uint8_t _screenFadeInt;
 
 void ShowGameDebugWindow(void) {

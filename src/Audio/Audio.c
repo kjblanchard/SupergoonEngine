@@ -15,7 +15,7 @@
 #define SFX_CACHE_SIZE 12
 static unsigned int _track = 0;
 typedef struct AudioBgmAsset {
-	Bgm* Bgm;
+	Bgm* BgmPtr;
 	float Volume;
 	bool IsFading;
 } AudioBgmAsset;
@@ -45,7 +45,7 @@ static void playBgmInternal(Event* event);
  */
 void initializeAudio(void) {
 	for (size_t i = 0; i < MAX_TRACKS; i++) {
-		_bgmAssets[i].Bgm = NULL;
+		_bgmAssets[i].BgmPtr = NULL;
 		_bgmAssets[i].Volume = 0;
 		_bgmAssets[i].IsFading = false;
 	}
@@ -63,8 +63,8 @@ void initializeAudio(void) {
 
 void closeAudio(void) {
 	for (size_t i = 0; i < MAX_TRACKS; i++) {
-		if (_bgmAssets[i].Bgm) {
-			bgmDelete(_bgmAssets[i].Bgm);
+		if (_bgmAssets[i].BgmPtr) {
+			bgmDelete(_bgmAssets[i].BgmPtr);
 		}
 	}
 
@@ -110,20 +110,20 @@ static void loadBgmInternal(Event* event) {
 	// sgBgm* bgm = bgmAsset->Bgm;
 	SDL_asprintf(&fullPath, "%sassets/audio/bgm/%s%s", SDL_GetBasePath(), args->Name, ".ogg");
 	// If BGM is already in this track, we should return as it's already loaded
-	if (bgmAsset->Bgm && !strcmp(bgmAsset->Bgm->Filename, fullPath)) {
+	if (bgmAsset->BgmPtr && !strcmp(bgmAsset->BgmPtr->Filename, fullPath)) {
 		SDL_free(fullPath);
 		goto cleanup;
 	}
 	// If theres already a bgm in there, then we should delete it.
-	if (bgmAsset->Bgm) {
-		bgmDelete(bgmAsset->Bgm);
+	if (bgmAsset->BgmPtr) {
+		bgmDelete(bgmAsset->BgmPtr);
 	}
-	bgmAsset->Bgm = bgmNew();
-	bgmAsset->Bgm->Filename = fullPath;
-	bgmAsset->Bgm->Loops = args->Loops;
-	bgmAsset->Bgm->Volume = args->Volume * _globalBgmVolume;
-	bgmLoad(bgmAsset->Bgm);
-	bgmAsset->Volume = bgmAsset->Bgm->Volume;
+	bgmAsset->BgmPtr = bgmNew();
+	bgmAsset->BgmPtr->Filename = fullPath;
+	bgmAsset->BgmPtr->Loops = args->Loops;
+	bgmAsset->BgmPtr->Volume = args->Volume * _globalBgmVolume;
+	bgmLoad(bgmAsset->BgmPtr);
+	bgmAsset->Volume = bgmAsset->BgmPtr->Volume;
 cleanup:
 	SDL_free(args->Name);
 	SDL_free(args);
@@ -132,24 +132,24 @@ cleanup:
 static void pauseBgmInternal(Event* event) {
 	int track = event->user.code;
 	AudioBgmAsset* _bgm = &_bgmAssets[track];
-	if (!_bgm->Bgm || !_bgm->Bgm->IsPlaying) {
+	if (!_bgm->BgmPtr || !_bgm->BgmPtr->IsPlaying) {
 		return;
 	}
-	bgmPause(_bgm->Bgm);
+	bgmPause(_bgm->BgmPtr);
 }
 
 static void stopBgmInternal(Event* event) {
 	int track = event->user.code;
 	AudioBgmAsset* _bgm = &_bgmAssets[track];
-	if (!_bgm->Bgm || !_bgm->Bgm->IsPlaying) {
+	if (!_bgm->BgmPtr || !_bgm->BgmPtr->IsPlaying) {
 		return;
 	}
-	bgmStop(_bgm->Bgm);
+	bgmStop(_bgm->BgmPtr);
 }
 
 static void playBgmInternal(Event* event) {
 	UpdatePlayingBgmVolume();
-	bgmPlay(_bgmAssets[event->user.code].Bgm);
+	bgmPlay(_bgmAssets[event->user.code].BgmPtr);
 }
 
 /**
@@ -158,8 +158,8 @@ static void playBgmInternal(Event* event) {
  */
 void audioUpdate(void) {
 	for (size_t i = 0; i < MAX_TRACKS; i++) {
-		if (_bgmAssets[i].Bgm) {
-			bgmUpdate(_bgmAssets[i].Bgm);
+		if (_bgmAssets[i].BgmPtr) {
+			bgmUpdate(_bgmAssets[i].BgmPtr);
 		}
 	}
 }
@@ -187,8 +187,8 @@ void PlayBgm(void) {
 
 void UpdatePlayingBgmVolume(void) {
 	for (size_t i = 0; i < MAX_TRACKS; i++) {
-		if (!_bgmAssets[i].Bgm) continue;
-		bgmUpdateVolume(_bgmAssets[i].Bgm, _globalBgmVolume * _bgmAssets[i].Volume);
+		if (!_bgmAssets[i].BgmPtr) continue;
+		bgmUpdateVolume(_bgmAssets[i].BgmPtr, _globalBgmVolume * _bgmAssets[i].Volume);
 	}
 }
 
@@ -209,15 +209,15 @@ static void stopBgmFadeoutEndFunc(void* bgmVoid) {
 	assert(bgmAsset && "Bad bgm asset passed in, something is wrong");
 	bgmAsset->IsFading = false;
 	bgmAsset->Volume = 0;
-	if (!bgmAsset->Bgm || !bgmAsset->Bgm->IsPlaying) {
+	if (!bgmAsset->BgmPtr || !bgmAsset->BgmPtr->IsPlaying) {
 		return;
 	}
-	bgmStop(bgmAsset->Bgm);
+	bgmStop(bgmAsset->BgmPtr);
 }
 
 void StopBgmFadeout(void) {
 	AudioBgmAsset* bgmAsset = &_bgmAssets[_track];
-	if (!(bgmAsset && bgmAsset->Bgm)) {
+	if (!(bgmAsset && bgmAsset->BgmPtr)) {
 		sgLogInfo("Trying to fadeout an invalid BGM");
 		return;
 	}
@@ -232,8 +232,8 @@ void StopBgmFadeout(void) {
 	StartTween(tween);
 }
 void SetPlayingBgmVolume(float volume) {
-	if (!_bgmAssets[_track].Bgm) return;
-	_bgmAssets[_track].Bgm->Volume = volume;
+	if (!_bgmAssets[_track].BgmPtr) return;
+	_bgmAssets[_track].BgmPtr->Volume = volume;
 	UpdatePlayingBgmVolume();
 }
 

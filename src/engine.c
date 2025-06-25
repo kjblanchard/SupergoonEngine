@@ -178,7 +178,7 @@ void SetDrawFunction(void (*drawFunc)(void)) {
 void Run(void) {
 	bool started = Start();
 	if (!started) {
-		fprintf(stderr, "Could not start program, exiting");
+		sgLogCritical("Could not start program, exiting");
 	}
 	if (_startFunc) _startFunc();
 	Update();

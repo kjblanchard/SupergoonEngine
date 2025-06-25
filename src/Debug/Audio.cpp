@@ -16,7 +16,7 @@ using namespace std;
 extern float _globalBgmVolume;
 extern float _globalSfxVolume;
 typedef struct AudioBgmAsset {
-	Bgm* Bgm;
+	Bgm* BgmPtr;
 	float Volume;
 } AudioBgmAsset;
 extern AudioBgmAsset _bgmAssets[MAX_TRACKS];
@@ -118,18 +118,18 @@ void ShowAudioDebugWindow() {
 		for (size_t i = 0; i < MAX_TRACKS; i++) {
 			ImGui::Text("Track %ld", i);
 			ImGui::SameLine();
-			if (_bgmAssets[i].Bgm) {
-				double pos = getBgmCurrentPosition(_bgmAssets[i].Bgm);
-				double duration = getBgmDuration(_bgmAssets[i].Bgm);
+			if (_bgmAssets[i].BgmPtr) {
+				double pos = getBgmCurrentPosition(_bgmAssets[i].BgmPtr);
+				double duration = getBgmDuration(_bgmAssets[i].BgmPtr);
 				double percent = pos / duration;
 				char buf[32];
 				snprintf(buf, 32, "%.1fsec/%.1fsec", (pos), duration);
 				ImGui::ProgressBar(percent, ImVec2(0.f, 0.f), buf);
 				// ImGui::Text("Loops Remaining %d ##%ld", _bgmAssets[i].Bgm->Loops, i);
-				std::string s = _bgmAssets[i].Bgm->Filename;
+				std::string s = _bgmAssets[i].BgmPtr->Filename;
 				std::string last_element(s.substr(s.rfind("/") + 1));
 				ImGui::Text("Name: %s", last_element.c_str());
-				ImGui::Text("Loops Remaining %d", _bgmAssets[i].Bgm->Loops);
+				ImGui::Text("Loops Remaining %d", _bgmAssets[i].BgmPtr->Loops);
 				auto volumeStr = "Volume ##" + to_string(i);
 				if (ImGui::SliderFloat(volumeStr.c_str(), &_bgmAssets[i].Volume, 0, 1.0)) {
 					UpdatePlayingBgmVolume();
