@@ -149,9 +149,14 @@ function LoadSceneCo(mapname, uiname, bgm, volume, fadeInTimeSec, fadeOutTimeSec
         if uiname ~= nil then
             local name = "ui/" .. uiname
             engine.Log.LogWarn("Loading " .. name)
-            local testui = require(name)
-            ui.CreatePanelFromTable(testui)
+            local success, testui = pcall(require, name)
+            if success then
+                ui.CreatePanelFromTable(testui)
+            else
+                engine.Log.LogError("Failed to load UI: " .. name .. " — " .. tostring(testui))
+            end
         end
+
         if fadeOutTimeSec > 0 then
             engine.FadeinScreen(fadeOutTimeSec)
             Wait(fadeOutTimeSec)
