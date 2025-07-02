@@ -107,6 +107,22 @@ static void onDirtyUIObject(UIObject* object) {
 	object->Flags &= ~UIObjectFlagDirty;
 }
 
+static void updateUIInputObject(UIObject* object) {
+	if (!object || !(object->Flags & UIObjectFlagActive)) {
+		return;
+	}
+	switch (object->Type) {
+		case UIObjectTypesButton:
+			UpdateUIButton(object);
+			break;
+		default:
+			break;
+	}
+	for (size_t i = 0; i < object->ChildrenCount; i++) {
+		updateUIInputObject(object->Children[i]);
+	}
+}
+
 static void updateUIObject(UIObject* object) {
 	if (!object || !(object->Flags & UIObjectFlagActive)) {
 		return;
@@ -115,9 +131,8 @@ static void updateUIObject(UIObject* object) {
 		onDirtyUIObject(object);
 	}
 	switch (object->Type) {
-		case UIObjectTypesButton:
-			UpdateUIButton(object);
-			break;
+		// case UIObjectTypesButton:
+		// 	UpdateUIButton(object);
 		default:
 			break;
 	}
@@ -133,6 +148,11 @@ void InitializeUISystem(void) {
 	_rootUIObject->Name = strdup("Root Panel");
 	_rootUIObject->Flags |= UIObjectFlagActive | UIObjectFlagVisible | UIObjectFlagDirty;
 	InitializeUITextSystem();
+}
+
+void UpdateUIInputSystem(void) {
+	assert(_rootUIObject && "No root man");
+	updateUIInputObject(_rootUIObject);
 }
 
 void UpdateUISystem(void) {

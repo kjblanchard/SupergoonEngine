@@ -24,8 +24,10 @@
 #include <Supergoon/Debug/ImGui.hpp>
 #endif
 
+static bool sdlEventLoop(void);
 // Functions in mouce.c
 void updateMouseSystem(void);
+void updateTouchSystem(void);
 // Functions in Audio.c
 extern void initializeAudio(void);
 extern void closeAudio(void);
@@ -41,6 +43,7 @@ float deltaTimeSeconds;
 static void (*_startFunc)(void) = NULL;
 static void (*_updateFunc)(void) = NULL;
 static void (*_drawFunc)(void) = NULL;
+static void (*_inputFunc)(void) = NULL;
 static int (*_handleEventFunc)(Event *) = NULL;
 #ifdef imgui
 bool _isGameSimulatorRunning = true;
@@ -62,6 +65,12 @@ static bool Start(void) {
 	initializeTweenEngine();
 	InitializeUISystem();
 	RegisterAllLuaFunctions();
+	// Try to normalize the initial delay of loading everything
+	for (size_t i = 0; i < 10; i++) {
+		sdlEventLoop();
+		SDL_Delay(1);
+	}
+
 	_frequency = SDL_GetPerformanceFrequency();	 // ticks per second
 	previousCounter = SDL_GetPerformanceCounter();
 	deltaTimeSeconds = 0;
@@ -130,6 +139,8 @@ static void Update(void) {
 		// Update
 		UpdateKeyboardSystem();
 		audioUpdate();
+		if (_inputFunc) _inputFunc();
+		UpdateUIInputSystem();
 		Ticks += 1;
 		updateTweens();
 		UpdateAnimators();
@@ -139,6 +150,7 @@ static void Update(void) {
 		UpdateUISystem();
 		geUpdateControllerLastFrame();
 		updateMouseSystem();
+		updateTouchSystem();
 		UpdateCamera();
 		draw();
 		handleFramerate(&now);
@@ -173,6 +185,9 @@ void SetUpdateFunction(void (*updateFunc)(void)) {
 
 void SetDrawFunction(void (*drawFunc)(void)) {
 	_drawFunc = drawFunc;
+}
+void SetInputFunction(void (*updateFunc)(void)) {
+	_inputFunc = updateFunc;
 }
 
 void Run(void) {

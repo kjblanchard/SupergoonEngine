@@ -42,6 +42,7 @@ set(SRC_FILES
     src/Input/joystick.c
     src/Input/keyboard.c
     src/Input/mouse.c
+    src/Input/touch.c
     src/window.c
     src/graphics.c
     src/filesystem.c

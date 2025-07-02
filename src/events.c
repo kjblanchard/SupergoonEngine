@@ -9,6 +9,7 @@ extern void audioEventHandler(Event *event);
 extern void handleTweenEvents(Event *event);
 // Functions in mouce.c
 extern void handleMouseEvent(const SDL_Event *event);
+extern void handleTouchEvent(const SDL_Event *event);
 extern void windowEventHandler(Event *event);
 BuiltinEventTypes BuiltinEventIds;
 static int (*_customEventHandler)(Event *event) = NULL;
@@ -37,6 +38,7 @@ int HandleEvents(Event *event) {
 	audioEventHandler(event);
 	// handleTweenEvents(event);
 	handleMouseEvent(event);
+	handleTouchEvent(event);
 	windowEventHandler(event);
 	return false;
 }

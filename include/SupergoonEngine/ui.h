@@ -4,6 +4,7 @@
 extern "C" {
 #endif
 void InitializeUISystem(void);
+void UpdateUIInputSystem(void);
 void UpdateUISystem(void);
 void DrawUISystem(void);
 void ShutdownUISystem(void);

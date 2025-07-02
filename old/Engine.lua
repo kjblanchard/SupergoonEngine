@@ -21,38 +21,17 @@ engine.Buttons = {
     LEFT = 4,
     DOWN = 22,
     RIGHT = 7,
-    A = 2,
-    B = 3,
 }
 engine.currentScene = {}
 engine.sceneChange = false
 engine.Log = {}
 engine.Input = {}
-engine.Input.ControllerOverlayUpdateFunc = nil
-engine.Input.UIButtonPresses = {
-    JustPressed = {},
-    JustReleased = {},
-    Down = {}
-}
 function engine.Input.KeyboardKeyJustPressed(key)
     return cInput.IsKeyboardKeyPressed(key)
 end
 
 function engine.Input.KeyboardKeyDown(key)
     return cInput.IsKeyboardKeyDown(key)
-end
-
----Updates the internal input system in lua so you don't have to call keydown, just pressed, etc.
-function engine.Input.Update()
-    for key, value in pairs(engine.Buttons) do
-        if engine.Input.KeyboardKeyDown(value) then
-            engine.Input.UIButtonPresses.Down[key] = true
-        else
-            engine.Input.UIButtonPresses.Down[key] = false
-        end
-        if engine.Input.KeyboardKeyJustPressed(value) then
-        end
-    end
 end
 
 function engine.Log.LogDebug(message)
@@ -128,10 +107,8 @@ end
 
 function LoadSceneCo(mapname, uiname, bgm, volume, fadeInTimeSec, fadeOutTimeSec)
     return coroutine.create(function()
-        if fadeInTimeSec > 0 then
-            engine.FadeoutScreen(fadeInTimeSec)
-            Wait(fadeInTimeSec)
-        end
+        engine.FadeoutScreen(fadeInTimeSec)
+        Wait(fadeInTimeSec)
         engine.LoadTilemap(mapname)
         engine.SetGameObjectsToBeDestroyed(false)
         engine.LoadTilemapObjects()
@@ -152,12 +129,9 @@ function LoadSceneCo(mapname, uiname, bgm, volume, fadeInTimeSec, fadeOutTimeSec
             local testui = require(name)
             ui.CreatePanelFromTable(testui)
         end
-        if fadeOutTimeSec > 0 then
-            engine.FadeinScreen(fadeOutTimeSec)
-            Wait(fadeOutTimeSec)
-        end
+        engine.FadeinScreen(fadeOutTimeSec)
+        Wait(fadeOutTimeSec)
         if bgm ~= nil then engine.PlayBGM(bgm, volume) end
-        engine.sceneChange = false
     end)
 end
 

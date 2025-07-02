@@ -79,21 +79,29 @@ void SetScalingOptions(int worldWidth, int worldHeight) {
 
 static void onWindowResize(void) {
 	// TODO Cache all window information, this should be updated if the window size changes, currently it doesn't ever.
-	SDL_SetWindowSize(_window, _windowWidth, _windowHeight);
-	SDL_SetWindowTitle(_window, _windowName);
+	if (!SDL_SetWindowSize(_window, _windowWidth, _windowHeight)) {
+		sgLogError("Could not set window size, %s", SDL_GetError());
+	}
+	if (!SDL_SetWindowTitle(_window, _windowName)) {
+		sgLogError("Could not set window title");
+	}
 #ifndef imgui
 	if (_logicalHeight && _logicalWidth) {
-		SDL_SetRenderLogicalPresentation(_renderer, _logicalWidth, _logicalHeight, SDL_LOGICAL_PRESENTATION_INTEGER_SCALE);
+		if (!SDL_SetRenderLogicalPresentation(_renderer, _logicalWidth, _logicalHeight, SDL_LOGICAL_PRESENTATION_INTEGER_SCALE)) {
+			sgLogError("Could not set logical presentation");
+		}
 	}
 #endif
 	int windowW, windowH;
 	// TODO if for some reason the display is drawn offscreen, it will become letterboxed, not sure if problem
-	SDL_GetRenderOutputSize(_renderer, &windowW, &windowH);
+	if (!SDL_GetRenderOutputSize(_renderer, &windowW, &windowH)) {
+		sgLogError("Could not set window output size");
+	}
 	int scaleX = 1.0;
 	int scaleY = 1.0;
 	if (_logicalWidth) {
-	int scaleX = windowW / _logicalWidth;
-	int scaleY = windowH / _logicalHeight;
+		scaleX = windowW / _logicalWidth;
+		scaleY = windowH / _logicalHeight;
 	}
 	int scale = (scaleX < scaleY) ? scaleX : scaleY;
 	_gameImageScale = (float)scale;
