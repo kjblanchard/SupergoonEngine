@@ -23,6 +23,9 @@
 #ifdef imgui
 #include <Supergoon/Debug/ImGui.hpp>
 #endif
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
 
 static bool sdlEventLoop(void);
 // Functions in mouce.c
@@ -48,8 +51,11 @@ static int (*_handleEventFunc)(Event *) = NULL;
 #ifdef imgui
 bool _isGameSimulatorRunning = true;
 #endif
+static bool quit = false;
+static void Quit(void);
 
 static bool Start(void) {
+	sgLogWarn("Starting the things");
 	if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMEPAD)) {
 		sgLogError("Could not init sdl, %s", SDL_GetError());
 		return false;
@@ -60,20 +66,25 @@ static bool Start(void) {
 	geInitializeJoysticks();
 	InitializeLuaEngine();
 	InitializeEventEngine();
+	sgLogWarn("Starting the before window");
 	CreateWindow();
+	sgLogWarn("Starting the after window");
 	initializeAudio();
 	initializeTweenEngine();
 	InitializeUISystem();
 	RegisterAllLuaFunctions();
-	// Try to normalize the initial delay of loading everything
+// Try to normalize the initial delay of loading everything
+#ifndef __EMSCRIPTEN__
 	for (size_t i = 0; i < 10; i++) {
 		sdlEventLoop();
 		SDL_Delay(1);
 	}
+#endif
 
 	_frequency = SDL_GetPerformanceFrequency();	 // ticks per second
 	previousCounter = SDL_GetPerformanceCounter();
 	deltaTimeSeconds = 0;
+	sgLogWarn("done start");
 	return true;
 }
 static bool sdlEventLoop(void) {
@@ -98,6 +109,9 @@ static bool sdlEventLoop(void) {
 }
 
 static void handleFramerate(Uint64 *now) {
+#ifdef __EMSCRIPTEN__
+	return;
+#endif
 	if (TARGET_FPS != 999) {  // If we are doing a capped frame rate, we should also wait between frames.
 		Uint64 frame_end = SDL_GetPerformanceCounter();
 		Uint64 elapsed_ticks = frame_end - *now;
@@ -119,42 +133,44 @@ static void draw(void) {
 }
 
 static void Update(void) {
-	bool quit = false;
-	while (!quit) {
-		Uint64 now = SDL_GetPerformanceCounter();
-		deltaTimeSeconds = (now - previousCounter) / (float)_frequency;
-		previousCounter = now;
-		DeltaTimeMilliseconds = deltaTimeSeconds * 1000;
-		DeltaTimeSeconds = deltaTimeSeconds;
-		quit = sdlEventLoop();
-		if (quit) {
-			break;
-		}
-		// #ifdef imgui
-		// 		// If we are im imgui and the game is "paused", we should just Draw and update imgui.
-		// 		if (!_isGameSimulatorRunning) {
-		// 		}
-		// #endif
-
-		// Update
-		UpdateKeyboardSystem();
-		audioUpdate();
-		if (_inputFunc) _inputFunc();
-		UpdateUIInputSystem();
-		Ticks += 1;
-		updateTweens();
-		UpdateAnimators();
-		PushGamestateToLua();
-		GameObjectSystemUpdate();
-		if (_updateFunc) _updateFunc();
-		UpdateUISystem();
-		geUpdateControllerLastFrame();
-		updateMouseSystem();
-		updateTouchSystem();
-		UpdateCamera();
-		draw();
-		handleFramerate(&now);
+	Uint64 now = SDL_GetPerformanceCounter();
+	deltaTimeSeconds = (now - previousCounter) / (float)_frequency;
+	previousCounter = now;
+	DeltaTimeMilliseconds = deltaTimeSeconds * 1000;
+	DeltaTimeSeconds = deltaTimeSeconds;
+	quit = sdlEventLoop();
+	if (quit) {
+#ifdef __EMSCRIPTEN__
+		emscripten_cancel_main_loop();
+		Quit();
+#else
+		return;
+#endif
 	}
+	// #ifdef imgui
+	// 		// If we are im imgui and the game is "paused", we should just Draw and update imgui.
+	// 		if (!_isGameSimulatorRunning) {
+	// 		}
+	// #endif
+
+	// Update
+	UpdateKeyboardSystem();
+	if (_inputFunc) _inputFunc();
+	UpdateUIInputSystem();
+	Ticks += 1;
+	updateTweens();
+	UpdateAnimators();
+	PushGamestateToLua();
+	GameObjectSystemUpdate();
+	if (_updateFunc) _updateFunc();
+	UpdateUISystem();
+	geUpdateControllerLastFrame();
+	updateMouseSystem();
+	updateTouchSystem();
+	UpdateCamera();
+	draw();
+	handleFramerate(&now);
+	audioUpdate();
 }
 
 static void Quit(void) {
@@ -196,6 +212,12 @@ void Run(void) {
 		sgLogCritical("Could not start program, exiting");
 	}
 	if (_startFunc) _startFunc();
-	Update();
+#ifdef __EMSCRIPTEN__
+	emscripten_set_main_loop(Update, 0, 1);
+#else
+	while (!quit) {
+		Update();
+	}
+#endif
 	Quit();
 }

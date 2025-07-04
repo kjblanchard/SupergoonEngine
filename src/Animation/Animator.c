@@ -4,6 +4,7 @@
 #include <SupergoonEngine/Animation/animator.h>
 #include <SupergoonEngine/tools.h>
 #include <assert.h>
+#include <stdio.h>
 
 AnimationDataArray _animationData;
 AnimatorArray _animators;

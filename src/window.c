@@ -33,6 +33,9 @@ int _renderTargetHeight = 0;
 int _refreshRate = 0;
 // Without vsync, there is always some kind of jitter.
 int _vsyncEnabled = true;
+#ifdef __EMSCRIPTEN
+_vsyncEnabled = false;
+#endif
 // Target FPS 999 means there will be no delay in the engine, so probably use vsync
 int TARGET_FPS = 999;
 
@@ -79,6 +82,7 @@ void SetScalingOptions(int worldWidth, int worldHeight) {
 
 static void onWindowResize(void) {
 	// TODO Cache all window information, this should be updated if the window size changes, currently it doesn't ever.
+	sgLogWarn("Setting window size %d, %d", _windowWidth, _windowHeight);
 	if (!SDL_SetWindowSize(_window, _windowWidth, _windowHeight)) {
 		sgLogError("Could not set window size, %s", SDL_GetError());
 	}
@@ -119,7 +123,9 @@ static void onWindowResize(void) {
 }
 
 void CreateWindow(void) {
+#ifndef __EMSCRIPTEN__
 	SDL_SetHint(SDL_HINT_RENDER_VSYNC, "1");
+#endif
 	_windowWidth = (_windowWidth != 0) ? _windowWidth : 640;
 	_windowHeight = (_windowHeight != 0) ? _windowHeight : 480;
 	const char* name = (_windowName != NULL) ? _windowName : "Game";
@@ -132,9 +138,11 @@ void CreateWindow(void) {
 	if (!SDL_CreateWindowAndRenderer(name, _windowWidth, _windowHeight, flags, &_window, &_renderer)) {
 		sgLogCritical("Could not load window, error, %s", SDL_GetError());
 	}
+	// #ifndef __EMSCRIPTEN__
 	if (!SDL_SetRenderVSync(_renderer, _vsyncEnabled)) {
 		sgLogWarn("Could not set vsync, %s", SDL_GetError());
 	}
+	// #endif
 	getRefreshRate();
 #ifdef imgui
 	InitializeImGui();

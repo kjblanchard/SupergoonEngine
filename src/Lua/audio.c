@@ -2,6 +2,7 @@
 #include <Supergoon/lua.h>
 #include <lauxlib.h>
 #include <lua.h>
+#include <stdio.h>
 
 static int PlaySfx(lua_State* L) {
 	if (LuaGetStackSize(L) != 2 || !LuaIsString(L, 1) || !LuaIsFloat(L, 2)) {

@@ -155,7 +155,7 @@ static int getKerning(int i, char* text, LoadedFont* font) {
 		return 0;
 	}
 	if (!FT_HAS_KERNING(font->FontFace)) {
-		sgLogDebug("No kerning for font, returning 0");
+		// sgLogDebug("No kerning for font, returning 0");
 		return 0;
 	}
 	unsigned int glyph_index_c = FT_Get_Char_Index(font->FontFace, text[i]);

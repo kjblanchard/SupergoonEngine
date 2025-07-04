@@ -19,10 +19,15 @@
 #define strncasecmp(x, y, z) _strnicmp(x, y, z)
 #endif
 
-#define BGM_NUM_BUFFERS 4									  // Amount of "Buffers" we should have buffered in the SDL stream
-#define BGM_BUFFER_SIZE 8192								  // 8kb
-#define VORBIS_REQUEST_SIZE 4096							  // Size of vorbis requests, usually recommend to be 4096
-#define MINIMUM_STREAM_SIZE BGM_BUFFER_SIZE *BGM_NUM_BUFFERS  // If our sdl stream is less than this, add another buffer
+#define BGM_NUM_BUFFERS 4		  // Amount of "Buffers" we should have buffered in the SDL stream
+#define BGM_BUFFER_SIZE 8192	  // 8kb
+#define VORBIS_REQUEST_SIZE 4096  // Size of vorbis requests, usually recommend to be 4096
+// TODO why is this needed?  Is there a bug in fps / refresh / frame timeing somewhere that you don't notice otherwise?
+#ifdef __EMSCRIPTEN__
+#define MINIMUM_STREAM_SIZE BGM_BUFFER_SIZE *BGM_NUM_BUFFERS * 2  // If our sdl stream is less than this, add another buffer
+#else
+#define MINIMUM_STREAM_SIZE BGM_BUFFER_SIZE *BGM_NUM_BUFFERS  // fix audio issue on emscripten
+#endif
 
 static void getLoopPointsFromVorbisComments(Bgm *bgm, double *loopBegin, double *loopEnd) {
 	vorbis_comment *vc = ov_comment(bgm->VorbisFile, -1);
@@ -137,12 +142,18 @@ void bgmLoad(Bgm *bgm) {
 	}
 	bgm->VorbisInfo = ov_info(bgm->VorbisFile, -1);
 	setBgmLoopPoints(bgm);
-	const SDL_AudioSpec srcspec = {SDL_AUDIO_S16LE, bgm->VorbisInfo->channels, bgm->VorbisInfo->rate};
+	const SDL_AudioSpec srcspec = {
+		SDL_AUDIO_S16LE,
+		bgm->VorbisInfo->channels,
+		bgm->VorbisInfo->rate  // still 44100 or whatever the .ogg is
+	};
+
 	bgm->Stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &srcspec, NULL, NULL);
 	if (bgm->Stream == NULL) {
 		sgLogWarn("Stream failed to create: %s\n", SDL_GetError());
 		return;
 	}
+
 	bgm->IsLoaded = true;
 	while (SDL_GetAudioStreamAvailable(bgm->Stream) < MINIMUM_STREAM_SIZE) {
 		loadDataToStream(bgm);
@@ -178,8 +189,6 @@ void bgmStop(Bgm *bgm) {
 	SDL_PauseAudioStreamDevice(bgm->Stream);
 	ov_pcm_seek_lap(bgm->VorbisFile, 0);
 	SDL_ClearAudioStream(bgm->Stream);
-	// Not sure why this was here?
-	// loadDataToStream(bgm);
 	bgm->CurrentLoopBytesRead = 0;
 	bgm->IsPlaying = false;
 }
@@ -188,6 +197,7 @@ void bgmUpdate(Bgm *bgm) {
 	if (!bgm->IsPlaying || !bgm->IsLoaded) {
 		return;
 	}
+
 	while (SDL_GetAudioStreamAvailable(bgm->Stream) < MINIMUM_STREAM_SIZE && bgm->IsPlaying) {
 		loadDataToStream(bgm);
 	}
