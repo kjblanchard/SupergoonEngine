@@ -126,7 +126,7 @@ function engine.DestroyGameObjects()
     cGameObject.DestroyGameObjects()
 end
 
-function LoadSceneCo(mapname, uiname, bgm, volume, fadeInTimeSec, fadeOutTimeSec)
+function engine.LoadSceneCo(mapname, uiname, bgm, volume, fadeInTimeSec, fadeOutTimeSec)
     return coroutine.create(function()
         if fadeInTimeSec > 0 then
             engine.FadeoutScreen(fadeInTimeSec)
@@ -168,7 +168,7 @@ end
 
 function engine.LoadSceneEx(mapname, uiname, bgm, volume, fadeInTimeSec, fadeOutTimeSec)
     if uiname == "" then uiname = nil end
-    local co = LoadSceneCo(mapname, uiname, bgm, volume, fadeInTimeSec, fadeOutTimeSec)
+    local co = engine.LoadSceneCo(mapname, uiname, bgm, volume, fadeInTimeSec, fadeOutTimeSec)
     scheduler:run(co)
 end
 
@@ -179,7 +179,8 @@ end
 function engine.LoadDefaultScene()
     local defaultScene = scenes["default"]
     local sceneTable = scenes.scenes[defaultScene]
-    local co = LoadSceneCo(sceneTable[1], sceneTable[2], sceneTable[3], sceneTable[4], sceneTable[5], sceneTable[6])
+    local co = engine.LoadSceneCo(sceneTable[1], sceneTable[2], sceneTable[3], sceneTable[4], sceneTable[5],
+        sceneTable[6])
     scheduler:run(co)
 end
 

@@ -9,21 +9,28 @@ AnimationDataArray _animationData;
 AnimatorArray _animators;
 
 static void cleanUsedAnimationData(AnimationData* data) {
-	for (size_t i = 0; i < data->frameCount; i++) {
-		SDL_free(data->frames[i].filename);
-		data->frames[i].filename = NULL;
+	if (data->frames) {
+		for (size_t i = 0; i < data->frameCount; i++) {
+			SDL_free(data->frames[i].filename);
+			data->frames[i].filename = NULL;
+		}
+		SDL_free(data->frames);
+		data->frames = NULL;
 	}
-	SDL_free(data->frames);
-	data->frames = NULL;
-	for (size_t i = 0; i < data->meta.frameTagCount; i++) {
-		SDL_free(data->meta.frameTags[i].name);
-		data->meta.frameTags[i].name = NULL;
+	if (data->meta.frameTags) {
+		for (size_t i = 0; i < data->meta.frameTagCount; i++) {
+			SDL_free(data->meta.frameTags[i].name);
+			data->meta.frameTags[i].name = NULL;
+		}
+		SDL_free(data->meta.frameTags);
+		data->meta.frameTags = NULL;
 	}
-	SDL_free(data->meta.frameTags);
-	data->meta.frameTags = NULL;
-	SDL_free(data->meta.image);
-	data->meta.image = NULL;
+	if (data->meta.image) {
+		SDL_free(data->meta.image);
+		data->meta.image = NULL;
+	}
 	data->meta.frameTagCount = 0;
+	data->frameCount = 0;
 }
 
 // Finds free animation data and increases ref count
@@ -126,6 +133,9 @@ static AnimatorHandle getFreeAnimator(void) {
 	for (size_t i = 0; i < _animators.Size; i++) {
 		if (!_animators.Animators[i].Data) {
 			memset(&_animators.Animators[i], 0, sizeof(Animator));
+			if (i >= _animators.Count) {
+				++_animators.Count;
+			}
 			return i;
 		}
 	}
@@ -265,8 +275,8 @@ void UpdateAnimators(void) {
 }
 
 void SetAnimatorAnimationSpeed(AnimatorHandle animator, float speed) {
-	if (speed != 0) {
-		sgLogInfo("Setting animator animation speed to %f", speed);
-	}
+	// if (speed != 0) {
+	// 	sgLogInfo("Setting animator animation speed to %f", speed);
+	// }
 	_animators.Animators[animator].AnimationSpeed = speed;
 }

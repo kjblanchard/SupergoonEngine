@@ -180,7 +180,7 @@ if(NOT SDL3_FOUND)
     FetchContent_Declare(
         SDL3
         GIT_REPOSITORY https://github.com/libsdl-org/SDL
-        GIT_TAG release-3.2.0
+        GIT_TAG release-3.2.16
         EXCLUDE_FROM_ALL
     )
     FetchContent_MakeAvailable(SDL3)

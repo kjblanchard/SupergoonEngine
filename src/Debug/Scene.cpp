@@ -64,9 +64,9 @@ void ShowSceneDebugWindow() {
 			LuaPushString(_luaState, _scenes[sceneCurrent].Title.c_str());
 			LuaPushString(_luaState, _scenes[sceneCurrent].UIName.c_str());
 			LuaPushString(_luaState, _scenes[sceneCurrent].BGMName.c_str());
-			LuaPushFloat(_luaState, 0.0);
-			LuaPushFloat(_luaState, 0.0);
-			LuaPushFloat(_luaState, 0.0);
+			LuaPushFloat(_luaState, 1.0);
+			LuaPushFloat(_luaState, 0.25);
+			LuaPushFloat(_luaState, 0.25);
 			RunLuaFunctionOnStack(_luaState, 6);
 		}
 	}
