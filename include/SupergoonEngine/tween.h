@@ -10,7 +10,13 @@
 #pragma once
 #include <Supergoon/Tweening/tween.h>
 #include <stdint.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
 #define MAX_TWEENS 100
+
+extern int _numberTweens;
+
 typedef enum TweenType {
 	TweenTypeFloat,
 	TweenTypeInt,
@@ -43,3 +49,8 @@ typedef struct sgTween {
 	TweenData Data;
 	void* Userdata;
 } sgTween;
+
+extern sgTween _tweens[MAX_TWEENS];
+#ifdef __cplusplus
+}
+#endif

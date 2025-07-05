@@ -8,7 +8,7 @@
 #include <Supergoon/Debug/Debug.hpp>
 #include <Supergoon/pch.hpp>
 using namespace std;
-extern UIObject *_rootUIObject;
+
 
 static string GetWidgetTypeName(UIObjectTypes objectType) {
 	switch (objectType) {

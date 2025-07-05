@@ -4,16 +4,13 @@
 #include <Supergoon/Imgui/imgui_impl_sdlrenderer3.h>
 #include <Supergoon/events.h>
 #include <Supergoon/window.h>
+#include <SupergoonEngine/window.h>
 
 #include <Supergoon/Debug/Debug.hpp>
 #include <Supergoon/Debug/ImGui.hpp>
 #include <string>
 
-// defined in window.c
-extern Window* _window;
-extern Renderer* _renderer;
-// defined in Game.cpp
-extern bool _isFocusedLastFrame;
+
 
 void InitializeImGui(void) {
 	assert(_renderer && _window && "No renderer, make sure window is created");

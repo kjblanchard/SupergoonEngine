@@ -1,14 +1,14 @@
 #include <Supergoon/Imgui/imgui.h>
+#include <SupergoonEngine/tween.h>
 #include <Supergoon/Tweening/tween.h>
 #include <Supergoon/log.h>
-#include <SupergoonEngine/tween.h>
+
 #include <stdio.h>
 
 #include <Supergoon/Debug/Debug.hpp>
 #include <Supergoon/Debug/Tween.hpp>
 #include <string>
-extern int _numberTweens;
-extern sgTween _tweens[MAX_TWEENS];
+
 using namespace std;
 
 void ShowTweenDebugWindow(void) {

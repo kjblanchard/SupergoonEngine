@@ -6,6 +6,7 @@
 #include <lualib.h>
 #include <stdio.h>
 #include <string.h>
+#include <SupergoonEngine/tools.h>
 
 LuaState _luaState = NULL;
 
@@ -17,13 +18,15 @@ static void setLuaPath(void) {
 	const char* basePath = SDL_GetBasePath();
 	const char* nextPath = "assets/lua/?.lua;../Resources/assets/lua/?.lua;assets/scripts/?.lua;../Resources/assets/scripts/?.lua";
 	const char* currentLuaPath = lua_tostring(_luaState, -1);  // grab path string from top of stack
+
 	size_t full_str_len = strlen(currentLuaPath) + strlen(nextPath) + strlen(basePath) + 2;
-	char full_str[full_str_len];
-	snprintf(full_str, full_str_len, "%s;%s%s", currentLuaPath, basePath, nextPath);
+	char* full_str;
+	asprintf(&full_str, "%s;%s%s", currentLuaPath, basePath, nextPath);
 	lua_pop(_luaState, 1);
 	lua_pushstring(_luaState, full_str);
 	lua_setfield(_luaState, -2, "path");
 	lua_pop(_luaState, 1);
+	SDL_free(full_str);
 }
 
 void InitializeLuaEngine(void) {
@@ -39,13 +42,14 @@ void InitializeLuaEngine(void) {
 void LuaRunFile(const char* path) {
 	const char* basePath = SDL_GetBasePath();
 	size_t size = strlen(basePath) + strlen(path) + 1;
-	char fullPath[size];
-	snprintf(fullPath, size, "%s%s", basePath, path);
+	char* fullPath;
+	asprintf(&fullPath, "%s%s", basePath, path);
 
 	if (luaL_dofile(_luaState, fullPath) != 0) {
 		const char* luaError = lua_tostring(_luaState, -1);
 		sgLogError("Lua error: %s", luaError);
 	}
+	SDL_free(fullPath);
 }
 
 int LuaGetStackSize(LuaState L) {

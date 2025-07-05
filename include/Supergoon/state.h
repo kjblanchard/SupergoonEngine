@@ -10,6 +10,13 @@
  */
 #include <stdint.h>
 #pragma once
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 extern float DeltaTimeSeconds;
 extern float DeltaTimeMilliseconds;
 extern uint32_t Ticks;
+#ifdef __cplusplus
+}
+#endif

@@ -3,12 +3,12 @@
 #include <Supergoon/Imgui/imgui_impl_sdlrenderer3.h>
 #include <Supergoon/window.h>
 #include <SupergoonEngine/window.h>
+#include <Supergoon/effects.h>
 
 #include <Supergoon/Debug/Debug.hpp>
 #include <Supergoon/Debug/Game.hpp>
 bool _isFocusedLastFrame = true;
 static uint8_t _frames = 0;
-extern uint8_t _screenFadeInt;
 
 void ShowGameDebugWindow(void) {
 	if (_frames < 2) {

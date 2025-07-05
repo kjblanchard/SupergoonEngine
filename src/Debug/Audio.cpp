@@ -1,5 +1,6 @@
 #include <SDL3/SDL.h>
 #include <Supergoon/Audio/Audio.h>
+#include <SupergoonEngine/audio.h>
 #include <Supergoon/Audio/Bgm.h>
 
 #include <Supergoon/Debug/Audio.hpp>
@@ -9,17 +10,9 @@
 #include <vector>
 
 using namespace std;
-#ifndef MAX_TRACKS
-#define MAX_TRACKS 4
-#endif
 
-extern float _globalBgmVolume;
-extern float _globalSfxVolume;
-typedef struct AudioBgmAsset {
-	Bgm* BgmPtr;
-	float Volume;
-} AudioBgmAsset;
-extern AudioBgmAsset _bgmAssets[MAX_TRACKS];
+
+
 
 std::vector<string> bgmNames;
 std::vector<string> sfxNames;
