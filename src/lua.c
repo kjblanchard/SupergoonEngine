@@ -43,8 +43,8 @@ void LuaRunFile(const char* path) {
 	luaL_dostring(_luaState, "print('Lua works!')");
 	const char* basePath = SDL_GetBasePath();
 	size_t size = strlen(basePath) + strlen(path) + 1;
-	char fullPath[size];
-	snprintf(fullPath, size, "%s%s", basePath, path);
+	char* fullPath;
+	asprintf(&fullPath, "%s%s", basePath, path);
 	sgLogWarn("Running lua file %s", fullPath);
 
 	if (luaL_dofile(_luaState, fullPath) != 0) {
@@ -52,6 +52,7 @@ void LuaRunFile(const char* path) {
 		sgLogError("Lua error: %s", luaError);
 	}
 	sgLogWarn("Ran the lua file!!");
+	SDL_free(fullPath);
 }
 
 int LuaGetStackSize(LuaState L) {
