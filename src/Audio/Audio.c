@@ -9,6 +9,7 @@
 #include <Supergoon/log.h>
 #include <Supergoon/state.h>
 #include <assert.h>
+#include <stdio.h>
 
 #define MAX_TRACKS 4
 #define MAX_SFX_STREAMS 8

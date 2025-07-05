@@ -37,5 +37,5 @@ int sgasprintf(char **strp, const char *fmt, ...) {
 }
 
 int strcmpWithSuffix(const char *lhs, const char *rhs, const char *suffix) {
-	return strncmp(lhs, rhs, strlen(suffix) == 0);
+	return strncmp(lhs, rhs, strlen(suffix)) == 0;
 }

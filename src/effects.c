@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 // used im game.cpp
+Tween _screenFadeTween = NULL_TWEEN;
 int _screenFadeInt = 255;
 static bool _currentlyFading = false;
 static void fadeScreenStartFunc(void* userdata) {
@@ -20,14 +21,14 @@ static void fadeScreenEndFunc(void* userdata) {
 }
 static void fadeScreen(bool fadeIn, float fadeoutTimeInSeconds) {
 	if (_currentlyFading) {
-		sgLogWarn("Trying to fade but we are already fading, doing nothing");
-		return;
+		StopTween(_screenFadeTween);
+		_screenFadeTween = NULL_TWEEN;
 	}
 	int startValue = fadeIn ? 0 : 255;
 	int endValue = fadeIn ? 255 : 0;
-	Tween tween = CreateIntTween(&_screenFadeInt, startValue, endValue, fadeoutTimeInSeconds, TweenEasingLinear);
-	SetTweenFunctions(tween, fadeScreenStartFunc, fadeScreenUpdateFunc, fadeScreenEndFunc);
-	StartTween(tween);
+	_screenFadeTween = CreateIntTween(&_screenFadeInt, startValue, endValue, fadeoutTimeInSeconds, TweenEasingLinear);
+	SetTweenFunctions(_screenFadeTween, fadeScreenStartFunc, fadeScreenUpdateFunc, fadeScreenEndFunc);
+	StartTween(_screenFadeTween);
 }
 
 int IsScreenFading(void) {

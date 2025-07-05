@@ -10,6 +10,7 @@
 #pragma once
 #include <Supergoon/Tweening/tween.h>
 #include <stdint.h>
+<<<<<<< HEAD
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -17,6 +18,8 @@ extern "C" {
 
 extern int _numberTweens;
 
+=======
+>>>>>>> d450f56bdefbcce37dafd0311b9027f6164caa1b
 typedef enum TweenType {
 	TweenTypeFloat,
 	TweenTypeInt,

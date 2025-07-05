@@ -42,6 +42,7 @@ set(SRC_FILES
     src/Input/joystick.c
     src/Input/keyboard.c
     src/Input/mouse.c
+    src/Input/touch.c
     src/window.c
     src/graphics.c
     src/filesystem.c
@@ -179,7 +180,7 @@ if(NOT SDL3_FOUND)
     FetchContent_Declare(
         SDL3
         GIT_REPOSITORY https://github.com/libsdl-org/SDL
-        GIT_TAG release-3.2.0
+        GIT_TAG release-3.2.16
         EXCLUDE_FROM_ALL
     )
     FetchContent_MakeAvailable(SDL3)

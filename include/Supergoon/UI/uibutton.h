@@ -5,6 +5,7 @@ extern "C" {
 #endif
 typedef struct UIButton {
 	int MouseOverLastFrame;
+	int TouchOverLastFrame;
 	void (*ButtonClickEvent)(UIObject* obj);
 	void (*ButtonHoverEvent)(UIObject* obj, int justHovered);
 } UIButton;

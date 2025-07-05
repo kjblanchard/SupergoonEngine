@@ -7,6 +7,8 @@
  * @copyright Copyright (c) 2025
  */
 #pragma once
+#define MAX_TWEENS 100
+#define NULL_TWEEN MAX_TWEENS
 // The Easing types used when creating a tween.
 typedef enum TweenEasings {
 	TweenEasingLinear,

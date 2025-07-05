@@ -6,6 +6,7 @@
 #include <SupergoonEngine/tools.h>
 #include <SupergoonEngine/window.h>
 #include <assert.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 TextureCacheItem* _textureCache = NULL;

@@ -40,16 +40,18 @@ void InitializeLuaEngine(void) {
 }
 
 void LuaRunFile(const char* path) {
+	luaL_dostring(_luaState, "print('Lua works!')");
 	const char* basePath = SDL_GetBasePath();
 	size_t size = strlen(basePath) + strlen(path) + 1;
-	char* fullPath;
-	asprintf(&fullPath, "%s%s", basePath, path);
+	char fullPath[size];
+	snprintf(fullPath, size, "%s%s", basePath, path);
+	sgLogWarn("Running lua file %s", fullPath);
 
 	if (luaL_dofile(_luaState, fullPath) != 0) {
 		const char* luaError = lua_tostring(_luaState, -1);
 		sgLogError("Lua error: %s", luaError);
 	}
-	SDL_free(fullPath);
+	sgLogWarn("Ran the lua file!!");
 }
 
 int LuaGetStackSize(LuaState L) {

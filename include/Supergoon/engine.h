@@ -24,6 +24,12 @@ void SetStartFunction(void (*startFunc)(void));
  */
 void SetHandleEventFunction(int (*eventFunc)(Event*));
 /**
+ * @brief Set the Input Function object, used in the update loop before any gameobject updates, etc
+ *
+ * @param updateFunc
+ */
+void SetInputFunction(void (*updateFunc)(void));
+/**
  * @brief Set the Update Function object
  *
  * @param updateFunc Function to be called every frame

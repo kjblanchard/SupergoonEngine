@@ -4,21 +4,34 @@
 #include <SupergoonEngine/Animation/animator.h>
 #include <SupergoonEngine/tools.h>
 #include <assert.h>
+#include <stdio.h>
 
 AnimationDataArray _animationData;
 AnimatorArray _animators;
 
 static void cleanUsedAnimationData(AnimationData* data) {
-	for (size_t i = 0; i < data->frameCount; i++) {
-		SDL_free(data->frames[i].filename);
+	if (data->frames) {
+		for (size_t i = 0; i < data->frameCount; i++) {
+			SDL_free(data->frames[i].filename);
+			data->frames[i].filename = NULL;
+		}
+		SDL_free(data->frames);
+		data->frames = NULL;
 	}
-	SDL_free(data->frames);
-	for (size_t i = 0; i < data->meta.frameTagCount; i++) {
-		SDL_free(data->meta.frameTags[i].name);
+	if (data->meta.frameTags) {
+		for (size_t i = 0; i < data->meta.frameTagCount; i++) {
+			SDL_free(data->meta.frameTags[i].name);
+			data->meta.frameTags[i].name = NULL;
+		}
+		SDL_free(data->meta.frameTags);
+		data->meta.frameTags = NULL;
 	}
-
-	SDL_free(data->meta.frameTags);
-	SDL_free(data->meta.image);
+	if (data->meta.image) {
+		SDL_free(data->meta.image);
+		data->meta.image = NULL;
+	}
+	data->meta.frameTagCount = 0;
+	data->frameCount = 0;
 }
 
 // Finds free animation data and increases ref count
@@ -37,15 +50,6 @@ static AnimationData* findFreeAnimationData(void) {
 	ref->RefCount = 1;
 	++_animationData.Count;
 	return &ref->Data;
-	// RESIZE_ARRAY_FULL(_animationData.AnimationArray, _animationData.Count, _animationData.Size, AnimationDataRef);
-	// AnimationDataRef* ref = &_animationData.AnimationArray[_animationData.Count];
-	// memset(ref, 0, sizeof(AnimationDataRef));
-	// ref->RefCount = 1;
-	// return &ref->Data;
-	// memset(&_animationData.AnimationArray[_animationData.Count].Data, 0, sizeof(AnimationData));
-	// ++_animationData.AnimationArray[_animationData.Count++].RefCount;
-	// // memset(&_animationData.AnimationArray[_animationData.Count].Data, 0, sizeof(AnimationData));
-	// return &_animationData.AnimationArray[_animationData.Count].Data;
 }
 
 // Removes ref count of a ref data ptr
@@ -55,18 +59,17 @@ static void removeAnimationDataRef(AnimationData* data) {
 		if (&thing->Data == data) {
 			if (_animationData.AnimationArray[i].RefCount > 0) {
 				--_animationData.AnimationArray[i].RefCount;
+				if (_animationData.AnimationArray[i].RefCount == 0) {
+					cleanUsedAnimationData(data);
+				}
 			} else {
 				sgLogWarn("RefCount underflow attempted on animation data");
 			}
-			// if (_animationData.AnimationArray[i].RefCount == 0) {
-			// 	memset(&_animationData.AnimationArray[i].Data, 0, sizeof(AnimationData));
-			// }
 			return;
 		}
 	}
 	sgLogWarn("Trying to remove ref to something not found");
 }
-
 // Finds a animation data based on name
 static AnimationData* findAnimationData(const char* name) {
 	for (size_t i = 0; i < _animationData.Count; i++) {
@@ -131,6 +134,9 @@ static AnimatorHandle getFreeAnimator(void) {
 	for (size_t i = 0; i < _animators.Size; i++) {
 		if (!_animators.Animators[i].Data) {
 			memset(&_animators.Animators[i], 0, sizeof(Animator));
+			if (i >= _animators.Count) {
+				++_animators.Count;
+			}
 			return i;
 		}
 	}
@@ -197,7 +203,7 @@ void DestroyAnimator(AnimatorHandle animator) {
 }
 
 void updateAnimator(Animator* animator) {
-	if (animator->Loops == 0) {
+	if (animator->Loops == 0 || animator->AnimationSpeed == 0.0f) {
 		return;
 	}
 	// bool justFinished = false;
@@ -270,5 +276,8 @@ void UpdateAnimators(void) {
 }
 
 void SetAnimatorAnimationSpeed(AnimatorHandle animator, float speed) {
+	// if (speed != 0) {
+	// 	sgLogInfo("Setting animator animation speed to %f", speed);
+	// }
 	_animators.Animators[animator].AnimationSpeed = speed;
 }
