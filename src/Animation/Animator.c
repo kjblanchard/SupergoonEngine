@@ -46,7 +46,7 @@ static AnimationData* findFreeAnimationData(void) {
 	}
 	RESIZE_ARRAY(_animationData.AnimationArray, _animationData.Count, _animationData.Size, AnimationDataRef);
 	AnimationDataRef* ref = &_animationData.AnimationArray[_animationData.Count];
-	memset(ref, 0, sizeof(AnimationDataRef));
+	// memset(ref, 0, sizeof(AnimationDataRef));
 	ref->RefCount = 1;
 	++_animationData.Count;
 	return &ref->Data;
@@ -133,7 +133,8 @@ static void loadAsepriteData(AnimationData* animationData) {
 static AnimatorHandle getFreeAnimator(void) {
 	for (size_t i = 0; i < _animators.Size; i++) {
 		if (!_animators.Animators[i].Data) {
-			memset(&_animators.Animators[i], 0, sizeof(Animator));
+			CLEAR_STRUCT(&_animators.Animators[i]);
+			// memset(&_animators.Animators[i], 0, sizeof(Animator));
 			if (i >= _animators.Count) {
 				++_animators.Count;
 			}
@@ -141,7 +142,7 @@ static AnimatorHandle getFreeAnimator(void) {
 		}
 	}
 	RESIZE_ARRAY(_animators.Animators, _animators.Count, _animators.Size, Animator);
-	memset(&_animators.Animators[_animators.Count], 0, sizeof(Animator));
+	// memset(&_animators.Animators[_animators.Count], 0, sizeof(Animator));
 	return _animators.Count++;
 }
 

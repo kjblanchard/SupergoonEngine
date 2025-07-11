@@ -19,7 +19,7 @@ static void setLuaPath(void) {
 	const char* nextPath = "assets/lua/?.lua;../Resources/assets/lua/?.lua;assets/scripts/?.lua;../Resources/assets/scripts/?.lua";
 	const char* currentLuaPath = lua_tostring(_luaState, -1);  // grab path string from top of stack
 
-	size_t full_str_len = strlen(currentLuaPath) + strlen(nextPath) + strlen(basePath) + 2;
+	// size_t full_str_len = strlen(currentLuaPath) + strlen(nextPath) + strlen(basePath) + 2;
 	char* full_str;
 	asprintf(&full_str, "%s;%s%s", currentLuaPath, basePath, nextPath);
 	lua_pop(_luaState, 1);

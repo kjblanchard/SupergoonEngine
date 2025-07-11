@@ -82,7 +82,7 @@ void DrawSpriteSystem(void) {
 }
 
 void ShutdownSpriteSystem(void) {
-	for (size_t i = 0; i < _numSprites; i++) {
+	for (size_t i = 0; i < _sizeSprites; i++) {
 		UnloadTexture(_sprites[i]->Texture);
 	}
 	SDL_free(_sprites);

@@ -340,6 +340,9 @@ static void freeTiledTilemap(Tilemap* map) {
 		for (size_t i = 0; i < (size_t)map->NumObjects; i++) {
 			for (size_t j = 0; j < map->Objects[i].NumProperties; j++) {
 				SDL_free(map->Objects[i].Properties[j].Name);
+				if (map->Objects[i].Properties[j].PropertyType == TiledPropertyTypeString) {
+					SDL_free(map->Objects[i].Properties[j].Data.StringData);
+				}
 			}
 			SDL_free(map->Objects[i].Name);
 			SDL_free(map->Objects[i].Properties);
@@ -358,6 +361,9 @@ static void freeTiledTilemap(Tilemap* map) {
 		SDL_free(tileset->Image);
 		SDL_free(tileset->AnimatedTiles);
 		UnloadTexture(tileset->TilesetTexture);
+	}
+	if (map->Solids) {
+		SDL_free(map->Solids);
 	}
 	SDL_free(map->Tilesets);
 	SDL_free(map->BaseFilename);

@@ -188,6 +188,7 @@ endif(NOT SDL3_FOUND)
 
 if(NOT LIB_OGG)
     message(STATUS "OGG not found. Fetching OGG...")
+    set(BUILD_TESTING OFF CACHE BOOL "do not build tests")
     FetchContent_Declare(
         LIB_OGG
         GIT_REPOSITORY https://github.com/xiph/ogg
