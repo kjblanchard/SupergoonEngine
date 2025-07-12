@@ -15,6 +15,7 @@
 #include <lauxlib.h>
 #include <lua.h>
 
+static int _inputFuncRef = LUA_REFNIL;
 static int _updateFuncRef = LUA_REFNIL;
 static int _drawFuncRef = LUA_REFNIL;
 
@@ -40,6 +41,17 @@ static int setScalingOptions(lua_State* L) {
 	return 0;
 }
 
+static void inputFunc(void) {
+	if (_inputFuncRef != LUA_REFNIL) {
+		lua_rawgeti(_luaState, LUA_REGISTRYINDEX, _inputFuncRef);
+		if (lua_pcall(_luaState, 0, 0, 0) != LUA_OK) {
+			const char* err = lua_tostring(_luaState, -1);
+			fprintf(stderr, "Error in input func: %s\n", err);
+			lua_pop(_luaState, 1);
+		}
+	}
+}
+
 static void updateFunc(void) {
 	if (_updateFuncRef != LUA_REFNIL) {
 		lua_rawgeti(_luaState, LUA_REGISTRYINDEX, _updateFuncRef);
@@ -60,6 +72,16 @@ static void drawFunc(void) {
 			lua_pop(_luaState, 1);
 		}
 	}
+}
+
+static int setInputFunc(lua_State* L) {
+	if (LuaGetStackSize(L) != 1 || !LuaIsLuaFunc(L, 1)) {
+		sgLogWarn("Bad parameters passed into setupda options from lua");
+		return 0;
+	}
+	_inputFuncRef = luaL_ref(_luaState, LUA_REGISTRYINDEX);
+	SetInputFunction(inputFunc);
+	return 0;
 }
 
 static int setUpdateFunc(lua_State* L) {
@@ -110,6 +132,7 @@ static const luaL_Reg sceneLib[] = {
 	{"SetWindowOptions", setWindowOptions},
 	{"SetScalingOptions", setScalingOptions},
 	{"SetUpdateFunc", setUpdateFunc},
+	{"SetInputFunc", setInputFunc},
 	{"SetDrawFunc", setDrawFunc},
 	{"DrawRect", drawRect},
 	{"DrawRectCamOffset", drawRectCamOffset},

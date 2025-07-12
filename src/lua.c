@@ -1,12 +1,12 @@
 #include <SDL3/SDL_filesystem.h>
 #include <Supergoon/log.h>
 #include <Supergoon/lua.h>
+#include <SupergoonEngine/tools.h>
 #include <lauxlib.h>
 #include <lua.h>
 #include <lualib.h>
 #include <stdio.h>
 #include <string.h>
-#include <SupergoonEngine/tools.h>
 
 LuaState _luaState = NULL;
 
@@ -42,7 +42,7 @@ void InitializeLuaEngine(void) {
 void LuaRunFile(const char* path) {
 	luaL_dostring(_luaState, "print('Lua works!')");
 	const char* basePath = SDL_GetBasePath();
-	size_t size = strlen(basePath) + strlen(path) + 1;
+	// size_t size = strlen(basePath) + strlen(path) + 1;
 	char* fullPath;
 	asprintf(&fullPath, "%s%s", basePath, path);
 	sgLogWarn("Running lua file %s", fullPath);

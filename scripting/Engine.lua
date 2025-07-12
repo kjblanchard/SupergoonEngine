@@ -35,23 +35,21 @@ engine.Input.UIButtonPresses = {
     Down = {}
 }
 function engine.Input.KeyboardKeyJustPressed(key)
-    return cInput.IsKeyboardKeyPressed(key)
+    -- return cInput.IsKeyboardKeyPressed(key)
+    return engine.Input.UIButtonPresses.JustPressed[key] or cInput.IsKeyboardKeyPressed(key)
 end
 
 function engine.Input.KeyboardKeyDown(key)
-    return cInput.IsKeyboardKeyDown(key)
+    return engine.Input.UIButtonPresses.Down[key] or cInput.IsKeyboardKeyDown(key)
 end
 
 ---Updates the internal input system in lua so you don't have to call keydown, just pressed, etc.
 function engine.Input.Update()
-    for key, value in pairs(engine.Buttons) do
-        if engine.Input.KeyboardKeyDown(value) then
-            engine.Input.UIButtonPresses.Down[key] = true
-        else
-            engine.Input.UIButtonPresses.Down[key] = false
-        end
-        if engine.Input.KeyboardKeyJustPressed(value) then
-        end
+    for _, value in pairs(engine.Buttons) do
+        engine.Input.UIButtonPresses.Down[value] = false
+        engine.Input.UIButtonPresses.JustPressed[value] = false
+        -- engine.Input.UIButtonPresses.Down[key] = engine.Input.KeyboardKeyDown(value)
+        -- engine.Input.UIButtonPresses.JustPressed[key] = engine.Input.KeyboardKeyJustPressed(value)
     end
 end
 
@@ -204,6 +202,10 @@ end
 ---@return boolean true if screen is fading.
 function engine.IsScreenFading()
     return cEffects.IsScreenFading
+end
+
+function engine.SetInputFunc(func)
+    cEngine.SetInputFunc(func)
 end
 
 function engine.SetUpdateFunc(func)

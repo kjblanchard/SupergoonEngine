@@ -48,7 +48,7 @@ static int createPanel(lua_State* state) {
 
 static int createImage(lua_State* state) {
 	// args - name, loc table, parent userdata, filename, src rect
-	if (LuaGetStackSize(state) != 5 || !LuaIsString(state, 1) || !LuaIsTable(state, 2) || !LuaIsString(state, 4) || !(LuaIsTable(state, 5) || lua_isnil(state, 5))) {
+	if (LuaGetStackSize(state) != 6 || !LuaIsString(state, 1) || !LuaIsTable(state, 2) || !LuaIsString(state, 4) || !(LuaIsTable(state, 5) || lua_isnil(state, 5)), !LuaIsInt(state, 6)) {
 		sgLogError("Could not create image from lua, bad params");
 		LuaPushNil(state);
 		return 1;
@@ -64,6 +64,7 @@ static int createImage(lua_State* state) {
 		image->SrcRect.w = LuaGetFloatFromTableStackiKey(state, 5, "w");
 		image->SrcRect.h = LuaGetFloatFromTableStackiKey(state, 5, "h");
 	}
+	SetTextureAlpha(image->Texture, LuaGetIntFromStacki(state, 6));
 	AddUIObject(obj, obj->Parent);
 	LuaPushLightUserdata(state, obj);
 	return 1;
@@ -231,10 +232,11 @@ static void callButtonFuncByIndex(LuaState L, int objId, int index, int argCount
 	RunLuaFunctionOnStack(L, argCount);
 }
 
-static void buttonPress(UIObject* obj) {
+static void buttonPress(UIObject* obj, int justPressed) {
 	if (obj) {
 		lua_pushlightuserdata(_luaState, obj);			  // arg
-		callButtonFuncByIndex(_luaState, obj->Id, 1, 1);  // index 1 = click, 0 args
+		lua_pushboolean(_luaState, justPressed);		  // arg
+		callButtonFuncByIndex(_luaState, obj->Id, 1, 2);  // index 1 = click, 0 args
 	}
 }
 
@@ -248,7 +250,7 @@ static void buttonHover(UIObject* obj, int justHovered) {
 
 static int createButton(lua_State* L) {
 	// args - name, loc table, parent userdata, funcsTable
-	if (LuaGetStackSize(L) != 4 || !LuaIsString(L, 1) || !LuaIsTable(L, 2) || !LuaIsTable(L, 4)) {
+	if (LuaGetStackSize(L) != 5 || !LuaIsString(L, 1) || !LuaIsTable(L, 2) || !LuaIsTable(L, 4) || !LuaIsBool(L, 5)) {
 		sgLogError("Could not create button from lua, bad params passed in");
 		LuaPushNil(L);
 		return 1;
@@ -258,6 +260,7 @@ static int createButton(lua_State* L) {
 	UIButton* buttonData = SDL_calloc(1, sizeof(*buttonData));
 	obj->Data = buttonData;
 	buttonData->MouseOverLastFrame = false;
+	buttonData->ClickOnRelease = LuaGetBooli(L, 5);
 	LuaRegistrySetSubTableEntry(L, LUA_BUTTON_FUNCS_KEY, obj->Id, 4);
 	buttonData->ButtonClickEvent = buttonPress;
 	buttonData->ButtonHoverEvent = buttonHover;

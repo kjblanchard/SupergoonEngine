@@ -55,6 +55,6 @@ int IsMouseButtonJustReleased(int button) {
 	return !_thisFrameMouseButtons[button] && _lastFrameMouseButtons[button];
 }
 
-int IsMouseButtonHeldDown(int button) {
+int IsMouseButtonDown(int button) {
 	return _thisFrameMouseButtons[button];
 }

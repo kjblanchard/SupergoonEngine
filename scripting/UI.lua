@@ -39,10 +39,11 @@ local function CreatePanel(name, rect, parentPanel)
     return cUI.CreatePanel(name, rect, parentPanel)
 end
 
-local function CreateImage(name, rect, parentPanel, filename, srcRect)
+local function CreateImage(name, rect, parentPanel, filename, srcRect, transparencyInt)
     rect = normalizeRect(rect)
     srcRect = normalizeRect(srcRect)
-    return cUI.CreateImage(name, rect, parentPanel, filename, srcRect)
+    transparencyInt = transparencyInt or 255
+    return cUI.CreateImage(name, rect, parentPanel, filename, srcRect, transparencyInt)
 end
 
 local function Create9SliceImage(name, rect, parentPanel, filename, color)
@@ -73,16 +74,17 @@ local function CreateVLG(name, rect, parentPanel, spacing)
     return cUI.CreateLayoutGroup(name, rect, parentPanel, spacing, false)
 end
 
-local function CreateButton(name, rect, parentPanel, pressedFunc, hoverFunc)
+local function CreateButton(name, rect, parentPanel, pressedFunc, hoverFunc, pressOnRelease)
     rect = normalizeRect(rect)
-    return cUI.CreateButton(name, rect, parentPanel, { pressedFunc, hoverFunc })
+    return cUI.CreateButton(name, rect, parentPanel, { pressedFunc, hoverFunc }, pressOnRelease)
 end
 
 local function CreateUIObjectAndChildren(objTable, parentPtr, parentTable)
     -- TODO we should validate these so it doesn't break
     local node = { data = nil, children = {} }
     if objTable.type == "image" then
-        node.data = CreateImage(objTable.name, objTable.location, parentPtr, objTable.imageName, objTable.srcRect)
+        node.data = CreateImage(objTable.name, objTable.location, parentPtr, objTable.imageName, objTable.srcRect,
+            objTable.transparency)
     elseif objTable.type == "9slice" then
         node.data = Create9SliceImage(objTable.name, objTable.location, parentPtr, objTable.imageName, objTable.color)
     elseif objTable.type == "text" then
@@ -109,7 +111,8 @@ local function CreateUIObjectAndChildren(objTable, parentPtr, parentTable)
     elseif objTable.type == "vlg" then
         node.data = CreateVLG(objTable.name, objTable.location, parentPtr, objTable.spacing)
     elseif objTable.type == "button" then
-        node.data = CreateButton(objTable.name, objTable.location, parentPtr, objTable.pressedFunc, objTable.hoverFunc)
+        node.data = CreateButton(objTable.name, objTable.location, parentPtr, objTable.pressedFunc, objTable.hoverFunc,
+            objTable.pressOnRelease)
     elseif objTable.type == "panel" then
         node.data = CreatePanel(objTable.name, objTable.location, parentPtr)
     end

@@ -6,7 +6,10 @@ extern "C" {
 typedef struct UIButton {
 	int MouseOverLastFrame;
 	int TouchOverLastFrame;
-	void (*ButtonClickEvent)(UIObject* obj);
+	int ClickedLastFrame;
+	// Used on touch, and if you should click on release.
+	int ClickOnRelease;
+	void (*ButtonClickEvent)(UIObject* obj, int justClicked);
 	void (*ButtonHoverEvent)(UIObject* obj, int justHovered);
 } UIButton;
 
