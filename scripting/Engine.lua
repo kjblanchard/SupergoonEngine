@@ -21,8 +21,8 @@ engine.Buttons = {
     LEFT = 4,
     DOWN = 22,
     RIGHT = 7,
-    A = 2,
-    B = 3,
+    A = 44,
+    B = 27,
 }
 engine.currentScene = {}
 engine.sceneChange = false
@@ -236,6 +236,11 @@ function engine.GameTicks()
     return cEngine.Ticks
 end
 
+--Is the game running on a mobile platform.
+function engine.IsMobile()
+    return cEngine.IsMobile
+end
+
 function engine.NewSprite(imageName, parentPtr, textureSrcRectTable, offsetSizeRectTable)
     textureSrcRectTable = normalizeRect(textureSrcRectTable)
     offsetSizeRectTable = normalizeRect(offsetSizeRectTable)
@@ -280,6 +285,13 @@ end
 function engine.CheckRectForCollision(rectTable)
     local rect = normalizeRect(rectTable)
     return cGameObject.CheckSolidsRect(rect)
+end
+
+function engine.CheckForCollision(a, b)
+    return a.x < b.x + b.w and
+        a.x + a.w > b.x and
+        a.y < b.y + b.h and
+        a.y + a.h > b.y
 end
 
 function engine.MapName()

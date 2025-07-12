@@ -48,7 +48,7 @@ static int createPanel(lua_State* state) {
 
 static int createImage(lua_State* state) {
 	// args - name, loc table, parent userdata, filename, src rect
-	if (LuaGetStackSize(state) != 6 || !LuaIsString(state, 1) || !LuaIsTable(state, 2) || !LuaIsString(state, 4) || !(LuaIsTable(state, 5) || lua_isnil(state, 5)), !LuaIsInt(state, 6)) {
+	if (LuaGetStackSize(state) != 6 || !LuaIsString(state, 1) || !LuaIsTable(state, 2) || !LuaIsString(state, 4) || !(LuaIsTable(state, 5) || lua_isnil(state, 5)) || !LuaIsInt(state, 6)) {
 		sgLogError("Could not create image from lua, bad params");
 		LuaPushNil(state);
 		return 1;

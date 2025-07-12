@@ -1,5 +1,6 @@
 -- UI.lua
 local UI = {}
+local engine = require("Engine")
 UI.UIInstance = {}
 local font = ""
 local fontSize = 0
@@ -80,6 +81,7 @@ local function CreateButton(name, rect, parentPanel, pressedFunc, hoverFunc, pre
 end
 
 local function CreateUIObjectAndChildren(objTable, parentPtr, parentTable)
+    if objTable.isMobile and not engine.IsMobile() then return end
     -- TODO we should validate these so it doesn't break
     local node = { data = nil, children = {} }
     if objTable.type == "image" then
@@ -138,6 +140,8 @@ function UI.DestroyPanel(panelTable)
 end
 
 function UI.CreatePanelFromTable(table)
+    -- Handle creating this UI element only on specific platforms.
+    if table.isMobile and not engine.IsMobile() then return end
     -- Top level is always a panel
     local root = { data = CreatePanel(table.name, { 0, 0, 0, 0 }, nil), children = {}, doNotDestroy = table.doNotDestroy }
     UI.UIInstance[table.name] = root

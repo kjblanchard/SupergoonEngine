@@ -152,5 +152,11 @@ void PushGamestateToLua(void) {
 	lua_setfield(_luaState, -2, "DeltaTimeMilliseconds");
 	lua_pushinteger(_luaState, Ticks);
 	lua_setfield(_luaState, -2, "Ticks");
+	bool isMobile = false;
+#if IS_MOBILE
+	isMobile = true;
+#endif
+	lua_pushboolean(_luaState, isMobile);
+	lua_setfield(_luaState, -2, "IsMobile");
 	lua_pop(_luaState, 1);	// Pop the cEngine table
 }
