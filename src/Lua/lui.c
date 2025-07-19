@@ -1,3 +1,5 @@
+// TODO this shouldn't be here
+#include <SDL3/SDL.h>
 #include <Supergoon/UI/ui.h>
 #include <Supergoon/UI/uibutton.h>
 #include <Supergoon/UI/uiimage.h>
@@ -323,6 +325,32 @@ static int destroyObject(lua_State* L) {
 	return 0;
 }
 
+static int updateText(lua_State* L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 2, LuaFunctionParameterTypePass, LuaFunctionParameterTypeString)) {
+		goto end;
+	}
+	UIObject* freeThing = LuaGetLightUserdatai(L, 1);
+	if (!freeThing || freeThing->Type != UIObjectTypesText) {
+		sgLogWarn("Pased bad ui object to update text");
+		goto end;
+	}
+	UIText* text = (freeThing->Data);
+	if (!text) {
+		sgLogWarn("Bad text in uiobject");
+		goto end;
+	}
+	if (text->Text) {
+		SDL_free(text->Text);
+	}
+	text->Text = LuaAllocateStringStack(L, 2);
+	SDL_DestroyTexture(text->Texture);
+	freeThing->Flags |= UIObjectFlagDirty;
+
+end:
+	LuaPushNil(L);
+	return 1;
+}
+
 static const luaL_Reg uiLib[] = {
 	{"CreatePanel", createPanel},
 	{"CreateImage", createImage},
@@ -334,6 +362,7 @@ static const luaL_Reg uiLib[] = {
 	{"GetObjectLocation", getUIObjectLocation},
 	{"GetObjectSize", getUIObjectSize},
 	{"SetObjectLocation", setUIObjectLocation},
+	{"UpdateText", updateText},
 	{"DestroyUIObject", destroyObject},
 	{NULL, NULL}};
 

@@ -139,6 +139,10 @@ function UI.DestroyPanel(panelTable)
     panelTable = nil
 end
 
+function UI.UpdateText(textData, text)
+    cUI.UpdateText(textData, text)
+end
+
 function UI.CreatePanelFromTable(table)
     -- Handle creating this UI element only on specific platforms.
     if table.isMobile and not engine.IsMobile() then return end

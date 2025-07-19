@@ -200,7 +200,7 @@ static bool CheckShouldWrap(int x, int wordLength, int glyphWidth, int maxX) {
 
 static void addWordToWrapPoints(unsigned int currentWordWraps, UIText* text, int location) {
 	if (currentWordWraps + 1 > text->NumWordWrapCharacters) {
-		unsigned int* newArray = realloc(text->WordWrapCharacters, sizeof(int) * currentWordWraps + 1);
+		unsigned int* newArray = realloc(text->WordWrapCharacters, sizeof(int) * (currentWordWraps + 1));
 		if (!newArray) {
 			sgLogCritical("Could not allocate properly when creating text, now what");
 		}
