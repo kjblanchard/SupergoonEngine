@@ -139,8 +139,15 @@ function UI.DestroyPanel(panelTable)
     panelTable = nil
 end
 
+---Update the text of a ui text.
+---@param textData userdata the ui object ptr
+---@param text string the string
 function UI.UpdateText(textData, text)
     cUI.UpdateText(textData, text)
+end
+
+function UI.UpdateNumLettersForText(textData, numLetters)
+    cUI.TextSetNumLetters(textData, numLetters)
 end
 
 function UI.CreatePanelFromTable(table)

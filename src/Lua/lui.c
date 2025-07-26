@@ -351,6 +351,29 @@ end:
 	return 1;
 }
 
+static int textSetNumLetters(lua_State* L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 2, LuaFunctionParameterTypePass, LuaFunctionParameterTypeInt)) {
+		goto end;
+	}
+	UIObject* freeThing = LuaGetLightUserdatai(L, 1);
+	if (!freeThing || freeThing->Type != UIObjectTypesText) {
+		sgLogWarn("Pased bad ui object to update text");
+		goto end;
+	}
+	UIText* text = (freeThing->Data);
+	text->NumLettersToDraw = LuaGetIntFromStacki(L, 2);
+	if (!text) {
+		sgLogWarn("Bad text in uiobject");
+		goto end;
+	}
+	text->NumLettersToDraw = LuaGetIntFromStacki(L, 2);
+	freeThing->Flags |= UIObjectFlagDirty;
+
+end:
+	LuaPushNil(L);
+	return 1;
+}
+
 static const luaL_Reg uiLib[] = {
 	{"CreatePanel", createPanel},
 	{"CreateImage", createImage},
@@ -363,6 +386,7 @@ static const luaL_Reg uiLib[] = {
 	{"GetObjectSize", getUIObjectSize},
 	{"SetObjectLocation", setUIObjectLocation},
 	{"UpdateText", updateText},
+	{"TextSetNumLetters", textSetNumLetters},
 	{"DestroyUIObject", destroyObject},
 	{NULL, NULL}};
 
