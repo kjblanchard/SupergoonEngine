@@ -395,7 +395,11 @@ static void drawAnimatedTiles(void) {
 		for (size_t j = 0; j < tileset->NumAnimatedTiles; j++) {
 			AnimatedTile* animatedTile = &tileset->AnimatedTiles[j];
 			for (size_t k = 0; k < animatedTile->NumDrawRectangles; k++) {
-				DrawTexture(tileset->TilesetTexture, &animatedTile->DrawRectangles[k], &animatedTile->TileFrames[animatedTile->CurrentFrame].SrcRect);
+				RectangleF dst = animatedTile->DrawRectangles[k];
+				dst.x -= CameraX;
+				dst.y -= CameraY;
+				// DrawTexture(tileset->TilesetTexture, &animatedTile->DrawRectangles[k], &animatedTile->TileFrames[animatedTile->CurrentFrame].SrcRect);
+				DrawTexture(tileset->TilesetTexture, &dst, &animatedTile->TileFrames[animatedTile->CurrentFrame].SrcRect);
 			}
 		}
 	}

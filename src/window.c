@@ -182,6 +182,7 @@ void DrawTexture(Texture* texture, RectangleF* dst, RectangleF* src) {
 	SDL_RenderTexture(_renderer, texture, src, dst);
 }
 
+
 int WindowHeight(void) {
 	return _windowHeight;
 }

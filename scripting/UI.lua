@@ -157,6 +157,7 @@ end
 function UI.CreatePanelFromTable(table)
     -- Handle creating this UI element only on specific platforms.
     if table.isMobile and not engine.IsMobile() then return end
+    if UI.UIInstance[table.name] ~= nil then return end
     -- Top level is always a panel
     local root = { data = CreatePanel(table.name, { 0, 0, 0, 0 }, nil), children = {}, doNotDestroy = table.doNotDestroy }
     UI.UIInstance[table.name] = root
