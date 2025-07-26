@@ -35,6 +35,10 @@ function UI.SetObjectLocation(objectPtr, x, y)
     return cUI.SetObjectLocation(objectPtr, x, y)
 end
 
+function UI.SetObjectVisible(objectPtr, isVisible)
+    return cUI.SetObjectVisible(objectPtr, isVisible)
+end
+
 local function CreatePanel(name, rect, parentPanel)
     rect = normalizeRect(rect)
     return cUI.CreatePanel(name, rect, parentPanel)

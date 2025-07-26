@@ -454,6 +454,11 @@ int LuaCheckFunctionCallParamsAndTypes(LuaState L, int numArgsOnStack, ...) {
 					goto rfalse;
 				}
 				continue;
+			case LuaFunctionParameterTypeBoolean:
+				if (!LuaIsBool(L, luaPos)) {
+					goto rfalse;
+				}
+				continue;
 			case LuaFunctionParameterTypePass:
 			default:
 				continue;

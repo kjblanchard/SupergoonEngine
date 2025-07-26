@@ -78,7 +78,21 @@ function engine.PlaySfxOneShot(soundName, volume)
 end
 
 function engine.PlayBGM(soundName, volume)
-    cAudio.PlayBgm(soundName, volume)
+    cAudio.PlayBgm(soundName, volume, 0)
+end
+
+---Loads and Plays a BGM in the background slot
+function engine.PlayBGMBackground(soundName, volume)
+    cAudio.PlayBgm(soundName, volume, 1)
+end
+
+function engine.UnPauseBGMBackground()
+    cAudio.UnPauseBGMBackground(1)
+end
+
+--- Stops a BGM in the background slot, does not unload but moves back to start
+function engine.StopBGMBackground()
+    cAudio.StopBgm(1)
 end
 
 function engine.SetGlobalBGMVolume(volume)

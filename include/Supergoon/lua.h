@@ -111,6 +111,7 @@ typedef enum LuaFunctionParameterTypes {
 	LuaFunctionParameterTypeFunction,
 	LuaFUnctionParameterTypeUserdata,
 	LuaFunctionParameterTypeTable,
+	LuaFunctionParameterTypeBoolean,
 
 } LuaFunctionParameterTypes;
 // Checks to see if the stack has the specific number of arguments, with the following params.. use TypePass to skip checking that arg.

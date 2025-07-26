@@ -374,6 +374,27 @@ end:
 	return 1;
 }
 
+static int setUIObjectVisible(lua_State* L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 2, LuaFunctionParameterTypePass, LuaFunctionParameterTypeBoolean)) {
+		goto end;
+	}
+	UIObject* freeThing = LuaGetLightUserdatai(L, 1);
+	if (!freeThing) {
+		sgLogWarn("Pased bad ui object to update text");
+		goto end;
+	}
+	if (LuaGetBooli(L, 2)) {
+		freeThing->Flags |= UIObjectFlagVisible;
+
+	} else {
+		freeThing->Flags &= ~UIObjectFlagVisible;
+	}
+
+end:
+	LuaPushNil(L);
+	return 1;
+}
+
 static const luaL_Reg uiLib[] = {
 	{"CreatePanel", createPanel},
 	{"CreateImage", createImage},
@@ -387,6 +408,7 @@ static const luaL_Reg uiLib[] = {
 	{"SetObjectLocation", setUIObjectLocation},
 	{"UpdateText", updateText},
 	{"TextSetNumLetters", textSetNumLetters},
+	{"SetObjectVisible", setUIObjectVisible},
 	{"DestroyUIObject", destroyObject},
 	{NULL, NULL}};
 
