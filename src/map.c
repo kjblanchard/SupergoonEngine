@@ -431,49 +431,109 @@ void drawCurrentMap(void) {
 
 #endif
 }
-
+// TODO this was ai.. probably need to check this and fix.
 static Tilemap* checkCache(const char* mapName) {
 	if (!_currentMap) {
 		return NULL;
 	}
-	unsigned int cacheSize = 0;
+
 	Tilemap* returnMap = NULL;
 	int foundIndex = -1;
-	// Check for a cache hit and get current cache size
+	unsigned int cacheSize = 0;
+
+	// First pass: look for cache hit
 	for (size_t i = 0; i < MAX_PREVIOUS_MAPS_CACHE; i++) {
-		if (_previousMaps[i] == NULL) {
-			break;
-		}
+		if (_previousMaps[i] == NULL) break;
+
 		if (strcmp(mapName, _previousMaps[i]->BaseFilename) == 0) {
 			returnMap = _previousMaps[i];
 			foundIndex = i;
-			++cacheSize;
 			break;
 		}
-		++cacheSize;
 	}
-	// If cache hit, remove it as it will be set as the current map.
+
+	// Second pass: determine actual cache size
+	for (cacheSize = 0; cacheSize < MAX_PREVIOUS_MAPS_CACHE && _previousMaps[cacheSize] != NULL; ++cacheSize);
+
+	// If cache hit, remove it from cache (shift others left)
 	if (foundIndex >= 0) {
 		for (size_t i = foundIndex; i < cacheSize - 1; i++) {
 			_previousMaps[i] = _previousMaps[i + 1];
 		}
 		_previousMaps[cacheSize - 1] = NULL;
-		// return returnMap;
+		// Caller is expected to assign this to _currentMap
+		return returnMap;
 	}
-	// Cache _currentMap only if it’s not the same as the map being loaded
+
+	// Cache current map if it is different from the map being loaded
 	if (_currentMap && strcmp(mapName, _currentMap->BaseFilename) != 0) {
+		// If cache is full, free the last entry
 		if (cacheSize == MAX_PREVIOUS_MAPS_CACHE) {
-			freeTiledTilemap(_previousMaps[cacheSize - 1]);
+			Tilemap* map = _previousMaps[cacheSize - 1];
+			if (map) {
+				freeTiledTilemap(map);
+			}
+			cacheSize--;  // Reduce cacheSize to make room
 		}
+
+		// Shift existing entries down to make space at index 0
 		for (size_t i = cacheSize; i > 0; i--) {
 			_previousMaps[i] = _previousMaps[i - 1];
 		}
 		_previousMaps[0] = _currentMap;
 	} else {
+		// If current map is already the one being loaded, just return it
 		return _currentMap;
 	}
+
 	return returnMap;
 }
+
+// static Tilemap* checkCache(const char* mapName) {
+// 	if (!_currentMap) {
+// 		return NULL;
+// 	}
+// 	unsigned int cacheSize = 0;
+// 	Tilemap* returnMap = NULL;
+// 	int foundIndex = -1;
+// 	// Check for a cache hit and get current cache size
+// 	for (size_t i = 0; i < MAX_PREVIOUS_MAPS_CACHE; i++) {
+// 		if (_previousMaps[i] == NULL) {
+// 			break;
+// 		}
+// 		if (strcmp(mapName, _previousMaps[i]->BaseFilename) == 0) {
+// 			returnMap = _previousMaps[i];
+// 			foundIndex = i;
+// 			++cacheSize;
+// 			break;
+// 		}
+// 		++cacheSize;
+// 	}
+// 	// If cache hit, remove it as it will be set as the current map.
+// 	if (foundIndex >= 0) {
+// 		for (size_t i = foundIndex; i < cacheSize - 1; i++) {
+// 			_previousMaps[i] = _previousMaps[i + 1];
+// 		}
+// 		_previousMaps[cacheSize - 1] = NULL;
+// 		// return returnMap;
+// 	}
+// 	// Cache _currentMap only if it’s not the same as the map being loaded
+// 	if (_currentMap && strcmp(mapName, _currentMap->BaseFilename) != 0) {
+// 		if (cacheSize == MAX_PREVIOUS_MAPS_CACHE) {
+// 			Tilemap* map = _previousMaps[cacheSize - 1];
+// 			if (map) {
+// 				freeTiledTilemap(map);
+// 			}
+// 		}
+// 		for (size_t i = cacheSize; i > 0; i--) {
+// 			_previousMaps[i] = _previousMaps[i - 1];
+// 		}
+// 		_previousMaps[0] = _currentMap;
+// 	} else {
+// 		return _currentMap;
+// 	}
+// 	return returnMap;
+// }
 
 void LoadMap(const char* mapName) {
 	Tilemap* nextMap = checkCache(mapName);
