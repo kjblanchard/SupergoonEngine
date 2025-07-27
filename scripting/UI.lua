@@ -123,6 +123,7 @@ local function CreateUIObjectAndChildren(objTable, parentPtr, parentTable)
         node.data = CreatePanel(objTable.name, objTable.location, parentPtr)
     end
     if objTable.userdata ~= nil then node["userdata"] = objTable.userdata end
+    if objTable.visible ~= nil and objTable.visible ~= true then UI.SetObjectVisible(node.data, false) end
     parentTable[objTable.name] = node
     if objTable.children then
         for _, child in ipairs(objTable.children) do
