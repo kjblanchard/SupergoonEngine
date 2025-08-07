@@ -75,6 +75,7 @@ void DrawSpriteSystem(void) {
 		}
 		dst.x = SDL_roundf(globalX + sprite->OffsetAndSizeRectF.x - CameraX);
 		dst.y = SDL_roundf(globalY + sprite->OffsetAndSizeRectF.y - CameraY);
+
 		dst.w = sprite->OffsetAndSizeRectF.w;
 		dst.h = sprite->OffsetAndSizeRectF.h;
 		DrawTexture(sprite->Texture, &dst, &sprite->TextureSourceRect);

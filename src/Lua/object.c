@@ -262,6 +262,29 @@ static int checkSolidsRect(lua_State* L) {
 	return 1;
 }
 
+static int createGameObject(lua_State* L) {
+	GameObject* obj = AddGameObject();
+	LuaPushLightUserdata(L, obj);
+	return 1;
+}
+
+static int setType(lua_State* L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 2, LuaFUnctionParameterTypeUserdata, LuaFunctionParameterTypeInt)) {
+		sgLogWarn("Bad args trying to set go type from lua");
+		LuaPushNil(L);
+		return 1;
+	}
+	GameObject* go = (GameObject*)LuaGetLightUserdatai(L, 1);
+	if (!go) {
+		sgLogWarn("Bad cast from go Lua");
+		LuaPushNil(L);
+		return 1;
+	}
+	int type = LuaGetIntFromStacki(L, 2);
+	go->Type = type;
+	return 0;
+}
+
 static const luaL_Reg objectLib[] = {
 	{"NewGameObjectType", l_register_object_functions},
 	{"SetDestroyGameObjects", setAllGameobjectsToBeDestroyed},
@@ -270,9 +293,12 @@ static const luaL_Reg objectLib[] = {
 	{"SetSize", setGameobjectSize},
 	{"Size", getGameobjectSize},
 	{"Id", getGameobjectId},
+	{"SetType", setType},
 	{"DestroyGameObjects", destroyObjects},
 	{"CheckSolids", handleGameobjectSolids},
 	{"CheckSolidsRect", checkSolidsRect},
+	{"CreateGameObject", createGameObject},
+
 	{NULL, NULL}};
 
 void RegisterLuaObjectFunctions(void) {

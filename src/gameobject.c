@@ -33,6 +33,20 @@ static GameObject* getFreeGameObject(void) {
 	return returnGo;
 }
 
+GameObject* AddGameObject(void) {
+	// If we don't have a create function for this object type, do not create it..
+	CurrentGameObject = getFreeGameObject();
+	CurrentGameObject->Id = _currentId++;
+	CurrentGameObject->Type = 0;
+	CurrentGameObject->X = CurrentGameObject->Y = CurrentGameObject->W = CurrentGameObject->H = 0;
+	CurrentGameObject->Userdata = NULL;
+	CurrentGameObject->X = CurrentGameObject->Y = CurrentGameObject->W = CurrentGameObject->H = 0;
+	CurrentGameObject->Flags = 0;
+	CurrentGameObject->Flags |= GameObjectFlagActive;
+	CurrentGameObject->Flags |= GameObjectFlagLoaded;
+	return CurrentGameObject;
+}
+
 void AddGameObjectFromTiledMap(TiledObject* object) {
 	// If we don't have a create function for this object type, do not create it..
 	if (!_gameObjectTypes[object->ObjectType].CreateFunc) {

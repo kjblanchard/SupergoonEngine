@@ -34,6 +34,7 @@ engine.Input.UIButtonPresses = {
     JustReleased = {},
     Down = {}
 }
+engine.Input._UIButtonLastState = {}
 function engine.Input.KeyboardKeyJustPressed(key)
     -- return cInput.IsKeyboardKeyPressed(key)
     return engine.Input.UIButtonPresses.JustPressed[key] or cInput.IsKeyboardKeyPressed(key)
@@ -43,14 +44,28 @@ function engine.Input.KeyboardKeyDown(key)
     return engine.Input.UIButtonPresses.Down[key] or cInput.IsKeyboardKeyDown(key)
 end
 
+-- function engine.Input.Update()
+--     for _, value in pairs(engine.Buttons) do
+--         engine.Input.UIButtonPresses.Down[value] = false
+--         engine.Input.UIButtonPresses.JustPressed[value] = false
+--     end
+-- end
+
 ---Updates the internal input system in lua so you don't have to call keydown, just pressed, etc.
 function engine.Input.Update()
-    for _, value in pairs(engine.Buttons) do
-        engine.Input.UIButtonPresses.Down[value] = false
-        engine.Input.UIButtonPresses.JustPressed[value] = false
-        -- engine.Input.UIButtonPresses.Down[key] = engine.Input.KeyboardKeyDown(value)
-        -- engine.Input.UIButtonPresses.JustPressed[key] = engine.Input.KeyboardKeyJustPressed(value)
+    for _, button in pairs(engine.Buttons) do
+        local wasDown = engine.Input._UIButtonLastState[button] or false
+        local isDown = engine.Input.UIButtonThisFrame[button] or false
+
+        engine.Input.UIButtonPresses.Down[button] = isDown
+        engine.Input.UIButtonPresses.JustPressed[button] = (not wasDown) and isDown
+        engine.Input.UIButtonPresses.JustReleased[button] = wasDown and (not isDown)
+
+        engine.Input._UIButtonLastState[button] = isDown
     end
+
+    -- Clear current frame state for next Update
+    engine.Input.UIButtonThisFrame = {}
 end
 
 function engine.Log.LogDebug(message)

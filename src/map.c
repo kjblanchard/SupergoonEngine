@@ -9,6 +9,7 @@
 #include <SupergoonEngine/map.h>
 #include <SupergoonEngine/tools.h>
 #include <SupergoonEngine/window.h>
+#include <math.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -406,8 +407,13 @@ static void drawAnimatedTiles(void) {
 }
 
 void drawCurrentMap(void) {
+	if (!_currentMap) return;
 	RectangleF src = {CameraX, CameraY, _logicalWidth, _logicalHeight};
 	RectangleF dst = {0, 0, _logicalWidth, _logicalHeight};
+	float mapW = _currentMap->Width * _currentMap->TileWidth;
+	float mapH = _currentMap->Height * _currentMap->TileHeight;
+	dst.w = fminf(mapW, _logicalWidth);
+	dst.h = fminf(mapH, _logicalHeight);
 	if (_bg1Texture) {
 		DrawTexture(_bg1Texture, &dst, &src);
 	}
@@ -415,7 +421,7 @@ void drawCurrentMap(void) {
 		drawAnimatedTiles();
 	}
 	if (_bg2Texture) {
-		DrawTexture(_bg1Texture, &dst, &src);
+		DrawTexture(_bg2Texture, &dst, &src);
 	}
 #ifdef imgui
 	if (_currentMap) {
