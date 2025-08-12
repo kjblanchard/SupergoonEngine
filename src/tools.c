@@ -1,5 +1,6 @@
 #include <SupergoonEngine/tools.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,5 +38,9 @@ int sgasprintf(char **strp, const char *fmt, ...) {
 }
 
 int strcmpWithSuffix(const char *lhs, const char *rhs, const char *suffix) {
+	if (!lhs || !rhs) {
+		sgLogInfo("Passed a null string into compare.. returning false");
+		return false;
+	}
 	return strncmp(lhs, rhs, strlen(suffix)) == 0;
 }

@@ -132,23 +132,88 @@ local function CreateUIObjectAndChildren(objTable, parentPtr, parentTable)
     end
     return node.data
 end
+local function destroyLuaDataForPanelRecursive(panel)
+    if not panel or panel.doNotDestroy then
+        return
+    end
 
--- TODO Only destroys top level panels currently
-function UI.DestroyPanel(panelTable)
-    cUI.DestroyUIObject(panelTable.data)
-    for _, value in pairs(UI.UIInstance) do
-        if value == panelTable then
-            value = nil
+    -- Destroy children first
+    if panel.children then
+        for i, child in pairs(panel.children) do
+            destroyLuaDataForPanelRecursive(child)
+            -- Only clear reference if child was destroyed
+            if not (child and child.doNotDestroy) then
+                panel.children[i] = nil
+            end
         end
     end
+
+    -- Destroy the C-side object for this panel
+    if panel.data then
+        cUI.DestroyUIObject(panel.data)
+        panel.data = nil
+    end
+
+    -- Clear all Lua keys to allow GC
+    for k in pairs(panel) do
+        panel[k] = nil
+    end
+end
+
+function UI.DestroyPanel(panelTable)
+    if not panelTable then return end
+
+    -- Recursively destroy
+    destroyLuaDataForPanelRecursive(panelTable)
+
+    -- Remove from UI.UIInstance
+    for key, value in pairs(UI.UIInstance) do
+        if value == panelTable then
+            UI.UIInstance[key] = nil
+        end
+    end
+
     panelTable = nil
 end
+
+-- local function destroyLuaDataForPanelRecursive(panel)
+--     for k, value in pairs(panel) do
+--         if (k == "children" and (value.doNotDestroy and value.doNotDestroy ~= false)) then
+--             destroyLuaDataForPanelRecursive(panel[k])
+--             panel[k] = nil
+--         end
+--     end
+-- end
+
+-- function UI.DestroyPanel(panelTable)
+--     if not panelTable then return end
+--     -- Check destroying children
+--     destroyLuaDataForPanelRecursive(panelTable)
+
+--     if panelTable.data then
+--         cUI.DestroyUIObject(panelTable.data)
+--         panelTable.data = nil
+--     end
+--     for key, value in pairs(UI.UIInstance) do
+--         if value == panelTable then
+--             UI.UIInstance[key] = nil
+--         end
+--     end
+--     panelTable = nil
+-- end
 
 ---Update the text of a ui text.
 ---@param textData userdata the ui object ptr
 ---@param text string the string
 function UI.UpdateText(textData, text)
     cUI.UpdateText(textData, text)
+end
+
+---Update the text Size of a ui text.
+---@param textData userdata the ui object ptr
+---@param size integer Size to set it to
+function UI.SetTextSize(textData, size)
+    cUI.SetTextSize(textData, size)
 end
 
 function UI.UpdateNumLettersForText(textData, numLetters)
@@ -160,7 +225,8 @@ function UI.CreatePanelFromTable(table)
     if table.isMobile and not engine.IsMobile() then return end
     if UI.UIInstance[table.name] ~= nil then return end
     -- Top level is always a panel
-    local root = { data = CreatePanel(table.name, { 0, 0, 0, 0 }, nil), children = {}, doNotDestroy = table.doNotDestroy }
+    local doNotDestroy = table.doNotDestroy or false
+    local root = { data = CreatePanel(table.name, { 0, 0, 0, 0 }, nil), children = {}, doNotDestroy = doNotDestroy }
     UI.UIInstance[table.name] = root
     for _, child in ipairs(table.children) do
         CreateUIObjectAndChildren(child, root.data, root.children)

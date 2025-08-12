@@ -25,6 +25,7 @@ typedef struct {
 typedef enum AnimationDataDirections {
 	AnimationDataDirectionsDefault,
 	AnimationDataDirectionsPingPong,
+	AnimationDataDirectionsForward,
 } AnimationDataDirections;
 
 typedef struct {

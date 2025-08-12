@@ -9,7 +9,6 @@
 #include <Supergoon/pch.hpp>
 using namespace std;
 
-
 static string GetWidgetTypeName(UIObjectTypes objectType) {
 	switch (objectType) {
 		case UIObjectTypesPanel:
@@ -125,6 +124,11 @@ void DrawUIObjects(UIObject *uiObject) {
 							 (uint8_t)(color[2] * 255.0f + 0.5f),
 							 (uint8_t)(color[3] * 255.0f + 0.5f));
 			};
+			auto textSize = "Text Size ##" + string(uiObject->Name);
+			int fontData = textData->FontSize;
+			if (ImGui::SliderInt(textSize.c_str(), &fontData, 0, 100)) {
+				SetTextSize(uiObject, fontData);
+			}
 		} else if (uiObject->Type == UIObjectTypesRect) {
 			auto rectData = (UIRect *)uiObject->Data;
 			assert(rectData && "no rect!");
@@ -152,6 +156,10 @@ void DrawUIObjects(UIObject *uiObject) {
 		}
 		ImGui::Text("**__Children__**");
 		for (size_t i = 0; i < uiObject->ChildrenCount; i++) {
+			// If it's been freed by destroying it, do not show it.
+			if (!uiObject->Children[i]) {
+				continue;
+			}
 			DrawUIObjects(uiObject->Children[i]);
 		}
 		ImGui::TreePop();

@@ -330,7 +330,7 @@ static int updateText(lua_State* L) {
 		goto end;
 	}
 	UIObject* freeThing = LuaGetLightUserdatai(L, 1);
-	if (!freeThing || freeThing->Type != UIObjectTypesText) {
+	if (!freeThing || freeThing->Type != UIObjectTypesText || !freeThing->Name) {
 		sgLogWarn("Pased bad ui object to update text");
 		goto end;
 	}
@@ -374,6 +374,21 @@ end:
 	return 1;
 }
 
+static int textSetSize(lua_State* L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 2, LuaFunctionParameterTypePass, LuaFunctionParameterTypeInt)) {
+		goto end;
+	}
+	UIObject* uiObject = LuaGetLightUserdatai(L, 1);
+	if (!uiObject || uiObject->Type != UIObjectTypesText) {
+		sgLogWarn("Pased bad ui object to update text size");
+		goto end;
+	}
+	SetTextSize(uiObject, LuaGetIntFromStacki(L, 2));
+end:
+	LuaPushNil(L);
+	return 1;
+}
+
 static int setUIObjectVisible(lua_State* L) {
 	if (!LuaCheckFunctionCallParamsAndTypes(L, 2, LuaFunctionParameterTypePass, LuaFunctionParameterTypeBoolean)) {
 		goto end;
@@ -408,6 +423,7 @@ static const luaL_Reg uiLib[] = {
 	{"SetObjectLocation", setUIObjectLocation},
 	{"UpdateText", updateText},
 	{"TextSetNumLetters", textSetNumLetters},
+	{"SetTextSize", textSetSize},
 	{"SetObjectVisible", setUIObjectVisible},
 	{"DestroyUIObject", destroyObject},
 	{NULL, NULL}};

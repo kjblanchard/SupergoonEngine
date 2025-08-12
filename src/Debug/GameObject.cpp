@@ -27,8 +27,8 @@ void ShowGameObjectDebugWindow(void) {
 		if (ImGui::TreeNode(idStr.c_str())) {
 			ImGui::Text("X: %f", go->X);
 			ImGui::Text("Y: %f", go->Y);
-			auto xLabel = "X: ##" + idStr;
-			auto yLabel = "Y: ##" + idStr;
+			// auto xLabel = "X: ##" + idStr;
+			// auto yLabel = "Y: ##" + idStr;
 			ImGui::TreePop();
 		}
 		++activeGameobjectsThisFrame;

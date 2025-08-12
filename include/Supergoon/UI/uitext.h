@@ -38,6 +38,7 @@ void InitializeUITextSystem(void);
 void ShutdownUITextSystem(void);
 
 void SetTextColor(UIObject* uiobject, int r, int g, int b, int a);
+void SetTextSize(UIObject* uiobject, int size);
 void MeasureText(UIObject* uiobject);
 void SetFont(const char* fontName, unsigned int size);
 void SetCenteredX(UIObject* uiobject, int centered);

@@ -9,7 +9,9 @@
 #include <ft2build.h>
 #include <math.h>
 #include FT_FREETYPE_H
-#define MAX_LOADED_FONTS 12
+// TODO set this in debug differently.
+// This includes different sizes, probably in debug this should be much higher.
+#define MAX_LOADED_FONTS 120
 #define ASCII_CHAR_NUM 127
 static FT_Library _loadedLibrary = NULL;
 // TODO we should cache fonts (faces) when we load them, so that we can use multiple.
@@ -22,6 +24,7 @@ typedef struct LoadedFont {
 
 static LoadedFont _loadedFonts[MAX_LOADED_FONTS];
 static LoadedFont* _currentFont = NULL;
+static void redrawText(UIObject* object, UIText* text);
 
 void SetTextColor(UIObject* uiobject, int r, int g, int b, int a) {
 	if (!uiobject) {
@@ -35,6 +38,43 @@ void SetTextColor(UIObject* uiobject, int r, int g, int b, int a) {
 	if (!SDL_SetTextureAlphaMod(text->Texture, a)) {
 		sgLogError("Could not mod alpha, %s", SDL_GetError());
 	}
+}
+
+static char* getFontnameFromCurrentFont(void) {
+	size_t len = strlen(_currentFont->FontName);
+	size_t i = len;
+
+	// Walk backward until we hit a non-digit
+	while (i > 0 && isdigit((unsigned char)_currentFont->FontName[i - 1])) {
+		i--;
+	}
+
+	// Now i is the position where the number starts — we cut the string here
+	char* base = malloc(i + 1);
+	if (!base) return NULL;
+
+	memcpy(base, _currentFont->FontName, i);
+	base[i] = '\0';
+	return base;
+}
+
+void SetTextSize(UIObject* uiobject, int size) {
+	// TODO when this is ran, it causes a leak of the previous text .. likely we want to clean up the old one if it isn't in use.
+	// Likely keep track of this somewhere in a ref count in loaded font?
+	if (!uiobject) {
+		return;
+	}
+	UIText* text = (UIText*)uiobject->Data;
+	assert(text && "No text?");
+	LoadedFont* current = _currentFont;
+	char* fontBase = getFontnameFromCurrentFont();
+
+	SetFont(fontBase, size);
+	SDL_free(fontBase);
+	text->Font = _currentFont;
+	text->FontSize = size;
+	redrawText(uiobject, text);
+	_currentFont = current;
 }
 
 void InitializeUITextSystem(void) {

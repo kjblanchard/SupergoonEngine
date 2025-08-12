@@ -167,6 +167,7 @@ function engine.LoadSceneCo(mapname, uiname, bgm, volume, fadeInTimeSec, fadeOut
         -- Destroy all ui panels that are not donotdestroy.
         for key, value in pairs(ui.UIInstance) do
             if value.data ~= nil and value.doNotDestroy == false then
+                engine.Log.LogWarn("Destroying panel " .. key)
                 ui.DestroyPanel(value)
                 ui.UIInstance[key] = nil
                 value = nil

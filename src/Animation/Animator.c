@@ -122,6 +122,8 @@ static void loadAsepriteData(AnimationData* animationData) {
 		if (strcmp(direction, "pingpong") == 0) {
 			animationData->meta.frameTags[i].direction = AnimationDataDirectionsPingPong;
 
+		} else if (strcmp(direction, "forward") == 0) {
+			animationData->meta.frameTags[i].direction = AnimationDataDirectionsForward;
 		} else {
 			animationData->meta.frameTags[i].direction = AnimationDataDirectionsDefault;
 		}
@@ -238,7 +240,17 @@ void updateAnimator(Animator* animator) {
 					animator->Reverse = true;
 				}
 			}
+		} else if (animData->direction == AnimationDataDirectionsForward) {
+			animator->NextFrame = animator->CurrentFrame + 1;
+			if (animator->NextFrame > animData->to) {
+				if (animator->Loops != -1) {
+					--animator->Loops;
+				}
+				animator->NextFrame = animData->from;
+				// justFinished = true;
+			}
 		} else {
+			sgLogWarn("Animator trying to handle a direction not implemented for %s", animData->name);
 			// handle other directions
 			//     } else {
 			//       if (animData.direction == "forward") {
