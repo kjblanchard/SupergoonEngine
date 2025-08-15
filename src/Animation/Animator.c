@@ -173,6 +173,10 @@ static void updateAnimatorRect(Animator* animator) {
 }
 
 void PlayAnimation(AnimatorHandle animator, const char* anim) {
+	if (animator > _animators.Count) {
+		sgLogWarn("Passed animator handle greater than count, returning!");
+		return;
+	}
 	Animator* animatorPtr = &_animators.Animators[animator];
 	if (!animatorPtr || !animatorPtr->Data) {
 		sgLogWarn("Could not play animation, bad animator");

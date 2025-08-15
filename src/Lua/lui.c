@@ -1,6 +1,8 @@
 // TODO this shouldn't be here
 #include <SDL3/SDL.h>
+#include <Supergoon/Animation/animator.h>
 #include <Supergoon/UI/ui.h>
+#include <Supergoon/UI/uiImageAnimation.h>
 #include <Supergoon/UI/uibutton.h>
 #include <Supergoon/UI/uiimage.h>
 #include <Supergoon/UI/uilayoutgroup.h>
@@ -9,7 +11,10 @@
 #include <Supergoon/UI/uitext.h>
 #include <Supergoon/log.h>
 #include <Supergoon/lua.h>
+#include <Supergoon/sprite.h>
+#include <SupergoonEngine/Animation/animator.h>
 #include <SupergoonEngine/Lua/ui.h>
+#include <SupergoonEngine/tools.h>
 #include <SupergoonEngine/ui.h>
 #include <lauxlib.h>
 #include <lua.h>
@@ -69,6 +74,43 @@ static int createImage(lua_State* state) {
 	SetTextureAlpha(image->Texture, LuaGetIntFromStacki(state, 6));
 	AddUIObject(obj, obj->Parent);
 	LuaPushLightUserdata(state, obj);
+	return 1;
+}
+
+static int createImageAnimator(lua_State* L) {
+	// args - name, loc table, parent userdata, filename, src rect
+	if (LuaGetStackSize(L) != 6 || !LuaIsString(L, 1) || !LuaIsTable(L, 2) || !LuaIsString(L, 4) || !(LuaIsTable(L, 5) || lua_isnil(L, 5)) || !LuaIsInt(L, 6)) {
+		sgLogError("Could not create image from lua, bad params");
+		LuaPushNil(L);
+		return 1;
+	}
+	UIObject* obj = createUIObject(L);
+	obj->Type = UIObjectTypesImageAnimator;
+	UIImageAnimationData* imageAnimation = SDL_malloc(sizeof(*imageAnimation));
+	obj->Data = imageAnimation;
+	imageAnimation->SpritePtr = NULL;
+	imageAnimation->AnimatorHandle = 9999;
+	Sprite* sprite = NewSprite();
+	sprite->Texture = CreateTextureFromIndexedBMP(LuaGetStringi(L, 4));
+	sprite->Parent = NULL;
+	sprite->TextureSourceRect.x = LuaGetFloatFromTableStackiKey(L, 5, "x");
+	sprite->TextureSourceRect.y = LuaGetFloatFromTableStackiKey(L, 5, "y");
+	sprite->TextureSourceRect.h = LuaGetFloatFromTableStackiKey(L, 5, "h");
+	sprite->TextureSourceRect.w = LuaGetFloatFromTableStackiKey(L, 5, "w");
+	sprite->OffsetAndSizeRectF.x = LuaGetFloatFromTableStackiKey(L, 5, "x");
+	sprite->OffsetAndSizeRectF.y = LuaGetFloatFromTableStackiKey(L, 5, "y");
+	sprite->OffsetAndSizeRectF.h = LuaGetFloatFromTableStackiKey(L, 5, "h");
+	sprite->OffsetAndSizeRectF.w = LuaGetFloatFromTableStackiKey(L, 5, "w");
+	SET_FLAG(sprite->Flags, SpriteFlagVisible | SpriteFlagUI);
+	// AnimatorHandle animHandle = CreateAnimator(LuaGetStringi(L, 4));
+	imageAnimation->AnimatorHandle = CreateAnimator(LuaGetStringi(L, 4));
+	Animator* anim = &_animators.Animators[imageAnimation->AnimatorHandle];
+	anim->Sprite = sprite;
+	anim->AnimationSpeed = 1.0f;
+	imageAnimation->SpritePtr = sprite;
+	SetTextureAlpha(sprite->Texture, LuaGetIntFromStacki(L, 6));
+	AddUIObject(obj, obj->Parent);
+	LuaPushLightUserdata(L, obj);
 	return 1;
 }
 
@@ -295,6 +337,24 @@ static int getUIObjectSize(lua_State* L) {
 	return 2;
 }
 
+static int playUIAnimation(lua_State* L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 2, LuaFUnctionParameterTypeUserdata, LuaFunctionParameterTypeString)) {
+		sgLogWarn("Bad params sent to play animation");
+	}
+	UIObject* object = LuaGetLightUserdatai(L, 1);
+	if (!object || object->Type != UIObjectTypesImageAnimator) {
+		sgLogWarn("Bad object sent in to play ui animation");
+		return 0;
+	}
+	UIImageAnimationData* animData = (UIImageAnimationData*)object->Data;
+	if (!animData) {
+		sgLogWarn("Bad anim data in uiobject");
+		return 0;
+	}
+	PlayAnimation(animData->AnimatorHandle, LuaGetStringi(L, 2));
+	return 0;
+}
+
 static int setUIObjectLocation(lua_State* L) {
 	if (LuaGetStackSize(L) != 3 || !LuaIsFloat(L, 2) || !LuaIsFloat(L, 3)) {
 		sgLogError("Could not set object location");
@@ -413,6 +473,7 @@ end:
 static const luaL_Reg uiLib[] = {
 	{"CreatePanel", createPanel},
 	{"CreateImage", createImage},
+	{"CreateImageAnimator", createImageAnimator},
 	{"Create9SliceImage", create9SliceImage},
 	{"CreateText", createText},
 	{"CreateRect", createRect},
@@ -422,6 +483,7 @@ static const luaL_Reg uiLib[] = {
 	{"GetObjectSize", getUIObjectSize},
 	{"SetObjectLocation", setUIObjectLocation},
 	{"UpdateText", updateText},
+	{"PlayAnimation", playUIAnimation},
 	{"TextSetNumLetters", textSetNumLetters},
 	{"SetTextSize", textSetSize},
 	{"SetObjectVisible", setUIObjectVisible},

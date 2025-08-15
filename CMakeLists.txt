@@ -61,6 +61,7 @@ set(SRC_FILES
     src/UI/uirect.c
     src/UI/uiobject.c
     src/UI/uiimage.c
+    src/UI/uiImageAnimation.c
     src/UI/uitext.c
     src/UI/uibutton.c
     src/Lua/lui.c

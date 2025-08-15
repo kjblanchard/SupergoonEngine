@@ -8,6 +8,7 @@ struct GameObject;
 typedef enum SpriteFlags {
 	SpriteFlagVisible = 1 << 0,
 	SpriteFlagDestroyed = 1 << 1,
+	SpriteFlagUI = 1 << 2,
 } SpriteFlags;
 typedef struct Sprite {
 	struct GameObject* Parent;

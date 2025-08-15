@@ -3,7 +3,20 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#define SET_FLAG(v, f) ((v) |= (f))		// turn on bits
+#define CLEAR_FLAG(v, f) ((v) &= ~(f))	// turn off bits
+#define TOGGLE_FLAG(v, f) ((v) ^= (f))	// flip bits
+// Check if bitset has any flags, use | to put them together
+// (HAS_ANY_FLAGS(sprite->Flags, SpriteFlagUI | SpriteFlagHidden))
+#define HAS_ANY_FLAGS(v, f) (((v) & (f)) != 0)
+// Check if bitset has all flags
+// if (HAS_ALL_FLAGS(sprite->Flags, SpriteFlagVisible | SpriteFlagUI))
+#define HAS_ALL_FLAGS(v, f) (((v) & (f)) == (f))
+// Check if bitset has no flag.
+// (NO_FLAGS(sprite->Flags, SpriteFlagUI | SpriteFlagHidden))
+#define NO_FLAGS(v, f) (((v) & (f)) == 0)
 
+// Engine uses this as a "hole" in arrays
 #define NO_HOLE ((size_t)(-1))
 // Useful not on void ptrs, but on a ptr that size is known.
 #define CLEAR_STRUCT(ptr) memset((ptr), 0, sizeof(*(ptr)))

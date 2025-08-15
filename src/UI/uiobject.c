@@ -1,3 +1,4 @@
+#include <Supergoon/UI/uiImageAnimation.h>
 #include <Supergoon/UI/uiimage.h>
 #include <Supergoon/UI/uiobject.h>
 #include <Supergoon/UI/uitext.h>
@@ -32,6 +33,9 @@ void UIObjectFree(UIObject* object) {
 			break;
 		case UIObjectTypesImage:
 			DestroyUIImage(object);
+			break;
+		case UIObjectTypesImageAnimator:
+			DestroyUIImageAnimation(object);
 			break;
 	}
 	if (object->Data) {

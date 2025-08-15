@@ -1,4 +1,5 @@
 #include <Supergoon/UI/ui.h>
+#include <Supergoon/UI/uiImageAnimation.h>
 #include <Supergoon/UI/uibutton.h>
 #include <Supergoon/UI/uiimage.h>
 #include <Supergoon/UI/uilayoutgroup.h>
@@ -25,6 +26,9 @@ static void drawUIObject(UIObject* object) {
 	switch (object->Type) {
 		case UIObjectTypesImage:
 			DrawUIImage(object);
+			break;
+		case UIObjectTypesImageAnimator:
+			DrawUIImageAnimation(object);
 			break;
 		case UIObjectTypesText:
 			UITextDraw(object);

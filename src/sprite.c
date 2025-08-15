@@ -64,7 +64,8 @@ void DrawSpriteSystem(void) {
 	RectangleF dst = {0, 0, 0, 0};
 	for (size_t i = 0; i < _numSprites; i++) {
 		Sprite* sprite = _sprites[i];
-		if (!sprite || !sprite->Texture || !(sprite->Flags & SpriteFlagVisible)) {
+		if (!sprite || !sprite->Texture || NO_FLAGS(sprite->Flags, SpriteFlagVisible) || HAS_ALL_FLAGS(sprite->Flags, SpriteFlagUI)) {
+			// if (!sprite || !sprite->Texture || NO_FLAGS(sprite->Flags, SpriteFlagVisible)  !(sprite->Flags & SpriteFlagVisible) || sprite->Flags & SpriteFlagUI) {
 			continue;
 		}
 		float globalX = 0;

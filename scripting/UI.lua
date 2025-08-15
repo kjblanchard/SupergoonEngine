@@ -51,6 +51,13 @@ local function CreateImage(name, rect, parentPanel, filename, srcRect, transpare
     return cUI.CreateImage(name, rect, parentPanel, filename, srcRect, transparencyInt)
 end
 
+local function CreateImageAnimator(name, rect, parentPanel, filename, srcRect, transparencyInt)
+    rect = normalizeRect(rect)
+    srcRect = normalizeRect(srcRect)
+    transparencyInt = transparencyInt or 255
+    return cUI.CreateImageAnimator(name, rect, parentPanel, filename, srcRect, transparencyInt)
+end
+
 local function Create9SliceImage(name, rect, parentPanel, filename, color)
     rect = normalizeRect(rect)
     color = normalizeColorRect(color)
@@ -90,6 +97,10 @@ local function CreateUIObjectAndChildren(objTable, parentPtr, parentTable)
     local node = { data = nil, children = {} }
     if objTable.type == "image" then
         node.data = CreateImage(objTable.name, objTable.location, parentPtr, objTable.imageName, objTable.srcRect,
+            objTable.transparency)
+    elseif objTable.type == "imageAnimator" then
+        node.data = CreateImageAnimator(objTable.name, objTable.location, parentPtr, objTable.imageName, objTable
+            .srcRect,
             objTable.transparency)
     elseif objTable.type == "9slice" then
         node.data = Create9SliceImage(objTable.name, objTable.location, parentPtr, objTable.imageName, objTable.color)
@@ -176,32 +187,6 @@ function UI.DestroyPanel(panelTable)
     panelTable = nil
 end
 
--- local function destroyLuaDataForPanelRecursive(panel)
---     for k, value in pairs(panel) do
---         if (k == "children" and (value.doNotDestroy and value.doNotDestroy ~= false)) then
---             destroyLuaDataForPanelRecursive(panel[k])
---             panel[k] = nil
---         end
---     end
--- end
-
--- function UI.DestroyPanel(panelTable)
---     if not panelTable then return end
---     -- Check destroying children
---     destroyLuaDataForPanelRecursive(panelTable)
-
---     if panelTable.data then
---         cUI.DestroyUIObject(panelTable.data)
---         panelTable.data = nil
---     end
---     for key, value in pairs(UI.UIInstance) do
---         if value == panelTable then
---             UI.UIInstance[key] = nil
---         end
---     end
---     panelTable = nil
--- end
-
 ---Update the text of a ui text.
 ---@param textData userdata the ui object ptr
 ---@param text string the string
@@ -214,6 +199,13 @@ end
 ---@param size integer Size to set it to
 function UI.SetTextSize(textData, size)
     cUI.SetTextSize(textData, size)
+end
+
+---Play animation of UI object
+---@param animData userdata the ui object ptr
+---@param animName string the anim name
+function UI.PlayAnimation(animData, animName)
+    cUI.PlayAnimation(animData, animName)
 end
 
 function UI.UpdateNumLettersForText(textData, numLetters)

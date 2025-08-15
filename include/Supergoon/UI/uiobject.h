@@ -8,6 +8,7 @@ typedef enum UIObjectTypes {
 	UIObjectTypesPanel,
 	UIObjectTypesRect,
 	UIObjectTypesImage,
+	UIObjectTypesImageAnimator,
 	UIObjectTypesText,
 	UIObjectTypesLayoutGroup,
 	UIObjectTypesButton,
