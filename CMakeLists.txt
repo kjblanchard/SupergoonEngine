@@ -64,6 +64,7 @@ set(SRC_FILES
     src/UI/uiImageAnimation.c
     src/UI/uitext.c
     src/UI/uibutton.c
+    src/UI/uiProgressBar.c
     src/Lua/lui.c
     src/Lua/lscene.c
     src/Lua/log.c

@@ -12,6 +12,7 @@ typedef enum UIObjectTypes {
 	UIObjectTypesText,
 	UIObjectTypesLayoutGroup,
 	UIObjectTypesButton,
+	UIObjectTypesProgressBar,
 
 } UIObjectTypes;
 typedef enum UIObjectFlags {

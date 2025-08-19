@@ -3,6 +3,7 @@
 #include <Supergoon/Animation/animator.h>
 #include <Supergoon/UI/ui.h>
 #include <Supergoon/UI/uiImageAnimation.h>
+#include <Supergoon/UI/uiProgressBar.h>
 #include <Supergoon/UI/uibutton.h>
 #include <Supergoon/UI/uiimage.h>
 #include <Supergoon/UI/uilayoutgroup.h>
@@ -245,6 +246,45 @@ static int createRect(lua_State* L) {
 	return 1;
 }
 
+static int createProgressBar(lua_State* L) {
+	// args - name, loc table, parent userdata, table color
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 4, LuaFunctionParameterTypeString, LuaFunctionParameterTypeTable, LuaFunctionParameterTypePass, LuaFunctionParameterTypeTable)) {
+		sgLogError("Could not create progress bar");
+		return 0;
+	}
+	UIObject* obj = createUIObject(L);
+	obj->Type = UIObjectTypesProgressBar;
+	UIProgressBarData* progData = SDL_calloc(1, sizeof(*progData));
+	progData->Color.R = (uint8_t)LuaGetFloatFromTableStackiKey(L, 4, "r");
+	progData->Color.G = (uint8_t)LuaGetFloatFromTableStackiKey(L, 4, "g");
+	progData->Color.B = (uint8_t)LuaGetFloatFromTableStackiKey(L, 4, "b");
+	progData->Color.A = (uint8_t)LuaGetFloatFromTableStackiKey(L, 4, "a");
+	obj->Data = progData;
+	AddUIObject(obj, obj->Parent);
+	LuaPushLightUserdata(L, obj);
+	return 1;
+}
+
+static int updateProgressBarPercent(lua_State* L) {
+	// args - name, loc table, parent userdata, table color
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 2, LuaFUnctionParameterTypeUserdata, LuaFunctionParameterTypeInt)) {
+		sgLogError("Could not update progress bar percent");
+		return 0;
+	}
+	UIObject* object = LuaGetLightUserdatai(L, 1);
+	if (!object || object->Type != UIObjectTypesProgressBar) {
+		sgLogWarn("Bad object sent to update progress bar percent");
+		return 0;
+	}
+	UIProgressBarData* progData = (UIProgressBarData*)object->Data;
+	if (!progData) {
+		sgLogWarn("bad data for prog data");
+		return 0;
+	}
+	progData->BarPercent = LuaGetIntFromStacki(L, 2);
+	return 0;
+}
+
 static int createLayoutGroup(lua_State* L) {
 	// args - name, loc table, parent userdata, spacing int, bool IsHorizontal
 	if (LuaGetStackSize(L) != 5 || !LuaIsString(L, 1) || !LuaIsTable(L, 2) || !LuaIsInt(L, 4) || !LuaIsBool(L, 5)) {
@@ -478,6 +518,8 @@ static const luaL_Reg uiLib[] = {
 	{"CreateText", createText},
 	{"CreateRect", createRect},
 	{"CreateLayoutGroup", createLayoutGroup},
+	{"CreateProgressBar", createProgressBar},
+	{"UpdateProgressBarPercent", updateProgressBarPercent},
 	{"CreateButton", createButton},
 	{"GetObjectLocation", getUIObjectLocation},
 	{"GetObjectSize", getUIObjectSize},

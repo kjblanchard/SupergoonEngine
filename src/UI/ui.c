@@ -1,5 +1,6 @@
 #include <Supergoon/UI/ui.h>
 #include <Supergoon/UI/uiImageAnimation.h>
+#include <Supergoon/UI/uiProgressBar.h>
 #include <Supergoon/UI/uibutton.h>
 #include <Supergoon/UI/uiimage.h>
 #include <Supergoon/UI/uilayoutgroup.h>
@@ -34,6 +35,9 @@ static void drawUIObject(UIObject* object) {
 			UITextDraw(object);
 		case UIObjectTypesRect:
 			UIRectDraw(object);
+		case UIObjectTypesProgressBar:
+			DrawProgressBar(object);
+			break;
 		default:
 			break;
 	}

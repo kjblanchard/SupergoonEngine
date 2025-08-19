@@ -2,8 +2,17 @@
 local UI = {}
 local engine = require("Engine")
 UI.UIInstance = {}
+UI.lookup = {}
 local font = ""
 local fontSize = 0
+
+local function makeKey(parentKey, name)
+    if parentKey == nil or parentKey == "" then
+        return name
+    else
+        return parentKey .. "." .. name
+    end
+end
 local function normalizeArrayTableWithKeys(rect, keys)
     if rect and #rect == #keys and rect[keys[1]] == nil then
         local normalizedRect = {}
@@ -51,11 +60,15 @@ local function CreateImage(name, rect, parentPanel, filename, srcRect, transpare
     return cUI.CreateImage(name, rect, parentPanel, filename, srcRect, transparencyInt)
 end
 
-local function CreateImageAnimator(name, rect, parentPanel, filename, srcRect, transparencyInt)
+local function CreateImageAnimator(name, rect, parentPanel, filename, srcRect, transparencyInt, defaultAnim)
     rect = normalizeRect(rect)
     srcRect = normalizeRect(srcRect)
     transparencyInt = transparencyInt or 255
-    return cUI.CreateImageAnimator(name, rect, parentPanel, filename, srcRect, transparencyInt)
+    local animData = cUI.CreateImageAnimator(name, rect, parentPanel, filename, srcRect, transparencyInt)
+    if defaultAnim then
+        UI.PlayAnimation(animData, defaultAnim)
+    end
+    return animData
 end
 
 local function Create9SliceImage(name, rect, parentPanel, filename, color)
@@ -91,7 +104,17 @@ local function CreateButton(name, rect, parentPanel, pressedFunc, hoverFunc, pre
     return cUI.CreateButton(name, rect, parentPanel, { pressedFunc, hoverFunc }, pressOnRelease)
 end
 
-local function CreateUIObjectAndChildren(objTable, parentPtr, parentTable)
+local function CreateProgressBar(name, rect, parentPanel, color)
+    rect = normalizeRect(rect)
+    color = normalizeColorRect(color)
+    return cUI.CreateProgressBar(name, rect, parentPanel, color)
+end
+
+function UI.UpdateProgressBarPercent(ptr, percent)
+    return cUI.UpdateProgressBarPercent(ptr, percent)
+end
+
+local function CreateUIObjectAndChildren(objTable, parentPtr, parentTable, parentKey)
     if objTable.isMobile and not engine.IsMobile() then return end
     -- TODO we should validate these so it doesn't break
     local node = { data = nil, children = {} }
@@ -100,8 +123,7 @@ local function CreateUIObjectAndChildren(objTable, parentPtr, parentTable)
             objTable.transparency)
     elseif objTable.type == "imageAnimator" then
         node.data = CreateImageAnimator(objTable.name, objTable.location, parentPtr, objTable.imageName, objTable
-            .srcRect,
-            objTable.transparency)
+            .srcRect, objTable.transparency, objTable.defaultAnim)
     elseif objTable.type == "9slice" then
         node.data = Create9SliceImage(objTable.name, objTable.location, parentPtr, objTable.imageName, objTable.color)
     elseif objTable.type == "text" then
@@ -123,6 +145,8 @@ local function CreateUIObjectAndChildren(objTable, parentPtr, parentTable)
             objTable.centeredX, objTable.centeredY, objTable.wordWrap, objTable.color)
     elseif objTable.type == "rect" then
         node.data = CreateRect(objTable.name, objTable.location, parentPtr, objTable.color)
+    elseif objTable.type == "progressBar" then
+        node.data = CreateProgressBar(objTable.name, objTable.location, parentPtr, objTable.color)
     elseif objTable.type == "hlg" then
         node.data = CreateHLG(objTable.name, objTable.location, parentPtr, objTable.spacing)
     elseif objTable.type == "vlg" then
@@ -136,9 +160,14 @@ local function CreateUIObjectAndChildren(objTable, parentPtr, parentTable)
     if objTable.userdata ~= nil then node["userdata"] = objTable.userdata end
     if objTable.visible ~= nil and objTable.visible ~= true then UI.SetObjectVisible(node.data, false) end
     parentTable[objTable.name] = node
+
+    local key = makeKey(parentKey, objTable.name)
+    UI.lookup[key] = node
+
+
     if objTable.children then
         for _, child in ipairs(objTable.children) do
-            CreateUIObjectAndChildren(child, node.data, node.children)
+            CreateUIObjectAndChildren(child, node.data, node.children, key)
         end
     end
     return node.data
@@ -215,13 +244,16 @@ end
 function UI.CreatePanelFromTable(table)
     -- Handle creating this UI element only on specific platforms.
     if table.isMobile and not engine.IsMobile() then return end
-    if UI.UIInstance[table.name] ~= nil then return end
+    if UI.UIInstance[table.name] ~= nil then
+        engine.Log.LogWarn("Trying to create a panel that already exists in root, not creating a new one!")
+        return
+    end
     -- Top level is always a panel
     local doNotDestroy = table.doNotDestroy or false
     local root = { data = CreatePanel(table.name, { 0, 0, 0, 0 }, nil), children = {}, doNotDestroy = doNotDestroy }
     UI.UIInstance[table.name] = root
     for _, child in ipairs(table.children) do
-        CreateUIObjectAndChildren(child, root.data, root.children)
+        CreateUIObjectAndChildren(child, root.data, root.children, "")
     end
     if table.startFunc ~= nil then
         table.startFunc()

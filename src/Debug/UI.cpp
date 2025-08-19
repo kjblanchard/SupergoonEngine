@@ -1,4 +1,5 @@
 #include <Supergoon/UI/ui.h>
+#include <Supergoon/UI/uiProgressBar.h>
 #include <Supergoon/UI/uilayoutgroup.h>
 #include <Supergoon/UI/uiobject.h>
 #include <Supergoon/UI/uirect.h>
@@ -153,7 +154,23 @@ void DrawUIObjects(UIObject *uiObject) {
 			if (ImGui::SliderInt(spacingText.c_str(), &hlgData->Spacing, -500, 500)) {
 				uiObject->Flags |= UIObjectFlagDirty;
 			}
+		} else if (uiObject->Type == UIObjectTypesProgressBar) {
+			auto progData = (UIProgressBarData *)uiObject->Data;
+			assert(progData && "no prog data");
+			auto percentText = "Percent ##" + string(uiObject->Name);
+			if (ImGui::SliderInt(percentText.c_str(), &progData->BarPercent, 0, 100)) {
+				uiObject->Flags |= UIObjectFlagDirty;
+			}
+			auto colorText = "Draw Color ##" + string(uiObject->Name);
+			static float color[4] = {(float)progData->Color.R / 255.0f, (float)progData->Color.G / 255.0f, (float)progData->Color.B / 255.0f, (float)progData->Color.A / 255.0f};
+			if (ImGui::ColorEdit4(colorText.c_str(), color, ImGuiColorEditFlags_AlphaBar)) {
+				progData->Color.R = (uint8_t)(color[0] * 255.0f + 0.5f);
+				progData->Color.G = (uint8_t)(color[1] * 255.0f + 0.5f);
+				progData->Color.B = (uint8_t)(color[2] * 255.0f + 0.5f);
+				progData->Color.A = (uint8_t)(color[3] * 255.0f + 0.5f);
+			};
 		}
+
 		ImGui::Text("**__Children__**");
 		for (size_t i = 0; i < uiObject->ChildrenCount; i++) {
 			// If it's been freed by destroying it, do not show it.
