@@ -12,9 +12,8 @@ engine.Buttons = {
 }
 engine.currentScene = {}
 engine.sceneChange = false
-engine.Log = {}
-engine.Input = {}
--- local sprite = require("Sprite")
+
+--#region Tools
 
 engine.Tools = {}
 local tools = {}
@@ -42,6 +41,9 @@ function engine.Tools.NormalizeRect(rect)
     return engine.Tools.NormalizeArrayTableWithKeys(rect, { "x", "y", "w", "h" })
 end
 
+--#endregion Tools
+
+--#region Sprite
 engine.Sprite = {}
 function engine.Sprite.NewSprite(imageName, parentPtr, textureSrcRectTable, offsetSizeRectTable)
     textureSrcRectTable = engine.Tools.NormalizeRect(textureSrcRectTable)
@@ -53,15 +55,17 @@ function engine.Sprite.DestroySprite(spritePtr)
     return cSprite.DestroySprite(spritePtr)
 end
 
+--#endregion Sprite
+
+--#region Input
+engine.Input = {}
 engine.Input.ControllerOverlayUpdateFunc = nil
 engine.Input.UIButtonPresses = {
     JustPressed = {},
     JustReleased = {},
     Down = {}
 }
-engine.Input._UIButtonLastState = {}
 function engine.Input.KeyboardKeyJustPressed(key)
-    -- return cInput.IsKeyboardKeyPressed(key)
     return engine.Input.UIButtonPresses.JustPressed[key] or cInput.IsKeyboardKeyPressed(key)
 end
 
@@ -69,13 +73,7 @@ function engine.Input.KeyboardKeyDown(key)
     return engine.Input.UIButtonPresses.Down[key] or cInput.IsKeyboardKeyDown(key)
 end
 
--- function engine.Input.Update()
---     for _, value in pairs(engine.Buttons) do
---         engine.Input.UIButtonPresses.Down[value] = false
---         engine.Input.UIButtonPresses.JustPressed[value] = false
---     end
--- end
-
+engine.Input._UIButtonLastState = {}
 ---Updates the internal input system in lua so you don't have to call keydown, just pressed, etc.
 function engine.Input.Update()
     for _, button in pairs(engine.Buttons) do
@@ -93,6 +91,10 @@ function engine.Input.Update()
     engine.Input.UIButtonThisFrame = {}
 end
 
+--#endregion Input
+
+--#region Log
+engine.Log = {}
 function engine.Log.LogDebug(message)
     cLog.Log(message, 1)
 end
@@ -113,35 +115,43 @@ function engine.Log.LogCritical(message)
     cLog.Log(message, 5)
 end
 
-function engine.PlaySfxOneShot(soundName, volume)
+--#endregion Log
+
+
+--#region Audio
+engine.Audio = {}
+function engine.Audio.PlaySfxOneShot(soundName, volume)
     cAudio.PlaySfx(soundName, volume)
 end
 
-function engine.PlayBGM(soundName, volume)
+function engine.Audio.PlayBGM(soundName, volume)
     cAudio.PlayBgm(soundName, volume, 0)
 end
 
 ---Loads and Plays a BGM in the background slot
-function engine.PlayBGMBackground(soundName, volume)
+function engine.Audio.PlayBGMBackground(soundName, volume)
     cAudio.PlayBgm(soundName, volume, 1)
 end
 
-function engine.UnPauseBGMBackground()
+function engine.Audio.UnPauseBGMBackground()
     cAudio.UnPauseBGMBackground(1)
 end
 
 --- Stops a BGM in the background slot, does not unload but moves back to start
-function engine.StopBGMBackground()
+function engine.Audio.StopBGMBackground()
     cAudio.StopBgm(1)
 end
 
-function engine.SetGlobalBGMVolume(volume)
+function engine.Audio.SetGlobalBGMVolume(volume)
     cAudio.SetGlobalBgmVolume(volume)
 end
 
-function engine.SetGlobalSFXVolume(volume)
+function engine.Audio.SetGlobalSFXVolume(volume)
     cAudio.SetGlobalSfxVolume(volume)
 end
+
+--#endregion Audio
+
 
 ---Registers functions that will run by the engine for different things.
 ---@param typeNumber integer The actual type that corresponds to the first number of type in tiled
@@ -214,7 +224,7 @@ function engine.LoadSceneCo(mapname, uiname, bgm, volume, fadeInTimeSec, fadeOut
             engine.FadeinScreen(fadeOutTimeSec)
             Wait(fadeOutTimeSec)
         end
-        if bgm ~= nil then engine.PlayBGM(bgm, volume) end
+        if bgm ~= nil then engine.Audio.PlayBGM(bgm, volume) end
         engine.sceneChange = false
     end)
 end
