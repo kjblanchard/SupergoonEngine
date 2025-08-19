@@ -1,17 +1,3 @@
-local function normalizeArrayTableWithKeys(rect, keys)
-    if rect and #rect == #keys and rect[keys[1]] == nil then
-        local normalizedRect = {}
-        for i = 1, #keys, 1 do
-            normalizedRect[keys[i]] = rect[i]
-        end
-        return normalizedRect
-    end
-    return rect
-end
-
-local function normalizeRect(rect)
-    return normalizeArrayTableWithKeys(rect, { "x", "y", "w", "h" })
-end
 local engine = {}
 engine.nextScene = nil
 local scheduler = require("Scheduler")
@@ -28,6 +14,45 @@ engine.currentScene = {}
 engine.sceneChange = false
 engine.Log = {}
 engine.Input = {}
+-- local sprite = require("Sprite")
+
+engine.Tools = {}
+local tools = {}
+---Rounds
+---@param x number Int or number to round
+---@param n integer the amount of int or decimals to round to, if wanting int use 0
+---@return number rounded number
+function engine.Tools.Round(x, n)
+    local factor = 10 ^ n
+    return math.floor(x * factor + 0.5) / factor
+end
+
+function engine.Tools.NormalizeArrayTableWithKeys(rect, keys)
+    if rect and #rect == #keys and rect[keys[1]] == nil then
+        local normalizedRect = {}
+        for i = 1, #keys, 1 do
+            normalizedRect[keys[i]] = rect[i]
+        end
+        return normalizedRect
+    end
+    return rect
+end
+
+function engine.Tools.NormalizeRect(rect)
+    return engine.Tools.NormalizeArrayTableWithKeys(rect, { "x", "y", "w", "h" })
+end
+
+engine.Sprite = {}
+function engine.Sprite.NewSprite(imageName, parentPtr, textureSrcRectTable, offsetSizeRectTable)
+    textureSrcRectTable = engine.Tools.NormalizeRect(textureSrcRectTable)
+    offsetSizeRectTable = engine.Tools.NormalizeRect(offsetSizeRectTable)
+    return cSprite.NewSprite(imageName, parentPtr, textureSrcRectTable, offsetSizeRectTable)
+end
+
+function engine.Sprite.DestroySprite(spritePtr)
+    return cSprite.DestroySprite(spritePtr)
+end
+
 engine.Input.ControllerOverlayUpdateFunc = nil
 engine.Input.UIButtonPresses = {
     JustPressed = {},
@@ -271,16 +296,6 @@ function engine.IsMobile()
     return cEngine.IsMobile
 end
 
-function engine.NewSprite(imageName, parentPtr, textureSrcRectTable, offsetSizeRectTable)
-    textureSrcRectTable = normalizeRect(textureSrcRectTable)
-    offsetSizeRectTable = normalizeRect(offsetSizeRectTable)
-    return cSprite.NewSprite(imageName, parentPtr, textureSrcRectTable, offsetSizeRectTable)
-end
-
-function engine.DestroySprite(spritePtr)
-    return cSprite.DestroySprite(spritePtr)
-end
-
 ---comment
 ---@param name string The name of the animator to load, without the fileextension
 ---@return integer animator handle
@@ -313,7 +328,7 @@ function engine.CheckGameobjectForCollision(gameobject)
 end
 
 function engine.CheckRectForCollision(rectTable)
-    local rect = normalizeRect(rectTable)
+    local rect = engine.Tools.NormalizeRect(rectTable)
     return cGameObject.CheckSolidsRect(rect)
 end
 
