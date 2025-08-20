@@ -21,6 +21,7 @@ void LuaMoveStackTipToIndex(LuaState L, int index);
 void sgCloseLua(void);
 // Tables
 void LuaPushTableFromFile(LuaState L, const char* path);
+void LuaPushTableFromStackTip(LuaState L, const char* path);
 int LuaGetIntFromTablei(LuaState L, int i);
 const char* LuaGetStringFromTablei(LuaState L, int i);
 float LuaGetFloatFromTablei(LuaState L, int i);

@@ -89,6 +89,14 @@ void LuaPushTableFromFile(LuaState L, const char* path) {
 		lua_pop(L, 1);
 	}
 }
+
+void LuaPushTableFromStackTip(LuaState L, const char* path) {
+	lua_getfield(L, -1, path);
+	if (!lua_istable(L, -1)) {
+		printf("field did not get a table!\n");
+		lua_pop(L, 1);
+	}
+}
 int LuaGetIntFromTablei(LuaState L, int i) {
 	lua_rawgeti(L, -1, i + 1);
 	int value = lua_tointeger(_luaState, -1);

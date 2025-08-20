@@ -1,15 +1,7 @@
 local engine = {}
-engine.nextScene = nil
 local scheduler = require("Scheduler")
 local scenes = require("scenes")
-engine.Buttons = {
-    UP = 26,
-    LEFT = 4,
-    DOWN = 22,
-    RIGHT = 7,
-    A = 44,
-    B = 27,
-}
+engine.nextScene = nil
 engine.currentScene = {}
 engine.sceneChange = false
 
@@ -45,6 +37,7 @@ end
 
 --#region Sprite
 engine.Sprite = {}
+engine.Sprite.Sprites = {}
 function engine.Sprite.NewSprite(imageName, parentPtr, textureSrcRectTable, offsetSizeRectTable)
     textureSrcRectTable = engine.Tools.NormalizeRect(textureSrcRectTable)
     offsetSizeRectTable = engine.Tools.NormalizeRect(offsetSizeRectTable)
@@ -59,6 +52,14 @@ end
 
 --#region Input
 engine.Input = {}
+engine.Input.Buttons = {
+    UP = 26,
+    LEFT = 4,
+    DOWN = 22,
+    RIGHT = 7,
+    A = 44,
+    B = 27,
+}
 engine.Input.ControllerOverlayUpdateFunc = nil
 engine.Input.UIButtonPresses = {
     JustPressed = {},
@@ -117,6 +118,71 @@ end
 
 --#endregion Log
 
+--#region GameObject
+
+engine.Gameobject = {}
+
+function engine.Gameobject.Position(ptr)
+    return cGameObject.Position(ptr)
+end
+
+function engine.Gameobject.SetPosition(ptr, x, y)
+    return cGameObject.SetPosition(ptr, x, y)
+end
+
+function engine.Gameobject.Size(ptr)
+    return cGameObject.Size(ptr)
+end
+
+function engine.Gameobject.SetSize(ptr, w, h)
+    return cGameObject.SetSize(ptr, w, h)
+end
+
+function engine.Gameobject.Sprite(ptr)
+    return engine.Sprite.Sprites[ptr]
+end
+
+-- Calls the create function for the gameobject below ..
+function engine.Gameobject.CreateGameObjectInCurrentMap()
+    return cGameObject.CreateGameObject()
+end
+
+---Sets the gameobject type
+---@param ptr userdata go ptr
+---@param type integer The number of gameobject type, so it can update, start correctly
+---@return nil
+function engine.Gameobject.SetType(ptr, type)
+    return cGameObject.SetType(ptr, type)
+end
+
+---Registers functions that will run by the engine for different things.
+---@param typeNumber integer The actual type that corresponds to the first number of type in tiled
+---@param funcTable table array table with the functions | Create, Start, Update, Destroy
+function engine.Gameobject.RegisterGameObjectFunctions(typeNumber, funcTable)
+    if #funcTable ~= 4 then engine.Log.LogWarn("bad number of function args passed to go func register") end
+    for index, value in ipairs(funcTable) do
+        if type(value) ~= "nil" and type(value) ~= "function" then
+            engine.Log.LogWarn(("Invalid function at index %d for type %d"):format(index, typeNumber))
+        end
+    end
+    cGameObject.NewGameObjectType(typeNumber, funcTable)
+end
+
+---Sets all current gameobjects to be destroyed the next time DestroyGameObjects is called
+---@param force boolean|nil default false | If set to true, even if DoNotDestroy is set on the gameobject, set it to be destroyed..
+function engine.Gameobject.SetGameObjectsToBeDestroyed(force)
+    if force == nil then
+        force = false
+    end
+    cGameObject.SetDestroyGameObjects(force)
+end
+
+---Destroys all gameobjects that have ToBeDestroyed set on them.
+function engine.Gameobject.DestroyGameObjects()
+    cGameObject.DestroyGameObjects()
+end
+
+--#endregion GameObject
 
 --#region Audio
 engine.Audio = {}
@@ -152,52 +218,30 @@ end
 
 --#endregion Audio
 
-
----Registers functions that will run by the engine for different things.
----@param typeNumber integer The actual type that corresponds to the first number of type in tiled
----@param funcTable table array table with the functions | Create, Start, Update, Destroy
-function engine.RegisterGameObjectFunctions(typeNumber, funcTable)
-    if #funcTable ~= 4 then engine.Log.LogWarn("bad number of function args passed to go func register") end
-    for index, value in ipairs(funcTable) do
-        if type(value) ~= "nil" and type(value) ~= "function" then
-            engine.Log.LogWarn(("Invalid function at index %d for type %d"):format(index, typeNumber))
-        end
-    end
-    cGameObject.NewGameObjectType(typeNumber, funcTable)
-end
-
-function engine.LoadTilemap(mapname)
+--#region Map
+engine.Map = {}
+function engine.Map.LoadTilemap(mapname)
     cScene.LoadMap(mapname)
 end
 
-function engine.LoadTilemapObjects()
+function engine.Map.LoadTilemapObjects()
     cScene.LoadObjectsOnMap()
 end
 
----Sets all current gameobjects to be destroyed the next time DestroyGameObjects is called
----@param force boolean|nil default false | If set to true, even if DoNotDestroy is set on the gameobject, set it to be destroyed..
-function engine.SetGameObjectsToBeDestroyed(force)
-    if force == nil then
-        force = false
-    end
-    cGameObject.SetDestroyGameObjects(force)
-end
+--#endregion Map
 
----Destroys all gameobjects that have ToBeDestroyed set on them.
-function engine.DestroyGameObjects()
-    cGameObject.DestroyGameObjects()
-end
-
-function engine.LoadSceneCo(mapname, uiname, bgm, volume, fadeInTimeSec, fadeOutTimeSec)
+--#region Scene
+engine.Scene = {}
+function engine.Scene.LoadSceneCo(mapname, uiname, bgm, volume, fadeInTimeSec, fadeOutTimeSec)
     return coroutine.create(function()
         if fadeInTimeSec > 0 then
-            engine.FadeoutScreen(fadeInTimeSec)
+            engine.Effects.FadeoutScreen(fadeInTimeSec)
             Wait(fadeInTimeSec)
         end
-        engine.LoadTilemap(mapname)
-        engine.SetGameObjectsToBeDestroyed(false)
-        engine.LoadTilemapObjects()
-        engine.DestroyGameObjects()
+        engine.Map.LoadTilemap(mapname)
+        engine.Gameobject.SetGameObjectsToBeDestroyed(false)
+        engine.Map.LoadTilemapObjects()
+        engine.Gameobject.DestroyGameObjects()
         local ui = require("UI")
         -- Destroy all ui panels that are not donotdestroy.
         for key, value in pairs(ui.UIInstance) do
@@ -221,7 +265,7 @@ function engine.LoadSceneCo(mapname, uiname, bgm, volume, fadeInTimeSec, fadeOut
         end
 
         if fadeOutTimeSec > 0 then
-            engine.FadeinScreen(fadeOutTimeSec)
+            engine.Effects.FadeinScreen(fadeOutTimeSec)
             Wait(fadeOutTimeSec)
         end
         if bgm ~= nil then engine.Audio.PlayBGM(bgm, volume) end
@@ -229,46 +273,51 @@ function engine.LoadSceneCo(mapname, uiname, bgm, volume, fadeInTimeSec, fadeOut
     end)
 end
 
-function engine.LoadSceneEx(mapname, uiname, bgm, volume, fadeInTimeSec, fadeOutTimeSec)
+function engine.Scene.LoadSceneEx(mapname, uiname, bgm, volume, fadeInTimeSec, fadeOutTimeSec)
     if uiname == "" then uiname = nil end
-    local co = engine.LoadSceneCo(mapname, uiname, bgm, volume, fadeInTimeSec, fadeOutTimeSec)
+    local co = engine.Scene.LoadSceneCo(mapname, uiname, bgm, volume, fadeInTimeSec, fadeOutTimeSec)
     scheduler:run(co)
 end
 
-function engine.LoadScene(mapKey)
+function engine.Scene.LoadScene(mapKey)
     engine.nextScene = mapKey
 end
 
-function engine.LoadDefaultScene()
+function engine.Scene.LoadDefaultScene()
     local defaultScene = scenes["default"]
     local sceneTable = scenes.scenes[defaultScene]
-    local co = engine.LoadSceneCo(sceneTable[1], sceneTable[2], sceneTable[3], sceneTable[4], sceneTable[5],
+    local co = engine.Scene.LoadSceneCo(sceneTable[1], sceneTable[2], sceneTable[3], sceneTable[4], sceneTable[5],
         sceneTable[6])
     scheduler:run(co)
 end
 
-function engine.SetWindowOptions(windowSize, windowHeight, windowName)
+--#endregion Scene
+
+--#region Window
+engine.Window = {}
+function engine.Window.SetWindowOptions(windowSize, windowHeight, windowName)
     cEngine.SetWindowOptions(windowSize, windowHeight, windowName)
 end
 
-function engine.SetScalingOptions(worldWidth, WorldHeight)
+function engine.Window.SetScalingOptions(worldWidth, WorldHeight)
     cEngine.SetScalingOptions(worldWidth, WorldHeight)
 end
 
-function engine.FadeoutScreen(fadeTime)
+--#endregion Window
+
+--#region Effects
+engine.Effects = {}
+function engine.Effects.FadeoutScreen(fadeTime)
     cEffects.Fadeout(fadeTime)
 end
 
-function engine.FadeinScreen(fadeTime)
+function engine.Effects.FadeinScreen(fadeTime)
     cEffects.Fadein(fadeTime)
 end
 
---- Is the screen fading?  Use this to track when the screen is fading
----@return boolean true if screen is fading.
-function engine.IsScreenFading()
-    return cEffects.IsScreenFading
-end
+--#endregion Effects
 
+--#region Core
 function engine.SetInputFunc(func)
     cEngine.SetInputFunc(func)
 end
@@ -281,12 +330,78 @@ function engine.SetDrawFunc(func)
     cEngine.SetDrawFunc(func)
 end
 
-function engine.DrawRect(rect)
+--#endregion Core
+
+--#region Draw
+engine.Draw = {}
+
+function engine.Draw.DrawRect(rect)
     cEngine.DrawRect(rect.x, rect.y, rect.w, rect.h)
 end
 
-function engine.DrawRectCamOffset(rect)
+function engine.Draw.DrawRectCamOffset(rect)
     cEngine.DrawRectCamOffset(rect.x, rect.y, rect.w, rect.h)
+end
+
+--#endregion Draw
+
+--#region Animation
+engine.Animation = {}
+---comment
+---@param name string The name of the animator to load, without the fileextension
+---@return integer animator handle
+function engine.Animation.CreateAnimator(name, spritePtr)
+    return cAnimation.CreateAnimator(name, spritePtr)
+end
+
+function engine.Animation.PlayAnimation(animator, animationName)
+    return cAnimation.PlayAnimation(animator, animationName)
+end
+
+---comment
+---@param animator integer anim handle
+---@param animatorSpeed number the speed that this animator should play, 0.0 - 5.0
+---@return unknown
+function engine.Animation.SetAnimatorSpeed(animator, animatorSpeed)
+    return cAnimation.SetAnimatorSpeed(animator, animatorSpeed)
+end
+
+function engine.Animation.DestroyAnimator(animator)
+    return cAnimation.DestroyAnimator(animator)
+end
+
+--#endregion Animation
+
+--#region Camera
+engine.Camera = {}
+function engine.Camera.SetCameraFollowTarget(gameobject)
+    return cCamera.SetCameraFollowTarget(gameobject)
+end
+
+--#endregion Camera
+
+--#region Collision
+engine.Collision = {}
+function engine.Collision.CheckGameobjectForCollision(gameobject)
+    return cGameObject.CheckSolids(gameobject)
+end
+
+function engine.Collision.CheckRectForCollision(rectTable)
+    local rect = engine.Tools.NormalizeRect(rectTable)
+    return cGameObject.CheckSolidsRect(rect)
+end
+
+function engine.Collision.CheckForCollision(a, b)
+    return a.x < b.x + b.w and
+        a.x + a.w > b.x and
+        a.y < b.y + b.h and
+        a.y + a.h > b.y
+end
+
+--#endregion Collision
+
+function engine.MapName()
+    return cEngine.MapName()
 end
 
 function engine.DeltaTimeInSeconds()
@@ -306,51 +421,10 @@ function engine.IsMobile()
     return cEngine.IsMobile
 end
 
----comment
----@param name string The name of the animator to load, without the fileextension
----@return integer animator handle
-function engine.CreateAnimator(name, spritePtr)
-    return cAnimation.CreateAnimator(name, spritePtr)
-end
-
-function engine.PlayAnimation(animator, animationName)
-    return cAnimation.PlayAnimation(animator, animationName)
-end
-
----comment
----@param animator integer anim handle
----@param animatorSpeed number the speed that this animator should play, 0.0 - 5.0
----@return unknown
-function engine.SetAnimatorSpeed(animator, animatorSpeed)
-    return cAnimation.SetAnimatorSpeed(animator, animatorSpeed)
-end
-
-function engine.DestroyAnimator(animator)
-    return cAnimation.DestroyAnimator(animator)
-end
-
-function engine.SetCameraFollowTarget(gameobject)
-    return cCamera.SetCameraFollowTarget(gameobject)
-end
-
-function engine.CheckGameobjectForCollision(gameobject)
-    return cGameObject.CheckSolids(gameobject)
-end
-
-function engine.CheckRectForCollision(rectTable)
-    local rect = engine.Tools.NormalizeRect(rectTable)
-    return cGameObject.CheckSolidsRect(rect)
-end
-
-function engine.CheckForCollision(a, b)
-    return a.x < b.x + b.w and
-        a.x + a.w > b.x and
-        a.y < b.y + b.h and
-        a.y + a.h > b.y
-end
-
-function engine.MapName()
-    return cEngine.MapName()
+--- Is the screen fading?  Use this to track when the screen is fading
+---@return boolean true if screen is fading.
+function engine.IsScreenFading()
+    return cEffects.IsScreenFading
 end
 
 return engine
