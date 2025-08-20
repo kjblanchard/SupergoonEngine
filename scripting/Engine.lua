@@ -1,9 +1,7 @@
 local engine = {}
 local scheduler = require("Scheduler")
 local scenes = require("scenes")
-engine.nextScene = nil
-engine.currentScene = {}
-engine.sceneChange = false
+local gamestate = require("gameState")
 
 --#region Tools
 
@@ -228,6 +226,10 @@ function engine.Map.LoadTilemapObjects()
     cScene.LoadObjectsOnMap()
 end
 
+function engine.MapName()
+    return cEngine.MapName()
+end
+
 --#endregion Map
 
 --#region Scene
@@ -269,7 +271,7 @@ function engine.Scene.LoadSceneCo(mapname, uiname, bgm, volume, fadeInTimeSec, f
             Wait(fadeOutTimeSec)
         end
         if bgm ~= nil then engine.Audio.PlayBGM(bgm, volume) end
-        engine.sceneChange = false
+        gamestate.sceneChange = false
     end)
 end
 
@@ -280,7 +282,7 @@ function engine.Scene.LoadSceneEx(mapname, uiname, bgm, volume, fadeInTimeSec, f
 end
 
 function engine.Scene.LoadScene(mapKey)
-    engine.nextScene = mapKey
+    gamestate.nextScene = mapKey
 end
 
 function engine.Scene.LoadDefaultScene()
@@ -328,6 +330,17 @@ end
 
 function engine.SetDrawFunc(func)
     cEngine.SetDrawFunc(func)
+end
+
+--Is the game running on a mobile platform.
+function engine.IsMobile()
+    return cEngine.IsMobile
+end
+
+--- Is the screen fading?  Use this to track when the screen is fading
+---@return boolean true if screen is fading.
+function engine.IsScreenFading()
+    return cEffects.IsScreenFading
 end
 
 --#endregion Core
@@ -381,6 +394,7 @@ end
 --#endregion Camera
 
 --#region Collision
+
 engine.Collision = {}
 function engine.Collision.CheckGameobjectForCollision(gameobject)
     return cGameObject.CheckSolids(gameobject)
@@ -400,31 +414,25 @@ end
 
 --#endregion Collision
 
-function engine.MapName()
-    return cEngine.MapName()
-end
-
-function engine.DeltaTimeInSeconds()
+--#region Time
+---Get the deltatime seconds from the engine.. this is cached every update frame in gamestate.DeltaTimeSeconds
+---@return number Time The amount in seconds of time since the last frame
+engine.Time = {}
+function engine.Time.DeltaTimeInSeconds()
     return cEngine.DeltaTimeSeconds
 end
 
-function engine.DeltaTimeMS()
+---Get the deltatime ms from the engine.. this is cached every update frame in gamestate.DeltaTimeSeconds
+---@return integer Time The amount in ms of time since the last frame
+function engine.Time.DeltaTimeMS()
     return cEngine.DeltaTimeMilliseconds
 end
 
-function engine.GameTicks()
+function engine.Time.GameTicks()
     return cEngine.Ticks
 end
 
---Is the game running on a mobile platform.
-function engine.IsMobile()
-    return cEngine.IsMobile
-end
+--#endregion Time
 
---- Is the screen fading?  Use this to track when the screen is fading
----@return boolean true if screen is fading.
-function engine.IsScreenFading()
-    return cEffects.IsScreenFading
-end
 
 return engine
