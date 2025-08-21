@@ -59,7 +59,9 @@ void ShowSceneDebugWindow() {
 	}
 	if (ImGui::Button("Load Selected Scene")) {
 		if (_scenes.size() > sceneCurrent) {
-			LuaPushTableFromFile(_luaState, "assets/lua/Engine.lua");
+			LuaPushTableFromGlobal(_luaState, "package");
+			LuaPushTableFromStackTip(_luaState, "loaded");
+			LuaPushTableFromStackTip(_luaState, "Engine");
 			LuaPushTableFromStackTip(_luaState, "Scene");
 			LuaGetLuaFunc(_luaState, "LoadSceneEx");
 			LuaPushString(_luaState, _scenes[sceneCurrent].Title.c_str());

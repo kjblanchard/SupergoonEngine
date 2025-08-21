@@ -40,18 +40,14 @@ void InitializeLuaEngine(void) {
 }
 
 void LuaRunFile(const char* path) {
-	luaL_dostring(_luaState, "print('Lua works!')");
 	const char* basePath = SDL_GetBasePath();
 	// size_t size = strlen(basePath) + strlen(path) + 1;
 	char* fullPath;
 	asprintf(&fullPath, "%s%s", basePath, path);
-	sgLogWarn("Running lua file %s", fullPath);
-
 	if (luaL_dofile(_luaState, fullPath) != 0) {
 		const char* luaError = lua_tostring(_luaState, -1);
 		sgLogError("Lua error: %s", luaError);
 	}
-	sgLogWarn("Ran the lua file!!");
 	SDL_free(fullPath);
 }
 
@@ -207,6 +203,9 @@ int LuaGetTableLengthMap(LuaState L) {
 	}
 	lua_pop(L, 1);
 	return len;
+}
+void LuaPushTableFromGlobal(LuaState L, const char* global) {
+	lua_getglobal(L, global);
 }
 void LuaGetTable(LuaState L, const char* tableFieldName) {
 	lua_getfield(L, -1, tableFieldName);

@@ -66,9 +66,7 @@ static bool Start(void) {
 	geInitializeJoysticks();
 	InitializeLuaEngine();
 	InitializeEventEngine();
-	sgLogWarn("Starting the before window");
 	CreateWindow();
-	sgLogWarn("Starting the after window");
 	initializeAudio();
 	initializeTweenEngine();
 	InitializeUISystem();
@@ -84,7 +82,6 @@ static bool Start(void) {
 	_frequency = SDL_GetPerformanceFrequency();	 // ticks per second
 	previousCounter = SDL_GetPerformanceCounter();
 	deltaTimeSeconds = 0;
-	sgLogWarn("done start");
 	return true;
 }
 static bool sdlEventLoop(void) {

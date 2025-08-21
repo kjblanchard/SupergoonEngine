@@ -20,6 +20,7 @@ void LuaRemoveIndex(LuaState L, int index);
 void LuaMoveStackTipToIndex(LuaState L, int index);
 void sgCloseLua(void);
 // Tables
+void LuaPushTableFromGlobal(LuaState L, const char* global);
 void LuaPushTableFromFile(LuaState L, const char* path);
 void LuaPushTableFromStackTip(LuaState L, const char* path);
 int LuaGetIntFromTablei(LuaState L, int i);

@@ -49,7 +49,7 @@ GameObject* AddGameObject(void) {
 	newGameObject->Id = _currentId++;
 	newGameObject->Type = 0;
 	newGameObject->X = newGameObject->Y = newGameObject->W = newGameObject->H = 0;
-	newGameObject->Userdata = NULL;
+	// newGameObject->Userdata = NULL;
 	newGameObject->Flags = 0;
 	newGameObject->Flags |= GameObjectFlagActive;
 	newGameObject->Flags |= GameObjectFlagLoaded;
@@ -65,7 +65,7 @@ void AddGameObjectFromTiledMap(TiledObject* object) {
 	CurrentGameObject->Id = _currentId++;
 	CurrentGameObject->Type = object->ObjectType;
 	CurrentGameObject->X = CurrentGameObject->Y = CurrentGameObject->W = CurrentGameObject->H = 0;
-	CurrentGameObject->Userdata = NULL;
+	// CurrentGameObject->Userdata = NULL;
 	CurrentGameObject->X = object->X;
 	CurrentGameObject->Y = object->Y;
 	CurrentGameObject->W = object->Width;
@@ -82,8 +82,8 @@ void AddGameObjectFromTiledMap(TiledObject* object) {
 void GameObjectSystemUpdate(void) {
 	for (size_t i = 0; i < _numGameObjects; i++) {
 		CurrentGameObject = _gameObjects[i];
-		CurrentGameObject->pX = CurrentGameObject->X;
-		CurrentGameObject->pY = CurrentGameObject->Y;
+		// CurrentGameObject->pX = CurrentGameObject->X;
+		// CurrentGameObject->pY = CurrentGameObject->Y;
 		// Gameobject is not active, continue to next.
 		if (!CurrentGameObject->Flags || !(CurrentGameObject->Flags & GameObjectFlagActive) || CurrentGameObject->Flags & GameObjectFlagDestroyed) {
 			continue;
@@ -164,10 +164,6 @@ void DestroyGameObjects(void) {
 		}
 		if (_gameObjectTypes[_gameObjects[i]->Type].DestroyFunc) {
 			_gameObjectTypes[_gameObjects[i]->Type].DestroyFunc(_gameObjects[i]);
-		}
-		if (_gameObjects[i]->Userdata) {
-			SDL_free(_gameObjects[i]->Userdata);
-			_gameObjects[i]->Userdata = NULL;
 		}
 		if (_firstGameObjectHole == NO_HOLE || i < _firstGameObjectHole) {
 			_firstGameObjectHole = i;

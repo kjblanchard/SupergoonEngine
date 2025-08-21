@@ -1,12 +1,77 @@
 local engine = {}
-local scheduler = require("Scheduler")
 local scenes = require("scenes")
 local gamestate = require("gameState")
+
+--#region Coroutine
+engine.Coroutine = {
+    tasks = {}
+}
+
+-- Adds a wait to a coroutine, the coroutine will wait the amount of seconds during the coroutine update
+function engine.Coroutine.Wait(seconds)
+    seconds = tonumber(seconds) or 0
+    coroutine.yield(math.max(0.01, seconds))
+end
+
+function engine.Coroutine.update()
+    for i = #engine.Coroutine.tasks, 1, -1 do
+        local task = engine.Coroutine.tasks[i]
+        engine.Log.LogDebug(("Task %s delay %.2f, co %s"):format(i, task.delay, coroutine.status(task.co)))
+        task.delay = task.delay - gamestate.DeltaTimeSeconds
+
+
+        if task.delay <= 0 then
+            local ok, delayOrErr = coroutine.resume(task.co)
+            if not ok then
+                print("Scheduler coroutine error: " .. tostring(delayOrErr))
+                table.remove(engine.Coroutine.tasks, i)
+            elseif coroutine.status(task.co) == "dead" then
+                table.remove(engine.Coroutine.tasks, i)
+            else
+                -- Make sure resumed value is a valid number
+                local delay = tonumber(delayOrErr) or 0
+                task.delay = math.max(0.01, delay)
+            end
+        end
+    end
+end
+
+-- function engine.Coroutine.run(co)
+
+--     assert(type(co) == "thread", "Scheduler:run expects a coroutine")
+
+--     local ok, delayOrErr = coroutine.resume(co)
+--     if not ok then
+--         print("Scheduler coroutine error on run: " .. tostring(delayOrErr))
+--         return
+--     end
+--     if coroutine.status(co) ~= "dead" then
+--         local delay = tonumber(delayOrErr) or 0
+--         table.insert(engine.Coroutine.tasks, {
+--             co = co,
+--             delay = math.max(0.01, delay)
+--         })
+--     end
+-- end
+
+---Starts a coroutine, adds it to be updated in the engine update and will handle waits appropriately.
+---@param co any
+function engine.Coroutine.run(co)
+    engine.Log.LogDebug("Coroutine.run called, type=" .. tostring(type(co)) ..
+        " status=" .. (type(co) == "thread" and coroutine.status(co) or "n/a"))
+    assert(type(co) == "thread", "Coroutine:run expects a coroutine")
+    table.insert(engine.Coroutine.tasks, {
+        co = co,
+        delay = 0.01 -- start next frame
+    })
+    engine.Log.LogDebug("Task count now " .. tostring(#engine.Coroutine.tasks))
+end
+
+--#endregion Coroutine
 
 --#region Tools
 
 engine.Tools = {}
-local tools = {}
 ---Rounds
 ---@param x number Int or number to round
 ---@param n integer the amount of int or decimals to round to, if wanting int use 0
@@ -73,9 +138,10 @@ function engine.Input.KeyboardKeyDown(key)
 end
 
 engine.Input._UIButtonLastState = {}
+engine.Input.UIButtonThisFrame = {}
 ---Updates the internal input system in lua so you don't have to call keydown, just pressed, etc.
 function engine.Input.Update()
-    for _, button in pairs(engine.Buttons) do
+    for _, button in pairs(engine.Input.Buttons) do
         local wasDown = engine.Input._UIButtonLastState[button] or false
         local isDown = engine.Input.UIButtonThisFrame[button] or false
 
@@ -238,7 +304,7 @@ function engine.Scene.LoadSceneCo(mapname, uiname, bgm, volume, fadeInTimeSec, f
     return coroutine.create(function()
         if fadeInTimeSec > 0 then
             engine.Effects.FadeoutScreen(fadeInTimeSec)
-            Wait(fadeInTimeSec)
+            engine.Coroutine.Wait(fadeInTimeSec)
         end
         engine.Map.LoadTilemap(mapname)
         engine.Gameobject.SetGameObjectsToBeDestroyed(false)
@@ -257,7 +323,7 @@ function engine.Scene.LoadSceneCo(mapname, uiname, bgm, volume, fadeInTimeSec, f
         -- Load ui if needed
         if uiname ~= nil then
             local name = "ui/" .. uiname
-            engine.Log.LogWarn("Loading " .. name)
+            engine.Log.LogDebug("Loading " .. name)
             local success, testui = pcall(require, name)
             if success then
                 ui.CreatePanelFromTable(testui)
@@ -268,7 +334,7 @@ function engine.Scene.LoadSceneCo(mapname, uiname, bgm, volume, fadeInTimeSec, f
 
         if fadeOutTimeSec > 0 then
             engine.Effects.FadeinScreen(fadeOutTimeSec)
-            Wait(fadeOutTimeSec)
+            engine.Coroutine.Wait(fadeOutTimeSec)
         end
         if bgm ~= nil then engine.Audio.PlayBGM(bgm, volume) end
         gamestate.sceneChange = false
@@ -278,7 +344,7 @@ end
 function engine.Scene.LoadSceneEx(mapname, uiname, bgm, volume, fadeInTimeSec, fadeOutTimeSec)
     if uiname == "" then uiname = nil end
     local co = engine.Scene.LoadSceneCo(mapname, uiname, bgm, volume, fadeInTimeSec, fadeOutTimeSec)
-    scheduler:run(co)
+    engine.Coroutine.run(co)
 end
 
 function engine.Scene.LoadScene(mapKey)
@@ -290,7 +356,7 @@ function engine.Scene.LoadDefaultScene()
     local sceneTable = scenes.scenes[defaultScene]
     local co = engine.Scene.LoadSceneCo(sceneTable[1], sceneTable[2], sceneTable[3], sceneTable[4], sceneTable[5],
         sceneTable[6])
-    scheduler:run(co)
+    engine.Coroutine.run(co)
 end
 
 --#endregion Scene
@@ -318,32 +384,6 @@ function engine.Effects.FadeinScreen(fadeTime)
 end
 
 --#endregion Effects
-
---#region Core
-function engine.SetInputFunc(func)
-    cEngine.SetInputFunc(func)
-end
-
-function engine.SetUpdateFunc(func)
-    cEngine.SetUpdateFunc(func)
-end
-
-function engine.SetDrawFunc(func)
-    cEngine.SetDrawFunc(func)
-end
-
---Is the game running on a mobile platform.
-function engine.IsMobile()
-    return cEngine.IsMobile
-end
-
---- Is the screen fading?  Use this to track when the screen is fading
----@return boolean true if screen is fading.
-function engine.IsScreenFading()
-    return cEffects.IsScreenFading
-end
-
---#endregion Core
 
 --#region Draw
 engine.Draw = {}
@@ -433,6 +473,37 @@ function engine.Time.GameTicks()
 end
 
 --#endregion Time
+--#region Core
+function engine.SetInputFunc(func)
+    cEngine.SetInputFunc(func)
+end
 
+function engine.SetUpdateFunc(func)
+    cEngine.SetUpdateFunc(func)
+end
+
+function engine.SetDrawFunc(func)
+    cEngine.SetDrawFunc(func)
+end
+
+--Should be called in your update function, updates the coroutines that use wait, etc.
+function engine.EngineUpdate()
+    gamestate.DeltaTimeSeconds = engine.Time.DeltaTimeInSeconds()
+    gamestate.DeltaTimeMS = engine.Time.DeltaTimeMS()
+    engine.Coroutine.update()
+end
+
+--Is the game running on a mobile platform.
+function engine.IsMobile()
+    return cEngine.IsMobile
+end
+
+--- Is the screen fading?  Use this to track when the screen is fading
+---@return boolean true if screen is fading.
+function engine.IsScreenFading()
+    return cEffects.IsScreenFading
+end
+
+--#endregion Core
 
 return engine

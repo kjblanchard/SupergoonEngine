@@ -16,13 +16,10 @@ typedef struct GameObject {
 	unsigned int Id;
 	unsigned int Type;
 	GameObjectFlags Flags;
-	float pX;
-	float pY;
 	float X;
 	float Y;
 	float W;
 	float H;
-	void* Userdata;
 } GameObject;
 extern GameObject* CurrentGameObject;
 #define GetCurrentGameObjectDataCasted(Type) ((Type*)CurrentGameObject.Userdata)

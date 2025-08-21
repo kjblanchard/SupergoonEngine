@@ -82,7 +82,7 @@ void SetScalingOptions(int worldWidth, int worldHeight) {
 
 static void onWindowResize(void) {
 	// TODO Cache all window information, this should be updated if the window size changes, currently it doesn't ever.
-	sgLogWarn("Setting window size %d, %d", _windowWidth, _windowHeight);
+	sgLogDebug("Setting window size %d, %d", _windowWidth, _windowHeight);
 	if (!SDL_SetWindowSize(_window, _windowWidth, _windowHeight)) {
 		sgLogError("Could not set window size, %s", SDL_GetError());
 	}
@@ -181,7 +181,6 @@ void DrawEnd(void) {
 void DrawTexture(Texture* texture, RectangleF* dst, RectangleF* src) {
 	SDL_RenderTexture(_renderer, texture, src, dst);
 }
-
 
 int WindowHeight(void) {
 	return _windowHeight;
