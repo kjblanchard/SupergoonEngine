@@ -35,16 +35,6 @@ static GameObject* getFreeGameObject(void) {
 
 GameObject* AddGameObject(void) {
 	// If we don't have a create function for this object type, do not create it..
-	// CurrentGameObject = getFreeGameObject();
-	// CurrentGameObject->Id = _currentId++;
-	// CurrentGameObject->Type = 0;
-	// CurrentGameObject->X = CurrentGameObject->Y = CurrentGameObject->W = CurrentGameObject->H = 0;
-	// CurrentGameObject->Userdata = NULL;
-	// CurrentGameObject->X = CurrentGameObject->Y = CurrentGameObject->W = CurrentGameObject->H = 0;
-	// CurrentGameObject->Flags = 0;
-	// CurrentGameObject->Flags |= GameObjectFlagActive;
-	// CurrentGameObject->Flags |= GameObjectFlagLoaded;
-	// return CurrentGameObject;
 	GameObject* newGameObject = getFreeGameObject();
 	newGameObject->Id = _currentId++;
 	newGameObject->Type = 0;
@@ -70,6 +60,9 @@ void AddGameObjectFromTiledMap(TiledObject* object) {
 	CurrentGameObject->Y = object->Y;
 	CurrentGameObject->W = object->Width;
 	CurrentGameObject->H = object->Height;
+#ifdef imgui
+	CurrentGameObject->Name = strdup(object->Name);
+#endif
 	if (_gameObjectTypes[CurrentGameObject->Type].CreateFunc) {
 		sgLogDebug("create gameobject function");
 		_gameObjectTypes[CurrentGameObject->Type].CreateFunc(object, CurrentGameObject);
@@ -168,7 +161,11 @@ void DestroyGameObjects(void) {
 		if (_firstGameObjectHole == NO_HOLE || i < _firstGameObjectHole) {
 			_firstGameObjectHole = i;
 		}
-		_gameObjects[i]->Flags = GameObjectFlagDestroyed;  // Set flag to only be destroyed
+#ifdef imgui
+		SDL_free(_gameObjects[i]->Name);
+		_gameObjects[i]->Name = NULL;
+#endif
+		_gameObjects[i]->Flags = GameObjectFlagDestroyed;
 	}
 }
 

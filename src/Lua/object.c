@@ -285,6 +285,25 @@ static int setType(lua_State* L) {
 	return 0;
 }
 
+static int setName(lua_State* L) {
+#ifndef imgui
+	return 0;
+#endif
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 2, LuaFUnctionParameterTypeUserdata, LuaFunctionParameterTypeString)) {
+		sgLogWarn("Bad args trying to set go type from lua");
+		LuaPushNil(L);
+		return 1;
+	}
+	GameObject* go = (GameObject*)LuaGetLightUserdatai(L, 1);
+	if (!go) {
+		sgLogWarn("Bad cast from go Lua");
+		LuaPushNil(L);
+		return 1;
+	}
+	go->Name = LuaAllocateStringStack(L, 2);
+	return 0;
+}
+
 static const luaL_Reg objectLib[] = {
 	{"NewGameObjectType", l_register_object_functions},
 	{"SetDestroyGameObjects", setAllGameobjectsToBeDestroyed},
@@ -294,6 +313,7 @@ static const luaL_Reg objectLib[] = {
 	{"Size", getGameobjectSize},
 	{"Id", getGameobjectId},
 	{"SetType", setType},
+	{"SetName", setName},
 	{"DestroyGameObjects", destroyObjects},
 	{"CheckSolids", handleGameobjectSolids},
 	{"CheckSolidsRect", checkSolidsRect},

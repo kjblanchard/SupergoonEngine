@@ -10,16 +10,20 @@ typedef enum GameObjectFlags {
 	GameObjectFlagDoNotDestroy = 1 << 3,
 	GameObjectFlagDestroyed = 1 << 4,
 	GameObjectFlagToBeDestroyed = 1 << 5,
+	GameObjectFlagDebugDraw = 1 << 6,
 } GameObjectFlags;
 
 typedef struct GameObject {
 	unsigned int Id;
 	unsigned int Type;
-	GameObjectFlags Flags;
+	unsigned int Flags;
 	float X;
 	float Y;
 	float W;
 	float H;
+#ifdef imgui
+	char* Name;
+#endif
 } GameObject;
 extern GameObject* CurrentGameObject;
 #define GetCurrentGameObjectDataCasted(Type) ((Type*)CurrentGameObject.Userdata)

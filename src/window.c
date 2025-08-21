@@ -166,8 +166,6 @@ void DrawStart(void) {
 #endif
 }
 void DrawEnd(void) {
-	// Rectangle dst = {0, 32, 32, 32};
-	// DrawTexture(testTexture, &dst, &dst);
 	SDL_SetRenderTarget(_renderer, NULL);
 #ifndef imgui
 	SDL_FRect dest = {0, 0, _renderTargetWidth, _renderTargetHeight};

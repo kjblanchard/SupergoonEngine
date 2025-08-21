@@ -219,6 +219,13 @@ function engine.Gameobject.SetType(ptr, type)
     return cGameObject.SetType(ptr, type)
 end
 
+---Sets an object name, useful in debug builds for debugging purposes
+---@param ptr any
+---@param name any
+function engine.Gameobject.SetName(ptr, name)
+    cGameObject.SetName(ptr, name)
+end
+
 ---Registers functions that will run by the engine for different things.
 ---@param typeNumber integer The actual type that corresponds to the first number of type in tiled
 ---@param funcTable table array table with the functions | Create, Start, Update, Destroy

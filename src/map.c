@@ -14,6 +14,9 @@
 #include <string.h>
 
 const uint8_t NUM_WALLS = 4;
+#ifdef imgui
+int _showingSolidBoxes = 0;
+#endif
 
 static void handleTiledLayerGroup(Tilemap* map);
 static void handleTiledObjectGroup(Tilemap* map);
@@ -168,7 +171,9 @@ static void handleTiledObjectEntities(Tilemap* map) {
 		TiledObject* object = &map->Objects[i];
 		LuaPushTableObjectToStacki(_luaState, i);
 		object->Id = LuaGetInt(_luaState, "id");
+#ifdef imgui
 		object->Name = LuaAllocateString(_luaState, "name");
+#endif
 		object->ObjectType = atoi(LuaGetString(_luaState, "type"));
 		object->X = LuaGetFloat(_luaState, "x");
 		object->Y = LuaGetFloat(_luaState, "y");
@@ -424,17 +429,28 @@ void drawCurrentMap(void) {
 		DrawTexture(_bg2Texture, &dst, &src);
 	}
 #ifdef imgui
-	if (_currentMap) {
-		RectangleF rect;
+	RectangleF rect;
+	sgColor drawColor = {0, 0, 255, 255};
+	for (size_t i = 0; i < _numGameObjects; i++) {
+		GameObject* go = _gameObjects[i];
+		if (!(HAS_ANY_FLAGS(go->Flags, GameObjectFlagDestroyed)) && HAS_ALL_FLAGS(go->Flags, GameObjectFlagActive | GameObjectFlagDebugDraw)) {
+			rect.x = go->X - CameraX;
+			rect.y = go->Y - CameraY;
+			rect.w = go->W;
+			rect.h = go->H;
+			DrawRect(&rect, &drawColor, false);
+		}
+	}
+	if (_showingSolidBoxes) {
+		drawColor = (sgColor){255, 0, 0, 255};
 		for (size_t i = 0; i < _currentMap->NumSolids; i++) {
 			rect.x = _currentMap->Solids[i].x - CameraX;
 			rect.y = _currentMap->Solids[i].y - CameraY;
 			rect.w = _currentMap->Solids[i].w;
 			rect.h = _currentMap->Solids[i].h;
-			DrawRect(&rect, &(sgColor){255, 0, 0, 255}, false);
+			DrawRect(&rect, &drawColor, false);
 		}
 	}
-
 #endif
 }
 // TODO this was ai.. probably need to check this and fix.
@@ -494,52 +510,6 @@ static Tilemap* checkCache(const char* mapName) {
 
 	return returnMap;
 }
-
-// static Tilemap* checkCache(const char* mapName) {
-// 	if (!_currentMap) {
-// 		return NULL;
-// 	}
-// 	unsigned int cacheSize = 0;
-// 	Tilemap* returnMap = NULL;
-// 	int foundIndex = -1;
-// 	// Check for a cache hit and get current cache size
-// 	for (size_t i = 0; i < MAX_PREVIOUS_MAPS_CACHE; i++) {
-// 		if (_previousMaps[i] == NULL) {
-// 			break;
-// 		}
-// 		if (strcmp(mapName, _previousMaps[i]->BaseFilename) == 0) {
-// 			returnMap = _previousMaps[i];
-// 			foundIndex = i;
-// 			++cacheSize;
-// 			break;
-// 		}
-// 		++cacheSize;
-// 	}
-// 	// If cache hit, remove it as it will be set as the current map.
-// 	if (foundIndex >= 0) {
-// 		for (size_t i = foundIndex; i < cacheSize - 1; i++) {
-// 			_previousMaps[i] = _previousMaps[i + 1];
-// 		}
-// 		_previousMaps[cacheSize - 1] = NULL;
-// 		// return returnMap;
-// 	}
-// 	// Cache _currentMap only if it’s not the same as the map being loaded
-// 	if (_currentMap && strcmp(mapName, _currentMap->BaseFilename) != 0) {
-// 		if (cacheSize == MAX_PREVIOUS_MAPS_CACHE) {
-// 			Tilemap* map = _previousMaps[cacheSize - 1];
-// 			if (map) {
-// 				freeTiledTilemap(map);
-// 			}
-// 		}
-// 		for (size_t i = cacheSize; i > 0; i--) {
-// 			_previousMaps[i] = _previousMaps[i - 1];
-// 		}
-// 		_previousMaps[0] = _currentMap;
-// 	} else {
-// 		return _currentMap;
-// 	}
-// 	return returnMap;
-// }
 
 void LoadMap(const char* mapName) {
 	Tilemap* nextMap = checkCache(mapName);
