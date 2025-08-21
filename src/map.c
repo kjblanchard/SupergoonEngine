@@ -148,7 +148,6 @@ static void loadTilesetTextures(Tilemap* map) {
 		if (nameLen >= 4 && strcmp(imageName + nameLen - 4, ".bmp") == 0) {
 			imageName[nameLen - 4] = '\0';
 		}
-		// TODO this makes an additional reference, and if it's cached, it never actually reduces it.
 		map->Tilesets[i].TilesetTexture = CreateTextureFromIndexedBMP(map->Tilesets[i].Image);
 	}
 }

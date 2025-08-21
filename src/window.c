@@ -40,7 +40,7 @@ _vsyncEnabled = false;
 int TARGET_FPS = 999;
 
 Texture* _imguiGameTexture;
-static const char* _windowName = NULL;
+static char* _windowName = NULL;
 #ifdef imgui
 // Defined in engine.c
 extern bool _isGameSimulatorRunning;
@@ -66,7 +66,11 @@ void SetWindowOptions(int width, int height, const char* name) {
 	_windowWidth *= 2;
 	_windowHeight *= 2;
 #endif
-	_windowName = name;
+	if (_windowName) {
+		SDL_free(_windowName);
+		_windowName = NULL;
+	}
+	_windowName = strdup(name);
 	if (_window) {
 		onWindowResize();
 	}
@@ -81,7 +85,6 @@ void SetScalingOptions(int worldWidth, int worldHeight) {
 }
 
 static void onWindowResize(void) {
-	// TODO Cache all window information, this should be updated if the window size changes, currently it doesn't ever.
 	sgLogDebug("Setting window size %d, %d", _windowWidth, _windowHeight);
 	if (!SDL_SetWindowSize(_window, _windowWidth, _windowHeight)) {
 		sgLogError("Could not set window size, %s", SDL_GetError());

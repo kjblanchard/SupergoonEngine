@@ -196,11 +196,6 @@ void UnloadAllTextures(void) {
 
 void initializeGraphicsSystem(void) {
 	RESIZE_ARRAY(_textureCache, _numTexturesInCache, _textureCacheSize, TextureCacheItem);
-	// TODO not sure why we ever had this.
-	// int result = SDL_SetRenderDrawBlendMode(_renderer, SDL_BLENDMODE_BLEND);
-	// if (!result) {
-	// 	sgLogWarn("Could not set blendmode..");
-	// }
 }
 
 void shutdownGraphicsSystem(void) {

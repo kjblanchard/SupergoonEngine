@@ -71,10 +71,12 @@ local function CreateImageAnimator(name, rect, parentPanel, filename, srcRect, t
     return animData
 end
 
-local function Create9SliceImage(name, rect, parentPanel, filename, color)
+local function Create9SliceImage(name, rect, parentPanel, filename, color, xsize, ysize)
+    local x = xsize or 8
+    local y = ysize or 9
     rect = normalizeRect(rect)
     color = normalizeColorRect(color)
-    return cUI.Create9SliceImage(name, rect, parentPanel, filename, color)
+    return cUI.Create9SliceImage(name, rect, parentPanel, filename, color, x, y)
 end
 
 local function CreateText(name, rect, parentPanel, text, fontName, fontSize, centerX, centerY, wordwrap, color)

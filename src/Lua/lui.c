@@ -1,4 +1,3 @@
-// TODO this shouldn't be here
 #include <SDL3/SDL.h>
 #include <Supergoon/Animation/animator.h>
 #include <Supergoon/UI/ui.h>
@@ -117,7 +116,7 @@ static int createImageAnimator(lua_State* L) {
 
 static int create9SliceImage(lua_State* L) {
 	// args - name, loc table, parent userdata, filename, alpha
-	if (!LuaCheckFunctionCallParamsAndTypes(L, 5, LuaFunctionParameterTypeString, LuaFunctionParameterTypeTable, LuaFunctionParameterTypePass, LuaFunctionParameterTypeString, LuaFunctionParameterTypeTable)) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 7, LuaFunctionParameterTypeString, LuaFunctionParameterTypeTable, LuaFunctionParameterTypePass, LuaFunctionParameterTypeString, LuaFunctionParameterTypeTable, LuaFunctionParameterTypeInt, LuaFunctionParameterTypeInt)) {
 		LuaPushNil(L);
 		return 1;
 	}
@@ -143,10 +142,8 @@ static int create9SliceImage(lua_State* L) {
 	ClearRenderTargetTexture(renderTargetTexture, &(sgColor){r, g, b, a});
 	renderTargetImageData->SrcRect = (RectangleF){0, 0, obj->Location.w, obj->Location.h};
 	// renderTargetImageData->SrcRect = (RectangleF){0, 0, nineSliceImageW, nineSliceImageH};
-	// ClearRenderTargetTexture likely not needed
-	// TODO this should be param, as this is the size of the 9 slices
-	float sizeX = 8;
-	float sizeY = 9;
+	float sizeX = LuaGetFloati(L, 6);
+	float sizeY = LuaGetFloati(L, 7);
 	// / Draw the corners
 	// tl
 	RectangleF srcRect = {0, 0, sizeX, sizeY};
