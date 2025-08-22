@@ -7,12 +7,16 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#define MAX_NUM_ANIM_QUEUE 3
 typedef struct Animator {
 	char* Name;
 	char* Filename;
 	int CurrentFrame;
 	int NextFrame;
 	unsigned int CurrentAnimNum;
+	// Allows for animations to play consecutively when they finish.
+	int NextAnimNum[MAX_NUM_ANIM_QUEUE];
+	int NextAnimLoops[MAX_NUM_ANIM_QUEUE];
 	float CurrentFrameTime;
 	bool Reverse;
 	int Loops;

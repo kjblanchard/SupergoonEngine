@@ -375,7 +375,7 @@ static int getUIObjectSize(lua_State* L) {
 }
 
 static int playUIAnimation(lua_State* L) {
-	if (!LuaCheckFunctionCallParamsAndTypes(L, 2, LuaFUnctionParameterTypeUserdata, LuaFunctionParameterTypeString)) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 3, LuaFUnctionParameterTypeUserdata, LuaFunctionParameterTypeString, LuaFunctionParameterTypeInt)) {
 		sgLogWarn("Bad params sent to play animation");
 	}
 	UIObject* object = LuaGetLightUserdatai(L, 1);
@@ -388,7 +388,7 @@ static int playUIAnimation(lua_State* L) {
 		sgLogWarn("Bad anim data in uiobject");
 		return 0;
 	}
-	PlayAnimation(animData->AnimatorHandle, LuaGetStringi(L, 2));
+	PlayAnimation(animData->AnimatorHandle, LuaGetStringi(L, 2), LuaGetIntFromStacki(L, 3));
 	return 0;
 }
 

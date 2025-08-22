@@ -235,8 +235,9 @@ end
 ---Play animation of UI object
 ---@param animData userdata the ui object ptr
 ---@param animName string the anim name
-function UI.PlayAnimation(animData, animName)
-    cUI.PlayAnimation(animData, animName)
+function UI.PlayAnimation(animData, animName, loops)
+    loops = loops or -1
+    cUI.PlayAnimation(animData, animName, loops)
 end
 
 function UI.UpdateNumLettersForText(textData, numLetters)

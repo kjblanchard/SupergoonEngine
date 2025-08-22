@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <stdio.h>
 
+#define NO_NEXT_ANIM -1
 AnimationDataArray _animationData;
 AnimatorArray _animators;
 
@@ -46,7 +47,6 @@ static AnimationData* findFreeAnimationData(void) {
 	}
 	RESIZE_ARRAY(_animationData.AnimationArray, _animationData.Count, _animationData.Size, AnimationDataRef);
 	AnimationDataRef* ref = &_animationData.AnimationArray[_animationData.Count];
-	// memset(ref, 0, sizeof(AnimationDataRef));
 	ref->RefCount = 1;
 	++_animationData.Count;
 	return &ref->Data;
@@ -132,19 +132,33 @@ static void loadAsepriteData(AnimationData* animationData) {
 	LuaPopStack(_luaState, 1);
 }
 
+static void setNewAnim(Animator* anim) {
+	CLEAR_STRUCT(anim);
+	for (size_t j = 0; j < MAX_NUM_ANIM_QUEUE; j++) {
+		anim->NextAnimNum[j] = NO_NEXT_ANIM;
+		anim->NextAnimLoops[j] = NO_NEXT_ANIM;
+	}
+}
+
 static AnimatorHandle getFreeAnimator(void) {
 	for (size_t i = 0; i < _animators.Size; i++) {
 		if (!_animators.Animators[i].Data) {
-			CLEAR_STRUCT(&_animators.Animators[i]);
-			// memset(&_animators.Animators[i], 0, sizeof(Animator));
+			setNewAnim(&_animators.Animators[i]);
 			if (i >= _animators.Count) {
 				++_animators.Count;
 			}
 			return i;
 		}
 	}
+	int currentSize = _animators.Size;
 	RESIZE_ARRAY(_animators.Animators, _animators.Count, _animators.Size, Animator);
-	// memset(&_animators.Animators[_animators.Count], 0, sizeof(Animator));
+	// Set new items to have no anim for the next anim.
+	if (currentSize < _animators.Size) {
+		for (size_t i = currentSize; i < _animators.Size; i++) {
+			Animator* anim = &_animators.Animators[i];
+			setNewAnim(anim);
+		}
+	}
 	return _animators.Count++;
 }
 
@@ -172,7 +186,27 @@ static void updateAnimatorRect(Animator* animator) {
 	animator->Sprite->TextureSourceRect.w = animator->Data->frames[animator->CurrentFrame].frame.w;
 }
 
-void PlayAnimation(AnimatorHandle animator, const char* anim) {
+static void playAnimation(Animator* anim, int animNum, int loops) {
+	anim->CurrentAnimNum = animNum;
+	anim->CurrentFrame = anim->Data->meta.frameTags[animNum].from;
+	anim->CurrentFrameTime = 0;
+	anim->Loops = loops;
+	// TODO speed is always 1.0 right now, not implemented
+	anim->AnimationSpeed = 1.0f;
+	updateAnimatorRect(anim);
+}
+
+static int findAnimationNumberByName(Animator* anim, const char* animName) {
+	for (size_t i = 0; i < anim->Data->meta.frameTagCount; i++) {
+		if (strcmp(anim->Data->meta.frameTags[i].name, animName) == 0) {
+			return i;
+		}
+	}
+	sgLogWarn("Could not find animation with name %s", animName);
+	return -1;
+}
+
+void PlayAnimation(AnimatorHandle animator, const char* anim, int loops) {
 	if (animator > _animators.Count) {
 		sgLogWarn("Passed animator handle greater than count, returning!");
 		return;
@@ -181,18 +215,11 @@ void PlayAnimation(AnimatorHandle animator, const char* anim) {
 	if (!animatorPtr || !animatorPtr->Data) {
 		sgLogWarn("Could not play animation, bad animator");
 	}
-	for (size_t i = 0; i < animatorPtr->Data->meta.frameTagCount; i++) {
-		if (strcmp(animatorPtr->Data->meta.frameTags[i].name, anim) == 0) {
-			animatorPtr->CurrentAnimNum = i;
-			animatorPtr->CurrentFrame = animatorPtr->Data->meta.frameTags[i].from;
-			animatorPtr->CurrentFrameTime = 0;
-			// TODO the loops are always -1?  not implemented
-			animatorPtr->Loops = -1;
-			// TODO speed is always 1.0 right now, not implemented
-			animatorPtr->AnimationSpeed = 1.0f;
-			updateAnimatorRect(animatorPtr);
-		}
+	int animToPlay = findAnimationNumberByName(animatorPtr, anim);
+	if (animToPlay == -1) {
+		return;
 	}
+	playAnimation(animatorPtr, animToPlay, loops);
 }
 
 void DestroyAnimator(AnimatorHandle animator) {
@@ -203,22 +230,27 @@ void DestroyAnimator(AnimatorHandle animator) {
 	Animator* anim = &_animators.Animators[animator];
 	assert(anim && "No anim");
 	SDL_free(anim->Name);
+	anim->Name = NULL;
 	SDL_free(anim->Filename);
+	anim->Filename = NULL;
 	DestroySprite(anim->Sprite);
 	removeAnimationDataRef(anim->Data);
 	anim->Data = NULL;
+	for (size_t i = 0; i < MAX_NUM_ANIM_QUEUE; i++) {
+		anim->NextAnimNum[i] = NO_NEXT_ANIM;
+		anim->NextAnimLoops[i] = -1;
+	}
 }
 
 void updateAnimator(Animator* animator) {
 	if (animator->Loops == 0 || animator->AnimationSpeed == 0.0f) {
 		return;
 	}
-	// bool justFinished = false;
 	animator->CurrentFrameTime += DeltaTimeMilliseconds * animator->AnimationSpeed;
 	Frame* frameData = &animator->Data->frames[animator->CurrentFrame];
 	FrameTag* animData = &animator->Data->meta.frameTags[animator->CurrentAnimNum];
 	// bool progressed = false;
-	//   // use a while loop incase the deltat time is long
+	//   // use a while loop incase the delta time is long
 	while (animator->CurrentFrameTime >= frameData->duration) {
 		// progressed = true;
 		animator->CurrentFrameTime -= frameData->duration;
@@ -230,7 +262,6 @@ void updateAnimator(Animator* animator) {
 						--animator->Loops;
 					}
 					animator->NextFrame = animData->from + 1;
-					// justFinished = true;
 					animator->Reverse = false;
 				}
 			} else {
@@ -240,7 +271,6 @@ void updateAnimator(Animator* animator) {
 						--animator->Loops;
 					}
 					animator->NextFrame = animData->to - 1;
-					// justFinished = true;
 					animator->Reverse = true;
 				}
 			}
@@ -251,32 +281,21 @@ void updateAnimator(Animator* animator) {
 					--animator->Loops;
 				}
 				animator->NextFrame = animData->from;
-				// justFinished = true;
 			}
 		} else {
 			sgLogWarn("Animator trying to handle a direction not implemented for %s", animData->name);
-			// handle other directions
-			//     } else {
-			//       if (animData.direction == "forward") {
-			//         // If the next frame is longer than the end, loop to the beginning, else increment it
-			//         _nextFrame = (_frame + 1 > animData.to) ? animData.from : _frame + 1;
-			//         // If this would cause us to loop to the beginning, we should set just finished and decrement repeats
-			//         if (_nextFrame == animData.from) {
-			//           _repeats = _repeats == -1 ? -1 : _repeats - 1;
-			//           justFinished = true;
-			//         }
-			//       } else if (animData.direction == "reverse") {
-			//         _nextFrame = (_frame - 1 < animData.from) ? animData.to : _frame - 1;
-			//         if (_nextFrame == animData.to) {
-			//           _repeats = _repeats == -1 ? -1 : _repeats - 1;
-			//           justFinished = true;
-			//         }
-			//       }
-			//     }
 		}
-		//     // We should only update the rect, if we have any repeats left.
-		//     if (_repeats == 0) {
 		if (animator->Loops == 0) {
+			if (animator->NextAnimNum[0] != NO_NEXT_ANIM) {
+				playAnimation(animator, animator->NextAnimNum[0], animator->NextAnimLoops[0]);
+				for (size_t i = 0; i < MAX_NUM_ANIM_QUEUE - 1; i++) {
+					animator->NextAnimNum[i] = animator->NextAnimNum[i + 1];
+					animator->NextAnimLoops[i] = animator->NextAnimLoops[i + 1];
+					if (animator->NextAnimNum[i + 1] == NO_NEXT_ANIM) {
+						break;
+					}
+				}
+			}
 			return;
 		}
 		animator->CurrentFrame = animator->NextFrame;
@@ -293,8 +312,25 @@ void UpdateAnimators(void) {
 }
 
 void SetAnimatorAnimationSpeed(AnimatorHandle animator, float speed) {
-	// if (speed != 0) {
-	// 	sgLogInfo("Setting animator animation speed to %f", speed);
-	// }
 	_animators.Animators[animator].AnimationSpeed = speed;
+}
+
+void AddAnimationToAnimatorQueue(AnimatorHandle animator, const char* animName, int loops) {
+	Animator* anim = &_animators.Animators[animator];
+	if (!anim) {
+		return;
+	}
+	int animNum = findAnimationNumberByName(anim, animName);
+	if (animNum == -1) {
+		return;
+	}
+	for (size_t i = 0; i < MAX_NUM_ANIM_QUEUE; i++) {
+		if (anim->NextAnimNum[i] != -1) {
+			continue;
+		}
+		anim->NextAnimNum[i] = animNum;
+		anim->NextAnimLoops[i] = loops;
+		return;
+	}
+	sgLogWarn("Could not add animation %s to animator queue of %s, because it is full!", animName, anim->Name);
 }

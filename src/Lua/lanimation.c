@@ -18,10 +18,18 @@ static int newAnimator(lua_State* L) {
 }
 
 static int playAnimation(lua_State* L) {
-	if (!LuaCheckFunctionCallParamsAndTypes(_luaState, 2, LuaFunctionParameterTypeInt, LuaFunctionParameterTypeString)) {
+	if (!LuaCheckFunctionCallParamsAndTypes(_luaState, 3, LuaFunctionParameterTypeInt, LuaFunctionParameterTypeString, LuaFunctionParameterTypeInt)) {
 		return 0;
 	}
-	PlayAnimation(LuaGetIntFromStacki(L, 1), LuaGetStringi(L, 2));
+	PlayAnimation(LuaGetIntFromStacki(L, 1), LuaGetStringi(L, 2), LuaGetIntFromStacki(L, 3));
+	return 0;
+}
+
+static int addAnimQueue(lua_State* L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(_luaState, 3, LuaFunctionParameterTypeInt, LuaFunctionParameterTypeString, LuaFunctionParameterTypeInt)) {
+		return 0;
+	}
+	AddAnimationToAnimatorQueue(LuaGetIntFromStacki(L, 1), LuaGetStringi(L, 2), LuaGetIntFromStacki(L, 3));
 	return 0;
 }
 
@@ -45,6 +53,7 @@ static const luaL_Reg animationLib[] = {
 	{"CreateAnimator", newAnimator},
 	{"PlayAnimation", playAnimation},
 	{"SetAnimatorSpeed", setAnimatorSpeed},
+	{"AddAnimationToAnimatorQueue", addAnimQueue},
 	{"DestroyAnimator", destroyAnimator},
 	{NULL, NULL}};
 

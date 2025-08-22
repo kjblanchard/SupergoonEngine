@@ -15,9 +15,10 @@ extern "C" {
 typedef unsigned int AnimatorHandle;
 
 AnimatorHandle CreateAnimator(const char* filename);
-void PlayAnimation(AnimatorHandle animator, const char* anim);
+void PlayAnimation(AnimatorHandle animator, const char* anim, int loops);
 // 1.0 is regular, 0.0 is none, etc
 void SetAnimatorAnimationSpeed(AnimatorHandle animator, float speed);
+void AddAnimationToAnimatorQueue(AnimatorHandle animator, const char* animName, int loops);
 void DestroyAnimator(AnimatorHandle animator);
 
 #ifdef __cplusplus

@@ -262,6 +262,7 @@ function engine.Audio.PlaySfxOneShot(soundName, volume)
 end
 
 function engine.Audio.PlayBGM(soundName, volume)
+    volume = volume or 1.0
     cAudio.PlayBgm(soundName, volume, 0)
 end
 
@@ -414,8 +415,14 @@ function engine.Animation.CreateAnimator(name, spritePtr)
     return cAnimation.CreateAnimator(name, spritePtr)
 end
 
-function engine.Animation.PlayAnimation(animator, animationName)
-    return cAnimation.PlayAnimation(animator, animationName)
+function engine.Animation.PlayAnimation(animator, animationName, loops)
+    loops = loops or -1
+    return cAnimation.PlayAnimation(animator, animationName, loops)
+end
+
+function engine.Animation.AddAnimationToQueue(animator, animationName, loops)
+    loops = loops or -1
+    return cAnimation.AddAnimationToAnimatorQueue(animator, animationName, loops)
 end
 
 ---comment

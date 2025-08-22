@@ -36,7 +36,6 @@ static int setScalingOptions(lua_State* L) {
 	int logX = LuaGetIntFromStacki(L, 1);
 	int logY = LuaGetIntFromStacki(L, 2);
 	SetScalingOptions(logX, logY);
-	// TODO, prolly should be it's own function too.
 	SetCameraSize(logX, logY);
 	return 0;
 }
