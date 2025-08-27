@@ -6,8 +6,8 @@
 #include <SupergoonEngine/graphics.h>
 #include <SupergoonEngine/tools.h>
 #include <assert.h>
+#include <ctype.h>
 #include <ft2build.h>
-#include <math.h>
 #include FT_FREETYPE_H
 // TODO set this in debug differently.
 // This includes different sizes, probably in debug this should be much higher.
@@ -43,13 +43,9 @@ void SetTextColor(UIObject* uiobject, int r, int g, int b, int a) {
 static char* getFontnameFromCurrentFont(void) {
 	size_t len = strlen(_currentFont->FontName);
 	size_t i = len;
-
-	// Walk backward until we hit a non-digit
 	while (i > 0 && isdigit((unsigned char)_currentFont->FontName[i - 1])) {
 		i--;
 	}
-
-	// Now i is the position where the number starts — we cut the string here
 	char* base = malloc(i + 1);
 	if (!base) return NULL;
 

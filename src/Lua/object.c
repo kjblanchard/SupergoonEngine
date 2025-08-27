@@ -288,7 +288,7 @@ static int setType(lua_State* L) {
 static int setName(lua_State* L) {
 #ifndef imgui
 	return 0;
-#endif
+#else
 	if (!LuaCheckFunctionCallParamsAndTypes(L, 2, LuaFUnctionParameterTypeUserdata, LuaFunctionParameterTypeString)) {
 		sgLogWarn("Bad args trying to set go type from lua");
 		LuaPushNil(L);
@@ -301,6 +301,7 @@ static int setName(lua_State* L) {
 		return 1;
 	}
 	go->Name = LuaAllocateStringStack(L, 2);
+#endif
 	return 0;
 }
 

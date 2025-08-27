@@ -190,46 +190,11 @@ void ShowUIDebugWindow() {
 	auto window_flags = GetDefaultWindowFlags();
 	bool p_open;
 	if (!ImGui::Begin("UI", &p_open, window_flags)) {
-		// Early out if the window is collapsed, as an optimization.
 		ImGui::End();
 		return;
 	}
-
 	if (ImGui::CollapsingHeader("UI Elements")) {
 		DrawUIObjects(_rootUIObject);
 	}
-
-	// if (ImGui::CollapsingHeader("UI Animators")) {
-	// 	// We will need to loop over all panels animators
-	// 	for (auto &value : UI::UIInstance->Children) {
-	// 		for (auto &&animator : value->Animators) {
-	// 			if (ImGui::TreeNode(animator->Name.c_str())) {
-	// 				auto name = std::string("Play ##") + animator->Name;
-	// 				auto valueText = animator->IsPlaying() ? "True" : "False";
-	// 				// auto playingText = std::string("Is Playing ") + valueText + "## " + animator->Name;
-	// 				auto playingText = std::string("Is Playing ") + valueText;
-	// 				ImGui::Text("%s", playingText.c_str());
-	// 				ImGui::SameLine();
-	// 				auto percentText = std::string("Percent: ") + std::to_string(animator->SequenceToPlay->Percent());
-	// 				ImGui::Text("%s", percentText.c_str());
-
-	// 				if (ImGui::Button(name.c_str())) {
-	// 					animator->Play();
-	// 				}
-	// 				ImGui::SameLine();
-	// 				auto stop = std::string("Stop ##") + animator->Name;
-	// 				if (ImGui::Button(stop.c_str())) {
-	// 					animator->Stop();
-	// 				}
-	// 				ImGui::SameLine();
-	// 				auto pause = std::string("Pause ##") + animator->Name;
-	// 				if (ImGui::Button(pause.c_str())) {
-	// 					animator->Pause();
-	// 				}
-	// 				ImGui::TreePop();
-	// 			}
-	// 		}
-	// 	}
-	// }
 	ImGui::End();
 }

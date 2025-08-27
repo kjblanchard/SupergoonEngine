@@ -16,7 +16,6 @@ end
 function engine.Coroutine.update()
     for i = #engine.Coroutine.tasks, 1, -1 do
         local task = engine.Coroutine.tasks[i]
-        engine.Log.LogDebug(("Task %s delay %.2f, co %s"):format(i, task.delay, coroutine.status(task.co)))
         task.delay = task.delay - gamestate.DeltaTimeSeconds
 
 
@@ -334,7 +333,7 @@ function engine.Scene.LoadSceneCo(mapname, uiname, bgm, volume, fadeInTimeSec, f
             engine.Log.LogDebug("Loading " .. name)
             local success, testui = pcall(require, name)
             if success then
-                ui.CreatePanelFromTable(testui)
+                ui.CreateUIFromUIFile(testui)
             else
                 engine.Log.LogError("Failed to load UI: " .. name .. " — " .. tostring(testui))
             end

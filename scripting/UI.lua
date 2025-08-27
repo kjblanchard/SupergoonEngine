@@ -6,12 +6,30 @@ UI.lookup = {}
 local font = ""
 local fontSize = 0
 
+---@class UIObject
+---@field data lightuserdata     -- Ptr to the C uiobject pointer
+---@field userdata lightuserdata     -- Ptr to the C uiobject pointer
+---@field visible boolean     -- Ptr to the C uiobject pointer
+---@field key string     -- Ptr to the C uiobject pointer
+---@field doNotDestroy   boolean -- If this object is set to be donotdestroy, which affects all children as well.
+---@field children   table{UIObject} -- Children of this uiobject
+
 local function makeKey(parentKey, name)
     if parentKey == nil or parentKey == "" then
         return name
     else
         return parentKey .. "." .. name
     end
+end
+local function setupUIObject(uiObjectPtr, tableData, parentTable)
+    local doNotDestroy = tableData.doNotDestroy or false
+    local parentKey = (parentTable and parentTable.key) or ""
+    local key = makeKey(parentKey, tableData.name)
+    local objectTable = { data = uiObjectPtr, children = {}, doNotDestroy = doNotDestroy, key = key }
+    if parentTable then parentTable[tableData.name] = objectTable end
+    if tableData.visible ~= nil and tableData.visible ~= true then UI.SetObjectVisible(objectTable.data, false) end
+    UI.lookup[key] = objectTable
+    return objectTable
 end
 local function normalizeArrayTableWithKeys(rect, keys)
     if rect and #rect == #keys and rect[keys[1]] == nil then
@@ -116,18 +134,27 @@ function UI.UpdateProgressBarPercent(ptr, percent)
     return cUI.UpdateProgressBarPercent(ptr, percent)
 end
 
-local function CreateUIObjectAndChildren(objTable, parentPtr, parentTable, parentKey)
+---The Thing, make it
+---@param objTable table
+---@param parentTable UIObject parent ui object
+---@return unknown|nil
+local function CreateUIObjectAndChildren(objTable, parentTable)
     if objTable.isMobile and not engine.IsMobile() then return end
-    -- TODO we should validate these so it doesn't break
-    local node = { data = nil, children = {} }
+    if not objTable.name then
+        engine.Log.LogWarn("No table name for this table, making name be parent ptr")
+        objTable.name = tostring(parentTable.data)
+    end
+    local ptr = nil
+
     if objTable.type == "image" then
-        node.data = CreateImage(objTable.name, objTable.location, parentPtr, objTable.imageName, objTable.srcRect,
+        ptr = CreateImage(objTable.name, objTable.location, parentTable.data, objTable.imageName, objTable.srcRect,
             objTable.transparency)
     elseif objTable.type == "imageAnimator" then
-        node.data = CreateImageAnimator(objTable.name, objTable.location, parentPtr, objTable.imageName, objTable
+        ptr = CreateImageAnimator(objTable.name, objTable.location, parentTable.data, objTable.imageName, objTable
             .srcRect, objTable.transparency, objTable.defaultAnim)
     elseif objTable.type == "9slice" then
-        node.data = Create9SliceImage(objTable.name, objTable.location, parentPtr, objTable.imageName, objTable.color)
+        ptr = Create9SliceImage(objTable.name, objTable.location, parentTable.data, objTable.imageName,
+            objTable.color)
     elseif objTable.type == "text" then
         local thisFont = font
         local thisSize = fontSize
@@ -143,36 +170,31 @@ local function CreateUIObjectAndChildren(objTable, parentPtr, parentTable, paren
             thisSize = objTable.size
             fontSize = thisSize
         end
-        node.data = CreateText(objTable.name, objTable.location, parentPtr, objTable.text, thisFont, thisSize,
+        ptr = CreateText(objTable.name, objTable.location, parentTable.data, objTable.text, thisFont, thisSize,
             objTable.centeredX, objTable.centeredY, objTable.wordWrap, objTable.color)
     elseif objTable.type == "rect" then
-        node.data = CreateRect(objTable.name, objTable.location, parentPtr, objTable.color)
+        ptr = CreateRect(objTable.name, objTable.location, parentTable.data, objTable.color)
     elseif objTable.type == "progressBar" then
-        node.data = CreateProgressBar(objTable.name, objTable.location, parentPtr, objTable.color)
+        ptr = CreateProgressBar(objTable.name, objTable.location, parentTable.data, objTable.color)
     elseif objTable.type == "hlg" then
-        node.data = CreateHLG(objTable.name, objTable.location, parentPtr, objTable.spacing)
+        ptr = CreateHLG(objTable.name, objTable.location, parentTable.data, objTable.spacing)
     elseif objTable.type == "vlg" then
-        node.data = CreateVLG(objTable.name, objTable.location, parentPtr, objTable.spacing)
+        ptr = CreateVLG(objTable.name, objTable.location, parentTable.data, objTable.spacing)
     elseif objTable.type == "button" then
-        node.data = CreateButton(objTable.name, objTable.location, parentPtr, objTable.pressedFunc, objTable.hoverFunc,
+        ptr = CreateButton(objTable.name, objTable.location, parentTable.data, objTable.pressedFunc,
+            objTable.hoverFunc,
             objTable.pressOnRelease)
     elseif objTable.type == "panel" then
-        node.data = CreatePanel(objTable.name, objTable.location, parentPtr)
+        ptr = CreatePanel(objTable.name, objTable.location, parentTable.data)
     end
-    if objTable.userdata ~= nil then node["userdata"] = objTable.userdata end
-    if objTable.visible ~= nil and objTable.visible ~= true then UI.SetObjectVisible(node.data, false) end
-    parentTable[objTable.name] = node
-
-    local key = makeKey(parentKey, objTable.name)
-    UI.lookup[key] = node
-
+    local node = setupUIObject(ptr, objTable, parentTable)
 
     if objTable.children then
         for _, child in ipairs(objTable.children) do
-            CreateUIObjectAndChildren(child, node.data, node.children, key)
+            local newChild = CreateUIObjectAndChildren(child, node)
         end
     end
-    return node.data
+    return ptr
 end
 local function destroyLuaDataForPanelRecursive(panel)
     if not panel or panel.doNotDestroy then
@@ -244,19 +266,19 @@ function UI.UpdateNumLettersForText(textData, numLetters)
     cUI.TextSetNumLetters(textData, numLetters)
 end
 
-function UI.CreatePanelFromTable(table)
-    -- Handle creating this UI element only on specific platforms.
+function UI.CreateUIFromUIFile(table)
     if table.isMobile and not engine.IsMobile() then return end
     if UI.UIInstance[table.name] ~= nil then
-        engine.Log.LogWarn("Trying to create a panel that already exists in root, not creating a new one!")
+        engine.Log.LogDebug(string.format("Trying to create a panel that already exists in root, not creating %s !",
+            table.name))
         return
     end
-    -- Top level is always a panel
-    local doNotDestroy = table.doNotDestroy or false
-    local root = { data = CreatePanel(table.name, { 0, 0, 0, 0 }, nil), children = {}, doNotDestroy = doNotDestroy }
-    UI.UIInstance[table.name] = root
-    for _, child in ipairs(table.children) do
-        CreateUIObjectAndChildren(child, root.data, root.children, "")
+    local ptr = CreatePanel(table.name, { 0, 0, 0, 0 }, nil)
+    local newObjPtrTable = setupUIObject(ptr, table, nil)
+    UI.UIInstance[table.name] = newObjPtrTable
+    for _, childData in ipairs(table.children) do
+        -- CreateUIObjectAndChildren(childData, newObjPtrTable.data, newObjPtrTable.children, "")
+        CreateUIObjectAndChildren(childData, newObjPtrTable)
     end
     if table.startFunc ~= nil then
         table.startFunc()
