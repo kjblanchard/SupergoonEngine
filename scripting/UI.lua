@@ -66,6 +66,10 @@ function UI.SetObjectVisible(objectPtr, isVisible)
     return cUI.SetObjectVisible(objectPtr, isVisible)
 end
 
+function UI.SetObjectActive(objectPtr, isActive)
+    return cUI.SetObjectActive(objectPtr, isActive)
+end
+
 local function CreatePanel(name, rect, parentPanel)
     rect = normalizeRect(rect)
     return cUI.CreatePanel(name, rect, parentPanel)
@@ -284,6 +288,12 @@ function UI.CreateUIFromUIFile(table)
         table.startFunc()
     end
     return UI.UIInstance[table.name]
+end
+
+function UI.CreateButtonAtRuntime(name, dstRect, parentTable, pressFunc, hoverFunc, pressOnRelease)
+    local buttonPtr = CreateButton(name, dstRect, parentTable, pressFunc, hoverFunc, pressOnRelease)
+    setupUIObject(buttonPtr, { name = name }, parentTable)
+    return buttonPtr
 end
 
 return UI
