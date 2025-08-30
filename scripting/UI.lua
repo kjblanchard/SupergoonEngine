@@ -291,7 +291,7 @@ function UI.CreateUIFromUIFile(table)
 end
 
 function UI.CreateButtonAtRuntime(name, dstRect, parentTable, pressFunc, hoverFunc, pressOnRelease)
-    local buttonPtr = CreateButton(name, dstRect, parentTable, pressFunc, hoverFunc, pressOnRelease)
+    local buttonPtr = CreateButton(name, dstRect, parentTable.data, pressFunc, hoverFunc, pressOnRelease)
     setupUIObject(buttonPtr, { name = name }, parentTable)
     return buttonPtr
 end
