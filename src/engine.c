@@ -7,18 +7,20 @@
 #include <Supergoon/events.h>
 #include <Supergoon/log.h>
 #include <Supergoon/lua.h>
-#include <Supergoon/sprite.h>
 #include <Supergoon/state.h>
 #include <Supergoon/window.h>
-#include <SupergoonEngine/Animation/animator.h>
 #include <SupergoonEngine/Lua/engine.h>
 #include <SupergoonEngine/Lua/scripting.h>
 #include <SupergoonEngine/camera.h>
-#include <SupergoonEngine/gameobject.h>
 #include <SupergoonEngine/graphics.h>
+#ifndef tui
+#include <Supergoon/sprite.h>
+#include <SupergoonEngine/Animation/animator.h>
+#include <SupergoonEngine/gameobject.h>
 #include <SupergoonEngine/map.h>
 #include <SupergoonEngine/sprite.h>
 #include <SupergoonEngine/ui.h>
+#endif
 #include <SupergoonEngine/window.h>
 #ifdef imgui
 #include <Supergoon/Debug/ImGui.hpp>
@@ -56,7 +58,12 @@ static void Quit(void);
 
 static bool Start(void) {
 	sgLogWarn("Starting the things");
-	if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMEPAD)) {
+	int options = SDL_INIT_AUDIO;
+#ifndef tui
+	options |= SDL_INIT_VIDEO | SDL_INIT_GAMEPAD;
+#endif
+
+	if (!SDL_Init(options)) {
 		sgLogError("Could not init sdl, %s", SDL_GetError());
 		return false;
 	}
@@ -69,7 +76,9 @@ static bool Start(void) {
 	CreateWindow();
 	initializeAudio();
 	initializeTweenEngine();
+#ifndef tui
 	InitializeUISystem();
+#endif
 	RegisterAllLuaFunctions();
 // Try to normalize the initial delay of loading everything
 #ifndef __EMSCRIPTEN__
@@ -122,10 +131,14 @@ static void handleFramerate(Uint64 *now) {
 
 static void draw(void) {
 	DrawStart();
+#ifndef tui
 	drawCurrentMap();
 	DrawSpriteSystem();
+#endif
 	if (_drawFunc) _drawFunc();
+#ifndef tui
 	DrawUISystem();
+#endif
 	DrawEnd();
 }
 
@@ -153,17 +166,27 @@ static void Update(void) {
 	// Update
 	UpdateKeyboardSystem();
 	if (_inputFunc) _inputFunc();
+#ifndef tui
 	UpdateUIInputSystem();
+#endif
 	Ticks += 1;
 	updateTweens();
+#ifndef tui
 	UpdateAnimators();
+#endif
 	PushGamestateToLua();
+#ifndef tui
 	GameObjectSystemUpdate();
+#endif
 	if (_updateFunc) _updateFunc();
+#ifndef tui
 	UpdateUISystem();
+#endif
 	geUpdateControllerLastFrame();
+#ifndef tui
 	updateMouseSystem();
 	updateTouchSystem();
+#endif
 	UpdateCamera();
 	draw();
 	handleFramerate(&now);
@@ -171,15 +194,19 @@ static void Update(void) {
 }
 
 static void Quit(void) {
+#ifndef tui
 	shutdownMapSystem();
 	ShutdownSpriteSystem();
+#endif
 	sgCloseDebugLogFile();
 	ShutdownJoystickSystem();
 	sgCloseLua();
 	closeAudio();
 	shutdownGraphicsSystem();
 	CloseWindow();
+#ifndef tui
 	ShutdownUISystem();
+#endif
 	shutdownEngineFilesystem();
 	SDL_Quit();
 }

@@ -10,17 +10,23 @@
 #include <SupergoonEngine/Lua/scripting.h>
 #include <SupergoonEngine/Lua/sprite.h>
 #include <SupergoonEngine/Lua/ui.h>
+#ifdef tui
+#include <SupergoonEngine/Lua/tui.h>
+#endif
 void RegisterAllLuaFunctions(void) {
-	// should be consolidated
+// should be consolidated
+#ifndef tui
 	RegisterLuaUIFunctions();
-	RegisterLuaLogFunctions();
-	RegisterLuaAudioFunctions();
 	RegisterLuaObjectFunctions();
 	RegisterLuaSceneFuncs();
-	RegisterLuaEngineFunctions();
 	RegisterLuaEffectsFunctions();
-	RegisterLuaInputFunctions();
 	RegisterLuaSpriteFunctions();
 	RegisterLuaAnimationFunctions();
+#endif
+	RegisterLuaLogFunctions();
+	RegisterLuaAudioFunctions();
+	RegisterLuaEngineFunctions();
+	RegisterLuaInputFunctions();
 	RegisterLuaCameraFunctions();
+	RegisterLuaTuiFunctions();
 }

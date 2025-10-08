@@ -385,6 +385,17 @@ void LuaRegistrySetSubTableEntry(LuaState L, const char* registryKey, int subKey
 	lua_settable(L, -3);							  // registry[subKey] = value
 	lua_pop(L, 1);									  // pop registry table
 }
+
+int LuaCreateRefInLuaRegistry(LuaState L, int i) {
+	lua_pushvalue(L, i);
+	int ref = luaL_ref(L, LUA_REGISTRYINDEX);
+	return ref;
+}
+
+void LuaPushRefValueInLuaRegistry(LuaState L, int refInt) {
+	lua_rawgeti(L, LUA_REGISTRYINDEX, refInt);
+}
+
 // Functions
 void LuaGetLuaFuncAtIndex(LuaState L, int index) {
 	lua_rawgeti(L, -1, index);	// get function at index (1 = click, 2 = hover)

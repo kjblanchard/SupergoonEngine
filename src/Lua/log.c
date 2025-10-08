@@ -3,6 +3,29 @@
 #include <lauxlib.h>
 #include <lua.h>
 
+static int _logFuncRef = -1;
+
+static void luaCustomLogFunc(const char* timeString, const char* messageString, int logLevel) {
+	if (_logFuncRef == -1) {
+		return;
+	}
+	LuaPushRefValueInLuaRegistry(_luaState, _logFuncRef);
+	LuaPushString(_luaState, timeString);
+	LuaPushString(_luaState, messageString);
+	LuaPushInt(_luaState, logLevel);
+	RunLuaFunctionOnStack(_luaState, 3);
+}
+
+static int setLogFunc(lua_State* L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 1, LuaFunctionParameterTypeFunction)) {
+		sgLogWarn("Bad set log function params!");
+		return 0;
+	}
+	_logFuncRef = LuaCreateRefInLuaRegistry(L, 1);
+	sgSetDebugFunction(luaCustomLogFunc);
+	return 0;
+}
+
 static int log(lua_State* L) {
 	if (LuaGetStackSize(L) != 2 || !LuaIsString(L, 1) || !LuaIsInt(L, 2)) {
 		sgLogWarn("Bad log function params!");
@@ -31,6 +54,7 @@ static int log(lua_State* L) {
 
 static const luaL_Reg uiLib[] = {
 	{"Log", log},
+	{"SetLogFunc", setLogFunc},
 	{NULL, NULL}};
 
 void RegisterLuaLogFunctions(void) {

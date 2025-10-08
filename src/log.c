@@ -52,8 +52,10 @@ static void Log(sgLogLevel level, const char *thing_to_write) {
 	struct tm *gm_time = gmtime(&current_time);
 	char buf[30];
 	strftime(buf, sizeof(buf), "%m-%d-%H:%M-%S", gm_time);
+#ifndef tui
 	FILE *outStream = level == Log_LError ? stderr : stdout;
 	fprintf(outStream, "%s: %s end\n", buf, thing_to_write);
+#endif
 	if (logFunc) {
 		logFunc(buf, thing_to_write, level);
 	}

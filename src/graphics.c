@@ -15,6 +15,8 @@ size_t _numTexturesInCache = 0;
 size_t _firstCacheHole = 0;
 static size_t _textureCacheSize = 0;
 
+#ifndef tui
+
 static Texture* getTextureFromCache(const char* name) {
 	for (size_t i = 0; i < _numTexturesInCache; i++) {
 		if (_textureCache[i].name && strcmp(name, _textureCache[i].name) == 0) {
@@ -47,6 +49,7 @@ static void addTextureToCache(Texture* texture, const char* name) {
 		++_numTexturesInCache;
 	}
 }
+#endif
 
 static void unloadTexture(int i) {
 	SDL_DestroyTexture(_textureCache[i].Texture);
@@ -57,6 +60,9 @@ static void unloadTexture(int i) {
 }
 
 Texture* loadTextureFromSurface(struct SDL_Surface* surface) {
+#ifdef tui
+	return NULL;
+#else
 	Texture* texture = SDL_CreateTextureFromSurface(_renderer, surface);
 	if (!texture) {
 		sgLogError("Could not create texture from surface %s!", SDL_GetError());
@@ -64,9 +70,13 @@ Texture* loadTextureFromSurface(struct SDL_Surface* surface) {
 	SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST);
 	SDL_DestroySurface(surface);
 	return texture;
+#endif
 }
 
 void ClearRenderTargetTexture(Texture* texture, sgColor* color) {
+#ifdef tui
+	return;
+#else
 	if (!texture || !color) {
 		sgLogError("Null texture or color passed to ClearRenderTargetTexture");
 		return;
@@ -84,9 +94,13 @@ void ClearRenderTargetTexture(Texture* texture, sgColor* color) {
 	};
 	SDL_SetRenderTarget(_renderer, currentRenderTarget);
 	SDL_SetRenderDrawColor(_renderer, currentColor.R, currentColor.G, currentColor.B, currentColor.A);
+#endif
 }
 
 void DrawRect(RectangleF* rect, sgColor* color, int filled) {
+#ifdef tui
+	return;
+#else
 	assert(_renderer && "No renderer, make sure window is created");
 	SDL_SetRenderDrawColor(_renderer, color->R, color->G, color->B, color->A);
 	if (filled) {
@@ -95,9 +109,13 @@ void DrawRect(RectangleF* rect, sgColor* color, int filled) {
 		SDL_RenderRect(_renderer, rect);
 	}
 	SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
+#endif
 }
 
 Texture* CreateRenderTargetTexture(int width, int height, sgColor color) {
+#ifdef tui
+	return NULL;
+#else
 	assert(_renderer && "No renderer, make sure window is created");
 	Texture* image = SDL_CreateTexture(_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, width, height);
 	if (!image) {
@@ -117,9 +135,13 @@ Texture* CreateRenderTargetTexture(int width, int height, sgColor color) {
 	SDL_SetRenderTarget(_renderer, NULL);
 	SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
 	return image;
+#endif
 }
 
 Texture* CreateTextureFromIndexedBMP(const char* filename) {
+#ifdef tui
+	return NULL;
+#else
 	SDL_Texture* texture = getTextureFromCache(filename);
 	if (texture) {
 		return texture;
@@ -144,9 +166,13 @@ Texture* CreateTextureFromIndexedBMP(const char* filename) {
 	}
 	addTextureToCache(texture, filename);
 	return texture;
+#endif
 }
 
 void DrawTextureToRenderTargetTexture(Texture* dst, Texture* src, RectangleF* dstRect, RectangleF* srcRect) {
+#ifdef tui
+	return;
+#else
 	Texture* currentRenderTarget = SDL_GetRenderTarget(_renderer);
 	bool result = SDL_SetRenderTarget(_renderer, dst);
 	if (!result) {
@@ -157,6 +183,7 @@ void DrawTextureToRenderTargetTexture(Texture* dst, Texture* src, RectangleF* ds
 		sgLogError("Bad draw, %s", SDL_GetError());
 	}
 	SDL_SetRenderTarget(_renderer, currentRenderTarget);
+#endif
 }
 
 void UnloadTexture(Texture* texture) {

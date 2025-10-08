@@ -1,5 +1,4 @@
 local engine = {}
-local scenes = require("scenes")
 local gamestate = require("gameState")
 
 --#region Coroutine
@@ -179,6 +178,10 @@ function engine.Log.LogCritical(message)
     cLog.Log(message, 5)
 end
 
+function engine.Log.SetLogFunction(func)
+    cLog.SetLogFunc(func)
+end
+
 --#endregion Log
 
 --#region GameObject
@@ -356,14 +359,6 @@ end
 
 function engine.Scene.LoadScene(mapKey)
     gamestate.nextScene = mapKey
-end
-
-function engine.Scene.LoadDefaultScene()
-    local defaultScene = scenes["default"]
-    local sceneTable = scenes.scenes[defaultScene]
-    local co = engine.Scene.LoadSceneCo(sceneTable[1], sceneTable[2], sceneTable[3], sceneTable[4], sceneTable[5],
-        sceneTable[6])
-    engine.Coroutine.run(co)
 end
 
 --#endregion Scene

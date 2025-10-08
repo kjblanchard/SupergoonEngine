@@ -2,16 +2,18 @@
 #include <Supergoon/engine.h>
 #include <Supergoon/log.h>
 #include <Supergoon/lua.h>
-#include <Supergoon/map.h>
 #include <Supergoon/state.h>
 #include <Supergoon/window.h>
 #include <SupergoonEngine/Lua/engine.h>
 #include <SupergoonEngine/Lua/object.h>
 #include <SupergoonEngine/Lua/scene.h>
 #include <SupergoonEngine/camera.h>
+#include <SupergoonEngine/window.h>
+#ifndef tui
+#include <Supergoon/map.h>
 #include <SupergoonEngine/gameobject.h>
 #include <SupergoonEngine/map.h>
-#include <SupergoonEngine/window.h>
+#endif
 #include <lauxlib.h>
 #include <lua.h>
 
@@ -120,11 +122,15 @@ static int drawRectCamOffset(lua_State* L) {
 }
 
 static int getCurrentMapName(lua_State* L) {
+#ifdef tui
+	return 0;
+#else
 	if (!_currentMap) {
 		return 0;
 	}
 	LuaPushString(L, _currentMap->BaseFilename);
 	return 1;
+#endif
 }
 
 static const luaL_Reg sceneLib[] = {
