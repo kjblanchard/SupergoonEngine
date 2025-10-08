@@ -503,13 +503,19 @@ end
 
 --Is the game running on a mobile platform.
 function engine.IsMobile()
-    return cEngine.IsMobile
+    return cEngine.IsMobile()
 end
 
 --- Is the screen fading?  Use this to track when the screen is fading
 ---@return boolean true if screen is fading.
 function engine.IsScreenFading()
-    return cEffects.IsScreenFading
+    return cEffects.IsScreenFading()
+end
+
+---Quits the game
+---@return nil
+function engine.Quit()
+    return cEngine.Quit()
 end
 
 --#endregion Core

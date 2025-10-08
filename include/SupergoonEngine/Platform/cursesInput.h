@@ -2,7 +2,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-void InitializeKeyboardImpl();
+void InitializeKeyboardImpl(void);
 void UpdateKeyboardSystemImpl(void);
 int IsKeyboardKeyJustReleasedImpl(const int key);
 int IsKeyboardKeyJustPressedImpl(const int key);

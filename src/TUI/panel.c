@@ -38,9 +38,9 @@ static Panel* newPanel(int x, int y, int w, int h, const char* name, bool border
 	panel->Size.Y = h;
 	panel->Flags = 0;
 	panel->Name = NULL;
+	panel->CursesWindow = newwin(h, w, y, x);
 	PanelAddBorder(panel, border);
 	PanelAddName(panel, name);
-	panel->CursesWindow = newwin(h, w, y, x);
 	if (!panel->CursesWindow) {
 		sgLogWarn("For some reason, cannot create curses window");
 	}

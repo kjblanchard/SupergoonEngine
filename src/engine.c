@@ -99,6 +99,7 @@ static bool sdlEventLoop(void) {
 	while (SDL_PollEvent(&event)) {
 		switch (event.type) {
 			case SDL_EVENT_QUIT:
+				sgLogWarn("Going to quit from engine");
 				return true;
 		}
 #ifdef imgui
@@ -157,17 +158,12 @@ static void Update(void) {
 		return;
 #endif
 	}
-	// #ifdef imgui
-	// 		// If we are im imgui and the game is "paused", we should just Draw and update imgui.
-	// 		if (!_isGameSimulatorRunning) {
-	// 		}
-	// #endif
-
-	// Update
 	UpdateKeyboardSystem();
 	if (_inputFunc) _inputFunc();
 #ifndef tui
 	UpdateUIInputSystem();
+#else
+
 #endif
 	Ticks += 1;
 	updateTweens();

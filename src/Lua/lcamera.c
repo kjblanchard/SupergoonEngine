@@ -10,7 +10,7 @@
 #include <lua.h>
 
 static int setCameraFollowTarget(lua_State* L) {
-	if (!LuaCheckFunctionCallParamsAndTypes(_luaState, 1, LuaFUnctionParameterTypeUserdata)) {
+	if (!LuaCheckFunctionCallParamsAndTypes(_luaState, 1, LuaFunctionParameterTypeUserdata)) {
 		sgLogWarn("Trying to set a camera follow target with invalid parameters");
 		return 0;
 	}

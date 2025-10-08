@@ -23,7 +23,7 @@ function TUI.AddTextToPanel(panel, text)
 end
 
 function TUI.UpdateText(textPtr, newText)
-    return cTUI.UpdateText(textPtr, newText)
+    cTUI.UpdateText(textPtr, newText)
 end
 
 return TUI

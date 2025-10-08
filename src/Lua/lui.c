@@ -264,7 +264,7 @@ static int createProgressBar(lua_State* L) {
 
 static int updateProgressBarPercent(lua_State* L) {
 	// args - name, loc table, parent userdata, table color
-	if (!LuaCheckFunctionCallParamsAndTypes(L, 2, LuaFUnctionParameterTypeUserdata, LuaFunctionParameterTypeInt)) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 2, LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeInt)) {
 		sgLogError("Could not update progress bar percent");
 		return 0;
 	}
@@ -375,7 +375,7 @@ static int getUIObjectSize(lua_State* L) {
 }
 
 static int playUIAnimation(lua_State* L) {
-	if (!LuaCheckFunctionCallParamsAndTypes(L, 3, LuaFUnctionParameterTypeUserdata, LuaFunctionParameterTypeString, LuaFunctionParameterTypeInt)) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 3, LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeString, LuaFunctionParameterTypeInt)) {
 		sgLogWarn("Bad params sent to play animation");
 	}
 	UIObject* object = LuaGetLightUserdatai(L, 1);

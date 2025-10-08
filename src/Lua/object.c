@@ -207,7 +207,7 @@ static int getGameobjectSize(lua_State* L) {
 }
 
 static int getGameobjectId(lua_State* L) {
-	if (!LuaCheckFunctionCallParamsAndTypes(L, 1, LuaFUnctionParameterTypeUserdata)) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 1, LuaFunctionParameterTypeUserdata)) {
 		sgLogWarn("Bad args trying to get go position from lua");
 		LuaPushNil(L);
 		return 1;
@@ -228,7 +228,7 @@ static int destroyObjects(lua_State* L) {
 }
 
 static int handleGameobjectSolids(lua_State* L) {
-	if (!LuaCheckFunctionCallParamsAndTypes(L, 1, LuaFUnctionParameterTypeUserdata)) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 1, LuaFunctionParameterTypeUserdata)) {
 		LuaPushNil(L);
 		return 1;
 	}
@@ -269,7 +269,7 @@ static int createGameObject(lua_State* L) {
 }
 
 static int setType(lua_State* L) {
-	if (!LuaCheckFunctionCallParamsAndTypes(L, 2, LuaFUnctionParameterTypeUserdata, LuaFunctionParameterTypeInt)) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 2, LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeInt)) {
 		sgLogWarn("Bad args trying to set go type from lua");
 		LuaPushNil(L);
 		return 1;

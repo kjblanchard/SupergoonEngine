@@ -16,7 +16,7 @@ static int createPanel(lua_State* L) {
 }
 
 static int createText(lua_State* L) {
-	if (!LuaCheckFunctionCallParamsAndTypes(L, 4, LuaFUnctionParameterTypeUserdata, LuaFunctionParameterTypeInt, LuaFunctionParameterTypeInt, LuaFunctionParameterTypeString)) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 4, LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeInt, LuaFunctionParameterTypeInt, LuaFunctionParameterTypeString)) {
 		return 0;
 	}
 	void* text = TextCreate(LuaGetLightUserdatai(L, 1), LuaGetIntFromStacki(L, 2), LuaGetIntFromStacki(L, 3), LuaGetStringi(L, 4));
@@ -25,7 +25,8 @@ static int createText(lua_State* L) {
 }
 
 static int updateText(lua_State* L) {
-	if (!LuaCheckFunctionCallParamsAndTypes(L, 2, LuaFUnctionParameterTypeUserdata, LuaFunctionParameterTypeString)) {
+
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 2, LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeString)) {
 		return 0;
 	}
 	TextUpdateText(LuaGetLightUserdatai(L, 1), LuaGetStringi(L, 2));
@@ -33,7 +34,7 @@ static int updateText(lua_State* L) {
 }
 
 static int addChildToPanel(lua_State* L) {
-	if (!LuaCheckFunctionCallParamsAndTypes(L, 3, LuaFUnctionParameterTypeUserdata, LuaFUnctionParameterTypeUserdata, LuaFunctionParameterTypeInt)) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 3, LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeInt)) {
 		return 0;
 	}
 	int childType = LuaGetIntFromStacki(L, 3);
@@ -63,7 +64,7 @@ static int createPanelEx(lua_State* L) {
 }
 
 static int drawPanel(lua_State* L) {
-	if (!LuaCheckFunctionCallParamsAndTypes(L, 1, LuaFUnctionParameterTypeUserdata)) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 1, LuaFunctionParameterTypeUserdata)) {
 		return 0;
 	}
 	PanelDraw(LuaGetLightUserdatai(L, 1));

@@ -1,5 +1,7 @@
+#include <SDL3/SDL.h>
 #include <Supergoon/Audio/Audio.h>
 #include <Supergoon/engine.h>
+#include <Supergoon/events.h>
 #include <Supergoon/log.h>
 #include <Supergoon/lua.h>
 #include <Supergoon/state.h>
@@ -133,10 +135,16 @@ static int getCurrentMapName(lua_State* L) {
 #endif
 }
 
+static int pushQuit(lua_State* L) {
+	PushEvent(SDL_EVENT_QUIT, 0, NULL, NULL);
+	return 0;
+}
+
 static const luaL_Reg sceneLib[] = {
 	{"SetWindowOptions", setWindowOptions},
 	{"SetScalingOptions", setScalingOptions},
 	{"SetUpdateFunc", setUpdateFunc},
+	{"Quit", pushQuit},
 	{"SetInputFunc", setInputFunc},
 	{"SetDrawFunc", setDrawFunc},
 	{"DrawRect", drawRect},

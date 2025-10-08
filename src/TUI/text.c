@@ -10,7 +10,7 @@ typedef struct TUIText {
 	Point Offset;
 	char* Text;
 	size_t StringSize;
-	WINDOW* TextSubWindow
+	WINDOW* TextSubWindow;
 } TUIText;
 
 void* TextCreate(void* parentPanel, int xOffset, int yOffset, const char* displayText) {
@@ -26,7 +26,6 @@ void* TextCreate(void* parentPanel, int xOffset, int yOffset, const char* displa
 	// create subwindow so that we can use \n in the lines properly
 	text->TextSubWindow = derwin(cursesWindow, parentH - 2, parentW - 2, 1, 1);
 	scrollok(text->TextSubWindow, true);
-
 	TextUpdateText(text, displayText);
 	return text;
 }
@@ -48,7 +47,6 @@ void TextUpdateText(void* textPtr, const char* newText) {
 }
 
 void TextDraw(void* parentPanel, void* textPtr) {
-	// WINDOW* cursesWindow = PanelGetCursesWindow(parentPanel);
 	TUIText* text = (TUIText*)textPtr;
 	if (!text || !text->TextSubWindow) {
 		return;
