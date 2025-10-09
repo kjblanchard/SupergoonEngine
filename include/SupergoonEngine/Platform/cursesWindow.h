@@ -3,6 +3,20 @@
 extern "C" {
 #endif
 
+// Matches the ncurses color like BLACK, etc
+typedef enum CursesWindowTextColorPairs {
+	CursesWindowTextColorPairDefault = 0,
+	CursesWindowTextColorPairBlack,
+	CursesWindowTextColorPairRed,
+	CursesWindowTextColorPairGreen,
+	CursesWindowTextColorPairYello,
+	CursesWindowTextColorPairBlue,
+	CursesWindowTextColorPairMagenta,
+	CursesWindowTextColorPairCyan,
+	CursesWindowTextColorPairWhite,
+	CursesWindowTextColorPairMax,
+} CursesWindowTextColorPairs;
+
 void SetScreenDirty(int dirty);
 void SetWindowOptionsImpl(int width, int height, const char* name);
 void SetScalingOptionsImpl(int worldWidth, int worldHeight);

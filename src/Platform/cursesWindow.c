@@ -27,16 +27,22 @@ void CreateWindowImpl(void) {
 	keypad(stdscr, TRUE);
 	curs_set(0);
 	nodelay(stdscr, TRUE);
+	start_color();
+	use_default_colors();
+	// init_pair(3, COLOR_YELLOW, COLOR_WHITE);
+	// use the standard colors when init, with default background and foreground
+	// Color pairs start at 1.
+	if (has_colors()) {
+		for (size_t i = 0; i < CursesWindowTextColorPairMax; i++) {
+			init_pair(i + 1, i, 0);
+		}
+	}
 	getmaxyx(stdscr, _windowHeight, _windowWidth);
 	box(stdscr, 0, 0);
 	SetWindowOptionsImpl(_windowWidth, _windowHeight, "Escape the Fate v0.1");
 	int title_x = (_windowWidth - strlen(_windowName)) / 2;
 	mvprintw(0, title_x, "%s", _windowName);
-	WINDOW* win = newwin(10, 30, 2, 4);		// height, width, y, x
-	box(win, 0, 0);							// draw a border around it
-	mvwprintw(win, 0, 2, "[ My Window ]");	// print title at top border
 	wrefresh(stdscr);
-	getch(); /* Wait for user input */
 	return;
 }
 void DrawStartImpl(void) {

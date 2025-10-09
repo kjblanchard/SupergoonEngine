@@ -155,7 +155,6 @@ void PanelDraw(void* panelPtr) {
 		sgLogWarn("Cannot draw panel, invalid panel!");
 		return;
 	}
-	werase(panel->CursesWindow);
 	if (HAS_ANY_FLAGS(panel->Flags, TUIObjectFlagBorder)) {
 		drawPanelBorder(panel);
 	}

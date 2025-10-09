@@ -87,7 +87,7 @@ if(NOT CREATE_MACOS_TUI)
     src/Lua/lui.c)
 else()
   list(APPEND SRC_FILES src/Platform/cursesInput.c src/Platform/cursesWindow.c src/TUI/panel.c src/Lua/ltui.c
-       src/TUI/text.c)
+       src/TUI/textbox.c src/TUI/text.c)
 endif(NOT CREATE_MACOS_TUI)
 
 if(imgui AND NOT CREATE_MACOS_TUI)

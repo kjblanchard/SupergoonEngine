@@ -2,7 +2,7 @@
 #include <Supergoon/lua.h>
 #include <SupergoonEngine/Lua/tui.h>
 #include <SupergoonEngine/TUI/panel.h>
-#include <SupergoonEngine/TUI/text.h>
+#include <SupergoonEngine/TUI/textbox.h>
 #include <lauxlib.h>
 #include <lua.h>
 
@@ -19,17 +19,24 @@ static int createText(lua_State* L) {
 	if (!LuaCheckFunctionCallParamsAndTypes(L, 4, LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeInt, LuaFunctionParameterTypeInt, LuaFunctionParameterTypeString)) {
 		return 0;
 	}
-	void* text = TextCreate(LuaGetLightUserdatai(L, 1), LuaGetIntFromStacki(L, 2), LuaGetIntFromStacki(L, 3), LuaGetStringi(L, 4));
+	void* text = TextboxCreate(LuaGetLightUserdatai(L, 1), LuaGetIntFromStacki(L, 2), LuaGetIntFromStacki(L, 3), LuaGetStringi(L, 4));
 	LuaPushLightUserdata(L, text);
 	return 1;
 }
 
 static int updateText(lua_State* L) {
-
 	if (!LuaCheckFunctionCallParamsAndTypes(L, 2, LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeString)) {
 		return 0;
 	}
-	TextUpdateText(LuaGetLightUserdatai(L, 1), LuaGetStringi(L, 2));
+	TextboxUpdateText(LuaGetLightUserdatai(L, 1), LuaGetStringi(L, 2));
+	return 0;
+}
+
+static int addText(lua_State* L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 3, LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeString, LuaFunctionParameterTypeInt)) {
+		return 0;
+	}
+	TextboxAddText(LuaGetLightUserdatai(L, 1), LuaGetStringi(L, 2), LuaGetIntFromStacki(L, 3));
 	return 0;
 }
 
@@ -42,7 +49,7 @@ static int addChildToPanel(lua_State* L) {
 
 	switch (childType) {
 		case 1:
-			func = TextDraw;
+			func = TextboxDraw;
 			break;
 
 		default:
@@ -75,6 +82,7 @@ static const luaL_Reg tuiLib[] = {
 	{"NewPanel", createPanel},
 	{"NewText", createText},
 	{"UpdateText", updateText},
+	{"AddText", addText},
 	{"NewPanelEx", createPanelEx},
 	{"DrawPanel", drawPanel},
 	{"AddChild", addChildToPanel},

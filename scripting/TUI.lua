@@ -26,4 +26,10 @@ function TUI.UpdateText(textPtr, newText)
     cTUI.UpdateText(textPtr, newText)
 end
 
+function TUI.AddTextToTextbox(textboxPtr, newText, color)
+    -- Use white by default
+    color = color or 7
+    cTUI.AddText(textboxPtr, newText, color)
+end
+
 return TUI
