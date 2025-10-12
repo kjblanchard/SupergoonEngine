@@ -60,7 +60,7 @@ static void updateFunc(void) {
 		lua_rawgeti(_luaState, LUA_REGISTRYINDEX, _updateFuncRef);
 		if (lua_pcall(_luaState, 0, 0, 0) != LUA_OK) {
 			const char* err = lua_tostring(_luaState, -1);
-			fprintf(stderr, "Error in update func: %s\n", err);
+			sgLogError("Error in update func: %s", err);
 			lua_pop(_luaState, 1);
 		}
 	}
@@ -71,7 +71,7 @@ static void drawFunc(void) {
 		lua_rawgeti(_luaState, LUA_REGISTRYINDEX, _drawFuncRef);
 		if (lua_pcall(_luaState, 0, 0, 0) != LUA_OK) {
 			const char* err = lua_tostring(_luaState, -1);
-			fprintf(stderr, "Error in update func: %s\n", err);
+			sgLogError("Error in update func: %s", err);
 			lua_pop(_luaState, 1);
 		}
 	}

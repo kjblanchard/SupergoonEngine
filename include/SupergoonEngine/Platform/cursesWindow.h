@@ -17,6 +17,12 @@ typedef enum CursesWindowTextColorPairs {
 	CursesWindowTextColorPairMax,
 } CursesWindowTextColorPairs;
 
+typedef enum CursesWindowTextStyles {
+	CursesWindowTextStylesDefault = 0,
+	CursesWindowTextStylesBold,
+	CursesWindowTextStylesMax,
+} CursesWindowTextStyles;
+
 void SetScreenDirty(int dirty);
 void SetWindowOptionsImpl(int width, int height, const char* name);
 void SetScalingOptionsImpl(int worldWidth, int worldHeight);

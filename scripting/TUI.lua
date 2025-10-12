@@ -6,7 +6,7 @@ function TUI.NewPanel(objectPtr)
     return cTUI.NewPanel(objectPtr)
 end
 
-function TUI.NewPanelWithNameAndBorder(width, height, x, y, name)
+function TUI.NewPanelWithNameAndBorder(x, y, width, height, name)
     return cTUI.NewPanelEx(width, height, x, y, true, name)
 end
 
@@ -26,10 +26,23 @@ function TUI.UpdateText(textPtr, newText)
     cTUI.UpdateText(textPtr, newText)
 end
 
-function TUI.AddTextToTextbox(textboxPtr, newText, color)
+function TUI.AddLineTextWithColorToTextbox(textboxPtr, newText, color)
     -- Use white by default
-    color = color or 7
-    cTUI.AddText(textboxPtr, newText, color)
+    color = color or engine.Log.LogColorsWhite
+    cTUI.AddLineTextWithColor(textboxPtr, newText, color)
+end
+
+function TUI.AddTextToTextbox(textboxPtr, newText)
+    cTUI.AddText(textboxPtr, newText)
+end
+
+function TUI.AddColor(textboxPtr, color)
+    color = color or engine.Log.LogColorsWhite
+    cTUI.AddColor(textboxPtr, color)
+end
+
+function TUI.SetTextboxStyle(textboxPtr, styleInt)
+    cTUI.AddStyle(textboxPtr, styleInt)
 end
 
 return TUI

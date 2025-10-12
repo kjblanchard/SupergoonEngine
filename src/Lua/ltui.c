@@ -32,11 +32,35 @@ static int updateText(lua_State* L) {
 	return 0;
 }
 
-static int addText(lua_State* L) {
+static int addLineTextWithColor(lua_State* L) {
 	if (!LuaCheckFunctionCallParamsAndTypes(L, 3, LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeString, LuaFunctionParameterTypeInt)) {
 		return 0;
 	}
-	TextboxAddText(LuaGetLightUserdatai(L, 1), LuaGetStringi(L, 2), LuaGetIntFromStacki(L, 3));
+	TextboxAddLineTextWithColor(LuaGetLightUserdatai(L, 1), LuaGetStringi(L, 2), LuaGetIntFromStacki(L, 3));
+	return 0;
+}
+
+static int addText(lua_State* L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 2, LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeString, LuaFunctionParameterTypeInt)) {
+		return 0;
+	}
+	TextboxAddText(LuaGetLightUserdatai(L, 1), LuaGetStringi(L, 2));
+	return 0;
+}
+
+static int setTextBoxStyle(lua_State* L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 2, LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeInt)) {
+		return 0;
+	}
+	TextboxAddStyle(LuaGetLightUserdatai(L, 1), LuaGetIntFromStacki(L, 2));
+	return 0;
+}
+
+static int setTextBoxColor(lua_State* L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 2, LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeInt)) {
+		return 0;
+	}
+	TextboxAddColor(LuaGetLightUserdatai(L, 1), LuaGetIntFromStacki(L, 2));
 	return 0;
 }
 
@@ -82,7 +106,10 @@ static const luaL_Reg tuiLib[] = {
 	{"NewPanel", createPanel},
 	{"NewText", createText},
 	{"UpdateText", updateText},
+	{"AddLineTextWithColor", addLineTextWithColor},
 	{"AddText", addText},
+	{"AddColor", setTextBoxColor},
+	{"AddStyle", setTextBoxStyle},
 	{"NewPanelEx", createPanelEx},
 	{"DrawPanel", drawPanel},
 	{"AddChild", addChildToPanel},

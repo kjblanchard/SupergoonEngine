@@ -1,4 +1,5 @@
 #include <SupergoonEngine/Platform/cursesWindow.h>
+#include <locale.h>
 #include <ncurses.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -33,8 +34,17 @@ void CreateWindowImpl(void) {
 	// use the standard colors when init, with default background and foreground
 	// Color pairs start at 1.
 	if (has_colors()) {
-		for (size_t i = 0; i < CursesWindowTextColorPairMax; i++) {
-			init_pair(i + 1, i, 0);
+		// for (size_t i = 0; i < CursesWindowTextColorPairMax; i++) {
+		// 	init_pair(i + 1, i, 0);
+		// }
+		if (has_colors()) {
+			init_pair(1, COLOR_RED, -1);
+			init_pair(2, COLOR_GREEN, -1);
+			init_pair(3, COLOR_YELLOW, -1);
+			init_pair(4, COLOR_BLUE, -1);
+			init_pair(5, COLOR_MAGENTA, -1);
+			init_pair(6, COLOR_CYAN, -1);
+			init_pair(7, COLOR_WHITE, -1);
 		}
 	}
 	getmaxyx(stdscr, _windowHeight, _windowWidth);

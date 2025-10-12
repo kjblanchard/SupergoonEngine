@@ -159,19 +159,21 @@ end
 --#region Log
 engine.Log = {}
 engine.Log.LogColorsDefault = 0
-engine.Log.LogColorsBlack = 1
-engine.Log.LogColorsRed = 2
-engine.Log.LogColorsGreen = 3
-engine.Log.LogColorsYellow = 4
-engine.Log.LogColorsBlue = 5
-engine.Log.LogColorsMagenta = 6
-engine.Log.LogColorsCyan = 7
-engine.Log.LogColorsWhite = 8
+engine.Log.LogColorsBlack = 0
+engine.Log.LogColorsRed = 1
+engine.Log.LogColorsGreen = 2
+engine.Log.LogColorsYellow = 3
+engine.Log.LogColorsBlue = 4
+engine.Log.LogColorsMagenta = 5
+engine.Log.LogColorsCyan = 6
+engine.Log.LogColorsWhite = 7
 engine.Log.LogLevelsDebug = 1
 engine.Log.LogLevelsInfo = 2
 engine.Log.LogLevelsWarn = 3
 engine.Log.LogLevelsError = 4
 engine.Log.LogLevelsCritical = 5
+engine.Log.LogStyleDefault = 0
+engine.Log.LogStyleBold = 1
 function engine.Log.LogDebug(message)
     cLog.Log(message, engine.Log.LogLevelsDebug)
 end

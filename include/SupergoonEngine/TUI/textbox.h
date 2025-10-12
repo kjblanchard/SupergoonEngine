@@ -25,7 +25,10 @@ void TextboxUpdateText(void* textPtr, const char* newText);
  * @param textPtr
  * @param newText
  */
-void TextboxAddText(void* textPtr, const char* newText, int colorPair);
+void TextboxAddLineTextWithColor(void* textPtr, const char* newText, int colorPair);
+void TextboxAddText(void* textPtr, const char* newText);
+void TextboxAddStyle(void* textPtr, int style);
+void TextboxAddColor(void* textPtr, int colorPair);
 
 void TextboxDraw(void* parentPanel, void* textPtr);
 
