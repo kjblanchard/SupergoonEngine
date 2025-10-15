@@ -1,4 +1,6 @@
+#include <Supergoon/Input/keyboard.h>
 #include <Supergoon/log.h>
+#include <Supergoon/lua.h>
 #include <ncurses.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -23,28 +25,17 @@ void UpdateKeyboardSystemImpl(void) {
 	memset(_currentKeyboardState, 0, sizeof(_currentKeyboardState));
 
 	int ch;
+	char keysPressed[MAX_KEYS];
+	int numKeysPressed = 0;
 	// Read all key presses available this frame
 	while ((ch = getch()) != ERR) {
 		if (ch >= 0 && ch < MAX_KEYS) {
 			_currentKeyboardState[ch] = 1;
+			keysPressed[numKeysPressed] = ch;
+			++numKeysPressed;
 		}
-		// Handle special keys (arrows, function keys)
-		// switch (ch) {
-		// 	case KEY_UP:
-		// 		_currentKeyboardState[256 + KEY_UP] = 1;
-		// 		break;
-		// 	case KEY_DOWN:
-		// 		_currentKeyboardState[256 + KEY_DOWN] = 1;
-		// 		break;
-		// 	case KEY_LEFT:
-		// 		_currentKeyboardState[256 + KEY_LEFT] = 1;
-		// 		break;
-		// 	case KEY_RIGHT:
-		// 		_currentKeyboardState[256 + KEY_RIGHT] = 1;
-		// 		break;
-		// 		// Add more special keys if needed
-		// }
 	}
+	keysPressed[numKeysPressed] = '\n';
 }
 
 int IsKeyboardKeyJustReleasedImpl(const int key) {

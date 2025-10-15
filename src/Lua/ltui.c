@@ -5,6 +5,8 @@
 #include <SupergoonEngine/TUI/textbox.h>
 #include <lauxlib.h>
 #include <lua.h>
+#include <ncurses.h>
+#include <stdbool.h>
 
 static int createPanel(lua_State* L) {
 	if (!LuaCheckFunctionCallParamsAndTypes(L, 4, LuaFunctionParameterTypeInt, LuaFunctionParameterTypeInt, LuaFunctionParameterTypeInt, LuaFunctionParameterTypeInt)) {
@@ -102,6 +104,26 @@ static int drawPanel(lua_State* L) {
 	return 0;
 }
 
+static int setTuiEcho(lua_State* L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 1, LuaFunctionParameterTypeBoolean)) {
+		return 0;
+	}
+	bool shouldEcho = LuaGetBooli(L, 1);
+	int (*func)(void) = shouldEcho ? echo : noecho;
+	func();
+	return 0;
+}
+
+static int setWindowCursor(lua_State* L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 3, LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeInt, LuaFunctionParameterTypeInt)) {
+		return 0;
+	}
+	WINDOW* window = PanelGetCursesWindow(LuaGetLightUserdatai(L, 1));
+	wmove(window, LuaGetIntFromStacki(L, 2), LuaGetIntFromStacki(L, 3));
+	wrefresh(window);
+	return 0;
+}
+
 static const luaL_Reg tuiLib[] = {
 	{"NewPanel", createPanel},
 	{"NewText", createText},
@@ -113,6 +135,8 @@ static const luaL_Reg tuiLib[] = {
 	{"NewPanelEx", createPanelEx},
 	{"DrawPanel", drawPanel},
 	{"AddChild", addChildToPanel},
+	{"SetEcho", setTuiEcho},
+	{"SetCursorPosition", setWindowCursor},
 	{NULL, NULL}};
 
 void RegisterLuaTuiFunctions(void) {

@@ -26,6 +26,7 @@ void CreateWindowImpl(void) {
 	cbreak();
 	noecho();
 	keypad(stdscr, TRUE);
+	// curs_set(1);
 	curs_set(0);
 	nodelay(stdscr, TRUE);
 	start_color();

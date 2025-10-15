@@ -132,6 +132,17 @@ set(CMAKE_DEBUG_TARGET_PROPERTIES
 
 if(SYSTEM_PACKAGES) # If we are using system packages, then we should try to find them.
   find_package(SDL3 CONFIG COMPONENTS SDL3-shared)
+
+  find_library(
+    LIB_MINIAUDIO
+    PATH_SUFFIXES .a .dll
+    NAMES libminiaudio miniaudio miniaudio.a vorbis.dll libminiaudio.a
+    HINTS /usr/local/lib /c/cmake/lib)
+
+  if(LIB_MINIAUDIO)
+    list(APPEND EXTERNAL_LIBS ${LIB_MINIAUDIO})
+  endif(LIB_MINIAUDIO)
+
   find_library(
     LIB_VORBIS
     PATH_SUFFIXES .a .dll
