@@ -41,9 +41,9 @@ static int isKeyboardKeyDown(lua_State* L) {
 static const luaL_Reg inputLib[] = {
 	{"IsKeyboardKeyPressed", isKeyboardKeyPressed},
 	{"IsKeyboardKeyDown", isKeyboardKeyDown},
-	{
-		"SetKeyboardKeyPressedFunc",
-	},
+	// {
+	// 	"SetKeyboardKeyPressedFunc",
+	// },
 	{NULL, NULL}};
 
 void RegisterLuaInputFunctions(void) {

@@ -9,9 +9,10 @@
  *
  */
 #include <SDL3/SDL.h>
-#include <Supergoon/Audio/Bgm.h>
 #include <Supergoon/log.h>
+#include <SupergoonEngine/Platform/sdl/sdlbgm.h>
 #include <assert.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <vorbis/vorbisfile.h>
 
@@ -23,11 +24,11 @@
 #define BGM_BUFFER_SIZE 8192	  // 8kb
 #define VORBIS_REQUEST_SIZE 4096  // Size of vorbis requests, usually recommend to be 4096
 // TODO why is this needed?  Is there a bug in fps / refresh / frame timeing somewhere that you don't notice otherwise?
-#ifdef __EMSCRIPTEN__
-#define MINIMUM_STREAM_SIZE BGM_BUFFER_SIZE *BGM_NUM_BUFFERS * 2  // If our sdl stream is less than this, add another buffer
-#else
+// #ifdef __EMSCRIPTEN__
+// #define MINIMUM_STREAM_SIZE BGM_BUFFER_SIZE *BGM_NUM_BUFFERS * 2  // If our sdl stream is less than this, add another buffer
+// #else
 #define MINIMUM_STREAM_SIZE BGM_BUFFER_SIZE *BGM_NUM_BUFFERS  // fix audio issue on emscripten
-#endif
+// #endif
 
 static void getLoopPointsFromVorbisComments(Bgm *bgm, double *loopBegin, double *loopEnd) {
 	vorbis_comment *vc = ov_comment(bgm->VorbisFile, -1);
@@ -124,10 +125,10 @@ static void loadDataToStream(Bgm *bgm) {
 }
 
 Bgm *bgmNew(void) {
-	Bgm *bgm = SDL_malloc(sizeof(*bgm));
-	bgm->VorbisFile = SDL_malloc(sizeof(*bgm->VorbisFile));
+	Bgm *bgm = malloc(sizeof(*bgm));
+	bgm->VorbisFile = malloc(sizeof(*bgm->VorbisFile));
 	bgm->Filename = NULL;
-	bgm->Buffer = SDL_malloc(BGM_BUFFER_SIZE);
+	bgm->Buffer = malloc(BGM_BUFFER_SIZE);
 	bgm->LoopStart = bgm->LoopEnd = bgm->Loops = bgm->CurrentLoopBytesRead = 0;
 	bgm->IsLoaded = bgm->IsPlaying = false;
 	bgm->Volume = 1.0f;

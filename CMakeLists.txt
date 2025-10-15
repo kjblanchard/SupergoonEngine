@@ -43,7 +43,6 @@ set(SRC_FILES
     src/events.c
     src/engine.c
     src/Primitives/rectangle.c
-    src/Audio/Bgm.c
     src/Audio/Sfx.c
     src/Audio/Stream.c
     src/Audio/Audio.c
@@ -54,7 +53,12 @@ set(SRC_FILES
     src/Lua/lengine.c
     src/Lua/linput.c
     src/Lua/lcamera.c
-    src/Lua/scripting.c)
+    src/Lua/scripting.c
+
+    # src/Platform/sdl/sdlBgm.c
+    # src/Platform/sdl/sdlAudio.c
+
+    )
 if(NOT CREATE_MACOS_TUI)
   message(STATUS "Adding UI files")
   list(
@@ -84,10 +88,22 @@ if(NOT CREATE_MACOS_TUI)
     src/UI/uitext.c
     src/UI/uibutton.c
     src/UI/uiProgressBar.c
-    src/Lua/lui.c)
+    src/Lua/lui.c
+    # Audio
+    src/Platform/sdl/sdlBgm.c
+    src/Platform/sdl/sdlAudio.c
+    )
 else()
-  list(APPEND SRC_FILES src/Platform/cursesInput.c src/Platform/cursesWindow.c src/TUI/panel.c src/Lua/ltui.c
-       src/TUI/textbox.c src/TUI/text.c)
+  list(
+    APPEND
+    SRC_FILES
+    src/Platform/cursesInput.c
+    src/Platform/cursesWindow.c
+    src/TUI/panel.c
+    src/Lua/ltui.c
+    src/Platform/miniaudio/miniaudio.c
+    src/TUI/textbox.c
+    src/TUI/text.c)
 endif(NOT CREATE_MACOS_TUI)
 
 if(imgui AND NOT CREATE_MACOS_TUI)

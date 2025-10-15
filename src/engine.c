@@ -33,10 +33,6 @@ static bool sdlEventLoop(void);
 // Functions in mouce.c
 void updateMouseSystem(void);
 void updateTouchSystem(void);
-// Functions in Audio.c
-extern void initializeAudio(void);
-extern void closeAudio(void);
-extern void audioUpdate(void);
 // Function in tween.c
 extern void initializeTweenEngine(void);
 extern void updateTweens(void);
@@ -74,7 +70,7 @@ static bool Start(void) {
 	InitializeLuaEngine();
 	InitializeEventEngine();
 	CreateWindow();
-	initializeAudio();
+	InitializeAudio();
 	initializeTweenEngine();
 #ifndef tui
 	InitializeUISystem();
@@ -186,7 +182,7 @@ static void Update(void) {
 	UpdateCamera();
 	draw();
 	handleFramerate(&now);
-	audioUpdate();
+	AudioUpdate();
 }
 
 static void Quit(void) {
@@ -197,7 +193,7 @@ static void Quit(void) {
 	sgCloseDebugLogFile();
 	ShutdownJoystickSystem();
 	sgCloseLua();
-	closeAudio();
+	CloseAudio();
 	shutdownGraphicsSystem();
 	CloseWindow();
 #ifndef tui

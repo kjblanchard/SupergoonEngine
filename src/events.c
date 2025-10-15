@@ -3,8 +3,6 @@
 #include <Supergoon/events.h>
 #include <stdbool.h>
 
-// Function in audio.c
-extern void audioEventHandler(Event *event);
 // Function in tween.c
 extern void handleTweenEvents(Event *event);
 // Functions in mouce.c
@@ -35,7 +33,7 @@ void PushEvent(uint32_t eventType, int eventCode, void *data, void *data2) {
 }
 
 int HandleEvents(Event *event) {
-	audioEventHandler(event);
+	AudioEventHandler(event);
 // handleTweenEvents(event);
 #ifndef tui
 	handleMouseEvent(event);

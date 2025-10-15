@@ -34,6 +34,10 @@ void SetGlobalBgmVolume(float volume);
 void SetGlobalSfxVolume(float volume);
 // void PlaySfx(Sfx *sfx, float volume = 1.0);
 void PlaySfxOneShot(const char *name, float volume);
+void AudioEventHandler(void *event);
+void CloseAudio(void);
+void AudioUpdate(void);
+void InitializeAudio(void);
 
 #ifdef __cplusplus
 }
