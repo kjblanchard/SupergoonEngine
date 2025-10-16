@@ -4,6 +4,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 void SetBgmTrackImpl(int track);
 void LoadBgmImpl(const char *filename, float volume, int loops);
 void PlayBgmImpl(void);

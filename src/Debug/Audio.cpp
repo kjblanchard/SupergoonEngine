@@ -108,7 +108,7 @@ void ShowAudioDebugWindow() {
 	}
 	// ImGui::SliderFloat("Global Sfx Volume", &Sound::Instance()->_globalSfxVolume, 0.0f, 1.0f);
 	if (ImGui::CollapsingHeader("Bgm")) {
-		for (size_t i = 0; i < MAX_TRACKS; i++) {
+		for (size_t i = 0; i < MAX_STREAMS; i++) {
 			ImGui::Text("Track %ld", i);
 			ImGui::SameLine();
 			if (_bgmAssets[i].BgmPtr) {

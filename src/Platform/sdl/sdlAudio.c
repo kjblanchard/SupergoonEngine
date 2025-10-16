@@ -31,7 +31,7 @@ typedef struct BgmLoadArgs {
 	int Track;
 	float Volume;
 } BgmLoadArgs;
-AudioBgmAsset _bgmAssets[MAX_TRACKS];
+AudioBgmAsset _bgmAssets[MAX_STREAMS];
 float _globalBgmVolume = 1.0;
 float _globalSfxVolume = 1.0;
 sgStream _sfxStreams[MAX_SFX_STREAMS];
@@ -46,7 +46,7 @@ static void playBgmInternal(Event* event);
  * @brief Called from the engine to initialize, not for consumer
  */
 void InitializeAudioImpl(void) {
-	for (size_t i = 0; i < MAX_TRACKS; i++) {
+	for (size_t i = 0; i < MAX_STREAMS; i++) {
 		_bgmAssets[i].BgmPtr = NULL;
 		_bgmAssets[i].Volume = 0;
 		_bgmAssets[i].IsFading = false;
@@ -64,7 +64,7 @@ void InitializeAudioImpl(void) {
 }
 
 void CloseAudioImpl(void) {
-	for (size_t i = 0; i < MAX_TRACKS; i++) {
+	for (size_t i = 0; i < MAX_STREAMS; i++) {
 		if (_bgmAssets[i].BgmPtr) {
 			bgmDelete(_bgmAssets[i].BgmPtr);
 		}
@@ -160,7 +160,7 @@ static void playBgmInternal(Event* event) {
  *
  */
 void AudioUpdateImpl(void) {
-	for (size_t i = 0; i < MAX_TRACKS; i++) {
+	for (size_t i = 0; i < MAX_STREAMS; i++) {
 		if (_bgmAssets[i].BgmPtr) {
 			bgmUpdate(_bgmAssets[i].BgmPtr);
 		}
@@ -168,8 +168,8 @@ void AudioUpdateImpl(void) {
 }
 
 void SetBgmTrackImpl(int track) {
-	if (track < 0 || track >= MAX_TRACKS) {
-		sgLogWarn("Track passed in is not available, track unchanged, please use between 0 and %d", MAX_TRACKS);
+	if (track < 0 || track >= MAX_STREAMS) {
+		sgLogWarn("Track passed in is not available, track unchanged, please use between 0 and %d", MAX_STREAMS);
 		return;
 	}
 	_track = track;
@@ -189,7 +189,7 @@ void PlayBgmImpl(void) {
 }
 
 void UpdatePlayingBgmVolumeImpl(void) {
-	for (size_t i = 0; i < MAX_TRACKS; i++) {
+	for (size_t i = 0; i < MAX_STREAMS; i++) {
 		if (!_bgmAssets[i].BgmPtr) continue;
 		bgmUpdateVolume(_bgmAssets[i].BgmPtr, _globalBgmVolume * _bgmAssets[i].Volume);
 	}

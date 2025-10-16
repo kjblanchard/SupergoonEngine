@@ -10,7 +10,7 @@ typedef struct AudioBgmAsset {
 	struct Bgm* BgmPtr;
 	float Volume;
 } AudioBgmAsset;
-extern AudioBgmAsset _bgmAssets[MAX_TRACKS];
+extern AudioBgmAsset _bgmAssets[MAX_STREAMS];
 
 #ifdef __cplusplus
 }

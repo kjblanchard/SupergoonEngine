@@ -54,11 +54,8 @@ set(SRC_FILES
     src/Lua/linput.c
     src/Lua/lcamera.c
     src/Lua/scripting.c
-
-    # src/Platform/sdl/sdlBgm.c
-    # src/Platform/sdl/sdlAudio.c
-
-    )
+    # src/Platform/sdl/sdlBgm.c src/Platform/sdl/sdlAudio.c
+)
 if(NOT CREATE_MACOS_TUI)
   message(STATUS "Adding UI files")
   list(
@@ -91,8 +88,7 @@ if(NOT CREATE_MACOS_TUI)
     src/Lua/lui.c
     # Audio
     src/Platform/sdl/sdlBgm.c
-    src/Platform/sdl/sdlAudio.c
-    )
+    src/Platform/sdl/sdlAudio.c)
 else()
   list(
     APPEND
@@ -101,7 +97,9 @@ else()
     src/Platform/cursesWindow.c
     src/TUI/panel.c
     src/Lua/ltui.c
-    src/Platform/miniaudio/miniaudio.c
+    src/Platform/openal/openal.c
+    src/Platform/openal/openalStream.c
+    src/Platform/openal/openalBgm.c
     src/TUI/textbox.c
     src/TUI/text.c)
 endif(NOT CREATE_MACOS_TUI)
@@ -150,14 +148,14 @@ if(SYSTEM_PACKAGES) # If we are using system packages, then we should try to fin
   find_package(SDL3 CONFIG COMPONENTS SDL3-shared)
 
   find_library(
-    LIB_MINIAUDIO
-    PATH_SUFFIXES .a .dll
-    NAMES libminiaudio miniaudio miniaudio.a vorbis.dll libminiaudio.a
+    LIB_OPENAL
+    PATH_SUFFIXES .dylib .a .dll
+    NAMES libopenal.dylib libopenal openal libopenal.a openal.dll libopenal.a
     HINTS /usr/local/lib /c/cmake/lib)
 
-  if(LIB_MINIAUDIO)
-    list(APPEND EXTERNAL_LIBS ${LIB_MINIAUDIO})
-  endif(LIB_MINIAUDIO)
+  if(LIB_OPENAL)
+    list(APPEND EXTERNAL_LIBS ${LIB_OPENAL})
+  endif(LIB_OPENAL)
 
   find_library(
     LIB_VORBIS

@@ -1,5 +1,5 @@
 #ifdef miniaudio
-#include <SupergoonEngine/Platform/miniaudio/miniaudio.h>
+#include <SupergoonEngine/Platform/openal/openal.h>
 #else
 #include <SupergoonEngine/Platform/sdl/sdlAudio.h>
 #endif
