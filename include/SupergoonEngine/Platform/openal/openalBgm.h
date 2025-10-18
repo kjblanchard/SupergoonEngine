@@ -5,7 +5,6 @@ typedef struct Bgm {
 	int Loops;
 	uint64_t LoopStart;
 	uint64_t LoopEnd;
-	int IsLoaded;
 	int IsPlaying;
 	OggVorbis_File* VorbisFile;
 	vorbis_info* VorbisInfo;
@@ -16,4 +15,3 @@ typedef struct Bgm {
 Bgm* BgmNew(void);
 void BgmLoad(Bgm* bgm);
 void BgmDelete(Bgm* bgm);
-// void BgmPlay(Bgm* bgm);

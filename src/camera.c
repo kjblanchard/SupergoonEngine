@@ -1,5 +1,5 @@
-#include <SDL3/SDL.h>
 #include <SupergoonEngine/camera.h>
+#include <math.h>
 float CameraX = 0;
 float CameraY = 0;
 float CamSizeX = 0;
@@ -37,8 +37,8 @@ void UpdateCamera(void) {
 	else if (camY > BoundsY - viewHeight)
 		camY = BoundsY - viewHeight;
 
-	CameraX = SDL_roundf(camX);
-	CameraY = SDL_roundf(camY);
+	CameraX = roundf(camX);
+	CameraY = roundf(camY);
 }
 
 // void UpdateCamera(void) {

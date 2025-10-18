@@ -1,6 +1,4 @@
-#include <SDL3/SDL.h>
 #include <Supergoon/Audio/Audio.h>
-#include <Supergoon/Input/joystick.h>
 #include <Supergoon/Input/keyboard.h>
 #include <Supergoon/clock.h>
 #include <Supergoon/engine.h>
@@ -13,7 +11,10 @@
 #include <SupergoonEngine/Lua/scripting.h>
 #include <SupergoonEngine/camera.h>
 #include <SupergoonEngine/graphics.h>
+#include <SupergoonEngine/tools.h>
 #ifndef tui
+#include <SDL3/SDL.h>
+#include <Supergoon/Input/joystick.h>
 #include <Supergoon/sprite.h>
 #include <SupergoonEngine/Animation/animator.h>
 #include <SupergoonEngine/gameobject.h>
@@ -29,7 +30,7 @@
 #include <emscripten.h>
 #endif
 
-static bool sdlEventLoop(void);
+static bool eventLoop(void);
 // Functions in mouce.c
 void updateMouseSystem(void);
 void updateTouchSystem(void);
@@ -39,13 +40,13 @@ extern void updateTweens(void);
 // Function in filesystem.c
 extern void shutdownEngineFilesystem(void);
 Uint64 previousCounter;
-Uint64 _frequency;
+// Uint64 _frequency;
 float deltaTimeSeconds;
 static void (*_startFunc)(void) = NULL;
 static void (*_updateFunc)(void) = NULL;
 static void (*_drawFunc)(void) = NULL;
 static void (*_inputFunc)(void) = NULL;
-static int (*_handleEventFunc)(Event *) = NULL;
+static int (*_handleEventFunc)(void *) = NULL;
 #ifdef imgui
 bool _isGameSimulatorRunning = true;
 #endif
@@ -54,19 +55,21 @@ static void Quit(void);
 
 static bool Start(void) {
 	sgLogWarn("Starting the things");
-	int options = SDL_INIT_AUDIO;
+	// int options = SDL_INIT_EVENTS;
 #ifndef tui
-	options |= SDL_INIT_VIDEO | SDL_INIT_GAMEPAD;
-#endif
-
+	int options |= SDL_INIT_VIDEO | SDL_INIT_GAMEPAD;
 	if (!SDL_Init(options)) {
 		sgLogError("Could not init sdl, %s", SDL_GetError());
 		return false;
 	}
+#endif
+
 	sgInitializeDebugLogFile();
 	InitializeKeyboardSystem();
+#ifndef tui
 	initializeGraphicsSystem();
 	geInitializeJoysticks();
+#endif
 	InitializeLuaEngine();
 	InitializeEventEngine();
 	CreateWindow();
@@ -76,20 +79,23 @@ static bool Start(void) {
 	InitializeUISystem();
 #endif
 	RegisterAllLuaFunctions();
-// Try to normalize the initial delay of loading everything
-#ifndef __EMSCRIPTEN__
+	// Try to normalize the initial delay of loading everything
 	for (size_t i = 0; i < 10; i++) {
-		sdlEventLoop();
-		SDL_Delay(1);
+		eventLoop();
+		sgSleepMS(1);
 	}
-#endif
 
-	_frequency = SDL_GetPerformanceFrequency();	 // ticks per second
-	previousCounter = SDL_GetPerformanceCounter();
+	// _frequency = SDL_GetPerformanceFrequency();	 // ticks per second
+	// previousCounter = SDL_GetPerformanceCounter();
+	previousCounter = getCurrentMSTicks();
 	deltaTimeSeconds = 0;
 	return true;
 }
-static bool sdlEventLoop(void) {
+static bool eventLoop(void) {
+#ifdef tui
+	// TODO we should make some kind of event system.
+	return false;
+#else
 	static SDL_Event event;
 	bool quit = false;
 	while (SDL_PollEvent(&event)) {
@@ -109,12 +115,20 @@ static bool sdlEventLoop(void) {
 		HandleEvents(&event);
 	}
 	return quit;
+#endif
 }
 
 static void handleFramerate(Uint64 *now) {
 #ifdef __EMSCRIPTEN__
 	return;
-#endif
+#elif tui
+	uint64_t current = getCurrentMSTicks();
+	Uint64 elapsedMS = current - previousCounter;
+	const Uint64 FRAME_DURATION_MS = 1000 / TARGET_FPS;
+	if (elapsedMS < FRAME_DURATION_MS) {
+		sgSleepMS(FRAME_DURATION_MS - elapsedMS);
+	}
+#else
 	if (TARGET_FPS != 999) {  // If we are doing a capped frame rate, we should also wait between frames.
 		Uint64 frame_end = SDL_GetPerformanceCounter();
 		Uint64 elapsed_ticks = frame_end - *now;
@@ -124,6 +138,7 @@ static void handleFramerate(Uint64 *now) {
 			SDL_DelayPrecise(FRAME_DURATION_NS - elapsed_ns);
 		}
 	}
+#endif
 }
 
 static void draw(void) {
@@ -140,12 +155,11 @@ static void draw(void) {
 }
 
 static void Update(void) {
-	Uint64 now = SDL_GetPerformanceCounter();
-	deltaTimeSeconds = (now - previousCounter) / (float)_frequency;
+	Uint64 now = getCurrentMSTicks();
+	DeltaTimeMilliseconds = now - previousCounter;
 	previousCounter = now;
-	DeltaTimeMilliseconds = deltaTimeSeconds * 1000;
-	DeltaTimeSeconds = deltaTimeSeconds;
-	quit = sdlEventLoop();
+	DeltaTimeSeconds = DeltaTimeMilliseconds / 1000;
+	quit = eventLoop();
 	if (quit) {
 #ifdef __EMSCRIPTEN__
 		emscripten_cancel_main_loop();
@@ -173,9 +187,7 @@ static void Update(void) {
 	if (_updateFunc) _updateFunc();
 #ifndef tui
 	UpdateUISystem();
-#endif
 	geUpdateControllerLastFrame();
-#ifndef tui
 	updateMouseSystem();
 	updateTouchSystem();
 #endif
@@ -189,25 +201,27 @@ static void Quit(void) {
 #ifndef tui
 	shutdownMapSystem();
 	ShutdownSpriteSystem();
+	ShutdownJoystickSystem();
+	shutdownGraphicsSystem();
 #endif
 	sgCloseDebugLogFile();
-	ShutdownJoystickSystem();
 	sgCloseLua();
 	CloseAudio();
-	shutdownGraphicsSystem();
 	CloseWindow();
 #ifndef tui
 	ShutdownUISystem();
 #endif
 	shutdownEngineFilesystem();
+#ifndef tui
 	SDL_Quit();
+#endif
 }
 
 void SetStartFunction(void (*startFunc)(void)) {
 	_startFunc = startFunc;
 }
 
-void SetHandleEventFunction(int (*eventFunc)(Event *)) {
+void SetHandleEventFunction(int (*eventFunc)(void *)) {
 	_handleEventFunc = eventFunc;
 }
 

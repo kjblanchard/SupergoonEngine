@@ -12,7 +12,7 @@ Bgm* BgmNew(void) {
 	bgm->VorbisFile = malloc(sizeof(*bgm->VorbisFile));
 	bgm->Filename = NULL;
 	bgm->LoopStart = bgm->LoopEnd = bgm->Loops = 0;
-	bgm->IsLoaded = bgm->IsPlaying = false;
+	bgm->IsPlaying = false;
 	bgm->Volume = 1.0f;
 	return bgm;
 }
@@ -78,8 +78,6 @@ void BgmLoad(Bgm* bgm) {
 		return;
 	}
 	setBgmLoopPoints(bgm);
-	// Need to load data to the stream.
-	bgm->IsLoaded = true;
 }
 
 void BgmDelete(Bgm* bgm) {

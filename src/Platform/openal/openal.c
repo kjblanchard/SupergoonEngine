@@ -1,10 +1,11 @@
 #include <AL/al.h>
 #include <AL/alc.h>
-#include <SDL3/SDL_filesystem.h>
+#include <Supergoon/filesystem.h>
 #include <Supergoon/log.h>
 #include <SupergoonEngine/Platform/openal/openal.h>
 #include <SupergoonEngine/Platform/openal/openalBgm.h>
 #include <SupergoonEngine/Platform/openal/openalStream.h>
+#include <SupergoonEngine/tools.h>
 #include <assert.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -83,7 +84,7 @@ void SetBgmTrackImpl(int track) {
 static void loadBgmInternal(BgmLoadArgs* args) {
 	AudioBgmAsset* bgmAsset = &_bgmAssets[args->Track];
 	char* fullPath = NULL;
-	asprintf(&fullPath, "%sassets/audio/bgm/%s%s", SDL_GetBasePath(), args->Name, ".ogg");
+	asprintf(&fullPath, "%sassets/audio/bgm/%s%s", GetBasePath(), args->Name, ".ogg");
 	// If BGM is already in this track, we should return as it's already loaded
 	if (bgmAsset->BgmPtr && bgmAsset->BgmPtr->Filename && !strcmp(bgmAsset->BgmPtr->Filename, fullPath)) {
 		free(fullPath);

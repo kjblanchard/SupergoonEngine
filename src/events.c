@@ -1,38 +1,39 @@
-#include <SDL3/SDL_events.h>
 #include <Supergoon/Audio/Audio.h>
 #include <Supergoon/events.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 // Function in tween.c
-extern void handleTweenEvents(Event *event);
+extern void handleTweenEvents(void *event);
 // Functions in mouce.c
-extern void handleMouseEvent(const SDL_Event *event);
-extern void handleTouchEvent(const SDL_Event *event);
-extern void windowEventHandler(Event *event);
+extern void handleMouseEvent(void *event);
+extern void handleTouchEvent(void *event);
+extern void windowEventHandler(void *event);
 BuiltinEventTypes BuiltinEventIds;
-static int (*_customEventHandler)(Event *event) = NULL;
+static int (*_customEventHandler)(void *event) = NULL;
+static int _currentCustomRegisteredEvent = 1000;
 
 void InitializeEventEngine(void) {
-	BuiltinEventIds.LoadBgmEvent = SDL_RegisterEvents(1);
-	BuiltinEventIds.PlayBgmEvent = SDL_RegisterEvents(1);
-	BuiltinEventIds.StopBgmEvent = SDL_RegisterEvents(1);
-	BuiltinEventIds.PauseBgmEvent = SDL_RegisterEvents(1);
-	BuiltinEventIds.StartTweenEvent = SDL_RegisterEvents(1);
-	BuiltinEventIds.PauseTweenEvent = SDL_RegisterEvents(1);
-	BuiltinEventIds.StopTweenEvent = SDL_RegisterEvents(1);
+	BuiltinEventIds.LoadBgmEvent = _currentCustomRegisteredEvent++;
+	BuiltinEventIds.PlayBgmEvent = _currentCustomRegisteredEvent++;
+	BuiltinEventIds.StopBgmEvent = _currentCustomRegisteredEvent++;
+	BuiltinEventIds.PauseBgmEvent = _currentCustomRegisteredEvent++;
+	BuiltinEventIds.StartTweenEvent = _currentCustomRegisteredEvent++;
+	BuiltinEventIds.PauseTweenEvent = _currentCustomRegisteredEvent++;
+	BuiltinEventIds.StopTweenEvent = _currentCustomRegisteredEvent++;
 }
 
 void PushEvent(uint32_t eventType, int eventCode, void *data, void *data2) {
-	SDL_Event event;
-	SDL_zero(event);
-	event.type = eventType;
-	event.user.code = eventCode;
-	event.user.data1 = data;
-	event.user.data2 = data2;
-	SDL_PushEvent(&event);
+	// SDL_Event event;
+	// SDL_zero(event);
+	// event.type = eventType;
+	// event.user.code = eventCode;
+	// event.user.data1 = data;
+	// event.user.data2 = data2;
+	// SDL_PushEvent(&event);
 }
 
-int HandleEvents(Event *event) {
+int HandleEvents(void *event) {
 	AudioEventHandler(event);
 // handleTweenEvents(event);
 #ifndef tui
@@ -43,11 +44,11 @@ int HandleEvents(Event *event) {
 	return false;
 }
 
-void SetCustomEventHandler(int (*eventHandlerFunction)(Event *event)) {
+void SetCustomEventHandler(int (*eventHandlerFunction)(void *event)) {
 	_customEventHandler = eventHandlerFunction;
 }
 
-int HandleCustomEventHandler(Event *event) {
+int HandleCustomEventHandler(void *event) {
 	if (_customEventHandler) {
 		return _customEventHandler(event);
 	}

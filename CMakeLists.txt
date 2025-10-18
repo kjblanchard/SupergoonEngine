@@ -4,7 +4,8 @@ set(COMPILE_OPTIONS)
 set(CMAKE_EXECUTABLE_SUFFIX
     ".html"
     CACHE STRING "Use html" FORCE)
-set(EXTERNAL_LIBS SDL3::SDL3-static)
+# set(EXTERNAL_LIBS SDL3::SDL3-static)
+set(EXTERNAL_LIBS "")
 set(FOLDERS_TO_COPY scripting/)
 
 if(UNIX OR APPLE)
@@ -34,10 +35,8 @@ set(SRC_FILES
     src/log.c
     src/clock.c
     src/state.c
-    src/Input/joystick.c
     src/Input/keyboard.c
     src/window.c
-    src/graphics.c
     src/filesystem.c
     src/tools.c
     src/events.c
@@ -76,6 +75,10 @@ if(NOT CREATE_MACOS_TUI)
     src/Lua/object.c
     src/Lua/lscene.c
     src/Lua/leffects.c
+    # 2d engine
+    src/graphics.c
+    # input
+    src/Input/joystick.c
     # UI
     src/UI/ui.c
     src/UI/uirect.c
@@ -145,7 +148,6 @@ set(CMAKE_DEBUG_TARGET_PROPERTIES
     CACHE STRING "Don't use the d for debug packages" FORCE)
 
 if(SYSTEM_PACKAGES) # If we are using system packages, then we should try to find them.
-  find_package(SDL3 CONFIG COMPONENTS SDL3-shared)
 
   find_library(
     LIB_OPENAL
@@ -197,6 +199,7 @@ if(SYSTEM_PACKAGES) # If we are using system packages, then we should try to fin
     list(APPEND EXTERNAL_LIBS ${LIB_LUA})
   endif(LIB_LUA)
   if(NOT CREATE_MACOS_TUI)
+    find_package(SDL3 CONFIG COMPONENTS SDL3-shared)
     find_package(Freetype)
     if(FREETYPE_FOUND)
       list(APPEND EXTERNAL_LIBS ${FREETYPE_LIBRARY})
@@ -211,28 +214,6 @@ if(SYSTEM_PACKAGES) # If we are using system packages, then we should try to fin
     list(APPEND EXTERNAL_LIBS Curses)
   endif()
 endif(SYSTEM_PACKAGES)
-
-if(NOT SDL3_FOUND)
-  message(STATUS "SDL3 not found. Fetching SDL3...")
-  set(SDL_SHARED
-      OFF
-      CACHE BOOL "Build SDL as a shared library")
-  set(SDL_STATIC
-      ON
-      CACHE BOOL "Build SDL as a shared library")
-  set(SDL_TEST
-      OFF
-      CACHE BOOL "Build SDL as a shared library")
-  set(ENABLE_SDL_STATIC
-      OFF
-      CACHE BOOL "Build SDL as a static library")
-  FetchContent_Declare(
-    SDL3
-    GIT_REPOSITORY https://github.com/libsdl-org/SDL
-    GIT_TAG release-3.2.16
-    EXCLUDE_FROM_ALL)
-  FetchContent_MakeAvailable(SDL3)
-endif(NOT SDL3_FOUND)
 
 if(NOT LIB_OGG)
   message(STATUS "OGG not found. Fetching OGG...")
@@ -295,6 +276,27 @@ if(NOT LIB_LUA)
   list(APPEND EXTERNAL_LIBS lua_static)
 endif(NOT LIB_LUA)
 if(NOT CREATE_MACOS_TUI)
+  if(NOT SDL3_FOUND)
+    message(STATUS "SDL3 not found. Fetching SDL3...")
+    set(SDL_SHARED
+        OFF
+        CACHE BOOL "Build SDL as a shared library")
+    set(SDL_STATIC
+        ON
+        CACHE BOOL "Build SDL as a shared library")
+    set(SDL_TEST
+        OFF
+        CACHE BOOL "Build SDL as a shared library")
+    set(ENABLE_SDL_STATIC
+        OFF
+        CACHE BOOL "Build SDL as a static library")
+    FetchContent_Declare(
+      SDL3
+      GIT_REPOSITORY https://github.com/libsdl-org/SDL
+      GIT_TAG release-3.2.16
+      EXCLUDE_FROM_ALL)
+    FetchContent_MakeAvailable(SDL3)
+  endif(NOT SDL3_FOUND)
   if(NOT FREETYPE_FOUND)
     message(STATUS "freetype not found. Fetching freetype...")
     set(FT_DISABLE_BROTLI

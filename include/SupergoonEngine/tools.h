@@ -1,5 +1,6 @@
 #pragma once
 #include <Supergoon/log.h>
+#include <stdint.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -59,7 +60,9 @@ int sgasprintf(char** strp, const char* fmt, ...);
 
 // Returns true if strings are equal
 int strcmpWithSuffix(const char* lhs, const char* rhs, const char* suffix);
+uint64_t getCurrentMSTicks();
 
+void sgSleepMS(int ms);
 #ifdef __cplusplus
 }
 #endif

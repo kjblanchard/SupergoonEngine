@@ -1,8 +1,6 @@
 #pragma once
 #include <stdint.h>
 
-typedef union SDL_Event Event;
-
 /**
  * @brief The builtin events for the engine.  This struct will be filled with ids you
  * can use to push events of this type to the event system
@@ -41,16 +39,16 @@ void PushEvent(uint32_t eventType, int eventCode, void *data, void *data2);
  * @param event
  * @return int
  */
-int HandleEvents(Event *event);
+int HandleEvents(void *event);
 /**
  * @brief Function to a custom event handler function, this will be called after the
  * builtin event handler
  *
  * @param EventHandlerFunction
  */
-void SetCustomEventHandler(int (*eventHandlerFunction)(Event *event));
+void SetCustomEventHandler(int (*eventHandlerFunction)(void *event));
 /**
  * @brief Function to a custom event handler function, this will be called after the
  * builtin event handler
  */
-int HandleCustomEventHandler(Event *event);
+int HandleCustomEventHandler(void *event);

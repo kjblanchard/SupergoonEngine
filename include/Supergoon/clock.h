@@ -15,7 +15,7 @@ typedef struct geClock {
 } geClock;
 void geClockStart(geClock* c);
 void geClockUpdate(geClock* c);
-bool geClockShouldUpdate(geClock* c);
+int geClockShouldUpdate(geClock* c);
 double geClockGetUpdateTimeMilliseconds(void);
 double geClockGetUpdateTimeSeconds(void);
 #ifdef __cplusplus

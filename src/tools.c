@@ -4,6 +4,29 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef tui
+#include <time.h>
+#include <unistd.h>
+#else
+#include <SDL3/SDL.h>
+#endif
+
+void sgSleepMS(int ms) {
+#ifdef tui
+	usleep(ms * 1000);
+#else
+	SDL_Delay(1);
+#endif
+}
+
+uint64_t getCurrentMSTicks(void) {
+#ifdef tui
+	return clock() / (CLOCKS_PER_SEC / 1000);
+#else
+	uint64_t _frequency = SDL_GetPerformanceFrequency();  // ticks per second
+	return SDL_GetPerformanceCounter();
+#endif
+}
 
 int sgasprintf(char **strp, const char *fmt, ...) {
 	va_list args;
