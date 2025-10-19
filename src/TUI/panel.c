@@ -19,6 +19,7 @@ typedef enum TUIPanelFlags {
 	TUIObjectFlagDirty = 1 << 0,
 	TUIObjectFlagBorder = 1 << 1,
 	TUIObjectFlagDisplayNameInBorder = 1 << 2,
+	TUIObjectFlagFocusedBorder = 1 << 3,
 } TUIPanelFlags;
 
 typedef struct Panel {
@@ -62,9 +63,16 @@ static Panel* getPanel(void* panelPtr) {
 }
 
 static void drawPanelBorder(Panel* panel) {
+	if (HAS_ANY_FLAGS(panel->Flags, TUIObjectFlagFocusedBorder)) {
+		wattron(panel->CursesWindow, A_REVERSE);
+	}
+
 	box(panel->CursesWindow, 0, 0);
 	if (HAS_ANY_FLAGS(panel->Flags, TUIObjectFlagDisplayNameInBorder)) {
 		mvwprintw(panel->CursesWindow, 0, 2, panel->Name);
+	}
+	if (HAS_ANY_FLAGS(panel->Flags, TUIObjectFlagFocusedBorder)) {
+		wattroff(panel->CursesWindow, A_REVERSE);
 	}
 }
 
@@ -109,6 +117,20 @@ void PanelAddBorder(void* panelPtr, int shouldBorder) {
 		SET_FLAG(panel->Flags, TUIObjectFlagDirty);
 		CLEAR_FLAG(panel->Flags, TUIObjectFlagBorder);
 		CLEAR_FLAG(panel->Flags, TUIObjectFlagDisplayNameInBorder);
+	}
+}
+
+void PanelSetFocus(void* panelPtr, int shouldFocus) {
+	Panel* panel = getPanel(panelPtr);
+	if (!panel) {
+		return;
+	}
+	if (shouldFocus) {
+		SET_FLAG(panel->Flags, TUIObjectFlagFocusedBorder);
+		SET_FLAG(panel->Flags, TUIObjectFlagDirty);
+	} else {
+		CLEAR_FLAG(panel->Flags, TUIObjectFlagFocusedBorder);
+		SET_FLAG(panel->Flags, TUIObjectFlagDirty);
 	}
 }
 

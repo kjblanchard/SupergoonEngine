@@ -94,7 +94,8 @@ static bool Start(void) {
 static bool eventLoop(void) {
 #ifdef tui
 	// TODO we should make some kind of event system.
-	return false;
+	bool quit = HandleEvents(NULL);
+	return quit;
 #else
 	static SDL_Event event;
 	bool quit = false;

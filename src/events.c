@@ -13,7 +13,10 @@ BuiltinEventTypes BuiltinEventIds;
 static int (*_customEventHandler)(void *event) = NULL;
 static int _currentCustomRegisteredEvent = 1000;
 
+static int _shouldQuit = 0;
+
 void InitializeEventEngine(void) {
+	BuiltinEventIds.QuitGameEvent = _currentCustomRegisteredEvent++;
 	BuiltinEventIds.LoadBgmEvent = _currentCustomRegisteredEvent++;
 	BuiltinEventIds.PlayBgmEvent = _currentCustomRegisteredEvent++;
 	BuiltinEventIds.StopBgmEvent = _currentCustomRegisteredEvent++;
@@ -31,6 +34,7 @@ void PushEvent(uint32_t eventType, int eventCode, void *data, void *data2) {
 	// event.user.data1 = data;
 	// event.user.data2 = data2;
 	// SDL_PushEvent(&event);
+	if (eventType == BuiltinEventIds.QuitGameEvent) _shouldQuit = true;
 }
 
 int HandleEvents(void *event) {
@@ -41,6 +45,7 @@ int HandleEvents(void *event) {
 	handleTouchEvent(event);
 	windowEventHandler(event);
 #endif
+	return _shouldQuit;
 	return false;
 }
 

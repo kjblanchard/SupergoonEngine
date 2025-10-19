@@ -13,6 +13,7 @@ void PanelAddName(void* panelPtr, const char* name);
 void PanelDraw(void* panelPtr);
 void PanelAddChild(void* parentPanelPtr, void* childPtr, TUIDrawCallback func);
 void PanelDestroy(void* panelPtr);
+void PanelSetFocus(void* panelPtr, int shouldFocus);
 
 #ifdef __cplusplus
 }

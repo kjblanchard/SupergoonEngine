@@ -135,6 +135,10 @@ function engine.Input.KeyboardKeyDown(key)
     return engine.Input.UIButtonPresses.Down[key] or cInput.IsKeyboardKeyDown(key)
 end
 
+function engine.Input.GetKeysPressedThisFrame()
+    return cInput.GetKeysPressedThisFrameString()
+end
+
 engine.Input._UIButtonLastState = {}
 engine.Input.UIButtonThisFrame = {}
 ---Updates the internal input system in lua so you don't have to call keydown, just pressed, etc.

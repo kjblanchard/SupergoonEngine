@@ -26,6 +26,8 @@ void CreateWindowImpl(void) {
 	cbreak();
 	noecho();
 	keypad(stdscr, TRUE);
+	// Pressing escape causes a delay in curses, not sure if we want that yet.
+	ESCDELAY = 0;
 	// curs_set(1);
 	curs_set(0);
 	nodelay(stdscr, TRUE);

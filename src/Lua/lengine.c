@@ -1,4 +1,3 @@
-#include <SDL3/SDL.h>
 #include <Supergoon/Audio/Audio.h>
 #include <Supergoon/engine.h>
 #include <Supergoon/events.h>
@@ -12,6 +11,7 @@
 #include <SupergoonEngine/camera.h>
 #include <SupergoonEngine/window.h>
 #ifndef tui
+#include <SDL3/SDL.h>
 #include <Supergoon/map.h>
 #include <SupergoonEngine/gameobject.h>
 #include <SupergoonEngine/map.h>
@@ -142,7 +142,8 @@ static int getCurrentMapName(lua_State* L) {
 }
 
 static int pushQuit(lua_State* L) {
-	PushEvent(SDL_EVENT_QUIT, 0, NULL, NULL);
+	PushEvent(BuiltinEventIds.QuitGameEvent, 0, NULL, NULL);
+	sgLogWarn("Pushing quit");
 	return 0;
 }
 

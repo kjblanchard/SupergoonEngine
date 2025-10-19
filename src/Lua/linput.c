@@ -5,6 +5,9 @@
 #include <lauxlib.h>
 #include <lua.h>
 #include <stdbool.h>
+#ifdef tui
+#include <SupergoonEngine/Platform/cursesInput.h>
+#endif
 
 static int isKeyboardKeyPressed(lua_State* L) {
 	if (!LuaCheckFunctionCallParamsAndTypes(L, 1, LuaFunctionParameterTypePass)) {
@@ -38,12 +41,23 @@ static int isKeyboardKeyDown(lua_State* L) {
 	return 1;
 }
 
+static int getKeysPressedThisFrame(lua_State* L) {
+	if (LuaGetStackSize(L) != 0) {
+		sgLogWarn("Bad params sent into keyboard key pressed from lua");
+		return 0;
+	}
+#ifndef tui
+	LuaPushString(L, "");
+	return 1;
+#endif
+	LuaPushString(L, _keysPressedThisFrame);
+	return 1;
+}
+
 static const luaL_Reg inputLib[] = {
 	{"IsKeyboardKeyPressed", isKeyboardKeyPressed},
 	{"IsKeyboardKeyDown", isKeyboardKeyDown},
-	// {
-	// 	"SetKeyboardKeyPressedFunc",
-	// },
+	{"GetKeysPressedThisFrameString", getKeysPressedThisFrame},
 	{NULL, NULL}};
 
 void RegisterLuaInputFunctions(void) {

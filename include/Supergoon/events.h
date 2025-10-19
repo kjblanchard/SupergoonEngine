@@ -6,6 +6,7 @@
  * can use to push events of this type to the event system
  */
 typedef struct BuiltinEventTypes {
+	uint32_t QuitGameEvent;
 	uint32_t LoadBgmEvent;
 	uint32_t PlayBgmEvent;
 	uint32_t StopBgmEvent;

@@ -36,9 +36,21 @@ function TUI.AddTextToTextbox(textboxPtr, newText)
     cTUI.AddText(textboxPtr, newText)
 end
 
+function TUI.ShowCursor(shouldShow)
+    cTUI.SetShowCursor(shouldShow)
+end
+
+function TUI.SetCursorPosition(window, x, y)
+    cTUI.SetCursorPosition(window, x, y)
+end
+
 function TUI.AddColor(textboxPtr, color)
     color = color or engine.Log.LogColorsWhite
     cTUI.AddColor(textboxPtr, color)
+end
+
+function TUI.SetPanelFocus(panel, shouldFocus)
+    cTUI.SetPanelFocus(panel, shouldFocus)
 end
 
 function TUI.SetTextboxStyle(textboxPtr, styleInt)

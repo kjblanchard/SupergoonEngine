@@ -104,13 +104,13 @@ static int drawPanel(lua_State* L) {
 	return 0;
 }
 
-static int setTuiEcho(lua_State* L) {
+static int setShowCursor(lua_State* L) {
 	if (!LuaCheckFunctionCallParamsAndTypes(L, 1, LuaFunctionParameterTypeBoolean)) {
 		return 0;
 	}
 	bool shouldEcho = LuaGetBooli(L, 1);
-	int (*func)(void) = shouldEcho ? echo : noecho;
-	func();
+	int shouldShowCursor = shouldEcho ? 1 : 0;
+	curs_set(shouldShowCursor);
 	return 0;
 }
 
@@ -124,8 +124,17 @@ static int setWindowCursor(lua_State* L) {
 	return 0;
 }
 
+static int setPanelFocus(lua_State* L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 2, LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeBoolean)) {
+		return 0;
+	}
+	PanelSetFocus(LuaGetLightUserdatai(L, 1), LuaGetBooli(L, 2));
+	return 0;
+}
+
 static const luaL_Reg tuiLib[] = {
 	{"NewPanel", createPanel},
+	{"SetPanelFocus", setPanelFocus},
 	{"NewText", createText},
 	{"UpdateText", updateText},
 	{"AddLineTextWithColor", addLineTextWithColor},
@@ -135,7 +144,7 @@ static const luaL_Reg tuiLib[] = {
 	{"NewPanelEx", createPanelEx},
 	{"DrawPanel", drawPanel},
 	{"AddChild", addChildToPanel},
-	{"SetEcho", setTuiEcho},
+	{"SetShowCursor", setShowCursor},
 	{"SetCursorPosition", setWindowCursor},
 	{NULL, NULL}};
 
