@@ -8,6 +8,8 @@
 #include <libgen.h>
 #include <mach-o/dyld.h>
 #include <unistd.h>
+#elif sdl
+#include <SDL3/SDL_filesystem.h>
 #endif
 
 static char *_systemFilePath = NULL;
@@ -17,7 +19,7 @@ void GetFilenameWithPrefPathFilepath(char *buffer, size_t bufferSize, const char
 }
 
 static const char *getBaseExePath(void) {
-#ifdef __APPLE__
+#ifndef sdl
 	char path[1024];
 	uint32_t size = sizeof(path);
 	if (_NSGetExecutablePath(path, &size) != 0) {
@@ -39,6 +41,9 @@ static const char *getBaseExePath(void) {
 		free(_systemFilePath);
 		_systemFilePath = withSlash;
 	}
+	return _systemFilePath;
+#elif sdl
+	_systemFilePath = strdup(SDL_GetBasePath());
 	return _systemFilePath;
 }
 

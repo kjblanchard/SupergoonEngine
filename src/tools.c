@@ -15,7 +15,7 @@ void sgSleepMS(int ms) {
 #ifdef tui
 	usleep(ms * 1000);
 #else
-	SDL_Delay(1);
+	SDL_Delay(ms);
 #endif
 }
 
@@ -23,8 +23,7 @@ uint64_t getCurrentMSTicks(void) {
 #ifdef tui
 	return clock() / (CLOCKS_PER_SEC / 1000);
 #else
-	uint64_t _frequency = SDL_GetPerformanceFrequency();  // ticks per second
-	return SDL_GetPerformanceCounter();
+	return SDL_GetTicks();
 #endif
 }
 

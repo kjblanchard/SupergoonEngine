@@ -1,15 +1,11 @@
 #include <SDL3/SDL.h>
-#include <SupergoonEngine/Platform/sdlInput.h>
+#include <SupergoonEngine/Platform/sdl/sdlInput.h>
 #include <stdint.h>
 
 static uint8_t _currentKeyboardState[SDL_SCANCODE_COUNT];
 static uint8_t _previousKeyboardState[SDL_SCANCODE_COUNT];
 
-// static void InitializeKeyboardStateArrays(void) {
-// 	InitializeKeyboardImpl();
-// }
-
-void InitializeKeyboardImpl() {
+void InitializeKeyboardImpl(void) {
 	memset(_previousKeyboardState, 0, sizeof(Uint8) * SDL_SCANCODE_COUNT);
 	memcpy(_currentKeyboardState, SDL_GetKeyboardState(NULL), sizeof(Uint8) * SDL_SCANCODE_COUNT);
 }

@@ -49,9 +49,10 @@ static int getKeysPressedThisFrame(lua_State* L) {
 #ifndef tui
 	LuaPushString(L, "");
 	return 1;
-#endif
+#else
 	LuaPushString(L, _keysPressedThisFrame);
 	return 1;
+#endif
 }
 
 static const luaL_Reg inputLib[] = {

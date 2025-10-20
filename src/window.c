@@ -6,7 +6,7 @@
 #ifdef tui
 #include <SupergoonEngine/Platform/cursesWindow.h>
 #else
-#include <SupergoonEngine/Platform/sdlWindow.h>
+#include <SupergoonEngine/Platform/sdl/sdlWindow.h>
 #endif
 typedef union SDL_Event Event;
 #ifdef imgui

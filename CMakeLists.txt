@@ -4,8 +4,7 @@ set(COMPILE_OPTIONS)
 set(CMAKE_EXECUTABLE_SUFFIX
     ".html"
     CACHE STRING "Use html" FORCE)
-# set(EXTERNAL_LIBS SDL3::SDL3-static)
-set(EXTERNAL_LIBS "")
+set(EXTERNAL_LIBS SDL3::SDL3-static)
 set(FOLDERS_TO_COPY scripting/)
 
 if(UNIX OR APPLE)
@@ -67,14 +66,19 @@ if(NOT CREATE_MACOS_TUI)
     src/sprite.c
     src/Input/mouse.c
     src/Input/touch.c
-    src/Platform/sdlInput.c
-    src/Platform/sdlWindow.c
+    src/Platform/sdl/sdl.c
+    src/Platform/sdl/sdlInput.c
+    src/Platform/sdl/sdlWindow.c
     src/map.c
     src/Lua/lanimation.c
     src/Lua/lsprite.c
     src/Lua/object.c
     src/Lua/lscene.c
     src/Lua/leffects.c
+    # sound
+    src/Platform/openal/openal.c
+    src/Platform/openal/openalStream.c
+    src/Platform/openal/openalBgm.c
     # 2d engine
     src/graphics.c
     # input
@@ -88,23 +92,10 @@ if(NOT CREATE_MACOS_TUI)
     src/UI/uitext.c
     src/UI/uibutton.c
     src/UI/uiProgressBar.c
-    src/Lua/lui.c
-    # Audio
-    src/Platform/sdl/sdlBgm.c
-    src/Platform/sdl/sdlAudio.c)
+    src/Lua/lui.c)
 else()
-  list(
-    APPEND
-    SRC_FILES
-    src/Platform/cursesInput.c
-    src/Platform/cursesWindow.c
-    src/TUI/panel.c
-    src/Lua/ltui.c
-    src/Platform/openal/openal.c
-    src/Platform/openal/openalStream.c
-    src/Platform/openal/openalBgm.c
-    src/TUI/textbox.c
-    src/TUI/text.c)
+  list(APPEND SRC_FILES src/Platform/cursesInput.c src/Platform/cursesWindow.c src/TUI/panel.c src/Lua/ltui.c
+       src/TUI/textbox.c src/TUI/text.c)
 endif(NOT CREATE_MACOS_TUI)
 
 if(imgui AND NOT CREATE_MACOS_TUI)

@@ -22,11 +22,12 @@ void RegisterAllLuaFunctions(void) {
 	RegisterLuaEffectsFunctions();
 	RegisterLuaSpriteFunctions();
 	RegisterLuaAnimationFunctions();
+#else
+	RegisterLuaTuiFunctions();
 #endif
 	RegisterLuaLogFunctions();
 	RegisterLuaAudioFunctions();
 	RegisterLuaEngineFunctions();
 	RegisterLuaInputFunctions();
 	RegisterLuaCameraFunctions();
-	RegisterLuaTuiFunctions();
 }

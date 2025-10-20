@@ -5,7 +5,7 @@
 #ifdef tui
 #include <SupergoonEngine/Platform/cursesInput.h>
 #else
-#include <SupergoonEngine/Platform/sdlInput.h>
+#include <SupergoonEngine/Platform/sdl/sdlInput.h>
 #endif
 
 void InitializeKeyboardSystem(void) {
