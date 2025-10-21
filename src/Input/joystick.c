@@ -37,7 +37,7 @@ static void InitializeEngineGamepad(int padId, int playerNum) {
 	}
 }
 
-void geInitializeJoysticks(void) {
+void InitializeJoystickSystem(void) {
 	SDL_SetGamepadEventsEnabled(true);
 	CountPluggedInControllers();
 }
@@ -94,7 +94,7 @@ static void CountPluggedInControllers(void) {
 	SDL_free(joysticks);
 }
 
-void geUpdateControllerLastFrame(void) {
+void UpdateControllerSystem(void) {
 	for (int i = 0; i < _numGamePads; i++) {
 		memcpy(_connectedGamepads[i].lastFrameAxis, _connectedGamepads[i].thisFrameAxis, sizeof(Uint8) * SDL_GAMEPAD_AXIS_COUNT);
 		memcpy(_connectedGamepads[i].lastFrameButtons, _connectedGamepads[i].thisFrameButtons, sizeof(Uint8) * SDL_GAMEPAD_BUTTON_COUNT);

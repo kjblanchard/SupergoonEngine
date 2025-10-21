@@ -15,7 +15,7 @@ static int _currentCustomRegisteredEvent = 1000;
 
 static int _shouldQuit = 0;
 
-void InitializeEventEngine(void) {
+void InitializeEventSystem(void) {
 	BuiltinEventIds.QuitGameEvent = _currentCustomRegisteredEvent++;
 	BuiltinEventIds.LoadBgmEvent = _currentCustomRegisteredEvent++;
 	BuiltinEventIds.PlayBgmEvent = _currentCustomRegisteredEvent++;

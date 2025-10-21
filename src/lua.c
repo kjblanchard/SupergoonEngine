@@ -29,7 +29,7 @@ static void setLuaPath(void) {
 	free(full_str);
 }
 
-void InitializeLuaEngine(void) {
+void InitializeLuaSystem(void) {
 	_luaState = luaL_newstate();
 	if (_luaState == NULL) {
 		sgLogCritical("Could not initialize Lua");
@@ -73,7 +73,7 @@ void LuaRemoveIndex(LuaState L, int index) {
 void LuaMoveStackTipToIndex(LuaState L, int index) {
 	lua_insert(L, index);  // Rearrage the stack so that the function is before the actual arguments.
 }
-void sgCloseLua(void) {
+void ShutdownLuaSystem(void) {
 	lua_close(_luaState);
 }
 

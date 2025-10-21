@@ -8,7 +8,7 @@ typedef struct lua_State* LuaState;
 // Defined in lua.c
 extern LuaState _luaState;
 
-void InitializeLuaEngine(void);
+void InitializeLuaSystem(void);
 void LuaRunFile(const char* path);
 int LuaGetStackSize(LuaState L);
 void LuaPopStack(LuaState L, int num);
@@ -18,7 +18,7 @@ int LuaGetStack(LuaState L);
 void LuaRemoveIndex(LuaState L, int index);
 // Moves the tip to the index passed in, pushing everything else up.  Useful for if you pass func args first.
 void LuaMoveStackTipToIndex(LuaState L, int index);
-void sgCloseLua(void);
+void ShutdownLuaSystem(void);
 // Tables
 void LuaPushTableFromGlobal(LuaState L, const char* global);
 void LuaPushTableFromFile(LuaState L, const char* path);

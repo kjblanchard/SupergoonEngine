@@ -23,4 +23,4 @@
 void GetFilenameWithExeFilepath(char* buffer, size_t bufferSize, const char* filename);
 void GetFilenameWithPrefPathFilepath(char* buffer, size_t bufferSize, const char* filename);
 const char* GetBasePath(void);
-void shutdownEngineFilesystem(void);
+void ShutdownEngineSilesystem(void);

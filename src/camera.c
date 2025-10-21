@@ -10,7 +10,7 @@ float CameraZoom = 1.0f;
 float* followX;
 float* followY;
 
-void UpdateCamera(void) {
+void UpdateCameraSystem(void) {
 	float viewWidth = CamSizeX / CameraZoom;
 	float viewHeight = CamSizeY / CameraZoom;
 

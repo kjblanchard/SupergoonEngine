@@ -34,7 +34,7 @@ void handleTouchEvent(const SDL_Event* event) {
 	}
 }
 
-void updateTouchSystem(void) {
+void UpdateTouchSystem(void) {
 	_lastFrameTouch = _thisFrameTouch;
 }
 

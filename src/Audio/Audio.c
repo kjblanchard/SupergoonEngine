@@ -12,6 +12,6 @@ void SetGlobalBgmVolume(float volume) { SetGlobalBgmVolumeImpl(volume); }
 void SetGlobalSfxVolume(float volume) { SetGlobalSfxVolumeImpl(volume); }
 void PlaySfxOneShot(const char* name, float volume) { PlaySfxOneShotImpl(name, volume); }
 void AudioEventHandler(void* event) { AudioEventHandlerImpl(event); }
-void CloseAudio(void) { CloseAudioImpl(); }
-void AudioUpdate(void) { AudioUpdateImpl(); }
-void InitializeAudio(void) { InitializeAudioImpl(); }
+void ShutdownAudioSystem(void) { CloseAudioImpl(); }
+void UpdateAudioSystem(void) { AudioUpdateImpl(); }
+void InitializeAudioSystem(void) { InitializeAudioImpl(); }

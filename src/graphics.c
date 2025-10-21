@@ -221,11 +221,11 @@ void UnloadAllTextures(void) {
 	_firstCacheHole = 0;
 }
 
-void initializeGraphicsSystem(void) {
+void InitializeGraphicsSystem(void) {
 	RESIZE_ARRAY(_textureCache, _numTexturesInCache, _textureCacheSize, TextureCacheItem);
 }
 
-void shutdownGraphicsSystem(void) {
+void ShutdownGraphicsSystem(void) {
 	UnloadAllTextures();
 	SDL_free(_textureCache);
 	_textureCache = NULL;

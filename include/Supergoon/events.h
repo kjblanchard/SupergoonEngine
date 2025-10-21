@@ -22,7 +22,7 @@ extern BuiltinEventTypes BuiltinEventIds;
 /**
  * @brief Initialize the event engine
  */
-void InitializeEventEngine(void);
+void InitializeEventSystem(void);
 /**
  * @brief Push an event to be handled next update.
  * Events are handled at that start of an update loop.

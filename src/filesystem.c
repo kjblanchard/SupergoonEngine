@@ -15,6 +15,7 @@
 static char *_systemFilePath = NULL;
 
 void GetFilenameWithPrefPathFilepath(char *buffer, size_t bufferSize, const char *filename) {
+	// TODO we should probably do this right, and not just put the file here.
 	snprintf(buffer, bufferSize, "./%s", filename);
 }
 
@@ -58,6 +59,6 @@ const char *GetBasePath(void) {
 	return _systemFilePath ? _systemFilePath : getBaseExePath();
 }
 
-void shutdownEngineFilesystem(void) {
+void ShutdownEngineSilesystem(void) {
 	free(_systemFilePath);
 }

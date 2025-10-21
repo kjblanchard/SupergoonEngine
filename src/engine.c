@@ -6,13 +6,16 @@
 #include <Supergoon/Audio/Audio.h>
 #include <Supergoon/Input/joystick.h>
 #include <Supergoon/Input/keyboard.h>
+#include <Supergoon/Input/mouse.h>
 #include <Supergoon/Lua/engine.h>
 #include <Supergoon/Lua/scripting.h>
 #include <Supergoon/Platform/sdl/sdl.h>
+#include <Supergoon/Tweening/tween.h>
 #include <Supergoon/camera.h>
 #include <Supergoon/clock.h>
 #include <Supergoon/engine.h>
 #include <Supergoon/events.h>
+#include <Supergoon/filesystem.h>
 #include <Supergoon/gameobject.h>
 #include <Supergoon/graphics.h>
 #include <Supergoon/log.h>
@@ -20,43 +23,35 @@
 #include <Supergoon/map.h>
 #include <Supergoon/sprite.h>
 #include <Supergoon/state.h>
-#include <Supergoon/window.h>
 #include <Supergoon/tools.h>
+#include <Supergoon/tween.h>
 #include <Supergoon/ui.h>
 #include <Supergoon/window.h>
 
-// Functions in mouce.c
-void updateMouseSystem(void);
-void updateTouchSystem(void);
-// Function in tween.c
-extern void initializeTweenEngine(void);
-extern void updateTweens(void);
-// Function in filesystem.c
-extern void shutdownEngineFilesystem(void);
-Uint64 _previousMS;
-float deltaTimeSeconds;
+static Uint64 _previousMS;
+static float _deltaTimeSeconds;
+// This needs to be defined in the program that will be utilizing the engine.
 extern void(StartImpl)(void);
 static void (*_updateFunc)(void) = NULL;
 static void (*_drawFunc)(void) = NULL;
 static void (*_inputFunc)(void) = NULL;
 static int (*_handleEventFunc)(void *) = NULL;
-static void Quit(void);
 
-static bool Start(void) {
+static bool start(void) {
 	InitializeSdl();
-	sgInitializeDebugLogFile();
+	InitializeLogSystem();
 	InitializeKeyboardSystem();
-	initializeGraphicsSystem();
-	geInitializeJoysticks();
-	InitializeLuaEngine();
-	InitializeEventEngine();
+	InitializeGraphicsSystem();
+	InitializeJoystickSystem();
+	InitializeLuaSystem();
+	InitializeEventSystem();
 	CreateWindow();
-	InitializeAudio();
-	initializeTweenEngine();
+	InitializeAudioSystem();
+	InitializeTweenSystem();
 	InitializeUISystem();
 	RegisterAllLuaFunctions();
 	_previousMS = getCurrentMSTicks();
-	deltaTimeSeconds = 0;
+	_deltaTimeSeconds = 0;
 	return true;
 }
 
@@ -76,7 +71,7 @@ static void handleFramerate(Uint64 *now) {
 
 static void draw(void) {
 	DrawStart();
-	drawCurrentMap();
+	DrawCurrentMap();
 	DrawSpriteSystem();
 	if (_drawFunc) _drawFunc();
 	DrawUISystem();
@@ -88,36 +83,36 @@ static void Update(void) {
 	DeltaTimeMilliseconds = now - _previousMS;
 	_previousMS = now;
 	DeltaTimeSeconds = DeltaTimeMilliseconds / 1000;
+	UpdateAudioSystem();
 	UpdateKeyboardSystem();
 	if (_inputFunc) _inputFunc();
 	UpdateUIInputSystem();
 	Ticks += 1;
-	updateTweens();
+	UpdateTweens();
 	UpdateAnimators();
 	PushGamestateToLua();
 	GameObjectSystemUpdate();
 	if (_updateFunc) _updateFunc();
 	UpdateUISystem();
-	geUpdateControllerLastFrame();
-	updateMouseSystem();
-	updateTouchSystem();
-	UpdateCamera();
+	UpdateControllerSystem();
+	UpdateMouseSystem();
+	UpdateTouchSystem();
+	UpdateCameraSystem();
 	draw();
 	handleFramerate(&now);
-	AudioUpdate();
 }
 
 static void Quit(void) {
-	shutdownMapSystem();
+	ShutdownMapSystem();
 	ShutdownSpriteSystem();
 	ShutdownJoystickSystem();
-	shutdownGraphicsSystem();
-	sgCloseDebugLogFile();
-	sgCloseLua();
-	CloseAudio();
-	CloseWindow();
+	ShutdownGraphicsSystem();
+	ShutdownLuaSystem();
+	ShutdownAudioSystem();
 	ShutdownUISystem();
-	shutdownEngineFilesystem();
+	CloseWindow();
+	ShutdownEngineSilesystem();
+	ShutdownLogSystem();
 }
 
 void SetHandleEventFunction(int (*eventFunc)(void *)) {
@@ -135,8 +130,8 @@ void SetInputFunction(void (*updateFunc)(void)) {
 	_inputFunc = updateFunc;
 }
 
-SDL_AppResult SDL_AppInit(void **appState, int, char *[]) {
-	bool started = Start();
+SDL_AppResult SDL_AppInit(void **appState, int argc, char *argv[]) {
+	bool started = start();
 	if (!started) {
 		sgLogCritical("Could not start program, exiting");
 	}
@@ -167,6 +162,6 @@ SDL_AppResult SDL_AppIterate(void *appState) {
 	return SDL_APP_CONTINUE;
 }
 
-void SDL_AppQuit(void *appState, SDL_AppResult) {
+void SDL_AppQuit(void *appState, SDL_AppResult result) {
 	Quit();
 }

@@ -9,7 +9,7 @@ void SetCameraFollowTarget(float* x, float* y);
 void SetCameraZoom(float zoom);
 void SetCameraBounds(float x, float y);
 void SetCameraSize(float x, float y);
-void UpdateCamera(void);
+void UpdateCameraSystem(void);
 #ifdef __cplusplus
 }
 #endif

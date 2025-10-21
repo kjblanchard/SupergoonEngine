@@ -8,4 +8,5 @@ int InitializeSdl(void) {
 		sgLogError("Could not init sdl, %s", SDL_GetError());
 		return false;
 	}
+	return true;
 }

@@ -15,7 +15,7 @@ void handleMouseEvent(const SDL_Event* event) {
 	_thisFrameMouseButtons[buttonNum] = buttonPressed;
 }
 
-void updateMouseSystem(void) {
+void UpdateMouseSystem(void) {
 	for (int i = 0; i < 3; ++i) {
 		_lastFrameMouseButtons[i] = _thisFrameMouseButtons[i];
 	}

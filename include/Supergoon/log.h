@@ -27,13 +27,13 @@ typedef enum sgLogLevel {
  *
  * @return 1 if successful, 0 if failed.
  */
-int sgInitializeDebugLogFile(void);
+int InitializeLogSystem(void);
 /**
  * @brief Closes the open file for logging.
  *
  * @return
  */
-int sgCloseDebugLogFile(void);
+int ShutdownLogSystem(void);
 /**
  * @brief Log a Debug log in a printf format
  *

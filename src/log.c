@@ -24,7 +24,7 @@ static void Log(sgLogLevel level, const char *data_to_write);
 static sgLogLevel logLevel = Log_LDebug;
 static const char *logFileName = "errors.log";
 
-int sgInitializeDebugLogFile(void) {
+int InitializeLogSystem(void) {
 	sgLogDebug("Opening log file at %s", logFileName);
 	char buf[1000];
 	GetFilenameWithPrefPathFilepath(buf, sizeof(buf), logFileName);
@@ -38,7 +38,7 @@ void sgSetDebugFunction(void (*func)(const char *, const char *, int)) {
 	logFunc = func;
 }
 
-int sgCloseDebugLogFile(void) {
+int ShutdownLogSystem(void) {
 	if (!openDebugFile)
 		return 1;
 	int result = fclose(openDebugFile);

@@ -403,7 +403,7 @@ static void drawAnimatedTiles(void) {
 	}
 }
 
-void drawCurrentMap(void) {
+void DrawCurrentMap(void) {
 	if (!_currentMap) return;
 	RectangleF src = {CameraX, CameraY, _logicalWidth, _logicalHeight};
 	RectangleF dst = {0, 0, _logicalWidth, _logicalHeight};
@@ -498,7 +498,7 @@ void LoadObjectsFromMap(void) {
 	}
 }
 
-void shutdownMapSystem(void) {
+void ShutdownMapSystem(void) {
 	if (_bg1Texture) {
 		UnloadTexture(_bg1Texture);
 	}

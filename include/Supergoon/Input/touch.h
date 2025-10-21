@@ -5,7 +5,7 @@ extern "C" {
 typedef union SDL_Event Event;
 void handleTouchEvent(const union SDL_Event* event);
 void GetGameTouchPos(float* x, float* y);
-void updateTouchSystem(void);
+void UpdateTouchSystem(void);
 int IsTouchOverlapRect(int x, int y, int width, int height);
 int IsTouchJustPressed(void);
 int IsTouchJustReleased(void);

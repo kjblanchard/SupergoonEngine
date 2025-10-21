@@ -22,7 +22,7 @@ static void updateTweenData(sgTween* tweenPtr);
 sgTween _tweens[MAX_TWEENS];
 int _numberTweens = 0;
 
-void initializeTweenEngine(void) {
+void InitializeTweenSystem(void) {
 	for (size_t i = 0; i < MAX_TWEENS; i++) {
 		zeroTween(i);
 	}
@@ -36,7 +36,7 @@ static bool isTweenAvailableForActions(Tween tween) {
 	return false;
 }
 
-void updateTweens(void) {
+void UpdateTweens(void) {
 	for (size_t i = 0; i < (size_t)_numberTweens; i++) {
 		if (_tweens[i].Available || !_tweens[i].Started) continue;
 		updateTween(&_tweens[i], i);

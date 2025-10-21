@@ -76,7 +76,7 @@ typedef struct AnimatedTile {
 	unsigned int CurrentFrame;
 } AnimatedTile;
 
-struct Texture;
+typedef struct SDL_Texture Texture;
 
 // Tiled tileset
 typedef struct Tileset {
@@ -85,7 +85,7 @@ typedef struct Tileset {
 	int TileWidth;
 	int TileHeight;
 	char* Image;
-	struct Texture* TilesetTexture;
+	Texture* TilesetTexture;
 	int ImageWidth;
 	int ImageHeight;
 	AnimatedTile* AnimatedTiles;
@@ -124,9 +124,9 @@ typedef struct Tilemap {
 } Tilemap;
 
 // Draws the current map bg layers and animated tiles.
-void drawCurrentMap(void);
+void DrawCurrentMap(void);
 // Used when resetting or closing the game, clears out any static info like a loaded map, etc.
-void shutdownMapSystem(void);
+void ShutdownMapSystem(void);
 
 // Current map that will be drawn, if it exists.
 extern Tilemap* _currentMap;
