@@ -1,12 +1,7 @@
-#include <SDL3/SDL.h>
 #include <Supergoon/Input/keyboard.h>
+#include <Supergoon/Platform/sdl/sdlInput.h>
 #include <stdbool.h>
 #include <string.h>
-#ifdef tui
-#include <SupergoonEngine/Platform/cursesInput.h>
-#else
-#include <SupergoonEngine/Platform/sdl/sdlInput.h>
-#endif
 
 void InitializeKeyboardSystem(void) {
 	InitializeKeyboardImpl();

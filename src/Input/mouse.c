@@ -1,6 +1,6 @@
 #include <SDL3/SDL.h>
 #include <Supergoon/Input/mouse.h>
-#include <SupergoonEngine/window.h>
+#include <Supergoon/window.h>
 
 static bool _lastFrameMouseButtons[3] = {false};
 static bool _thisFrameMouseButtons[3] = {false};

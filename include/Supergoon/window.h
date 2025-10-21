@@ -28,7 +28,7 @@ void SetWindowOptions(int width, int height, const char* name);
 
 /**
  * @brief Setting this will scale the game from the world width and height
- * to the windows width and height.  Does not affect if ImGui enabled
+ * to the windows width and height.
  *
  * @param worldWidth the size of the world that it should scale from
  * @param worldHeight height of world that it should scale from
@@ -52,6 +52,29 @@ int WindowHeight(void);
 int WindowWidth(void);
 
 void CloseWindow(void);
+typedef struct SDL_Renderer Renderer;
+typedef struct SDL_Texture Texture;
+typedef struct SDL_Window Window;
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern Texture* _fullScreenTexture;
+extern int _gameImagePosX;
+extern int _gameImagePosY;
+extern float _gameImageScale;
+extern int _gameImageWidth;
+extern int _gameImageHeight;
+extern Renderer* _renderer;
+extern int _logicalWidth;
+extern int _logicalHeight;
+extern Window* _window;
+extern int _refreshRate;
+extern int _vsyncEnabled;
+extern int TARGET_FPS;
+
+int getRefreshRate(void);
+void handleWindowEvents();
 #ifdef __cplusplus
 }
 #endif

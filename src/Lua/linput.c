@@ -1,7 +1,7 @@
 #include <Supergoon/Input/keyboard.h>
+#include <Supergoon/Lua/input.h>
 #include <Supergoon/log.h>
 #include <Supergoon/lua.h>
-#include <SupergoonEngine/Lua/input.h>
 #include <lauxlib.h>
 #include <lua.h>
 #include <stdbool.h>

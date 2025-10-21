@@ -2,9 +2,9 @@
 #include <Supergoon/UI/uiobject.h>
 #include <Supergoon/UI/uitext.h>
 #include <Supergoon/filesystem.h>
+#include <Supergoon/graphics.h>
 #include <Supergoon/log.h>
-#include <SupergoonEngine/graphics.h>
-#include <SupergoonEngine/tools.h>
+#include <Supergoon/tools.h>
 #include <assert.h>
 #include <ctype.h>
 #include <ft2build.h>

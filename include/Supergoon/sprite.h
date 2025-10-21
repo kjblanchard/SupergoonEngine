@@ -20,6 +20,8 @@ typedef struct Sprite {
 
 Sprite* NewSprite(void);
 void DestroySprite(Sprite* sprite);
+void DrawSpriteSystem();
+void ShutdownSpriteSystem(void);
 #ifdef __cplusplus
 }
 #endif

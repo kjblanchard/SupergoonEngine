@@ -1,10 +1,8 @@
+#include <Supergoon/camera.h>
 #include <Supergoon/gameobject.h>
 #include <Supergoon/graphics.h>
 #include <Supergoon/sprite.h>
-#include <SupergoonEngine/camera.h>
-#include <SupergoonEngine/gameobject.h>
-#include <SupergoonEngine/sprite.h>
-#include <SupergoonEngine/tools.h>
+#include <Supergoon/tools.h>
 #include <limits.h>
 #include <stdlib.h>
 

@@ -64,3 +64,19 @@ void SetTextureAlpha(Texture* texture, int newAlpha);
 void UnloadTexture(Texture* texture);
 void UnloadUnusedTextures(void);
 void UnloadAllTextures(void);
+
+struct SDL_Surface;
+
+typedef struct TextureCacheItem {
+	Texture* Texture;
+	char* name;
+	uint16_t References;
+
+} TextureCacheItem;
+extern TextureCacheItem* _textureCache;
+extern size_t _firstCacheHole;
+extern bool _holes;
+extern size_t _numTexturesInCache;
+void initializeGraphicsSystem(void);
+Texture* loadTextureFromSurface(struct SDL_Surface* surface);
+void shutdownGraphicsSystem(void);

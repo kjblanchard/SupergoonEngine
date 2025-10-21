@@ -1,6 +1,6 @@
 #include <Supergoon/clock.h>
-#include <SupergoonEngine/tools.h>
-#include <SupergoonEngine/window.h>
+#include <Supergoon/tools.h>
+#include <Supergoon/window.h>
 #include <stdbool.h>
 
 static double _fixedTimestepSeconds = 0;

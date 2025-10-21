@@ -4,7 +4,7 @@
 #include <Supergoon/events.h>
 #include <Supergoon/log.h>
 #include <Supergoon/state.h>
-#include <SupergoonEngine/tween.h>
+#include <Supergoon/tween.h>
 #include <stdbool.h>
 #include <stdlib.h>
 

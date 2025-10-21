@@ -1,10 +1,10 @@
 #include <SDL3/SDL.h>
 #include <Supergoon/filesystem.h>
+#include <Supergoon/graphics.h>
 #include <Supergoon/log.h>
 #include <Supergoon/window.h>
-#include <SupergoonEngine/graphics.h>
-#include <SupergoonEngine/tools.h>
-#include <SupergoonEngine/window.h>
+#include <Supergoon/tools.h>
+#include <Supergoon/window.h>
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>

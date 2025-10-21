@@ -1,7 +1,6 @@
 .DS_Store
 .vscode/
 build/
-imgui.ini
 .terraform/
 terraform.tfvars
 memcheck.txt

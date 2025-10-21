@@ -1,8 +1,7 @@
 #include <Supergoon/Animation/animator.h>
 #include <Supergoon/lua.h>
 #include <Supergoon/state.h>
-#include <SupergoonEngine/Animation/animator.h>
-#include <SupergoonEngine/tools.h>
+#include <Supergoon/tools.h>
 #include <assert.h>
 #include <stdio.h>
 

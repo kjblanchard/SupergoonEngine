@@ -1,5 +1,6 @@
 #include <SDL3/SDL.h>
 #include <Supergoon/Animation/animator.h>
+#include <Supergoon/Lua/ui.h>
 #include <Supergoon/UI/ui.h>
 #include <Supergoon/UI/uiImageAnimation.h>
 #include <Supergoon/UI/uiProgressBar.h>
@@ -12,10 +13,8 @@
 #include <Supergoon/log.h>
 #include <Supergoon/lua.h>
 #include <Supergoon/sprite.h>
-#include <SupergoonEngine/Animation/animator.h>
-#include <SupergoonEngine/Lua/ui.h>
-#include <SupergoonEngine/tools.h>
-#include <SupergoonEngine/ui.h>
+#include <Supergoon/tools.h>
+#include <Supergoon/ui.h>
 #include <lauxlib.h>
 #include <lua.h>
 

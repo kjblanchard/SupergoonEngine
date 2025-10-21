@@ -66,7 +66,7 @@ void sgLogError(const char *format, ...);
  */
 void sgLogCritical(const char *fmt, ...);
 /**
- * @brief Sets a log function that will be called on every log function, usually used for outputting the logs somewhere else as well (imgui)
+ * @brief Sets a log function that will be called on every log function, usually used for outputting the logs somewhere else as well
  * @param Time string, Message string, Log level
  */
 void sgSetDebugFunction(void (*)(const char *, const char *, int));

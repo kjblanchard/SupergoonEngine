@@ -1,9 +1,7 @@
 #include <Supergoon/gameobject.h>
 #include <Supergoon/log.h>
 #include <Supergoon/map.h>
-#include <SupergoonEngine/gameobject.h>
-#include <SupergoonEngine/map.h>
-#include <SupergoonEngine/tools.h>
+#include <Supergoon/tools.h>
 #include <stdlib.h>
 
 size_t _currentId;
@@ -60,9 +58,6 @@ void AddGameObjectFromTiledMap(TiledObject* object) {
 	CurrentGameObject->Y = object->Y;
 	CurrentGameObject->W = object->Width;
 	CurrentGameObject->H = object->Height;
-#ifdef imgui
-	CurrentGameObject->Name = strdup(object->Name);
-#endif
 	if (_gameObjectTypes[CurrentGameObject->Type].CreateFunc) {
 		sgLogDebug("create gameobject function");
 		_gameObjectTypes[CurrentGameObject->Type].CreateFunc(object, CurrentGameObject);
@@ -161,10 +156,6 @@ void DestroyGameObjects(void) {
 		if (_firstGameObjectHole == NO_HOLE || i < _firstGameObjectHole) {
 			_firstGameObjectHole = i;
 		}
-#ifdef imgui
-		SDL_free(_gameObjects[i]->Name);
-		_gameObjects[i]->Name = NULL;
-#endif
 		_gameObjects[i]->Flags = GameObjectFlagDestroyed;
 	}
 }

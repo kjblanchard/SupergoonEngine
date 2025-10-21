@@ -52,13 +52,6 @@ set(SRC_FILES
     src/Lua/linput.c
     src/Lua/lcamera.c
     src/Lua/scripting.c
-    # src/Platform/sdl/sdlBgm.c src/Platform/sdl/sdlAudio.c
-)
-if(NOT CREATE_MACOS_TUI)
-  message(STATUS "Adding UI files")
-  list(
-    APPEND
-    SRC_FILES
     # Platform specific for no
     src/effects.c
     src/Animation/Animator.c
@@ -93,38 +86,6 @@ if(NOT CREATE_MACOS_TUI)
     src/UI/uibutton.c
     src/UI/uiProgressBar.c
     src/Lua/lui.c)
-else()
-  list(APPEND SRC_FILES src/Platform/cursesInput.c src/Platform/cursesWindow.c src/TUI/panel.c src/Lua/ltui.c
-       src/TUI/textbox.c src/TUI/text.c)
-endif(NOT CREATE_MACOS_TUI)
-
-if(imgui AND NOT CREATE_MACOS_TUI)
-  message(STATUS "ImGui is enabled, adding ImGui-related files.")
-  list(
-    APPEND
-    SRC_FILES
-    src/Imgui/imgui_impl_sdl3.cpp
-    src/Imgui/imgui_impl_sdlrenderer3.cpp
-    src/Imgui/imgui_demo.cpp
-    src/Imgui/imgui_tables.cpp
-    src/Imgui/imgui_widgets.cpp
-    src/Imgui/imgui_draw.cpp
-    src/Imgui/imgui.cpp
-    src/Debug/ImGui.cpp
-    src/Debug/Console.cpp
-    src/Debug/Audio.cpp
-    src/Debug/Graphics.cpp
-    src/Debug/Tween.cpp
-    src/Debug/Game.cpp
-    src/Debug/UI.cpp
-    src/Debug/Scene.cpp
-    src/Debug/Performance.cpp
-    src/Debug/Collision.cpp
-    src/Debug/GameObject.cpp
-    src/Debug/Debug.cpp # For showing all the windows
-    # src/Debug/Audio.cpp
-  )
-endif()
 
 add_library(${LIBRARY_TARGET_NAME} STATIC ${SRC_FILES})
 

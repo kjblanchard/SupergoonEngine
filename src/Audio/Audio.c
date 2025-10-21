@@ -1,9 +1,6 @@
-#ifdef miniaudio
-#include <SupergoonEngine/Platform/openal/openal.h>
-#else
-#include <SupergoonEngine/Platform/sdl/sdlAudio.h>
+#ifdef sdl
+#include <Supergoon/Platform/openal/openal.h>
 #endif
-
 void SetBgmTrack(int track) { SetBgmTrackImpl(track); }
 void LoadBgm(const char* filename, float volume, int loops) { LoadBgmImpl(filename, volume, loops); }
 void PlayBgm(void) { PlayBgmImpl(); }

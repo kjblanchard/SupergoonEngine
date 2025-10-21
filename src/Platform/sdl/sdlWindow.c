@@ -2,12 +2,7 @@
 #include <Supergoon/graphics.h>
 #include <Supergoon/log.h>
 #include <Supergoon/window.h>
-#include <SupergoonEngine/window.h>
 typedef union SDL_Event Event;
-#ifdef imgui
-#include <Supergoon/Debug/ImGui.hpp>
-
-#endif
 
 // Window/renderer is used as extern in graphics
 Window* _window = NULL;
@@ -39,12 +34,8 @@ _vsyncEnabled = false;
 // Target FPS 999 means there will be no delay in the engine, so probably use vsync
 int TARGET_FPS = 999;
 
-Texture* _imguiGameTexture;
+Texture* _fullScreenTexture;
 static char* _windowName = NULL;
-#ifdef imgui
-// Defined in engine.c
-extern bool _isGameSimulatorRunning;
-#endif
 // static Texture* testTexture = NULL;
 static void onWindowResize(void);
 
@@ -61,11 +52,6 @@ void windowEventHandler(Event* event) {
 void SetWindowOptionsImpl(int width, int height, const char* name) {
 	_windowWidth = width;
 	_windowHeight = height;
-#ifdef imgui
-	// Make the window start bigger if we are debugging.
-	_windowWidth *= 2;
-	_windowHeight *= 2;
-#endif
 	if (_windowName) {
 		SDL_free(_windowName);
 		_windowName = NULL;
@@ -92,13 +78,11 @@ static void onWindowResize(void) {
 	if (!SDL_SetWindowTitle(_window, _windowName)) {
 		sgLogError("Could not set window title");
 	}
-#ifndef imgui
 	if (_logicalHeight && _logicalWidth) {
 		if (!SDL_SetRenderLogicalPresentation(_renderer, _logicalWidth, _logicalHeight, SDL_LOGICAL_PRESENTATION_INTEGER_SCALE)) {
 			sgLogError("Could not set logical presentation");
 		}
 	}
-#endif
 	int windowW, windowH;
 	// TODO if for some reason the display is drawn offscreen, it will become letterboxed, not sure if problem
 	if (!SDL_GetRenderOutputSize(_renderer, &windowW, &windowH)) {
@@ -116,13 +100,13 @@ static void onWindowResize(void) {
 	_gameImageHeight = _logicalHeight * scale;
 	_gameImagePosX = (windowW - _gameImageWidth) / 2;
 	_gameImagePosY = (windowH - _gameImageHeight) / 2;
-	//  Create texture that the game will be drawn to.  ImGui will Draw to this in the Game window, otherwise the game will draw to this.
+	//  Create texture that the game will be drawn to.
 	_renderTargetWidth = _logicalWidth ? _logicalWidth : windowW;
 	_renderTargetHeight = _logicalHeight ? _logicalHeight : windowH;
-	if (_imguiGameTexture) {
-		UnloadTexture(_imguiGameTexture);
+	if (_fullScreenTexture) {
+		UnloadTexture(_fullScreenTexture);
 	}
-	_imguiGameTexture = CreateRenderTargetTexture(_renderTargetWidth, _renderTargetHeight, (sgColor){0, 0, 0, 255});
+	_fullScreenTexture = CreateRenderTargetTexture(_renderTargetWidth, _renderTargetHeight, (sgColor){0, 0, 0, 255});
 }
 
 void CreateWindowImpl(void) {
@@ -133,11 +117,7 @@ void CreateWindowImpl(void) {
 	_windowHeight = (_windowHeight != 0) ? _windowHeight : 480;
 	const char* name = (_windowName != NULL) ? _windowName : "Game";
 
-#ifdef imgui
-	int flags = SDL_WINDOW_RESIZABLE;
-#else
 	int flags = 0;
-#endif
 	if (!SDL_CreateWindowAndRenderer(name, _windowWidth, _windowHeight, flags, &_window, &_renderer)) {
 		sgLogCritical("Could not load window, error, %s", SDL_GetError());
 	}
@@ -147,9 +127,6 @@ void CreateWindowImpl(void) {
 	}
 	// #endif
 	getRefreshRate();
-#ifdef imgui
-	InitializeImGui();
-#endif
 	onWindowResize();
 	SDL_SetWindowPosition(_window, 0, 0);
 }
@@ -157,25 +134,14 @@ void CreateWindowImpl(void) {
 void DrawStartImpl(void) {
 	// Clear the screen
 	SDL_RenderClear(_renderer);
-#ifdef imgui
-	if (_isGameSimulatorRunning) {
-#endif
-		// Clear the texture we draw from
-		SDL_SetRenderTarget(_renderer, _imguiGameTexture);
-		SDL_RenderClear(_renderer);
-#ifdef imgui
-	}
-	StartImGuiFrame();
-#endif
+	// Clear the texture we draw from
+	SDL_SetRenderTarget(_renderer, _fullScreenTexture);
+	SDL_RenderClear(_renderer);
 }
 void DrawEndImpl(void) {
 	SDL_SetRenderTarget(_renderer, NULL);
-#ifndef imgui
 	SDL_FRect dest = {0, 0, _renderTargetWidth, _renderTargetHeight};
-	SDL_RenderTexture(_renderer, _imguiGameTexture, &dest, &dest);
-#else
-	DrawImGui();
-#endif
+	SDL_RenderTexture(_renderer, _fullScreenTexture, &dest, &dest);
 	SDL_RenderPresent(_renderer);
 }
 
@@ -190,7 +156,7 @@ int WindowWidthImpl(void) {
 	return _windowWidth;
 }
 void CloseWindowImpl(void) {
-	UnloadTexture(_imguiGameTexture);
+	UnloadTexture(_fullScreenTexture);
 	SDL_DestroyRenderer(_renderer);
 	SDL_DestroyWindow(_window);
 }

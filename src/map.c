@@ -1,22 +1,18 @@
+#include <Supergoon/camera.h>
 #include <Supergoon/filesystem.h>
+#include <Supergoon/gameobject.h>
 #include <Supergoon/graphics.h>
 #include <Supergoon/log.h>
 #include <Supergoon/lua.h>
 #include <Supergoon/map.h>
 #include <Supergoon/state.h>
-#include <SupergoonEngine/camera.h>
-#include <SupergoonEngine/gameobject.h>
-#include <SupergoonEngine/map.h>
-#include <SupergoonEngine/tools.h>
-#include <SupergoonEngine/window.h>
+#include <Supergoon/tools.h>
+#include <Supergoon/window.h>
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
 
 const uint8_t NUM_WALLS = 4;
-#ifdef imgui
-int _showingSolidBoxes = 0;
-#endif
 
 static void handleTiledLayerGroup(Tilemap* map);
 static void handleTiledObjectGroup(Tilemap* map);
@@ -170,9 +166,6 @@ static void handleTiledObjectEntities(Tilemap* map) {
 		TiledObject* object = &map->Objects[i];
 		LuaPushTableObjectToStacki(_luaState, i);
 		object->Id = LuaGetInt(_luaState, "id");
-#ifdef imgui
-		object->Name = LuaAllocateString(_luaState, "name");
-#endif
 		object->ObjectType = atoi(LuaGetString(_luaState, "type"));
 		object->X = LuaGetFloat(_luaState, "x");
 		object->Y = LuaGetFloat(_luaState, "y");
@@ -427,30 +420,6 @@ void drawCurrentMap(void) {
 	if (_bg2Texture) {
 		DrawTexture(_bg2Texture, &dst, &src);
 	}
-#ifdef imgui
-	RectangleF rect;
-	sgColor drawColor = {0, 0, 255, 255};
-	for (size_t i = 0; i < _numGameObjects; i++) {
-		GameObject* go = _gameObjects[i];
-		if (!(HAS_ANY_FLAGS(go->Flags, GameObjectFlagDestroyed)) && HAS_ALL_FLAGS(go->Flags, GameObjectFlagActive | GameObjectFlagDebugDraw)) {
-			rect.x = go->X - CameraX;
-			rect.y = go->Y - CameraY;
-			rect.w = go->W;
-			rect.h = go->H;
-			DrawRect(&rect, &drawColor, false);
-		}
-	}
-	if (_showingSolidBoxes) {
-		drawColor = (sgColor){255, 0, 0, 255};
-		for (size_t i = 0; i < _currentMap->NumSolids; i++) {
-			rect.x = _currentMap->Solids[i].x - CameraX;
-			rect.y = _currentMap->Solids[i].y - CameraY;
-			rect.w = _currentMap->Solids[i].w;
-			rect.h = _currentMap->Solids[i].h;
-			DrawRect(&rect, &drawColor, false);
-		}
-	}
-#endif
 }
 // TODO this was ai.. probably need to check this and fix.
 static Tilemap* checkCache(const char* mapName) {

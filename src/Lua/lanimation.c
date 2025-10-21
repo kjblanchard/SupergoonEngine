@@ -1,8 +1,7 @@
 #include <Supergoon/Animation/animator.h>
+#include <Supergoon/Lua/animation.h>
 #include <Supergoon/log.h>
 #include <Supergoon/lua.h>
-#include <SupergoonEngine/Animation/animator.h>
-#include <SupergoonEngine/Lua/animation.h>
 #include <lauxlib.h>
 #include <lua.h>
 // Pass in the animator file name, and the sprite to be used.  Sprite will be taken over by animator.

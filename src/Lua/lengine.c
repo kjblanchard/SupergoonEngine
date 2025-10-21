@@ -1,20 +1,19 @@
 #include <Supergoon/Audio/Audio.h>
+#include <Supergoon/Lua/engine.h>
+#include <Supergoon/Lua/object.h>
+#include <Supergoon/Lua/scene.h>
+#include <Supergoon/camera.h>
 #include <Supergoon/engine.h>
 #include <Supergoon/events.h>
 #include <Supergoon/log.h>
 #include <Supergoon/lua.h>
 #include <Supergoon/state.h>
 #include <Supergoon/window.h>
-#include <SupergoonEngine/Lua/engine.h>
-#include <SupergoonEngine/Lua/object.h>
-#include <SupergoonEngine/Lua/scene.h>
-#include <SupergoonEngine/camera.h>
-#include <SupergoonEngine/window.h>
+#include <Supergoon/window.h>
 #ifndef tui
 #include <SDL3/SDL.h>
+#include <Supergoon/gameobject.h>
 #include <Supergoon/map.h>
-#include <SupergoonEngine/gameobject.h>
-#include <SupergoonEngine/map.h>
 #endif
 #include <lauxlib.h>
 #include <lua.h>

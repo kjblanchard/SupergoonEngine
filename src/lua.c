@@ -1,7 +1,7 @@
 #include <Supergoon/filesystem.h>
 #include <Supergoon/log.h>
 #include <Supergoon/lua.h>
-#include <SupergoonEngine/tools.h>
+#include <Supergoon/tools.h>
 #include <lauxlib.h>
 #include <lua.h>
 #include <lualib.h>

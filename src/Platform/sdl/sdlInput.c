@@ -1,5 +1,5 @@
 #include <SDL3/SDL.h>
-#include <SupergoonEngine/Platform/sdl/sdlInput.h>
+#include <Supergoon/Platform/sdl/sdlInput.h>
 #include <stdint.h>
 
 static uint8_t _currentKeyboardState[SDL_SCANCODE_COUNT];

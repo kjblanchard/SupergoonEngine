@@ -1,9 +1,8 @@
+#include <Supergoon/Lua/sprite.h>
 #include <Supergoon/graphics.h>
 #include <Supergoon/log.h>
 #include <Supergoon/lua.h>
 #include <Supergoon/sprite.h>
-#include <SupergoonEngine/Lua/sprite.h>
-#include <SupergoonEngine/sprite.h>
 #include <lauxlib.h>
 #include <lua.h>
 

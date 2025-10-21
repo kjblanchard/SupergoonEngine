@@ -1,11 +1,11 @@
 #include <AL/al.h>
 #include <AL/alc.h>
+#include <Supergoon/Platform/openal/openal.h>
+#include <Supergoon/Platform/openal/openalBgm.h>
+#include <Supergoon/Platform/openal/openalStream.h>
 #include <Supergoon/filesystem.h>
 #include <Supergoon/log.h>
-#include <SupergoonEngine/Platform/openal/openal.h>
-#include <SupergoonEngine/Platform/openal/openalBgm.h>
-#include <SupergoonEngine/Platform/openal/openalStream.h>
-#include <SupergoonEngine/tools.h>
+#include <Supergoon/tools.h>
 #include <assert.h>
 #include <stdbool.h>
 #include <stdlib.h>
