@@ -1,7 +1,7 @@
+#include <Supergoon/Graphics/graphics.h>
 #include <Supergoon/camera.h>
 #include <Supergoon/filesystem.h>
 #include <Supergoon/gameobject.h>
-#include <Supergoon/graphics.h>
 #include <Supergoon/log.h>
 #include <Supergoon/lua.h>
 #include <Supergoon/map.h>
@@ -405,6 +405,7 @@ static void drawAnimatedTiles(void) {
 
 void DrawCurrentMap(void) {
 	if (!_currentMap) return;
+	float _logicalWidth = 0, _logicalHeight = 0;
 	RectangleF src = {CameraX, CameraY, _logicalWidth, _logicalHeight};
 	RectangleF dst = {0, 0, _logicalWidth, _logicalHeight};
 	float mapW = _currentMap->Width * _currentMap->TileWidth;

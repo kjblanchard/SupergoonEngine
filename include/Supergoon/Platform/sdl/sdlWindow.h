@@ -1,16 +1,15 @@
 #pragma once
+#include <SDL3/SDL_video.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 void SetWindowOptionsImpl(int width, int height, const char* name);
-void SetScalingOptionsImpl(int worldWidth, int worldHeight);
 void CreateWindowImpl(void);
-void DrawStartImpl(void);
-void DrawEndImpl(void);
 int WindowHeightImpl(void);
 int WindowWidthImpl(void);
 void CloseWindowImpl(void);
+extern SDL_Window* _window;
 #ifdef __cplusplus
 }
 #endif

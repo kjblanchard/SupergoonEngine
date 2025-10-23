@@ -1,12 +1,12 @@
 #include <SDL3/SDL.h>
-#include <Supergoon/graphics.h>
+#include <Supergoon/Graphics/graphics.h>
 #include <Supergoon/log.h>
 #include <Supergoon/window.h>
 typedef union SDL_Event Event;
 
 // Window/renderer is used as extern in graphics
 Window* _window = NULL;
-Renderer* _renderer = NULL;
+// Renderer* _renderer = NULL;
 static int _windowWidth = 0;
 static int _windowHeight = 0;
 // Used in debug, so non static
@@ -62,15 +62,8 @@ void SetWindowOptionsImpl(int width, int height, const char* name) {
 	}
 }
 
-void SetScalingOptionsImpl(int worldWidth, int worldHeight) {
-	_logicalWidth = worldWidth;
-	_logicalHeight = worldHeight;
-	if (_window) {
-		onWindowResize();
-	}
-}
-
 static void onWindowResize(void) {
+	// TODO this should be on an event, right now it is only when function is called
 	sgLogDebug("Setting window size %d, %d", _windowWidth, _windowHeight);
 	if (!SDL_SetWindowSize(_window, _windowWidth, _windowHeight)) {
 		sgLogError("Could not set window size, %s", SDL_GetError());
@@ -78,35 +71,38 @@ static void onWindowResize(void) {
 	if (!SDL_SetWindowTitle(_window, _windowName)) {
 		sgLogError("Could not set window title");
 	}
-	if (_logicalHeight && _logicalWidth) {
-		if (!SDL_SetRenderLogicalPresentation(_renderer, _logicalWidth, _logicalHeight, SDL_LOGICAL_PRESENTATION_INTEGER_SCALE)) {
-			sgLogError("Could not set logical presentation");
-		}
-	}
-	int windowW, windowH;
+	GraphicsWindowResizeEvent(_windowWidth, _windowHeight);
+
+	// Set the scaling
+	// if (_logicalHeight && _logicalWidth) {
+	// 	if (!SDL_SetRenderLogicalPresentation(_renderer, _logicalWidth, _logicalHeight, SDL_LOGICAL_PRESENTATION_INTEGER_SCALE)) {
+	// 		sgLogError("Could not set logical presentation");
+	// 	}
+	// }
+	// int windowW, windowH;
 	// TODO if for some reason the display is drawn offscreen, it will become letterboxed, not sure if problem
-	if (!SDL_GetRenderOutputSize(_renderer, &windowW, &windowH)) {
-		sgLogError("Could not set window output size");
-	}
+	// if (!SDL_GetRenderOutputSize(_renderer, &windowW, &windowH)) {
+	// 	sgLogError("Could not set window output size");
+	// }
 	int scaleX = 1.0;
 	int scaleY = 1.0;
-	if (_logicalWidth) {
-		scaleX = windowW / _logicalWidth;
-		scaleY = windowH / _logicalHeight;
-	}
+	// if (_logicalWidth) {
+	// 	scaleX = windowW / _logicalWidth;
+	// 	scaleY = windowH / _logicalHeight;
+	// }
 	int scale = (scaleX < scaleY) ? scaleX : scaleY;
 	_gameImageScale = (float)scale;
 	_gameImageWidth = _logicalWidth * scale;
 	_gameImageHeight = _logicalHeight * scale;
-	_gameImagePosX = (windowW - _gameImageWidth) / 2;
-	_gameImagePosY = (windowH - _gameImageHeight) / 2;
+	// _gameImagePosX = (windowW - _gameImageWidth) / 2;
+	// _gameImagePosY = (windowH - _gameImageHeight) / 2;
 	//  Create texture that the game will be drawn to.
-	_renderTargetWidth = _logicalWidth ? _logicalWidth : windowW;
-	_renderTargetHeight = _logicalHeight ? _logicalHeight : windowH;
-	if (_fullScreenTexture) {
-		UnloadTexture(_fullScreenTexture);
-	}
-	_fullScreenTexture = CreateRenderTargetTexture(_renderTargetWidth, _renderTargetHeight, (sgColor){0, 0, 0, 255});
+	// _renderTargetWidth = _logicalWidth ? _logicalWidth : windowW;
+	// _renderTargetHeight = _logicalHeight ? _logicalHeight : windowH;
+	// if (_fullScreenTexture) {
+	// 	UnloadTexture(_fullScreenTexture);
+	// }
+	// _fullScreenTexture = CreateRenderTargetTexture(_renderTargetWidth, _renderTargetHeight, (sgColor){0, 0, 0, 255});
 }
 
 void CreateWindowImpl(void) {
@@ -117,36 +113,20 @@ void CreateWindowImpl(void) {
 	_windowHeight = (_windowHeight != 0) ? _windowHeight : 480;
 	const char* name = (_windowName != NULL) ? _windowName : "Game";
 
-	int flags = 0;
-	if (!SDL_CreateWindowAndRenderer(name, _windowWidth, _windowHeight, flags, &_window, &_renderer)) {
-		sgLogCritical("Could not load window, error, %s", SDL_GetError());
+	int flags = SDL_WINDOW_ALWAYS_ON_TOP;
+#ifdef sdlgl
+	flags |= SDL_WINDOW_OPENGL;
+#endif
+	_window = SDL_CreateWindow(name, _windowWidth, _windowHeight, flags);
+	if (!_window) {
+		sgLogCritical("Could not create window, error, %s", SDL_GetError());
 	}
-	// #ifndef __EMSCRIPTEN__
-	if (!SDL_SetRenderVSync(_renderer, _vsyncEnabled)) {
-		sgLogWarn("Could not set vsync, %s", SDL_GetError());
-	}
-	// #endif
+	// if (!SDL_SetRenderVSync(_renderer, _vsyncEnabled)) {
+	// 	sgLogWarn("Could not set vsync, %s", SDL_GetError());
+	// }
 	getRefreshRate();
 	onWindowResize();
 	SDL_SetWindowPosition(_window, 0, 0);
-}
-
-void DrawStartImpl(void) {
-	// Clear the screen
-	SDL_RenderClear(_renderer);
-	// Clear the texture we draw from
-	SDL_SetRenderTarget(_renderer, _fullScreenTexture);
-	SDL_RenderClear(_renderer);
-}
-void DrawEndImpl(void) {
-	SDL_SetRenderTarget(_renderer, NULL);
-	SDL_FRect dest = {0, 0, _renderTargetWidth, _renderTargetHeight};
-	SDL_RenderTexture(_renderer, _fullScreenTexture, &dest, &dest);
-	SDL_RenderPresent(_renderer);
-}
-
-void DrawTexture(Texture* texture, RectangleF* dst, RectangleF* src) {
-	SDL_RenderTexture(_renderer, texture, src, dst);
 }
 
 int WindowHeightImpl(void) {
@@ -156,8 +136,6 @@ int WindowWidthImpl(void) {
 	return _windowWidth;
 }
 void CloseWindowImpl(void) {
-	UnloadTexture(_fullScreenTexture);
-	SDL_DestroyRenderer(_renderer);
 	SDL_DestroyWindow(_window);
 }
 

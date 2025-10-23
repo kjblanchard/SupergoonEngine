@@ -1,5 +1,5 @@
+#include <Supergoon/Graphics/graphics.h>
 #include <Supergoon/Lua/sprite.h>
-#include <Supergoon/graphics.h>
 #include <Supergoon/log.h>
 #include <Supergoon/lua.h>
 #include <Supergoon/sprite.h>
@@ -14,7 +14,6 @@ static int newSprite(lua_State* L) {
 	}
 	Sprite* sprite = NewSprite();
 	sprite->Texture = CreateTextureFromIndexedBMP(LuaGetStringi(L, 1));
-	sprite->Parent = LuaGetLightUserdatai(L, 2);
 	sprite->TextureSourceRect.x = LuaGetFloatFromTableStackiKey(L, 3, "x");
 	sprite->TextureSourceRect.y = LuaGetFloatFromTableStackiKey(L, 3, "y");
 	sprite->TextureSourceRect.h = LuaGetFloatFromTableStackiKey(L, 3, "h");

@@ -1,4 +1,5 @@
 #include <Supergoon/Audio/Audio.h>
+#include <Supergoon/Graphics/graphics.h>
 #include <Supergoon/Lua/engine.h>
 #include <Supergoon/Lua/object.h>
 #include <Supergoon/Lua/scene.h>
@@ -8,7 +9,6 @@
 #include <Supergoon/log.h>
 #include <Supergoon/lua.h>
 #include <Supergoon/state.h>
-#include <Supergoon/window.h>
 #include <Supergoon/window.h>
 #ifndef tui
 #include <SDL3/SDL.h>
@@ -36,10 +36,10 @@ static int setScalingOptions(lua_State* L) {
 		sgLogWarn("Bad parameters passed into scaling options from lua");
 		return 0;
 	}
-	int logX = LuaGetIntFromStacki(L, 1);
-	int logY = LuaGetIntFromStacki(L, 2);
-	SetScalingOptions(logX, logY);
-	SetCameraSize(logX, logY);
+	// int logX = LuaGetIntFromStacki(L, 1);
+	// int logY = LuaGetIntFromStacki(L, 2);
+	// SetScalingOptions(logX, logY);
+	// SetCameraSize(logX, logY);
 	return 0;
 }
 
@@ -129,15 +129,16 @@ static int drawRectCamOffset(lua_State* L) {
 }
 
 static int getCurrentMapName(lua_State* L) {
-#ifdef tui
 	return 0;
-#else
-	if (!_currentMap) {
-		return 0;
-	}
-	LuaPushString(L, _currentMap->BaseFilename);
-	return 1;
-#endif
+	// #ifdef tui
+	// 	return 0;
+	// #else
+	// 	if (!_currentMap) {
+	// 		return 0;
+	// 	}
+	// 	LuaPushString(L, _currentMap->BaseFilename);
+	// 	return 1;
+	// #endif
 }
 
 static int pushQuit(lua_State* L) {

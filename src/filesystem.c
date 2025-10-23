@@ -62,3 +62,20 @@ const char *GetBasePath(void) {
 void ShutdownEngineSilesystem(void) {
 	free(_systemFilePath);
 }
+
+char *GetContentOfFileString(const char *fullFilePath) {
+	FILE *filePointer;
+	filePointer = fopen(fullFilePath, "r");
+	if (!filePointer) {
+		sgLogWarn("Could not open file for reading, returning null");
+		return NULL;
+	}
+	fseek(filePointer, 0, SEEK_END);
+	size_t fileSize = ftell(filePointer);
+	fseek(filePointer, 0, SEEK_SET);
+	char *stringBuffer = malloc(fileSize + 1);
+	fread(stringBuffer, sizeof(char), fileSize, filePointer);
+	stringBuffer[fileSize] = '\0';
+	fclose(filePointer);
+	return stringBuffer;
+}

@@ -1,3 +1,4 @@
+#include <Supergoon/Graphics/graphics.h>
 #include <Supergoon/UI/ui.h>
 #include <Supergoon/UI/uiImageAnimation.h>
 #include <Supergoon/UI/uiProgressBar.h>
@@ -7,7 +8,6 @@
 #include <Supergoon/UI/uiobject.h>
 #include <Supergoon/UI/uirect.h>
 #include <Supergoon/UI/uitext.h>
-#include <Supergoon/graphics.h>
 #include <Supergoon/log.h>
 #include <Supergoon/ui.h>
 #include <assert.h>

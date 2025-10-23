@@ -136,6 +136,8 @@ void UpdatePlayingBgmVolumeImpl(void) {
 	}
 }
 void SetGlobalBgmVolumeImpl(float volume) {
+	_globalBgmVolume = volume;
+	UpdatePlayingBgmVolumeImpl();
 }
 void SetGlobalSfxVolumeImpl(float volume) {
 }

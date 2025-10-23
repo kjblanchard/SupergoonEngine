@@ -32,7 +32,6 @@ set(SRC_FILES
     src/camera.c
     src/lua.c
     src/log.c
-    src/clock.c
     src/state.c
     src/Input/keyboard.c
     src/window.c
@@ -55,25 +54,27 @@ set(SRC_FILES
     # Platform specific for no
     src/effects.c
     src/Animation/Animator.c
-    src/gameobject.c
+    # src/gameobject.c
     src/sprite.c
     src/Input/mouse.c
     src/Input/touch.c
     src/Platform/sdl/sdl.c
     src/Platform/sdl/sdlInput.c
     src/Platform/sdl/sdlWindow.c
-    src/map.c
+    # src/map.c
     src/Lua/lanimation.c
     src/Lua/lsprite.c
-    src/Lua/object.c
-    src/Lua/lscene.c
+    # src/Lua/object.c src/Lua/lscene.c
     src/Lua/leffects.c
+    src/Lua/lgraphics.c
     # sound
     src/Platform/openal/openal.c
     src/Platform/openal/openalStream.c
     src/Platform/openal/openalBgm.c
     # 2d engine
-    src/graphics.c
+    src/Graphics/graphics.c
+    src/Graphics/texture.c
+    src/Graphics/shader.c
     # input
     src/Input/joystick.c
     # UI
@@ -86,6 +87,12 @@ set(SRC_FILES
     src/UI/uibutton.c
     src/UI/uiProgressBar.c
     src/Lua/lui.c)
+
+if(SDL_GL)
+  list(APPEND SRC_FILES src/platform/opengl/glad.c src/platform/opengl/openglGraphics.c
+       src/platform/opengl/openglShader.c src/platform/opengl/openglTexture.c)
+
+endif(SDL_GL)
 
 add_library(${LIBRARY_TARGET_NAME} STATIC ${SRC_FILES})
 

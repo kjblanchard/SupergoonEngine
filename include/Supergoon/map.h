@@ -75,8 +75,7 @@ typedef struct AnimatedTile {
 	unsigned int NumDrawRectangles;
 	unsigned int CurrentFrame;
 } AnimatedTile;
-
-typedef struct SDL_Texture Texture;
+typedef struct Texture Texture;
 
 // Tiled tileset
 typedef struct Tileset {

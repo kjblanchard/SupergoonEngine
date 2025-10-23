@@ -22,17 +22,17 @@ void UpdateMouseSystem(void) {
 }
 
 void GetGameMousePos(float* x, float* y) {
-	float mouseX, mouseY;
-	SDL_GetMouseState(&mouseX, &mouseY);
-	int relX = mouseX - _gameImagePosX;
-	int relY = mouseY - _gameImagePosY;
-	if (relX >= 0 && relY >= 0 && relX < _gameImageWidth && relY < _gameImageHeight) {
-		*x = relX / _gameImageScale;
-		*y = relY / _gameImageScale;
-	} else {
-		*x = -1;
-		*y = -1;
-	}
+	// float mouseX, mouseY;
+	// SDL_GetMouseState(&mouseX, &mouseY);
+	// int relX = mouseX - _gameImagePosX;
+	// int relY = mouseY - _gameImagePosY;
+	// if (relX >= 0 && relY >= 0 && relX < _gameImageWidth && relY < _gameImageHeight) {
+	// 	*x = relX / _gameImageScale;
+	// 	*y = relY / _gameImageScale;
+	// } else {
+	// 	*x = -1;
+	// 	*y = -1;
+	// }
 }
 
 int IsMouseOverlapRect(int x, int y, int width, int height) {

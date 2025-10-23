@@ -4,6 +4,7 @@
 #include <SDL3/SDL_main.h>
 #include <Supergoon/Animation/animator.h>
 #include <Supergoon/Audio/Audio.h>
+#include <Supergoon/Graphics/graphics.h>
 #include <Supergoon/Input/joystick.h>
 #include <Supergoon/Input/keyboard.h>
 #include <Supergoon/Input/mouse.h>
@@ -12,12 +13,10 @@
 #include <Supergoon/Platform/sdl/sdl.h>
 #include <Supergoon/Tweening/tween.h>
 #include <Supergoon/camera.h>
-#include <Supergoon/clock.h>
 #include <Supergoon/engine.h>
 #include <Supergoon/events.h>
 #include <Supergoon/filesystem.h>
 #include <Supergoon/gameobject.h>
-#include <Supergoon/graphics.h>
 #include <Supergoon/log.h>
 #include <Supergoon/lua.h>
 #include <Supergoon/map.h>
@@ -41,11 +40,11 @@ static bool start(void) {
 	InitializeSdl();
 	InitializeLogSystem();
 	InitializeKeyboardSystem();
-	InitializeGraphicsSystem();
 	InitializeJoystickSystem();
 	InitializeLuaSystem();
 	InitializeEventSystem();
 	CreateWindow();
+	InitializeGraphicsSystem();
 	InitializeAudioSystem();
 	InitializeTweenSystem();
 	InitializeUISystem();
@@ -71,10 +70,11 @@ static void handleFramerate(Uint64 *now) {
 
 static void draw(void) {
 	DrawStart();
-	DrawCurrentMap();
-	DrawSpriteSystem();
+	// DrawCurrentMap();
+	// DrawSpriteSystem();
 	if (_drawFunc) _drawFunc();
-	DrawUISystem();
+	// DrawUISystem();
+	// DrawEnd();
 	DrawEnd();
 }
 
@@ -86,14 +86,14 @@ static void Update(void) {
 	UpdateAudioSystem();
 	UpdateKeyboardSystem();
 	if (_inputFunc) _inputFunc();
-	UpdateUIInputSystem();
+	// UpdateUIInputSystem();
 	Ticks += 1;
-	UpdateTweens();
-	UpdateAnimators();
+	// UpdateTweens();
+	// UpdateAnimators();
 	PushGamestateToLua();
-	GameObjectSystemUpdate();
+	// GameObjectSystemUpdate();
 	if (_updateFunc) _updateFunc();
-	UpdateUISystem();
+	// UpdateUISystem();
 	UpdateControllerSystem();
 	UpdateMouseSystem();
 	UpdateTouchSystem();
@@ -103,7 +103,7 @@ static void Update(void) {
 }
 
 static void Quit(void) {
-	ShutdownMapSystem();
+	// ShutdownMapSystem();
 	ShutdownSpriteSystem();
 	ShutdownJoystickSystem();
 	ShutdownGraphicsSystem();

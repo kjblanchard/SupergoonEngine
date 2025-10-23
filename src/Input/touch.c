@@ -20,14 +20,14 @@ void handleTouchEvent(const SDL_Event* event) {
 		_thisFrameTouch = true;
 
 		int windowW, windowH;
-		if (!SDL_GetRenderOutputSize(_renderer, &windowW, &windowH)) {
-			sgLogError("Failed to get render output size: %s", SDL_GetError());
-			return;
-		}
+		// if (!SDL_GetRenderOutputSize(_renderer, &windowW, &windowH)) {
+		// 	sgLogError("Failed to get render output size: %s", SDL_GetError());
+		// 	return;
+		// }
 
 		// Touch positions are normalized (0.0 to 1.0), scale to window space
-		_touchX = event->tfinger.x * windowW;
-		_touchY = event->tfinger.y * windowH;
+		// _touchX = event->tfinger.x * windowW;
+		// _touchY = event->tfinger.y * windowH;
 
 	} else if (event->type == SDL_EVENT_FINGER_UP) {
 		_thisFrameTouch = false;
@@ -39,17 +39,17 @@ void UpdateTouchSystem(void) {
 }
 
 void GetGameTouchPos(float* x, float* y) {
-	int relX = _touchX - _gameImagePosX;
-	int relY = _touchY - _gameImagePosY;
+	// int relX = _touchX - _gameImagePosX;
+	// int relY = _touchY - _gameImagePosY;
 
-	if (_thisFrameTouch && relX >= 0 && relY >= 0 &&
-		relX < _gameImageWidth && relY < _gameImageHeight) {
-		*x = relX / _gameImageScale;
-		*y = relY / _gameImageScale;
-	} else {
-		*x = -1;
-		*y = -1;
-	}
+	// if (_thisFrameTouch && relX >= 0 && relY >= 0 &&
+	// 	relX < _gameImageWidth && relY < _gameImageHeight) {
+	// 	*x = relX / _gameImageScale;
+	// 	*y = relY / _gameImageScale;
+	// } else {
+	// 	*x = -1;
+	// 	*y = -1;
+	// }
 }
 
 int IsTouchOverlapRect(int x, int y, int width, int height) {

@@ -11,7 +11,7 @@
 #pragma once
 #include <Supergoon/Primitives/Color.h>
 #include <Supergoon/Primitives/rectangle.h>
-typedef struct SDL_Texture Texture;
+typedef struct Texture Texture;
 
 /**
  * @brief Draws a rectangle on the screen, currently doesn't take any params hah..
@@ -80,3 +80,8 @@ extern size_t _numTexturesInCache;
 void InitializeGraphicsSystem(void);
 Texture* loadTextureFromSurface(struct SDL_Surface* surface);
 void ShutdownGraphicsSystem(void);
+
+void DrawStart(void);
+void DrawEnd(void);
+
+void GraphicsWindowResizeEvent(int width, int height);

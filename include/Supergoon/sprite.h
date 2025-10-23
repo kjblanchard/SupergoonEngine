@@ -3,7 +3,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-typedef struct SDL_Texture Texture;
+typedef struct Texture Texture;
 struct GameObject;
 typedef enum SpriteFlags {
 	SpriteFlagVisible = 1 << 0,
@@ -11,7 +11,6 @@ typedef enum SpriteFlags {
 	SpriteFlagUI = 1 << 2,
 } SpriteFlags;
 typedef struct Sprite {
-	struct GameObject* Parent;
 	Texture* Texture;
 	RectangleF TextureSourceRect;
 	RectangleF OffsetAndSizeRectF;

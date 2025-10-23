@@ -91,7 +91,6 @@ static int createImageAnimator(lua_State* L) {
 	imageAnimation->AnimatorHandle = 9999;
 	Sprite* sprite = NewSprite();
 	sprite->Texture = CreateTextureFromIndexedBMP(LuaGetStringi(L, 4));
-	sprite->Parent = NULL;
 	sprite->TextureSourceRect.x = LuaGetFloatFromTableStackiKey(L, 5, "x");
 	sprite->TextureSourceRect.y = LuaGetFloatFromTableStackiKey(L, 5, "y");
 	sprite->TextureSourceRect.h = LuaGetFloatFromTableStackiKey(L, 5, "h");

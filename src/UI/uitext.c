@@ -1,8 +1,8 @@
 #include <SDL3/SDL.h>
+#include <Supergoon/Graphics/graphics.h>
 #include <Supergoon/UI/uiobject.h>
 #include <Supergoon/UI/uitext.h>
 #include <Supergoon/filesystem.h>
-#include <Supergoon/graphics.h>
 #include <Supergoon/log.h>
 #include <Supergoon/tools.h>
 #include <assert.h>

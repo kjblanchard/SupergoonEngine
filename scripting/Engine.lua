@@ -540,4 +540,24 @@ end
 
 --#endregion Core
 
+--#region Graphics
+
+---Creates a shader and compiles it..
+---@param vertexFilename string filename with no extension of a file inside of the assets/shaders folder
+---@param fragmentFilename any filename with no extension of a fiel inside of the assets/shaders folder
+---@return lightuserdata Shader ptr
+function engine.CreateShader(vertexFilename, fragmentFilename)
+    return cGraphics.CreateShader(vertexFilename, fragmentFilename)
+end
+
+function engine.CreateTexture(filename)
+    return cGraphics.CreateTexture(filename)
+end
+
+function engine.DrawTexture(texture, shader, x, y)
+    cGraphics.DrawTexture(texture, shader, x, y)
+end
+
+-- #endregion
+
 return engine

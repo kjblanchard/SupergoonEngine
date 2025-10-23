@@ -1,6 +1,6 @@
+#include <Supergoon/Graphics/graphics.h>
 #include <Supergoon/camera.h>
 #include <Supergoon/gameobject.h>
-#include <Supergoon/graphics.h>
 #include <Supergoon/sprite.h>
 #include <Supergoon/tools.h>
 #include <limits.h>
@@ -30,7 +30,6 @@ static Sprite* getFreeSprite(void) {
 
 Sprite* NewSprite(void) {
 	Sprite* sprite = getFreeSprite();
-	sprite->Parent = 0;
 	sprite->Texture = NULL;
 	sprite->Flags = 0;
 	sprite->TextureSourceRect = (RectangleF){0, 0, 0, 0};
@@ -48,7 +47,6 @@ void DestroySprite(Sprite* sprite) {
 			continue;
 		}
 		UnloadTexture(sprite->Texture);
-		sprite->Parent = NULL;
 		sprite->Texture = NULL;
 		sprite->Flags = SpriteFlagDestroyed;
 		if (_firstSpriteHole == NO_HOLE || i < _firstSpriteHole) {
@@ -68,10 +66,6 @@ void DrawSpriteSystem(void) {
 		}
 		float globalX = 0;
 		float globalY = 0;
-		if (sprite->Parent) {
-			globalX = sprite->Parent->X;
-			globalY = sprite->Parent->Y;
-		}
 		dst.x = SDL_roundf(globalX + sprite->OffsetAndSizeRectF.x - CameraX);
 		dst.y = SDL_roundf(globalY + sprite->OffsetAndSizeRectF.y - CameraY);
 
