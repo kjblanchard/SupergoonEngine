@@ -1,4 +1,5 @@
 #include <Supergoon/Graphics/graphics.h>
+#include <Supergoon/Graphics/texture.h>
 #include <Supergoon/camera.h>
 #include <Supergoon/gameobject.h>
 #include <Supergoon/sprite.h>
@@ -31,7 +32,9 @@ static Sprite* getFreeSprite(void) {
 
 Sprite* NewSprite(void) {
 	Sprite* sprite = getFreeSprite();
+	sprite->Parent = NULL;
 	sprite->Texture = NULL;
+	sprite->Shader = NULL;
 	sprite->Flags = 0;
 	sprite->TextureSourceRect = (RectangleF){0, 0, 0, 0};
 	sprite->OffsetAndSizeRectF = (RectangleF){0, 0, 0, 0};
@@ -58,21 +61,17 @@ void DestroySprite(Sprite* sprite) {
 }
 
 void DrawSpriteSystem(void) {
-	RectangleF dst = {0, 0, 0, 0};
+	RectangleF dst = (RectangleF){0, 0, 0, 0};
 	for (size_t i = 0; i < _numSprites; i++) {
 		Sprite* sprite = _sprites[i];
-		if (!sprite || !sprite->Texture || NO_FLAGS(sprite->Flags, SpriteFlagVisible) || HAS_ALL_FLAGS(sprite->Flags, SpriteFlagUI)) {
-			// if (!sprite || !sprite->Texture || NO_FLAGS(sprite->Flags, SpriteFlagVisible)  !(sprite->Flags & SpriteFlagVisible) || sprite->Flags & SpriteFlagUI) {
+		if (!sprite || !sprite->Texture || NO_FLAGS(sprite->Flags, SpriteFlagVisible)) {
 			continue;
 		}
-		float globalX = 0;
-		float globalY = 0;
-		dst.x = roundf(globalX + sprite->OffsetAndSizeRectF.x - CameraX);
-		dst.y = roundf(globalY + sprite->OffsetAndSizeRectF.y - CameraY);
-
+		dst.x = sprite->Parent ? sprite->Parent->X + sprite->OffsetAndSizeRectF.x : sprite->OffsetAndSizeRectF.x;
+		dst.y = sprite->Parent ? sprite->Parent->Y + sprite->OffsetAndSizeRectF.y : sprite->OffsetAndSizeRectF.y;
 		dst.w = sprite->OffsetAndSizeRectF.w;
 		dst.h = sprite->OffsetAndSizeRectF.h;
-		DrawTexture(sprite->Texture, &dst, &sprite->TextureSourceRect);
+		DrawTexture(sprite->Texture, sprite->Shader, &dst, &sprite->TextureSourceRect);
 	}
 }
 

@@ -99,10 +99,10 @@ end
 --#region Sprite
 engine.Sprite = {}
 engine.Sprite.Sprites = {}
-function engine.Sprite.NewSprite(imageName, parentPtr, textureSrcRectTable, offsetSizeRectTable)
+function engine.Sprite.NewSprite(imageName, parent, textureSrcRectTable, offsetSizeRectTable)
     textureSrcRectTable = engine.Tools.NormalizeRect(textureSrcRectTable)
     offsetSizeRectTable = engine.Tools.NormalizeRect(offsetSizeRectTable)
-    return cSprite.NewSprite(imageName, parentPtr, textureSrcRectTable, offsetSizeRectTable)
+    return cSprite.NewSprite(imageName, parent, textureSrcRectTable, offsetSizeRectTable)
 end
 
 function engine.Sprite.DestroySprite(spritePtr)
@@ -229,7 +229,7 @@ function engine.Gameobject.Sprite(ptr)
 end
 
 -- Calls the create function for the gameobject below ..
-function engine.Gameobject.CreateGameObjectInCurrentMap()
+function engine.Gameobject.CreateGameObject()
     return cGameObject.CreateGameObject()
 end
 

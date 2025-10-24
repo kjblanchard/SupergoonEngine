@@ -3,20 +3,17 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-void ShutdownGameObjectSystem(void);
 
 typedef struct GameObject {
 	unsigned int Id;
+	unsigned int Num;
 	float X;
 	float Y;
 } GameObject;
 
-extern size_t _currentId;
-extern size_t _numGameObjects;
-extern size_t _sizeGameObjects;
-extern GameObject** _gameObjects;
-
 GameObject* GameObjectCreate(void);
+void GameObjectDestroy(GameObject* gameobject);
+void ShutdownGameObjectSystem(void);
 
 #ifdef __cplusplus
 }

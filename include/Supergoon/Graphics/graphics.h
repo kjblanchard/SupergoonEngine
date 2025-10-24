@@ -9,22 +9,15 @@
  *
  */
 #pragma once
+#include <Supergoon/Graphics/texture.h>
 #include <Supergoon/Primitives/Color.h>
 #include <Supergoon/Primitives/rectangle.h>
-typedef struct Texture Texture;
 
 /**
  * @brief Draws a rectangle on the screen, currently doesn't take any params hah..
  *
  */
 void DrawRect(RectangleF* rect, sgColor* color, int filled);
-/**
- * @brief Draws a texture to the screen, make sure we are in a drawstart.
- * @param texture
- * @param dst
- * @param src
- */
-void DrawTexture(Texture* texture, RectangleF* dst, RectangleF* src);
 /**
  * @brief Creates a Texture that can be used as a render target.
  * Used if this will be drawn on by other draw calls

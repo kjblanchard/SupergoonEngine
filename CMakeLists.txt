@@ -54,7 +54,7 @@ set(SRC_FILES
     # Platform specific for no
     src/effects.c
     src/Animation/Animator.c
-    # src/gameobject.c
+    src/gameobject.c
     src/sprite.c
     src/Input/mouse.c
     # src/Input/touch.c
@@ -64,7 +64,8 @@ set(SRC_FILES
     # src/map.c
     src/Lua/lanimation.c
     src/Lua/lsprite.c
-    # src/Lua/object.c src/Lua/lscene.c
+    src/Lua/lgameobject.c
+    src/Lua/lscene.c
     src/Lua/leffects.c
     src/Lua/lgraphics.c
     # sound

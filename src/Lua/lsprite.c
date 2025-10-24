@@ -1,4 +1,6 @@
 #include <Supergoon/Graphics/graphics.h>
+#include <Supergoon/Graphics/shader.h>
+#include <Supergoon/Graphics/texture.h>
 #include <Supergoon/Lua/sprite.h>
 #include <Supergoon/log.h>
 #include <Supergoon/lua.h>
@@ -7,13 +9,16 @@
 #include <lua.h>
 
 static int newSprite(lua_State* L) {
-	if (LuaGetStackSize(L) != 4 || !LuaIsString(L, 1) || !LuaIsTable(L, 3) || !LuaIsTable(L, 4)) {
-		sgLogWarn("Bad args passed to new sprite from lua!");
-		LuaPushNil(L);
-		return 1;
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 4, LuaFunctionParameterTypeString, LuaFunctionParameterTypePass, LuaFunctionParameterTypeTable, LuaFunctionParameterTypeTable)) {
+		sgLogWarn("bad sprite args");
+		return 0;
 	}
 	Sprite* sprite = NewSprite();
-	sprite->Texture = CreateTextureFromIndexedBMP(LuaGetStringi(L, 1));
+	sprite->Parent = LuaGetLightUserdatai(L, 2);
+	sprite->Texture = TextureCreate();
+	TextureLoadFromBmp(sprite->Texture, LuaGetStringi(L, 1));
+	sprite->Shader = ShaderCreate();
+	ShaderCompile(sprite->Shader, "2dSpriteVertex", "2dSpriteFragment");
 	sprite->TextureSourceRect.x = LuaGetFloatFromTableStackiKey(L, 3, "x");
 	sprite->TextureSourceRect.y = LuaGetFloatFromTableStackiKey(L, 3, "y");
 	sprite->TextureSourceRect.h = LuaGetFloatFromTableStackiKey(L, 3, "h");
