@@ -535,7 +535,7 @@ void CheckRectForCollisionWithSolids(RectangleF* rect) {
 		if (SDL_HasRectIntersectionFloat(rect, &solidRect)) {
 			// Handle the collision: adjust player position
 			// This is just a simple axis-aligned response
-			ResolveCollision(rect, &solidRect);
+			RectResolveCollision(rect, &solidRect);
 		}
 	}
 }

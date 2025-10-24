@@ -3,12 +3,11 @@
 #include <Supergoon/log.h>
 #include <stdio.h>
 #include <string.h>
-
-#ifdef tui
+#ifndef sdlbackend
 #include <libgen.h>
 #include <mach-o/dyld.h>
 #include <unistd.h>
-#elif sdl
+#else
 #include <SDL3/SDL_filesystem.h>
 #endif
 
@@ -20,7 +19,7 @@ void GetFilenameWithPrefPathFilepath(char *buffer, size_t bufferSize, const char
 }
 
 static const char *getBaseExePath(void) {
-#ifndef sdl
+#ifndef sdlbackend
 	char path[1024];
 	uint32_t size = sizeof(path);
 	if (_NSGetExecutablePath(path, &size) != 0) {
@@ -43,13 +42,13 @@ static const char *getBaseExePath(void) {
 		_systemFilePath = withSlash;
 	}
 	return _systemFilePath;
-#elif sdl
+#elif sdlbackend
 	_systemFilePath = strdup(SDL_GetBasePath());
 	return _systemFilePath;
+#endif
 }
 
 void GetFilenameWithExeFilepath(char *buffer, size_t bufferSize, const char *filename) {
-#endif
 	const char *path = _systemFilePath ? _systemFilePath : getBaseExePath();
 	if (snprintf(buffer, bufferSize, "%s%s", path, filename) >= (int)bufferSize) {
 		sgLogWarn("Path is likely incorrect, buffer passed is not log enough for %s", filename);

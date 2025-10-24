@@ -7,7 +7,7 @@
 extern void handleTweenEvents(void *event);
 // Functions in mouce.c
 extern void handleMouseEvent(void *event);
-extern void handleTouchEvent(void *event);
+// extern void handleTouchEvent(void *event);
 extern void windowEventHandler(void *event);
 BuiltinEventTypes BuiltinEventIds;
 static int (*_customEventHandler)(void *event) = NULL;
@@ -42,7 +42,7 @@ int HandleEvents(void *event) {
 // handleTweenEvents(event);
 #ifndef tui
 	handleMouseEvent(event);
-	handleTouchEvent(event);
+	// handleTouchEvent(event);
 	windowEventHandler(event);
 #endif
 	return _shouldQuit;

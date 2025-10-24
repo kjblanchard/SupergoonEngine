@@ -5,6 +5,7 @@
 #include <Supergoon/tools.h>
 #include <limits.h>
 #include <stdlib.h>
+#include <string.h>
 
 static size_t _firstSpriteHole = NO_HOLE;
 static size_t _numSprites = 0;
@@ -66,8 +67,8 @@ void DrawSpriteSystem(void) {
 		}
 		float globalX = 0;
 		float globalY = 0;
-		dst.x = SDL_roundf(globalX + sprite->OffsetAndSizeRectF.x - CameraX);
-		dst.y = SDL_roundf(globalY + sprite->OffsetAndSizeRectF.y - CameraY);
+		dst.x = roundf(globalX + sprite->OffsetAndSizeRectF.x - CameraX);
+		dst.y = roundf(globalY + sprite->OffsetAndSizeRectF.y - CameraY);
 
 		dst.w = sprite->OffsetAndSizeRectF.w;
 		dst.h = sprite->OffsetAndSizeRectF.h;
@@ -79,7 +80,7 @@ void ShutdownSpriteSystem(void) {
 	for (size_t i = 0; i < _sizeSprites; i++) {
 		UnloadTexture(_sprites[i]->Texture);
 	}
-	SDL_free(_sprites);
+	free(_sprites);
 	_sprites = NULL;
 	_numSprites = 0;
 	_sizeSprites = 4;

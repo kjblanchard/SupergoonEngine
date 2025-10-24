@@ -27,11 +27,22 @@ static int createTexture(lua_State* L) {
 }
 
 static int drawTexture(lua_State* L) {
-	if (!LuaCheckFunctionCallParamsAndTypes(L, 4, LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeNumber)) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 4, LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeTable, LuaFunctionParameterTypeTable)) {
 		sgLogWarn("Bad function call to create shader, requires two strings for filenames for shader source");
 		return 0;
 	}
-	DrawTexture(LuaGetLightUserdatai(L, 1), LuaGetLightUserdatai(L, 2), LuaGetFloati(L, 3), LuaGetFloati(L, 4));
+	RectangleF dst;
+	dst.x = LuaGetFloatFromTableStackiKey(L, 3, "x");
+	dst.y = LuaGetFloatFromTableStackiKey(L, 3, "y");
+	dst.w = LuaGetFloatFromTableStackiKey(L, 3, "w");
+	dst.h = LuaGetFloatFromTableStackiKey(L, 3, "h");
+	RectangleF src;
+	src.x = LuaGetFloatFromTableStackiKey(L, 4, "x");
+	src.y = LuaGetFloatFromTableStackiKey(L, 4, "y");
+	src.w = LuaGetFloatFromTableStackiKey(L, 4, "w");
+	src.h = LuaGetFloatFromTableStackiKey(L, 4, "h");
+
+	DrawTexture(LuaGetLightUserdatai(L, 1), LuaGetLightUserdatai(L, 2), &dst, &src);
 	return 0;
 }
 

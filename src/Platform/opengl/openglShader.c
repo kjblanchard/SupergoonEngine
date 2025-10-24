@@ -1,6 +1,11 @@
+#ifndef __EMSCRIPTEN__
 #include <glad/glad.h>
-// needs to be first
+// Need to do glad first
 #include <SDL3/SDL_opengl.h>
+#else
+#include <GLES3/gl3.h>
+#include <SDL3/SDL_opengles2.h>
+#endif
 #include <Supergoon/Graphics/shader.h>
 #include <Supergoon/Platform/opengl/openglGraphics.h>
 #include <Supergoon/filesystem.h>
@@ -29,8 +34,12 @@ typedef enum ShaderType {
 CachedShaderFile _cachedShaders[NUM_CACHED_SHADERS];
 
 char *getShaderDataFromFile(const char *filename) {
+	const char *suffix = "";
+#ifdef __EMSCRIPTEN__
+	suffix = "E";
+#endif
 	char *filepath;
-	asprintf(&filepath, "%sassets/shaders/%s%s", GetBasePath(), filename, ".glsl");
+	asprintf(&filepath, "%sassets/shaders/%s%s%s", GetBasePath(), filename, suffix, ".glsl");
 	char *data = GetContentOfFileString(filepath);
 	free(filepath);
 	return data;
@@ -175,11 +184,6 @@ void ShaderSetUniformVector4fVImpl(Shader *shader, const char *name, vec4 value,
 		ShaderUseImpl(shader);
 	glUniform4f(glGetUniformLocation(shader->ID, name), value[0], value[1], value[2], value[3]);
 }
-// void ShaderSetUniformMatrix4Impl(Shader *shader, const char *name, mat4 value, int useShader) {
-// 	if (useShader)
-// 		ShaderUseImpl(shader);
-// 	glUniformMatrix4fv(glGetUniformLocation(shader->ID, name), 1, false, (const GLfloat *)value);
-// }
 void ShaderSetUniformMatrix4Impl(Shader *shader, const char *name, mat4 value, int useShader) {
 	if (useShader)
 		ShaderUseImpl(shader);

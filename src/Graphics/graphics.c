@@ -36,9 +36,9 @@ void UnloadAllTextures(void) {
 void InitializeGraphicsSystem(void) {
 	InitializeGraphicsSystemImpl();
 }
-Texture* loadTextureFromSurface(struct SDL_Surface* surface) {
-	return NULL;
-}
+// Texture* loadTextureFromSurface(struct SDL_Surface* surface) {
+// 	return NULL;
+// }
 void ShutdownGraphicsSystem(void) {
 	ShutdownGraphicsSystemImpl();
 }

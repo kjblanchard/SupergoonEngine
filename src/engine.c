@@ -47,7 +47,7 @@ static bool start(void) {
 	InitializeGraphicsSystem();
 	InitializeAudioSystem();
 	InitializeTweenSystem();
-	InitializeUISystem();
+	// InitializeUISystem();
 	RegisterAllLuaFunctions();
 	_previousMS = getCurrentMSTicks();
 	_deltaTimeSeconds = 0;
@@ -96,7 +96,7 @@ static void Update(void) {
 	// UpdateUISystem();
 	UpdateControllerSystem();
 	UpdateMouseSystem();
-	UpdateTouchSystem();
+	// UpdateTouchSystem();
 	UpdateCameraSystem();
 	draw();
 	handleFramerate(&now);
@@ -109,7 +109,7 @@ static void Quit(void) {
 	ShutdownGraphicsSystem();
 	ShutdownLuaSystem();
 	ShutdownAudioSystem();
-	ShutdownUISystem();
+	// ShutdownUISystem();
 	CloseWindow();
 	ShutdownEngineSilesystem();
 	ShutdownLogSystem();

@@ -113,6 +113,7 @@ void LoadBgmImpl(const char* filename, float volume, int loops) {
 	AudioBgmAsset* bgmAsset = &_bgmAssets[_stream];
 	_mainStream->BgmData = bgmAsset->BgmPtr;
 	StreamLoad(_mainStream);
+	free(args.Name);
 }
 
 void PlayBgmImpl(void) {

@@ -262,7 +262,7 @@ static int checkSolidsRect(lua_State* L) {
 }
 
 static int createGameObject(lua_State* L) {
-	GameObject* obj = AddGameObject();
+	GameObject* obj = GameObjectCreate();
 	LuaPushLightUserdata(L, obj);
 	return 1;
 }

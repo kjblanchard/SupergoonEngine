@@ -57,7 +57,7 @@ set(SRC_FILES
     # src/gameobject.c
     src/sprite.c
     src/Input/mouse.c
-    src/Input/touch.c
+    # src/Input/touch.c
     src/Platform/sdl/sdl.c
     src/Platform/sdl/sdlInput.c
     src/Platform/sdl/sdlWindow.c
@@ -77,16 +77,9 @@ set(SRC_FILES
     src/Graphics/shader.c
     # input
     src/Input/joystick.c
-    # UI
-    src/UI/ui.c
-    src/UI/uirect.c
-    src/UI/uiobject.c
-    src/UI/uiimage.c
-    src/UI/uiImageAnimation.c
-    src/UI/uitext.c
-    src/UI/uibutton.c
-    src/UI/uiProgressBar.c
-    src/Lua/lui.c)
+    # UI src/UI/ui.c src/UI/uirect.c src/UI/uiobject.c src/UI/uiimage.c src/UI/uiImageAnimation.c src/UI/uitext.c
+    # src/UI/uibutton.c src/UI/uiProgressBar.c src/Lua/lui.c
+)
 
 if(SDL_GL)
   list(APPEND SRC_FILES src/platform/opengl/glad.c src/platform/opengl/openglGraphics.c
@@ -117,6 +110,16 @@ if(SYSTEM_PACKAGES) # If we are using system packages, then we should try to fin
   if(LIB_OPENAL)
     list(APPEND EXTERNAL_LIBS ${LIB_OPENAL})
   endif(LIB_OPENAL)
+
+  find_library(
+    LIB_CGLM
+    PATH_SUFFIXES .a .dll
+    NAMES libcglm cglm libcglm.a cglm.dll libcglm.a
+    HINTS /usr/local/lib /c/cmake/lib)
+
+  if(LIB_CGLM)
+    list(APPEND EXTERNAL_LIBS ${LIB_CGLM})
+  endif(LIB_CGLM)
 
   find_library(
     LIB_VORBIS
@@ -157,22 +160,29 @@ if(SYSTEM_PACKAGES) # If we are using system packages, then we should try to fin
   if(LIB_LUA)
     list(APPEND EXTERNAL_LIBS ${LIB_LUA})
   endif(LIB_LUA)
-  if(NOT CREATE_MACOS_TUI)
-    find_package(SDL3 CONFIG COMPONENTS SDL3-shared)
-    find_package(Freetype)
-    if(FREETYPE_FOUND)
-      list(APPEND EXTERNAL_LIBS ${FREETYPE_LIBRARY})
-      target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC /usr/local/include/freetype2
-                                                               /opt/homebrew/opt/freetype/include/freetype2)
-    endif(FREETYPE_FOUND)
-  endif(NOT CREATE_MACOS_TUI)
+  find_package(SDL3 CONFIG COMPONENTS SDL3-shared)
+  find_package(Freetype)
+  if(FREETYPE_FOUND)
+    list(APPEND EXTERNAL_LIBS ${FREETYPE_LIBRARY})
+    target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC /usr/local/include/freetype2
+                                                             /opt/homebrew/opt/freetype/include/freetype2)
+  endif(FREETYPE_FOUND)
 
-  if(CREATE_MACOS_TUI)
-    set(CURSES_NEED_NCURSES TRUE)
-    find_package(Curses)
-    list(APPEND EXTERNAL_LIBS Curses)
-  endif()
 endif(SYSTEM_PACKAGES)
+
+if(NOT LIB_CGLM)
+  message(STATUS "CGLM not found. Fetching CGLM...")
+  set(INSTALL_CMAKE_PACKAGE_MODULE
+      OFF
+      CACHE BOOL "Dont do it" FORCE)
+  FetchContent_Declare(
+    LIB_CGLM
+    GIT_REPOSITORY https://github.com/recp/cglm
+    GIT_TAG v0.9.6
+    EXCLUDE_FROM_ALL)
+  FetchContent_MakeAvailable(LIB_CGLM)
+  list(APPEND EXTERNAL_LIBS cglm)
+endif(NOT LIB_CGLM)
 
 if(NOT LIB_OGG)
   message(STATUS "OGG not found. Fetching OGG...")
@@ -234,57 +244,55 @@ if(NOT LIB_LUA)
   # list(APPEND EXTERNAL_LIBS lua_static)
   list(APPEND EXTERNAL_LIBS lua_static)
 endif(NOT LIB_LUA)
-if(NOT CREATE_MACOS_TUI)
-  if(NOT SDL3_FOUND)
-    message(STATUS "SDL3 not found. Fetching SDL3...")
-    set(SDL_SHARED
-        OFF
-        CACHE BOOL "Build SDL as a shared library")
-    set(SDL_STATIC
-        ON
-        CACHE BOOL "Build SDL as a shared library")
-    set(SDL_TEST
-        OFF
-        CACHE BOOL "Build SDL as a shared library")
-    set(ENABLE_SDL_STATIC
-        OFF
-        CACHE BOOL "Build SDL as a static library")
-    FetchContent_Declare(
-      SDL3
-      GIT_REPOSITORY https://github.com/libsdl-org/SDL
-      GIT_TAG release-3.2.16
-      EXCLUDE_FROM_ALL)
-    FetchContent_MakeAvailable(SDL3)
-  endif(NOT SDL3_FOUND)
-  if(NOT FREETYPE_FOUND)
-    message(STATUS "freetype not found. Fetching freetype...")
-    set(FT_DISABLE_BROTLI
-        ON
-        CACHE BOOL "Do not install when installing" FORCE)
-    set(FT_DISABLE_HARFBUZZ
-        ON
-        CACHE BOOL "Do not install when installing" FORCE)
-    set(FT_DISABLE_ZLIB
-        ON
-        CACHE BOOL "Do not use" FORCE)
-    set(FT_DISABLE_BZIP2
-        ON
-        CACHE BOOL "Do not use" FORCE)
-    set(FT_DISABLE_PNG
-        ON
-        CACHE BOOL "Do not use" FORCE)
-    set(FT_DISABLE_PNG
-        ON
-        CACHE BOOL "Do not use" FORCE)
-    FetchContent_Declare(
-      LIB_FREETYPE
-      GIT_REPOSITORY https://github.com/freetype/freetype
-      GIT_TAG VER-2-13-3
-      EXCLUDE_FROM_ALL)
-    FetchContent_MakeAvailable(LIB_FREETYPE)
-    list(APPEND EXTERNAL_LIBS freetype)
-  endif(NOT FREETYPE_FOUND)
-endif(NOT CREATE_MACOS_TUI)
+if(NOT SDL3_FOUND)
+  message(STATUS "SDL3 not found. Fetching SDL3...")
+  set(SDL_SHARED
+      OFF
+      CACHE BOOL "Build SDL as a shared library")
+  set(SDL_STATIC
+      ON
+      CACHE BOOL "Build SDL as a shared library")
+  set(SDL_TEST
+      OFF
+      CACHE BOOL "Build SDL as a shared library")
+  set(ENABLE_SDL_STATIC
+      OFF
+      CACHE BOOL "Build SDL as a static library")
+  FetchContent_Declare(
+    SDL3
+    GIT_REPOSITORY https://github.com/libsdl-org/SDL
+    GIT_TAG release-3.2.24
+    EXCLUDE_FROM_ALL)
+  FetchContent_MakeAvailable(SDL3)
+endif(NOT SDL3_FOUND)
+if(NOT FREETYPE_FOUND)
+  message(STATUS "freetype not found. Fetching freetype...")
+  set(FT_DISABLE_BROTLI
+      ON
+      CACHE BOOL "Do not install when installing" FORCE)
+  set(FT_DISABLE_HARFBUZZ
+      ON
+      CACHE BOOL "Do not install when installing" FORCE)
+  set(FT_DISABLE_ZLIB
+      ON
+      CACHE BOOL "Do not use" FORCE)
+  set(FT_DISABLE_BZIP2
+      ON
+      CACHE BOOL "Do not use" FORCE)
+  set(FT_DISABLE_PNG
+      ON
+      CACHE BOOL "Do not use" FORCE)
+  set(FT_DISABLE_PNG
+      ON
+      CACHE BOOL "Do not use" FORCE)
+  FetchContent_Declare(
+    LIB_FREETYPE
+    GIT_REPOSITORY https://github.com/freetype/freetype
+    GIT_TAG VER-2-13-3
+    EXCLUDE_FROM_ALL)
+  FetchContent_MakeAvailable(LIB_FREETYPE)
+  list(APPEND EXTERNAL_LIBS freetype)
+endif(NOT FREETYPE_FOUND)
 
 if(DEBUG_CMAKE_VARIABLES)
   get_cmake_property(ALL_VARIABLES VARIABLES)

@@ -12,7 +12,7 @@
 #include <Supergoon/Lua/sprite.h>
 #include <Supergoon/Lua/ui.h>
 void RegisterAllLuaFunctions(void) {
-	RegisterLuaUIFunctions();
+	// RegisterLuaUIFunctions();
 	// RegisterLuaObjectFunctions();
 	// RegisterLuaSceneFuncs();
 	RegisterLuaEffectsFunctions();

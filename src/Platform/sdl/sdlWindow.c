@@ -114,7 +114,7 @@ void CreateWindowImpl(void) {
 	const char* name = (_windowName != NULL) ? _windowName : "Game";
 
 	int flags = SDL_WINDOW_ALWAYS_ON_TOP;
-#ifdef sdlgl
+#ifdef sdlglbackend
 	flags |= SDL_WINDOW_OPENGL;
 #endif
 	_window = SDL_CreateWindow(name, _windowWidth, _windowHeight, flags);

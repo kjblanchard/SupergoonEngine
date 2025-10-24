@@ -554,8 +554,8 @@ function engine.CreateTexture(filename)
     return cGraphics.CreateTexture(filename)
 end
 
-function engine.DrawTexture(texture, shader, x, y)
-    cGraphics.DrawTexture(texture, shader, x, y)
+function engine.DrawTexture(texture, shader, dstRect, srcRect)
+    cGraphics.DrawTexture(texture, shader, dstRect, srcRect)
 end
 
 -- #endregion

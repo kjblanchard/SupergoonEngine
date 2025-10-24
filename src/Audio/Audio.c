@@ -1,4 +1,4 @@
-#ifdef sdl
+#ifdef sdlbackend
 #include <Supergoon/Platform/openal/openal.h>
 #endif
 void SetBgmTrack(int track) { SetBgmTrackImpl(track); }

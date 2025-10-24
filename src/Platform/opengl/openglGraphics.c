@@ -1,6 +1,11 @@
+#ifndef __EMSCRIPTEN__
 #include <glad/glad.h>
 // Need to do glad first
 #include <SDL3/SDL_opengl.h>
+#else
+#include <GLES3/gl3.h>
+#include <SDL3/SDL_opengles2.h>
+#endif
 #include <Supergoon/Platform/opengl/openglGraphics.h>
 #include <Supergoon/Platform/sdl/sdlWindow.h>
 #include <Supergoon/log.h>
@@ -18,20 +23,27 @@ void GraphicsWindowResizeEventImpl(int width, int height) {
 }
 
 void InitializeGraphicsSystemImpl(void) {
+#ifdef __EMSCRIPTEN__
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);  // ES 3.0 = WebGL2
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+#else
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-
+#endif
 	_context = SDL_GL_CreateContext(_window);
 	if (!_context) {
 		sgLogCritical("Could not create opengl context, exiting! %s", SDL_GetError());
 	}
-	SDL_GL_MakeCurrent(_window, _context);
+	// SDL_GL_MakeCurrent(_window, _context);
+#ifndef __EMSCRIPTEN__
 	if (!gladLoadGL()) {
 		sgLogError("Failed to initialize GLAD!");
 		return;
 	}
-	sgLogDebug("OpenGL version: %s", glGetString(GL_VERSION));
+#endif
+	sgLogWarn("OpenGL version: %s", glGetString(GL_VERSION));
 	// Set the projection matrix to the screen size.
 	int width = WindowWidthImpl();
 	int height = WindowHeightImpl();
