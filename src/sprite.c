@@ -71,6 +71,7 @@ void DrawSpriteSystem(void) {
 		dst.y = sprite->Parent ? sprite->Parent->Y + sprite->OffsetAndSizeRectF.y : sprite->OffsetAndSizeRectF.y;
 		dst.w = sprite->OffsetAndSizeRectF.w;
 		dst.h = sprite->OffsetAndSizeRectF.h;
+		sgLogWarn("Drawing src rect of %f, %f", sprite->TextureSourceRect.x, sprite->TextureSourceRect.y);
 		DrawTexture(sprite->Texture, sprite->Shader, &dst, &sprite->TextureSourceRect);
 	}
 }

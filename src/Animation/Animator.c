@@ -185,6 +185,7 @@ static void updateAnimatorRect(Animator* animator) {
 	animator->Sprite->TextureSourceRect.y = animator->Data->frames[animator->CurrentFrame].frame.y;
 	animator->Sprite->TextureSourceRect.h = animator->Data->frames[animator->CurrentFrame].frame.h;
 	animator->Sprite->TextureSourceRect.w = animator->Data->frames[animator->CurrentFrame].frame.w;
+	sgLogWarn("Updating animator src rect to %f, %f", animator->Sprite->TextureSourceRect.x, animator->Sprite->TextureSourceRect.y);
 }
 
 static void playAnimation(Animator* anim, int animNum, int loops) {

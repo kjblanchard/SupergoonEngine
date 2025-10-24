@@ -89,9 +89,8 @@ static void Update(void) {
 	// UpdateUIInputSystem();
 	Ticks += 1;
 	// UpdateTweens();
-	// UpdateAnimators();
+	UpdateAnimators();
 	PushGamestateToLua();
-	// GameObjectSystemUpdate();
 	if (_updateFunc) _updateFunc();
 	// UpdateUISystem();
 	UpdateControllerSystem();
