@@ -42,7 +42,7 @@ static int drawTexture(lua_State* L) {
 	src.w = LuaGetFloatFromTableStackiKey(L, 4, "w");
 	src.h = LuaGetFloatFromTableStackiKey(L, 4, "h");
 
-	DrawTexture(LuaGetLightUserdatai(L, 1), LuaGetLightUserdatai(L, 2), &dst, &src);
+	DrawTexture(LuaGetLightUserdatai(L, 1), LuaGetLightUserdatai(L, 2), &dst, &src, 1.0);
 	return 0;
 }
 

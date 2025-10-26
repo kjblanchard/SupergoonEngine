@@ -105,6 +105,11 @@ function engine.Sprite.NewSprite(imageName, parent, textureSrcRectTable, offsetS
     return cSprite.NewSprite(imageName, parent, textureSrcRectTable, offsetSizeRectTable)
 end
 
+---Should be a percentage
+function engine.Sprite.SetScale(spritePtr, scaleFloat)
+    return cSprite.SetSpriteScale(spritePtr, scaleFloat)
+end
+
 function engine.Sprite.DestroySprite(spritePtr)
     return cSprite.DestroySprite(spritePtr)
 end

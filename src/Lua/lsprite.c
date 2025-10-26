@@ -31,6 +31,20 @@ static int newSprite(lua_State* L) {
 	LuaPushLightUserdata(L, sprite);
 	return 1;
 }
+
+static int setSpriteScale(lua_State* L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 2, LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeNumber)) {
+		sgLogWarn("bad sprite args");
+		return 0;
+	}
+	Sprite* sprite = (Sprite*)LuaGetLightUserdatai(L, 1);
+	if (!sprite) {
+		sgLogWarn("Could not convert sprite from first param, bad one");
+		return 0;
+	}
+	sprite->Scale = LuaGetFloati(L, 2);
+	return 0;
+}
 static int destroySprite(lua_State* L) {
 	if (LuaGetStackSize(L) != 1) {
 		sgLogWarn("Bad args passed to destroy sprite from lua!");
@@ -42,6 +56,7 @@ static int destroySprite(lua_State* L) {
 
 static const luaL_Reg spriteLib[] = {
 	{"NewSprite", newSprite},
+	{"SetSpriteScale", setSpriteScale},
 	{"DestroySprite", destroySprite},
 	{NULL, NULL}};
 

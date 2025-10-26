@@ -16,6 +16,7 @@ typedef struct Sprite {
 	Texture* Texture;
 	RectangleF TextureSourceRect;
 	RectangleF OffsetAndSizeRectF;
+	float Scale;
 	Shader* Shader;
 	SpriteFlags Flags;
 } Sprite;

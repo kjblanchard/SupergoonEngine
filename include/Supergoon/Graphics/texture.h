@@ -9,6 +9,6 @@ Texture* TextureCreateRenderTarget(int width, int height, int r, int g, int b, i
 void TextureLoadFromBmp(Texture* texture, const char* filepath);
 int TextureGetWidth(Texture* texture);
 int TextureGetHeight(Texture* texture);
-void DrawTexture(Texture* texture, Shader* shader, RectangleF* dst, RectangleF* src);
+void DrawTexture(Texture* texture, Shader* shader, RectangleF* dst, RectangleF* src, float scale);
 void TextureDestroy(Texture* texture);
 void TextureBind(Texture* texture);

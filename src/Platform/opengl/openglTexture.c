@@ -195,8 +195,10 @@ void TextureLoadFromBmpImpl(Texture* texture, const char* filepath) {
 	if (err != GL_NO_ERROR) {
 		sgLogError("GL error after glTexImage2D: 0x%X", err);
 	}
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -205,24 +207,32 @@ cleanup:
 	SDL_DestroySurface(surface);
 }
 
-void DrawTextureImpl(Texture* texture, Shader* shader, RectangleF* dstRect, RectangleF* srcRect) {
+void DrawTextureImpl(Texture* texture, Shader* shader, RectangleF* dstRect, RectangleF* srcRect, float scale) {
 	// prepare transformations
 	ShaderUse(shader);
 	mat4 model;
 	glm_mat4_identity(model);
-	vec3 pos = {dstRect->x, dstRect->y, 0};
+	vec3 pos = {round(dstRect->x), round(dstRect->y), 0};
 	glm_translate(model, pos);
-	vec3 size = {dstRect->w, dstRect->h, 1.0f};
+	vec3 size = {dstRect->w * scale, dstRect->h * scale, 1.0f};
 	glm_scale(model, size);
 	static vec3 cameraPos = {20.0f, 0.0f, 0.0f};
 	mat4 view;
 	glm_mat4_identity(view);
 	vec3 negCameraPos = {-cameraPos[0], -cameraPos[1], 0.0f};
 	glm_translate(view, negCameraPos);
-	vec4 srcRectV = {srcRect->x, srcRect->y, srcRect->w, srcRect->h};
+
+	vec4 srcRectV = {round(srcRect->x), srcRect->y, srcRect->w, srcRect->h};
 	vec2 texSize = {(float)texture->Width, (float)texture->Height};
 	ShaderSetUniformVector4fV(shader, "srcRect", srcRectV, false);
 	ShaderSetUniformVector2fV(shader, "textureSize", texSize, false);
+
+	// float u0 = srcRect->x / texture->Width;
+	// float v0 = srcRect->y / texture->Height;
+	// float u1 = (srcRect->x + srcRect->w) / texture->Width;
+	// float v1 = (srcRect->y + srcRect->h) / texture->Height;
+	// ShaderSetUniformVector4f(shader, "uvRect", u0, v0, u1, v1, false);
+
 	ShaderSetUniformMatrix4(shader, "model", model, false);
 	ShaderSetUniformMatrix4(shader, "view", view, false);
 	ShaderSetUniformMatrix4(shader, "projection", projectionMatrix, false);
