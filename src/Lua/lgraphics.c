@@ -54,6 +54,31 @@ static int drawTexture(lua_State *L) {
               &src, 1.0);
   return 0;
 }
+//    return cGraphics.DrawTextureToTexture(renderTargetTexture, srcTexture,
+//    shader, dstRect, srcRect)
+//
+static int drawTextureToTexture(lua_State *L) {
+  if (!LuaCheckFunctionCallParamsAndTypes(
+          L, 5, LuaFunctionParameterTypeUserdata,
+          LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeUserdata,
+          LuaFunctionParameterTypeTable, LuaFunctionParameterTypeTable)) {
+    sgLogWarn("Bad params passed to create render target texture");
+    return 0;
+  }
+  RectangleF dst;
+  dst.x = LuaGetFloatFromTableStackiKey(L, 4, "x");
+  dst.y = LuaGetFloatFromTableStackiKey(L, 4, "y");
+  dst.w = LuaGetFloatFromTableStackiKey(L, 4, "w");
+  dst.h = LuaGetFloatFromTableStackiKey(L, 4, "h");
+  RectangleF src;
+  src.x = LuaGetFloatFromTableStackiKey(L, 5, "x");
+  src.y = LuaGetFloatFromTableStackiKey(L, 5, "y");
+  src.w = LuaGetFloatFromTableStackiKey(L, 5, "w");
+  src.h = LuaGetFloatFromTableStackiKey(L, 5, "h");
+  DrawTextureToTexture(LuaGetLightUserdatai(L, 1), LuaGetLightUserdatai(L, 2),
+                       LuaGetLightUserdatai(L, 3), &dst, &src, 1.0);
+  return 0;
+}
 
 static int createRenderTargetTexture(lua_State *L) {
   if (!LuaCheckFunctionCallParamsAndTypes(L, 2, LuaFunctionParameterTypeInt,
@@ -99,6 +124,7 @@ static const luaL_Reg graphicsLib[] = {
     {"ClearRenderTargetTexture", clearRenderTargetTexture},
     {"SetRenderTarget", setRenderTarget},
     {"DrawTexture", drawTexture},
+    {"DrawTextureToTexture", drawTextureToTexture},
     {NULL, NULL}};
 
 void RegisterLuaGraphicsFunctions(void) {

@@ -16,3 +16,6 @@ void TextureDestroy(Texture *texture);
 void TextureBind(Texture *texture);
 void TextureClearRenderTarget(Texture *texture, float r, float g, float b,
                               float a);
+void DrawTextureToTexture(Texture *dstTarget, Texture *srcTexture,
+                          Shader *shader, RectangleF *dstRect,
+                          RectangleF *srcRect, float scale);

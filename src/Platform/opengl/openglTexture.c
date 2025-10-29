@@ -46,6 +46,43 @@ void TextureClearRenderTargetImpl(Texture *texture, float r, float g, float b,
   glClear(GL_COLOR_BUFFER_BIT);
 }
 
+void DrawTextureToTextureImpl(Texture *dstTarget, Texture *srcTexture,
+                              Shader *shader, RectangleF *dstRect,
+                              RectangleF *srcRect, float scale) {
+  ShaderUse(shader);
+  // Transform setup
+  mat4 model;
+  glm_mat4_identity(model);
+  vec3 pos = {dstRect->x, dstRect->y, 0};
+  glm_translate(model, pos);
+  vec3 size = {dstRect->w * scale, dstRect->h * scale, 1.0f};
+  glm_scale(model, size);
+  mat4 view;
+  glm_mat4_identity(view);
+
+  ShaderSetUniformMatrix4(shader, "model", model, false);
+  ShaderSetUniformMatrix4(shader, "view", view, false);
+
+  mat4 proj;
+  glm_ortho(0.0f, dstTarget->Width, 0.0f, dstTarget->Height, -1.0f, 1.0f, proj);
+  ShaderSetUniformMatrix4(shader, "projection", proj, false);
+
+  vec4 srcRectV = {srcRect->x, srcRect->y, srcRect->w, srcRect->h};
+  vec2 texSize = {(float)srcTexture->Width, (float)srcTexture->Height};
+  ShaderSetUniformVector4fV(shader, "srcRect", srcRectV, false);
+  ShaderSetUniformVector2fV(shader, "textureSize", texSize, false);
+
+  ShaderSetUniformInteger(shader, "image", 0, false);
+  ShaderSetUniformVector3f(shader, "spriteColor", 1.0f, 1.0f, 1.0f, false);
+
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, srcTexture->ID);
+  glBindVertexArray(
+      srcTexture->VAO); // You can reuse its VAO since it’s a simple quad
+  glDrawArrays(GL_TRIANGLES, 0, 6);
+  glBindVertexArray(0);
+}
+
 Texture *TextureCreateImpl(void) {
   Texture *texture = malloc(sizeof(Texture));
   texture->ID = 0;

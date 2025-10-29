@@ -563,6 +563,12 @@ function engine.CreateRenderTargetTexture(width, height)
     return cGraphics.CreateRenderTargetTexture(width, height)
 end
 
+function engine.DrawTextureToTexture(renderTargetTexture, srcTexture, shader, dstRect, srcRect)
+    dstRect = engine.Tools.NormalizeRect(dstRect)
+    srcRect = engine.Tools.NormalizeRect(srcRect)
+    cGraphics.DrawTextureToTexture(renderTargetTexture, srcTexture, shader, dstRect, srcRect)
+end
+
 function engine.SetRenderTarget(renderTargetTexture)
     cGraphics.SetRenderTarget(renderTargetTexture)
 end

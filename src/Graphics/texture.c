@@ -10,7 +10,11 @@ extern void TextureDestroyImpl(Texture *texture);
 extern void TextureBindImpl(Texture *texture);
 extern Texture *TextureCreateRenderTargetImpl(int width, int height);
 extern void SetRenderTargetImpl(Texture *renderTarget);
-extern void TextureClearRenderTargetImpl(Texture* texture, float r, float g, float b, float a);
+extern void TextureClearRenderTargetImpl(Texture *texture, float r, float g,
+                                         float b, float a);
+extern void DrawTextureToTextureImpl(Texture *dstTarget, Texture *srcTexture,
+                                     Shader *shader, RectangleF *dstRect,
+                                     RectangleF *srcRect, float scale);
 
 Texture *TextureCreate(void) { return TextureCreateImpl(); }
 void TextureLoadFromBmp(Texture *texture, const char *filepath) {
@@ -31,6 +35,13 @@ Texture *TextureCreateRenderTarget(int width, int height) {
 void SetRenderTarget(Texture *renderTarget) {
   SetRenderTargetImpl(renderTarget);
 }
-void TextureClearRenderTarget(Texture* texture, float r, float g, float b, float a) {
+void TextureClearRenderTarget(Texture *texture, float r, float g, float b,
+                              float a) {
   TextureClearRenderTargetImpl(texture, r, g, b, a);
+}
+void DrawTextureToTexture(Texture *dstTarget, Texture *srcTexture,
+                          Shader *shader, RectangleF *dstRect,
+                          RectangleF *srcRect, float scale) {
+  DrawTextureToTextureImpl(dstTarget, srcTexture, shader, dstRect, srcRect,
+                           scale);
 }
