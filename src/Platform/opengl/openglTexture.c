@@ -40,7 +40,8 @@ void TextureBindImpl(Texture *texture) {
 // static Texture* getTextureFromCache(const char* filename) {
 // }
 
-void TextureClearRenderTargetImpl(float r, float g, float b, float a) {
+void TextureClearRenderTargetImpl(Texture *texture, float r, float g, float b,
+                                  float a) {
   glClearColor(r, g, b, a);
   glClear(GL_COLOR_BUFFER_BIT);
 }

@@ -68,8 +68,7 @@ static int createRenderTargetTexture(lua_State *L) {
 }
 
 static int setRenderTarget(lua_State *L) {
-  if (!LuaCheckFunctionCallParamsAndTypes(L, 1,
-                                          LuaFunctionParameterTypeUserdata)) {
+  if (!LuaCheckFunctionCallParamsAndTypes(L, 1, LuaFunctionParameterTypePass)) {
     sgLogWarn("Bad params passed to set render target texture");
     return 0;
   }
