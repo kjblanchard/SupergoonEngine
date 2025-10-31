@@ -258,9 +258,6 @@ void DrawTextureImpl(Texture *texture, Shader *shader, RectangleF *dstRect,
 	vec2 texSize = {(float)texture->Width, (float)texture->Height};
 	ShaderSetUniformVector4fV(shader, "srcRect", srcRectV, false);
 	ShaderSetUniformVector2fV(shader, "textureSize", texSize, false);
-	if (flipY) {
-		ShaderSetUniformInteger(shader, "u_Flipy", 1, false);
-	}
 
 	// compute UVs on CPU test
 	// float u0 = srcRect->x / texture->Width;

@@ -1,3 +1,4 @@
+#include <SDL3/SDL.h>
 #include <Supergoon/Audio/Audio.h>
 #include <Supergoon/Graphics/graphics.h>
 #include <Supergoon/Lua/engine.h>
@@ -6,15 +7,12 @@
 #include <Supergoon/camera.h>
 #include <Supergoon/engine.h>
 #include <Supergoon/events.h>
+#include <Supergoon/gameobject.h>
 #include <Supergoon/log.h>
 #include <Supergoon/lua.h>
+#include <Supergoon/map.h>
 #include <Supergoon/state.h>
 #include <Supergoon/window.h>
-#ifndef tui
-#include <SDL3/SDL.h>
-#include <Supergoon/gameobject.h>
-#include <Supergoon/map.h>
-#endif
 #include <lauxlib.h>
 #include <lua.h>
 
@@ -36,10 +34,7 @@ static int setScalingOptions(lua_State* L) {
 		sgLogWarn("Bad parameters passed into scaling options from lua");
 		return 0;
 	}
-	// int logX = LuaGetIntFromStacki(L, 1);
-	// int logY = LuaGetIntFromStacki(L, 2);
-	// SetScalingOptions(logX, logY);
-	// SetCameraSize(logX, logY);
+	GraphicsSetLogicalWorldSize(LuaGetIntFromStacki(L, 1), LuaGetIntFromStacki(L, 2));
 	return 0;
 }
 

@@ -1,6 +1,8 @@
 #include <Supergoon/Graphics/shader.h>
 #include <Supergoon/Graphics/texture.h>
 #include <Supergoon/Primitives/rectangle.h>
+#include <Supergoon/camera.h>
+#include <Supergoon/window.h>
 #ifndef __EMSCRIPTEN__
 #include <glad/glad.h>
 // Need to do glad first
@@ -16,6 +18,8 @@
 extern void ShaderSystemShutdown(void);
 SDL_GLContext _context;
 static Texture* _screenFrameBufferTexture = NULL;
+static int _logicalX = 0;
+static int _logicalY = 0;
 
 mat4 projectionMatrix;
 void GraphicsWindowResizeEventImpl(int width, int height) {
@@ -28,8 +32,16 @@ void GraphicsWindowResizeEventImpl(int width, int height) {
 	if (_screenFrameBufferTexture) {
 		TextureDestroy(_screenFrameBufferTexture);
 	}
-	_screenFrameBufferTexture = TextureCreateRenderTarget(width, height);
+	int texWidth = width;
+	int texHeight = height;
+	if (_logicalX && _logicalY) {
+		texWidth = _logicalX;
+		texHeight = _logicalY;
+	}
+	_screenFrameBufferTexture = TextureCreateRenderTarget(texWidth, texHeight);
 	TextureClearRenderTarget(_screenFrameBufferTexture, 0, 0, 0, 1.0);
+	// We need to handle if the resolution is different, with a logical size set.
+	SetCameraSize(texWidth, texHeight);
 }
 
 void InitializeGraphicsSystemImpl(void) {
@@ -80,6 +92,17 @@ void DrawEndImpl(void) {
 	SetRenderTarget(NULL);
 	int texX = TextureGetWidth(_screenFrameBufferTexture);
 	int texY = TextureGetHeight(_screenFrameBufferTexture);
-	DrawTexture(_screenFrameBufferTexture, GetDefaultShader(), &(RectangleF){0, 0, texX, texY}, &(RectangleF){0, 0, texX, texY}, false, 1.0f, true);
+	float scaleX = 1.0f;
+	float scaleY = 1.0f;
+
+	if (_logicalX > 0 && _logicalY > 0) {
+		scaleX = (float)WindowWidth() / (float)_logicalX;
+		scaleY = (float)WindowHeight() / (float)_logicalY;
+	}
+	DrawTexture(_screenFrameBufferTexture, GetDefaultShader(), &(RectangleF){0, 0, WindowWidth(), WindowHeight()}, &(RectangleF){0, 0, texX, texY}, false, scaleX, true);
 	SDL_GL_SwapWindow(_window);
+}
+void GraphicsSetLogicalWorldSizeImpl(int width, int height) {
+	_logicalX = width;
+	_logicalY = height;
 }

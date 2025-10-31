@@ -42,5 +42,6 @@ void ShutdownGraphicsSystem(void);
 
 void DrawStart(void);
 void DrawEnd(void);
+void GraphicsSetLogicalWorldSize(int width, int height);
 
 void GraphicsWindowResizeEvent(int width, int height);

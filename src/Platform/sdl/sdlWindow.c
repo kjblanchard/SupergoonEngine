@@ -1,7 +1,6 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_video.h>
 #include <Supergoon/Graphics/graphics.h>
-#include <Supergoon/camera.h>
 #include <Supergoon/log.h>
 #include <Supergoon/window.h>
 typedef union SDL_Event Event;
@@ -73,31 +72,6 @@ static void onWindowResize(void) {
 		sgLogError("Could not set window title");
 	}
 	GraphicsWindowResizeEvent(_windowWidth, _windowHeight);
-
-	// Set the scaling
-	if (_logicalHeight && _logicalWidth) {
-	}
-	int scaleX = 1.0;
-	int scaleY = 1.0;
-	// if (_logicalWidth) {
-	// 	scaleX = windowW / _logicalWidth;
-	// 	scaleY = windowH / _logicalHeight;
-	// }
-	int scale = (scaleX < scaleY) ? scaleX : scaleY;
-	_gameImageScale = (float)scale;
-	_gameImageWidth = _logicalWidth * scale;
-	_gameImageHeight = _logicalHeight * scale;
-	// _gameImagePosX = (windowW - _gameImageWidth) / 2;
-	// _gameImagePosY = (windowH - _gameImageHeight) / 2;
-	//  Create texture that the game will be drawn to.
-	// _renderTargetWidth = _logicalWidth ? _logicalWidth : windowW;
-	// _renderTargetHeight = _logicalHeight ? _logicalHeight : windowH;
-	// if (_fullScreenTexture) {
-	// 	UnloadTexture(_fullScreenTexture);
-	// }
-	// _fullScreenTexture = CreateRenderTargetTexture(_renderTargetWidth, _renderTargetHeight, (sgColor){0, 0, 0, 255});
-	//
-	SetCameraSize(_windowWidth, _windowHeight);
 }
 
 void CreateWindowImpl(void) {
