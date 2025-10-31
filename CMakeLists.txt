@@ -61,7 +61,7 @@ set(SRC_FILES
     src/Platform/sdl/sdl.c
     src/Platform/sdl/sdlInput.c
     src/Platform/sdl/sdlWindow.c
-    # src/map.c
+    src/map.c
     src/Lua/lanimation.c
     src/Lua/lsprite.c
     src/Lua/lgameobject.c

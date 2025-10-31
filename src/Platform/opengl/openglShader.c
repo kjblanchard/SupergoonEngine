@@ -19,6 +19,8 @@
 
 #define FILE_LENGTH 512
 #define NUM_CACHED_SHADERS 30
+#define DEFAULT_VERTEX_FILENAME "2dSpriteVertex"
+#define DEFAULT_FRAGMENT_FILENAME "2dSpriteFragment"
 
 typedef struct CachedShaderFile {
 	char *Data;
@@ -30,6 +32,7 @@ typedef enum ShaderType {
 	ShaderTypeFragment,
 	ShaderTypeProgram,
 } ShaderType;
+static Shader *_defaultShader = NULL;
 
 CachedShaderFile _cachedShaders[NUM_CACHED_SHADERS];
 
@@ -39,7 +42,8 @@ char *getShaderDataFromFile(const char *filename) {
 	suffix = "E";
 #endif
 	char *filepath;
-	asprintf(&filepath, "%sassets/shaders/%s%s%s", GetBasePath(), filename, suffix, ".glsl");
+	asprintf(&filepath, "%sassets/shaders/%s%s%s", GetBasePath(), filename,
+			 suffix, ".glsl");
 	char *data = GetContentOfFileString(filepath);
 	free(filepath);
 	return data;
@@ -111,11 +115,10 @@ Shader *ShaderCreateImpl(void) {
 	return shader;
 }
 
-void ShaderUseImpl(Shader *shader) {
-	glUseProgram(shader->ID);
-}
+void ShaderUseImpl(Shader *shader) { glUseProgram(shader->ID); }
 
-void ShaderCompileImpl(Shader *shader, const char *vertexSourceFile, const char *fragmentSourceFile) {
+void ShaderCompileImpl(Shader *shader, const char *vertexSourceFile,
+					   const char *fragmentSourceFile) {
 	const char *vertexData = getCachedShader(vertexSourceFile);
 	const char *fragmentData = getCachedShader(fragmentSourceFile);
 	if (!vertexData || !fragmentData) {
@@ -138,56 +141,69 @@ void ShaderCompileImpl(Shader *shader, const char *vertexSourceFile, const char 
 	glAttachShader(shader->ID, sFragment);
 	glLinkProgram(shader->ID);
 	checkCompileErrors(shader->ID, ShaderTypeProgram);
-	// delete the shaders as they're linked into our program now and no longer necessary
+	// delete the shaders as they're linked into our program now and no longer
+	// necessary
 	glDeleteShader(sVertex);
 	glDeleteShader(sFragment);
 }
-void ShaderSetUniformFloatImpl(Shader *shader, const char *name, float value, int useShader) {
+void ShaderSetUniformFloatImpl(Shader *shader, const char *name, float value,
+							   int useShader) {
 	if (useShader)
 		ShaderUseImpl(shader);
 	glUniform1f(glGetUniformLocation(shader->ID, name), value);
 }
 
-void ShaderSetUniformIntegerImpl(Shader *shader, const char *name, int value, int useShader) {
+void ShaderSetUniformIntegerImpl(Shader *shader, const char *name, int value,
+								 int useShader) {
 	if (useShader)
 		ShaderUseImpl(shader);
 	glUniform1i(glGetUniformLocation(shader->ID, name), value);
 }
 
-void ShaderSetUniformVector2fImpl(Shader *shader, const char *name, float x, float y, int useShader) {
+void ShaderSetUniformVector2fImpl(Shader *shader, const char *name, float x,
+								  float y, int useShader) {
 	if (useShader)
 		ShaderUseImpl(shader);
 	glUniform2f(glGetUniformLocation(shader->ID, name), x, y);
 }
-void ShaderSetUniformVector2fVImpl(Shader *shader, const char *name, vec2 value, int useShader) {
+void ShaderSetUniformVector2fVImpl(Shader *shader, const char *name, vec2 value,
+								   int useShader) {
 	if (useShader)
 		ShaderUseImpl(shader);
 	glUniform2f(glGetUniformLocation(shader->ID, name), value[0], value[1]);
 }
-void ShaderSetUniformVector3fImpl(Shader *shader, const char *name, float x, float y, float z, int useShader) {
+void ShaderSetUniformVector3fImpl(Shader *shader, const char *name, float x,
+								  float y, float z, int useShader) {
 	if (useShader)
 		ShaderUseImpl(shader);
 	glUniform3f(glGetUniformLocation(shader->ID, name), x, y, z);
 }
-void ShaderSetUniformVector3fVImpl(Shader *shader, const char *name, vec3 value, int useShader) {
+void ShaderSetUniformVector3fVImpl(Shader *shader, const char *name, vec3 value,
+								   int useShader) {
 	if (useShader)
 		ShaderUseImpl(shader);
-	glUniform3f(glGetUniformLocation(shader->ID, name), value[0], value[1], value[2]);
+	glUniform3f(glGetUniformLocation(shader->ID, name), value[0], value[1],
+				value[2]);
 }
-void ShaderSetUniformVector4fImpl(Shader *shader, const char *name, float x, float y, float z, float w, int useShader) {
+void ShaderSetUniformVector4fImpl(Shader *shader, const char *name, float x,
+								  float y, float z, float w, int useShader) {
 	if (useShader)
 		ShaderUseImpl(shader);
 	glUniform4f(glGetUniformLocation(shader->ID, name), x, y, z, w);
 }
-void ShaderSetUniformVector4fVImpl(Shader *shader, const char *name, vec4 value, int useShader) {
+void ShaderSetUniformVector4fVImpl(Shader *shader, const char *name, vec4 value,
+								   int useShader) {
 	if (useShader)
 		ShaderUseImpl(shader);
-	glUniform4f(glGetUniformLocation(shader->ID, name), value[0], value[1], value[2], value[3]);
+	glUniform4f(glGetUniformLocation(shader->ID, name), value[0], value[1],
+				value[2], value[3]);
 }
-void ShaderSetUniformMatrix4Impl(Shader *shader, const char *name, mat4 value, int useShader) {
+void ShaderSetUniformMatrix4Impl(Shader *shader, const char *name, mat4 value,
+								 int useShader) {
 	if (useShader)
 		ShaderUseImpl(shader);
-	glUniformMatrix4fv(glGetUniformLocation(shader->ID, name), 1, GL_FALSE, value[0]);
+	glUniformMatrix4fv(glGetUniformLocation(shader->ID, name), 1, GL_FALSE,
+					   value[0]);
 }
 
 void ShaderSystemShutdown(void) {
@@ -196,6 +212,14 @@ void ShaderSystemShutdown(void) {
 	}
 }
 
-void ShaderDestroyImpl(Shader *shader) {
-	free(shader);
+Shader *GetDefaultShaderImpl(void) {
+	if (_defaultShader) {
+		return _defaultShader;
+	}
+	_defaultShader = ShaderCreateImpl();
+	ShaderCompileImpl(_defaultShader, DEFAULT_VERTEX_FILENAME, DEFAULT_FRAGMENT_FILENAME);
+
+	return _defaultShader;
 }
+
+void ShaderDestroyImpl(Shader *shader) { free(shader); }

@@ -4,44 +4,44 @@ extern Texture *TextureCreateImpl(void);
 extern int TextureGetWidthImpl(Texture *texture);
 extern int TextureGetHeightImpl(Texture *texture);
 extern void DrawTextureImpl(Texture *texture, Shader *shader, RectangleF *dst,
-                            RectangleF *src, float scale);
+							RectangleF *src, bool camera, float scale, bool flipY);
 extern void TextureLoadFromBmpImpl(Texture *texture, const char *filepath);
 extern void TextureDestroyImpl(Texture *texture);
 extern void TextureBindImpl(Texture *texture);
 extern Texture *TextureCreateRenderTargetImpl(int width, int height);
 extern void SetRenderTargetImpl(Texture *renderTarget);
 extern void TextureClearRenderTargetImpl(Texture *texture, float r, float g,
-                                         float b, float a);
+										 float b, float a);
 extern void DrawTextureToTextureImpl(Texture *dstTarget, Texture *srcTexture,
-                                     Shader *shader, RectangleF *dstRect,
-                                     RectangleF *srcRect, float scale);
+									 Shader *shader, RectangleF *dstRect,
+									 RectangleF *srcRect, float scale);
 
 Texture *TextureCreate(void) { return TextureCreateImpl(); }
 void TextureLoadFromBmp(Texture *texture, const char *filepath) {
-  TextureLoadFromBmpImpl(texture, filepath);
+	TextureLoadFromBmpImpl(texture, filepath);
 }
 int TextureGetWidth(Texture *texture) { return TextureGetWidthImpl(texture); }
 int TextureGetHeight(Texture *texture) { return TextureGetHeightImpl(texture); }
 void DrawTexture(Texture *texture, Shader *shader, RectangleF *dst,
-                 RectangleF *src, float scale) {
-  DrawTextureImpl(texture, shader, dst, src, scale);
+				 RectangleF *src, int camera, float scale, int flipY) {
+	DrawTextureImpl(texture, shader, dst, src, camera, scale, flipY);
 }
 void TextureDestroy(Texture *texture) { TextureDestroyImpl(texture); }
 void TextureBind(Texture *texture) { TextureBindImpl(texture); }
 Texture *TextureCreate(void);
 Texture *TextureCreateRenderTarget(int width, int height) {
-  return TextureCreateRenderTargetImpl(width, height);
+	return TextureCreateRenderTargetImpl(width, height);
 }
 void SetRenderTarget(Texture *renderTarget) {
-  SetRenderTargetImpl(renderTarget);
+	SetRenderTargetImpl(renderTarget);
 }
 void TextureClearRenderTarget(Texture *texture, float r, float g, float b,
-                              float a) {
-  TextureClearRenderTargetImpl(texture, r, g, b, a);
+							  float a) {
+	TextureClearRenderTargetImpl(texture, r, g, b, a);
 }
 void DrawTextureToTexture(Texture *dstTarget, Texture *srcTexture,
-                          Shader *shader, RectangleF *dstRect,
-                          RectangleF *srcRect, float scale) {
-  DrawTextureToTextureImpl(dstTarget, srcTexture, shader, dstRect, srcRect,
-                           scale);
+						  Shader *shader, RectangleF *dstRect,
+						  RectangleF *srcRect, float scale) {
+	DrawTextureToTextureImpl(dstTarget, srcTexture, shader, dstRect, srcRect,
+							 scale);
 }

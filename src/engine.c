@@ -1,4 +1,5 @@
 
+#include <ogg/ogg.h>
 #define SDL_MAIN_USE_CALLBACKS
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
@@ -70,7 +71,7 @@ static void handleFramerate(Uint64 *now) {
 
 static void draw(void) {
 	DrawStart();
-	// DrawCurrentMap();
+	DrawCurrentMap();
 	DrawSpriteSystem();
 	if (_drawFunc) _drawFunc();
 	// DrawUISystem();
@@ -139,7 +140,6 @@ SDL_AppResult SDL_AppInit(void **appState, int argc, char *argv[]) {
 }
 
 SDL_AppResult SDL_AppEvent(void *appState, SDL_Event *event) {
-	// return (SDL_AppResult)((Game *)appState)->HandleEvent(event);
 	switch (event->type) {
 		case SDL_EVENT_QUIT:
 			sgLogWarn("Going to quit from engine");

@@ -72,7 +72,7 @@ void DrawSpriteSystem(void) {
 		dst.y = sprite->Parent ? sprite->Parent->Y + sprite->OffsetAndSizeRectF.y : sprite->OffsetAndSizeRectF.y;
 		dst.w = sprite->OffsetAndSizeRectF.w;
 		dst.h = sprite->OffsetAndSizeRectF.h;
-		DrawTexture(sprite->Texture, sprite->Shader, &dst, &sprite->TextureSourceRect, sprite->Scale);
+		DrawTexture(sprite->Texture, sprite->Shader, &dst, &sprite->TextureSourceRect, true, sprite->Scale, false);
 	}
 }
 

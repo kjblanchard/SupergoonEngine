@@ -1,7 +1,7 @@
 #include <Supergoon/camera.h>
+#include <cglm/vec3.h>
 #include <math.h>
-float CameraX = 0;
-float CameraY = 0;
+vec3 cameraPos = {0, 0, 0};
 float CamSizeX = 0;
 float CamSizeY = 0;
 float BoundsX = 0;
@@ -37,33 +37,15 @@ void UpdateCameraSystem(void) {
 	else if (camY > BoundsY - viewHeight)
 		camY = BoundsY - viewHeight;
 
-	CameraX = roundf(camX);
-	CameraY = roundf(camY);
+	cameraPos[0] = round(camX);
+	cameraPos[1] = round(camY);
 }
-
-// void UpdateCamera(void) {
-// 	float viewWidth = CamSizeX / CameraZoom;
-// 	float viewHeight = CamSizeY / CameraZoom;
-// 	// Center camera on player
-// 	float camX = CamSizeX;
-// 	float camY = CamSizeY;
-// 	if (followX || followY) {
-// 		camX = *followX - viewWidth / 2.0f;
-// 		camY = *followY - viewHeight / 2.0f;
-// 	}
-// 	if (camX < 0) camX = 0;
-// 	if (camY < 0) camY = 0;
-// 	if (camX > BoundsX - viewWidth) camX = BoundsX - viewWidth;
-// 	if (camY > BoundsY - viewHeight) camY = BoundsY - viewHeight;
-// 	CameraX = SDL_roundf(camX);
-// 	CameraY = SDL_roundf(camY);
-// }
 
 void SetCameraFollowTarget(float* x, float* y) {
 	followX = x;
 	followY = y;
-	CameraX = 0;
-	CameraY = 0;
+	cameraPos[0] = 0;
+	cameraPos[1] = 0;
 }
 
 void SetCameraBounds(float x, float y) {
@@ -78,4 +60,11 @@ void SetCameraSize(float x, float y) {
 
 void SetCameraZoom(float zoom) {
 	CameraZoom = zoom;
+	SetCameraFollowTarget(NULL, NULL);
+}
+float CameraGetX(void) {
+	return cameraPos[0];
+}
+float CameraGetY(void) {
+	return cameraPos[1];
 }

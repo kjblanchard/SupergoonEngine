@@ -1,5 +1,7 @@
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_video.h>
 #include <Supergoon/Graphics/graphics.h>
+#include <Supergoon/camera.h>
 #include <Supergoon/log.h>
 #include <Supergoon/window.h>
 typedef union SDL_Event Event;
@@ -63,7 +65,6 @@ void SetWindowOptionsImpl(int width, int height, const char* name) {
 }
 
 static void onWindowResize(void) {
-	// TODO this should be on an event, right now it is only when function is called
 	sgLogDebug("Setting window size %d, %d", _windowWidth, _windowHeight);
 	if (!SDL_SetWindowSize(_window, _windowWidth, _windowHeight)) {
 		sgLogError("Could not set window size, %s", SDL_GetError());
@@ -74,16 +75,8 @@ static void onWindowResize(void) {
 	GraphicsWindowResizeEvent(_windowWidth, _windowHeight);
 
 	// Set the scaling
-	// if (_logicalHeight && _logicalWidth) {
-	// 	if (!SDL_SetRenderLogicalPresentation(_renderer, _logicalWidth, _logicalHeight, SDL_LOGICAL_PRESENTATION_INTEGER_SCALE)) {
-	// 		sgLogError("Could not set logical presentation");
-	// 	}
-	// }
-	// int windowW, windowH;
-	// TODO if for some reason the display is drawn offscreen, it will become letterboxed, not sure if problem
-	// if (!SDL_GetRenderOutputSize(_renderer, &windowW, &windowH)) {
-	// 	sgLogError("Could not set window output size");
-	// }
+	if (_logicalHeight && _logicalWidth) {
+	}
 	int scaleX = 1.0;
 	int scaleY = 1.0;
 	// if (_logicalWidth) {
@@ -103,6 +96,8 @@ static void onWindowResize(void) {
 	// 	UnloadTexture(_fullScreenTexture);
 	// }
 	// _fullScreenTexture = CreateRenderTargetTexture(_renderTargetWidth, _renderTargetHeight, (sgColor){0, 0, 0, 255});
+	//
+	SetCameraSize(_windowWidth, _windowHeight);
 }
 
 void CreateWindowImpl(void) {
@@ -113,7 +108,7 @@ void CreateWindowImpl(void) {
 	_windowHeight = (_windowHeight != 0) ? _windowHeight : 480;
 	const char* name = (_windowName != NULL) ? _windowName : "Game";
 
-	int flags = SDL_WINDOW_ALWAYS_ON_TOP;
+	int flags = SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_MOUSE_FOCUS | SDL_WINDOW_INPUT_FOCUS;
 #ifdef sdlglbackend
 	flags |= SDL_WINDOW_OPENGL;
 #endif
@@ -124,6 +119,8 @@ void CreateWindowImpl(void) {
 	// if (!SDL_SetRenderVSync(_renderer, _vsyncEnabled)) {
 	// 	sgLogWarn("Could not set vsync, %s", SDL_GetError());
 	// }
+
+	SDL_RaiseWindow(_window);
 	getRefreshRate();
 	onWindowResize();
 	SDL_SetWindowPosition(_window, 0, 0);
