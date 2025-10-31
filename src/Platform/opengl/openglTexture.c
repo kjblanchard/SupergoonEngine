@@ -285,10 +285,12 @@ void SetRenderTargetImpl(Texture *target) {
 	if (target) {
 		glBindFramebuffer(GL_FRAMEBUFFER, target->FBO);
 		glViewport(0, 0, target->Width, target->Height);
+		glm_ortho(0.0f, target->Width, 0.0f, target->Height, -1.0f, 1.0f, projectionMatrix);
 		g_CurrentRenderTarget = target;
 	} else {
 		// Restore to system default framebuffer
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glm_ortho(0.0f, WindowWidth(), 0.0f, WindowHeight(), -1.0f, 1.0f, projectionMatrix);
 		glViewport(0, 0, WindowWidth(), WindowHeight());
 		g_CurrentRenderTarget = NULL;
 	}

@@ -28,7 +28,6 @@ void GraphicsWindowResizeEventImpl(int width, int height) {
 	}
 	glViewport(0, 0, width, height);
 	glm_ortho(0.0f, width, height, 0.0f, -1.0f, 1.0f, projectionMatrix);
-
 	if (_screenFrameBufferTexture) {
 		TextureDestroy(_screenFrameBufferTexture);
 	}
@@ -37,6 +36,8 @@ void GraphicsWindowResizeEventImpl(int width, int height) {
 	if (_logicalX && _logicalY) {
 		texWidth = _logicalX;
 		texHeight = _logicalY;
+		glViewport(0, 0, texWidth, texHeight);
+		glm_ortho(0.0f, texWidth, texHeight, 0.0f, -1.0f, 1.0f, projectionMatrix);
 	}
 	_screenFrameBufferTexture = TextureCreateRenderTarget(texWidth, texHeight);
 	TextureClearRenderTarget(_screenFrameBufferTexture, 0, 0, 0, 1.0);
@@ -83,6 +84,8 @@ void ShutdownGraphicsSystemImpl(void) {
 	SDL_GL_DestroyContext(_context);
 }
 void DrawStartImpl(void) {
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
 	SetRenderTarget(_screenFrameBufferTexture);
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -92,13 +95,12 @@ void DrawEndImpl(void) {
 	SetRenderTarget(NULL);
 	int texX = TextureGetWidth(_screenFrameBufferTexture);
 	int texY = TextureGetHeight(_screenFrameBufferTexture);
-	float scaleX = 1.0f;
-	float scaleY = 1.0f;
+	int scaleX = 1.0f;
 
-	if (_logicalX > 0 && _logicalY > 0) {
-		scaleX = (float)WindowWidth() / (float)_logicalX;
-		scaleY = (float)WindowHeight() / (float)_logicalY;
-	}
+	/* if (_logicalX > 0 && _logicalY > 0) { */
+	/* 	scaleX = (float)WindowWidth() / (float)_logicalX; */
+	/* 	/1* scaleY = (float)WindowHeight() / (float)_logicalY; *1/ */
+	/* } */
 	DrawTexture(_screenFrameBufferTexture, GetDefaultShader(), &(RectangleF){0, 0, WindowWidth(), WindowHeight()}, &(RectangleF){0, 0, texX, texY}, false, scaleX, true);
 	SDL_GL_SwapWindow(_window);
 }

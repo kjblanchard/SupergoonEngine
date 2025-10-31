@@ -82,7 +82,7 @@ void CreateWindowImpl(void) {
 	_windowHeight = (_windowHeight != 0) ? _windowHeight : 480;
 	const char* name = (_windowName != NULL) ? _windowName : "Game";
 
-	int flags = SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_MOUSE_FOCUS | SDL_WINDOW_INPUT_FOCUS;
+	int flags = SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_MOUSE_FOCUS | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_RESIZABLE;
 #ifdef sdlglbackend
 	flags |= SDL_WINDOW_OPENGL;
 #endif
