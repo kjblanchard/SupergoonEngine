@@ -70,7 +70,6 @@ void CreateWindowImpl(void) {
 		sgLogCritical("Could not create window, error, %s", SDL_GetError());
 	}
 	SDL_RaiseWindow(_window.Handle);
-	getRefreshRate();
 	onWindowResize();
 	SDL_SetWindowPosition(_window.Handle, 0, 0);
 }

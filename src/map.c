@@ -393,44 +393,40 @@ static void freeTiledTilemap(Tilemap *map) {
 	map = NULL;
 }
 
-/* static void drawAnimatedTiles(void) { */
-/* 	// Update the animated tiles */
-/* 	for (size_t i = 0; i < _currentMap->NumTilesets; i++) { */
-/* 		Tileset *tileset = &_currentMap->Tilesets[i]; */
-/* 		for (size_t j = 0; j < tileset->NumAnimatedTiles; j++) { */
-/* 			AnimatedTile *animatedTile = &tileset->AnimatedTiles[j]; */
-/* 			animatedTile->CurrentMSOnFrame += DeltaTimeMilliseconds; */
-/* 			while (true) { */
-/* 				TileAnimationFrame *currentFrame = */
-/* 					&animatedTile->TileFrames[animatedTile->CurrentFrame]; */
-/* 				if (animatedTile->CurrentMSOnFrame >= currentFrame->MsTime) { */
-/* 					animatedTile->CurrentMSOnFrame -= currentFrame->MsTime; */
-/* 					animatedTile->CurrentFrame = */
-/* 						animatedTile->CurrentFrame + 1 >= animatedTile->NumFrames */
-/* 							? 0 */
-/* 							: animatedTile->CurrentFrame + 1; */
-/* 				} else { */
-/* 					break; */
-/* 				} */
-/* 			} */
-/* 		} */
-/* 	} */
-/* 	// Draw the animated tiles */
-/* 	for (size_t i = 0; i < _currentMap->NumTilesets; i++) { */
-/* 		Tileset *tileset = &_currentMap->Tilesets[i]; */
-/* 		for (size_t j = 0; j < tileset->NumAnimatedTiles; j++) { */
-/* 			AnimatedTile *animatedTile = &tileset->AnimatedTiles[j]; */
-/* 			for (size_t k = 0; k < animatedTile->NumDrawRectangles; k++) { */
-/* 				RectangleF dst = animatedTile->DrawRectangles[k]; */
-/* 				dst.x -= CameraX; */
-/* 				dst.y -= CameraY; */
-/* 				// DrawTexture( */
-/* 				//     tileset->TilesetTexture, &dst, */
-/* 				//     &animatedTile->TileFrames[animatedTile->CurrentFrame].SrcRect); */
-/* 			} */
-/* 		} */
-/* 	} */
-/* } */
+static void drawAnimatedTiles(void) {
+	// Update the animated tiles
+	for (size_t i = 0; i < _currentMap->NumTilesets; i++) {
+		Tileset *tileset = &_currentMap->Tilesets[i];
+		for (size_t j = 0; j < tileset->NumAnimatedTiles; j++) {
+			AnimatedTile *animatedTile = &tileset->AnimatedTiles[j];
+			animatedTile->CurrentMSOnFrame += DeltaTimeMilliseconds;
+			while (true) {
+				TileAnimationFrame *currentFrame =
+					&animatedTile->TileFrames[animatedTile->CurrentFrame];
+				if (animatedTile->CurrentMSOnFrame >= currentFrame->MsTime) {
+					animatedTile->CurrentMSOnFrame -= currentFrame->MsTime;
+					animatedTile->CurrentFrame =
+						animatedTile->CurrentFrame + 1 >= animatedTile->NumFrames
+							? 0
+							: animatedTile->CurrentFrame + 1;
+				} else {
+					break;
+				}
+			}
+		}
+	}
+	// Draw the animated tiles
+	for (size_t i = 0; i < _currentMap->NumTilesets; i++) {
+		Tileset *tileset = &_currentMap->Tilesets[i];
+		for (size_t j = 0; j < tileset->NumAnimatedTiles; j++) {
+			AnimatedTile *animatedTile = &tileset->AnimatedTiles[j];
+			for (size_t k = 0; k < animatedTile->NumDrawRectangles; k++) {
+				RectangleF dst = animatedTile->DrawRectangles[k];
+				DrawTexture(tileset->TilesetTexture, GetDefaultShader(), &dst, &animatedTile->TileFrames[animatedTile->CurrentFrame].SrcRect, true, 1.0f, false);
+			}
+		}
+	}
+}
 
 void DrawCurrentMap(void) {
 	if (!_currentMap)
@@ -441,7 +437,7 @@ void DrawCurrentMap(void) {
 		DrawTexture(_bg1Texture, GetDefaultShader(), &dst, &src, false, 1.0f, false);
 	}
 	if (_currentMap) {
-		// drawAnimatedTiles();
+		drawAnimatedTiles();
 	}
 	if (_bg2Texture) {
 		// DrawTexture(_bg2Texture, &dst, &src);

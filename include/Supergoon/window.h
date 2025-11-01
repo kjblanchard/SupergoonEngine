@@ -9,6 +9,7 @@
  *
  */
 #pragma once
+typedef struct Window Window;
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -29,13 +30,8 @@ void CreateWindow(void);
 int WindowHeight(void);
 int WindowWidth(void);
 void CloseWindow(void);
-typedef struct Window Window;
-#ifdef __cplusplus
-extern "C" {
-#endif
 Window* WindowGet(void);
-int getRefreshRate(void);
-void handleWindowEvents(void);
+int WindowHandleEvents(void* event);
 #ifdef __cplusplus
 }
 #endif

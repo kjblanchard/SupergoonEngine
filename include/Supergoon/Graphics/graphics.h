@@ -44,5 +44,4 @@ void DrawStart(void);
 void DrawEnd(void);
 void GraphicsSetLogicalWorldSize(int width, int height);
 int GraphicsGetTargetRefreshRate(void);
-
 void GraphicsWindowResizeEvent(int width, int height);
