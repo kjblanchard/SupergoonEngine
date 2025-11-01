@@ -58,10 +58,11 @@ static void handleFramerate(Uint64 *now) {
 #ifdef __EMSCRIPTEN__
 	return;
 #endif
-	if (TARGET_FPS != 999) {  // If we are doing a capped frame rate, we should also wait between frames.
+	int refreshRate = GraphicsGetTargetRefreshRate();
+	if (refreshRate != 999) {  // If we are doing a capped frame rate, we should also wait between frames.
 		uint64_t current = getCurrentMSTicks();
 		Uint64 elapsedMS = current - _previousMS;
-		const Uint64 FRAME_DURATION_MS = 1000 / TARGET_FPS;
+		const Uint64 FRAME_DURATION_MS = 1000 / refreshRate;
 		if (elapsedMS < FRAME_DURATION_MS) {
 			sgSleepMS(FRAME_DURATION_MS - elapsedMS);
 		}

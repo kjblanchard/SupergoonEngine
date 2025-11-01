@@ -13,8 +13,6 @@
 extern "C" {
 #endif
 
-typedef struct SDL_Window Window;
-
 /**
  * @brief Set the Window Options object
  *
@@ -31,17 +29,13 @@ void CreateWindow(void);
 int WindowHeight(void);
 int WindowWidth(void);
 void CloseWindow(void);
-typedef struct SDL_Window Window;
+typedef struct Window Window;
 #ifdef __cplusplus
 extern "C" {
 #endif
-extern Window* _window;
-// extern int _refreshRate;
-// extern int _vsyncEnabled;
-extern int TARGET_FPS;
-
+Window* WindowGet(void);
 int getRefreshRate(void);
-void handleWindowEvents();
+void handleWindowEvents(void);
 #ifdef __cplusplus
 }
 #endif

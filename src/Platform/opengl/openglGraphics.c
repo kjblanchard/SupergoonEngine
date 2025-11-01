@@ -22,6 +22,9 @@ SDL_GLContext _context;
 static Texture* _screenFrameBufferTexture = NULL;
 static int _logicalX = 0;
 static int _logicalY = 0;
+// TODO for now, only use the refresh rate set here.. we should set it eventually.
+static unsigned int _refreshRate = 999;
+static bool _vsync = false;
 
 mat4 projectionMatrix;
 void GraphicsWindowResizeEventImpl(int width, int height) {
@@ -49,7 +52,7 @@ void InitializeGraphicsSystemImpl(void) {
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 #endif
-	_context = SDL_GL_CreateContext(_window);
+	_context = SDL_GL_CreateContext(WindowGet()->Handle);
 	if (!_context) {
 		sgLogCritical("Could not create opengl context, exiting! %s",
 					  SDL_GetError());
@@ -70,7 +73,9 @@ void InitializeGraphicsSystemImpl(void) {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glm_ortho(0.0f, WindowWidthImpl(), WindowHeightImpl(), 0.0f, -1.0f, 1.0f,
 			  projectionMatrix);
-	SDL_GL_SetSwapInterval(1);	// vsync
+#ifndef __EMSCRIPTEN__
+	SDL_GL_SetSwapInterval(_vsync);	 // vsync
+#endif
 }
 
 void ShutdownGraphicsSystemImpl(void) {
@@ -116,7 +121,7 @@ void DrawEndImpl(void) {
 
 	DrawTexture(_screenFrameBufferTexture, GetDefaultShader(), &dstRect, &srcRect, false, 1.0f, true);
 
-	SDL_GL_SwapWindow(_window);
+	SDL_GL_SwapWindow(WindowGetImpl()->Handle);
 }
 
 /* void DrawEndImpl(void) { */
@@ -138,4 +143,8 @@ void GraphicsSetLogicalWorldSizeImpl(int width, int height) {
 	}
 	_screenFrameBufferTexture = TextureCreateRenderTarget(width, height);
 	TextureClearRenderTarget(_screenFrameBufferTexture, 0, 0, 0, 1.0);
+}
+
+int GraphicsGetTargetRefreshRateImpl(void) {
+	return _refreshRate;
 }

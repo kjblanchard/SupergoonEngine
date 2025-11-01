@@ -4,12 +4,16 @@
 extern "C" {
 #endif
 
+typedef struct Window {
+	SDL_Window* Handle;
+} Window;
+
 void SetWindowOptionsImpl(int width, int height, const char* name);
 void CreateWindowImpl(void);
 int WindowHeightImpl(void);
 int WindowWidthImpl(void);
 void CloseWindowImpl(void);
-extern SDL_Window* _window;
+Window* WindowGetImpl(void);
 #ifdef __cplusplus
 }
 #endif
