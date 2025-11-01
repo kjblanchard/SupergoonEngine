@@ -24,7 +24,7 @@ static int _logicalX = 0;
 static int _logicalY = 0;
 // TODO for now, only use the refresh rate set here.. we should set it eventually.
 static unsigned int _refreshRate = 999;
-static bool _vsync = false;
+static bool _vsync = true;
 
 mat4 projectionMatrix;
 void GraphicsWindowResizeEventImpl(int width, int height) {

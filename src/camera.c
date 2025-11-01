@@ -11,17 +11,14 @@ float* followX;
 float* followY;
 
 void UpdateCameraSystem(void) {
-	float viewWidth = CamSizeX / CameraZoom;
-	float viewHeight = CamSizeY / CameraZoom;
-
-	float camX = 0;
-	float camY = 0;
-
+	double viewWidth = CamSizeX;
+	double viewHeight = CamSizeY;
+	double camX = 0;
+	double camY = 0;
 	if (followX && followY) {
-		camX = *followX - viewWidth / 2.0f;
-		camY = *followY - viewHeight / 2.0f;
+		camX = round(*followX) - viewWidth / 2.0f;
+		camY = round(*followY) - viewHeight / 2.0f;
 	}
-
 	// If map is smaller than screen, camera should be pinned to top-left
 	if (BoundsX <= viewWidth)
 		camX = 0;
@@ -36,9 +33,8 @@ void UpdateCameraSystem(void) {
 		camY = 0;
 	else if (camY > BoundsY - viewHeight)
 		camY = BoundsY - viewHeight;
-
-	cameraPos[0] = round(camX);
-	cameraPos[1] = round(camY);
+	cameraPos[0] = roundf(camX);
+	cameraPos[1] = roundf(camY);
 }
 
 void SetCameraFollowTarget(float* x, float* y) {
@@ -60,7 +56,6 @@ void SetCameraSize(float x, float y) {
 
 void SetCameraZoom(float zoom) {
 	CameraZoom = zoom;
-	SetCameraFollowTarget(NULL, NULL);
 }
 float CameraGetX(void) {
 	return cameraPos[0];

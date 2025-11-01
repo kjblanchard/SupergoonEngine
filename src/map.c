@@ -435,11 +435,6 @@ static void freeTiledTilemap(Tilemap *map) {
 void DrawCurrentMap(void) {
 	if (!_currentMap)
 		return;
-	// RectangleF src = {CameraX, CameraY, _logicalWidth, _logicalHeight};
-	// Draw the full screen size for now.
-	/* int textureWidth = TextureGetWidth(_bg1Texture); */
-	/* int textureHeight = TextureGetHeight(_bg1Texture); */
-	// we should use the Cameras offset for the src rect here.
 	RectangleF src = {CameraGetX(), CameraGetY(), WindowWidth(), WindowHeight()};
 	RectangleF dst = {0, 0, WindowWidth(), WindowHeight()};
 	if (_bg1Texture) {
