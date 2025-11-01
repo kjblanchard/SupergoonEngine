@@ -6,6 +6,12 @@ engine.Coroutine = {
     tasks = {}
 }
 
+function engine.Debug.StartDebugger()
+    if os.getenv("LUA_DEBUGGING") == "1" then
+        require("mobdebug").start()
+    end
+end
+
 -- Adds a wait to a coroutine, the coroutine will wait the amount of seconds during the coroutine update
 function engine.Coroutine.Wait(seconds)
     seconds = tonumber(seconds) or 0
@@ -59,9 +65,9 @@ function engine.Coroutine.run(co)
         " status=" .. (type(co) == "thread" and coroutine.status(co) or "n/a"))
     assert(type(co) == "thread", "Coroutine:run expects a coroutine")
     table.insert(engine.Coroutine.tasks, {
-        co = co,
-        delay = 0.01 -- start next frame
-    })
+            co = co,
+            delay = 0.01 -- start next frame
+        })
     engine.Log.LogDebug("Task count now " .. tostring(#engine.Coroutine.tasks))
 end
 
@@ -480,9 +486,9 @@ end
 
 function engine.Collision.CheckForCollision(a, b)
     return a.x < b.x + b.w and
-        a.x + a.w > b.x and
-        a.y < b.y + b.h and
-        a.y + a.h > b.y
+    a.x + a.w > b.x and
+    a.y < b.y + b.h and
+    a.y + a.h > b.y
 end
 
 --#endregion Collision

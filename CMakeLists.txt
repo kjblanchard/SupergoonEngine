@@ -154,9 +154,8 @@ if(SYSTEM_PACKAGES) # If we are using system packages, then we should try to fin
 
   find_library(
     LIB_LUA
-    PATH_SUFFIXES .a .dll
-    NAMES lua_static lua
-    HINTS /usr/local/bin /usr/local/lib)
+    NAMES lua lua_static 
+    HINTS /opt/homebrew/bin/ /usr/local/bin /usr/local/lib)
 
   if(LIB_LUA)
     list(APPEND EXTERNAL_LIBS ${LIB_LUA})

@@ -1,4 +1,5 @@
 
+#include <SDL3/SDL_init.h>
 #include <ogg/ogg.h>
 #define SDL_MAIN_USE_CALLBACKS
 #include <SDL3/SDL.h>
@@ -37,7 +38,7 @@ static void (*_drawFunc)(void) = NULL;
 static void (*_inputFunc)(void) = NULL;
 static int (*_handleEventFunc)(void *) = NULL;
 
-static bool start(void) {
+static void start(void) {
 	InitializeSdl();
 	InitializeLogSystem();
 	InitializeKeyboardSystem();
@@ -48,11 +49,9 @@ static bool start(void) {
 	InitializeGraphicsSystem();
 	InitializeAudioSystem();
 	InitializeTweenSystem();
-	// InitializeUISystem();
 	RegisterAllLuaFunctions();
 	_previousMS = getCurrentMSTicks();
 	_deltaTimeSeconds = 0;
-	return true;
 }
 
 static void handleFramerate(Uint64 *now) {
@@ -79,7 +78,7 @@ static void draw(void) {
 	DrawEnd();
 }
 
-static void Update(void) {
+static void update(void) {
 	Uint64 now = getCurrentMSTicks();
 	DeltaTimeMilliseconds = now - _previousMS;
 	_previousMS = now;
@@ -131,33 +130,20 @@ void SetInputFunction(void (*updateFunc)(void)) {
 }
 
 SDL_AppResult SDL_AppInit(void **appState, int argc, char *argv[]) {
-	bool started = start();
-	if (!started) {
-		sgLogCritical("Could not start program, exiting");
-	}
+	start();
 	StartImpl();
 	return SDL_APP_CONTINUE;
 }
 
+// Event handlers return if the game should quit
 SDL_AppResult SDL_AppEvent(void *appState, SDL_Event *event) {
-	switch (event->type) {
-		case SDL_EVENT_QUIT:
-			sgLogWarn("Going to quit from engine");
-			return SDL_APP_SUCCESS;
-	}
-	bool shouldQuit = false;
-	if (_handleEventFunc) {
-		shouldQuit = _handleEventFunc(event);
-	}
-	HandleEvents(event);
-	if (shouldQuit) {
-		return SDL_APP_SUCCESS;
-	}
+	if (HandleEvents(event)) return SDL_APP_SUCCESS;
+	if (_handleEventFunc && _handleEventFunc(event)) return SDL_APP_SUCCESS;
 	return SDL_APP_CONTINUE;
 }
 
 SDL_AppResult SDL_AppIterate(void *appState) {
-	Update();
+	update();
 	return SDL_APP_CONTINUE;
 }
 

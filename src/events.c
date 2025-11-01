@@ -9,6 +9,7 @@ extern void handleTweenEvents(void *event);
 extern void handleMouseEvent(void *event);
 // extern void handleTouchEvent(void *event);
 extern void windowEventHandler(void *event);
+extern bool HandleSDLEvents(void *e);
 BuiltinEventTypes BuiltinEventIds;
 static int (*_customEventHandler)(void *event) = NULL;
 static int _currentCustomRegisteredEvent = 1000;
@@ -38,6 +39,7 @@ void PushEvent(uint32_t eventType, int eventCode, void *data, void *data2) {
 }
 
 int HandleEvents(void *event) {
+	if (HandleSDLEvents(event)) return true;
 	AudioEventHandler(event);
 	// handleTweenEvents(event);
 	handleMouseEvent(event);
