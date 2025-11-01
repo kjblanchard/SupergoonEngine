@@ -97,10 +97,6 @@ void DrawEndImpl(void) {
 	SetRenderTarget(NULL);
 	int texX = TextureGetWidth(_screenFrameBufferTexture);
 	int texY = TextureGetHeight(_screenFrameBufferTexture);
-	/* if (_logicalX > 0 && _logicalY > 0) { */
-	/* 	scaleX = (float)WindowWidth() / (float)_logicalX; */
-	/* 	/1* scaleY = (float)WindowHeight() / (float)_logicalY; *1/ */
-	/* } */
 	DrawTexture(_screenFrameBufferTexture, GetDefaultShader(), &(RectangleF){0, 0, WindowWidth(), WindowHeight()}, &(RectangleF){0, 0, texX, texY}, false, 1.0f, true);
 	SDL_GL_SwapWindow(_window);
 }

@@ -8,7 +8,7 @@ typedef struct Shader Shader;
 
 // Creates a shader, not usable until it is compiled with some kind of a shader
 // with Shader compile.
-Shader *ShaderCreate();
+Shader *ShaderCreate(void);
 void ShaderDestroy(Shader *shader);
 void ShaderUse(Shader *shader);
 Shader *GetDefaultShader(void);
