@@ -3,6 +3,7 @@
 #include <Supergoon/Primitives/rectangle.h>
 #include <Supergoon/camera.h>
 #include <Supergoon/window.h>
+#include <stdlib.h>
 #include <string.h>
 #ifndef __EMSCRIPTEN__
 #include <glad/glad.h>
@@ -29,20 +30,12 @@ void GraphicsWindowResizeEventImpl(int width, int height) {
 	}
 	glViewport(0, 0, width, height);
 	glm_ortho(0.0f, width, height, 0.0f, -1.0f, 1.0f, projectionMatrix);
-	if (_screenFrameBufferTexture) {
-		TextureDestroy(_screenFrameBufferTexture);
-	}
 	int texWidth = width;
 	int texHeight = height;
 	if (_logicalX && _logicalY) {
 		texWidth = _logicalX;
 		texHeight = _logicalY;
-		glViewport(0, 0, texWidth, texHeight);
-		glm_ortho(0.0f, texWidth, texHeight, 0.0f, -1.0f, 1.0f, projectionMatrix);
 	}
-	_screenFrameBufferTexture = TextureCreateRenderTarget(texWidth, texHeight);
-	TextureClearRenderTarget(_screenFrameBufferTexture, 0, 0, 0, 1.0);
-	// We need to handle if the resolution is different, with a logical size set.
 	SetCameraSize(texWidth, texHeight);
 }
 
@@ -95,12 +88,54 @@ void DrawStartImpl(void) {
 
 void DrawEndImpl(void) {
 	SetRenderTarget(NULL);
-	int texX = TextureGetWidth(_screenFrameBufferTexture);
-	int texY = TextureGetHeight(_screenFrameBufferTexture);
-	DrawTexture(_screenFrameBufferTexture, GetDefaultShader(), &(RectangleF){0, 0, WindowWidth(), WindowHeight()}, &(RectangleF){0, 0, texX, texY}, false, 1.0f, true);
+
+	int fbWidth = TextureGetWidth(_screenFrameBufferTexture);
+	int fbHeight = TextureGetHeight(_screenFrameBufferTexture);
+	int winWidth = WindowWidth();
+	int winHeight = WindowHeight();
+
+	// Compute integer scaling factor
+	int scaleX = winWidth / fbWidth;
+	int scaleY = winHeight / fbHeight;
+	int scale = scaleX < scaleY ? scaleX : scaleY;
+	if (scale < 1) scale = 1;  // don't shrink below 1x
+
+	// Compute destination rectangle to center the framebuffer
+	int drawWidth = fbWidth * scale;
+	int drawHeight = fbHeight * scale;
+	int offsetX = (winWidth - drawWidth) / 2;
+	int offsetY = (winHeight - drawHeight) / 2;
+
+	RectangleF dstRect = {
+		(float)offsetX,
+		(float)offsetY,
+		(float)drawWidth,
+		(float)drawHeight};
+
+	RectangleF srcRect = {0, 0, (float)fbWidth, (float)fbHeight};
+
+	DrawTexture(_screenFrameBufferTexture, GetDefaultShader(), &dstRect, &srcRect, false, 1.0f, true);
+
 	SDL_GL_SwapWindow(_window);
 }
+
+/* void DrawEndImpl(void) { */
+/* 	SetRenderTarget(NULL); */
+/* 	int texX = TextureGetWidth(_screenFrameBufferTexture); */
+/* 	int texY = TextureGetHeight(_screenFrameBufferTexture); */
+/* 	int scaleX = texX / WindowWidth(); */
+/* 	int scaleY = texY / WindowHeight(); */
+/* 	DrawTexture(_screenFrameBufferTexture, GetDefaultShader(), &(RectangleF){0, 0, WindowWidth(), WindowHeight()}, &(RectangleF){0, 0, texX, texY}, false, 1.0f, true); */
+/* 	SDL_GL_SwapWindow(_window); */
+/* } */
 void GraphicsSetLogicalWorldSizeImpl(int width, int height) {
 	_logicalX = width;
 	_logicalY = height;
+	glViewport(0, 0, width, height);
+	glm_ortho(0.0f, width, height, 0.0f, -1.0f, 1.0f, projectionMatrix);
+	if (_screenFrameBufferTexture) {
+		TextureDestroy(_screenFrameBufferTexture);
+	}
+	_screenFrameBufferTexture = TextureCreateRenderTarget(width, height);
+	TextureClearRenderTarget(_screenFrameBufferTexture, 0, 0, 0, 1.0);
 }

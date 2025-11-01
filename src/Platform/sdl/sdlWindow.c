@@ -1,4 +1,5 @@
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_events.h>
 #include <SDL3/SDL_video.h>
 #include <Supergoon/Graphics/graphics.h>
 #include <Supergoon/log.h>
@@ -41,13 +42,21 @@ static char* _windowName = NULL;
 static void onWindowResize(void);
 
 void windowEventHandler(Event* event) {
-	if (!(event->type == SDL_EVENT_WINDOW_RESIZED)) {
-		return;
-	}
 	if (event->type == SDL_EVENT_WINDOW_RESIZED) {
 		SDL_GetWindowSizeInPixels(_window, &_windowWidth, &_windowHeight);
 		onWindowResize();
 	}
+}
+
+static void onWindowResize(void) {
+	sgLogWarn("Setting window size %d, %d", _windowWidth, _windowHeight);
+	if (!SDL_SetWindowSize(_window, _windowWidth, _windowHeight)) {
+		sgLogError("Could not set window size, %s", SDL_GetError());
+	}
+	if (!SDL_SetWindowTitle(_window, _windowName)) {
+		sgLogError("Could not set window title");
+	}
+	GraphicsWindowResizeEvent(_windowWidth, _windowHeight);
 }
 
 void SetWindowOptionsImpl(int width, int height, const char* name) {
@@ -61,17 +70,6 @@ void SetWindowOptionsImpl(int width, int height, const char* name) {
 	if (_window) {
 		onWindowResize();
 	}
-}
-
-static void onWindowResize(void) {
-	sgLogDebug("Setting window size %d, %d", _windowWidth, _windowHeight);
-	if (!SDL_SetWindowSize(_window, _windowWidth, _windowHeight)) {
-		sgLogError("Could not set window size, %s", SDL_GetError());
-	}
-	if (!SDL_SetWindowTitle(_window, _windowName)) {
-		sgLogError("Could not set window title");
-	}
-	GraphicsWindowResizeEvent(_windowWidth, _windowHeight);
 }
 
 void CreateWindowImpl(void) {
@@ -90,10 +88,6 @@ void CreateWindowImpl(void) {
 	if (!_window) {
 		sgLogCritical("Could not create window, error, %s", SDL_GetError());
 	}
-	// if (!SDL_SetRenderVSync(_renderer, _vsyncEnabled)) {
-	// 	sgLogWarn("Could not set vsync, %s", SDL_GetError());
-	// }
-
 	SDL_RaiseWindow(_window);
 	getRefreshRate();
 	onWindowResize();

@@ -147,9 +147,9 @@ SDL_AppResult SDL_AppEvent(void *appState, SDL_Event *event) {
 	}
 	bool shouldQuit = false;
 	if (_handleEventFunc) {
-		shouldQuit = _handleEventFunc(&event);
+		shouldQuit = _handleEventFunc(event);
 	}
-	HandleEvents(&event);
+	HandleEvents(event);
 	if (shouldQuit) {
 		return SDL_APP_SUCCESS;
 	}
