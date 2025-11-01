@@ -6,7 +6,7 @@ engine.Coroutine = {
     tasks = {}
 }
 
-function engine.Debug.StartDebugger()
+function engine.StartDebugger()
     if os.getenv("LUA_DEBUGGING") == "1" then
         require("mobdebug").start()
     end
