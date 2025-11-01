@@ -105,6 +105,11 @@ static int setRenderTarget(lua_State *L) {
 	return 1;
 }
 
+static int setPreviousRenderTarget(lua_State *L) {
+	SetPreviousRenderTarget();
+	return 0;
+}
+
 static int clearRenderTargetTexture(lua_State *L) {
 	if (!LuaCheckFunctionCallParamsAndTypes(
 			L, 5, LuaFunctionParameterTypeUserdata,
@@ -126,6 +131,7 @@ static const luaL_Reg graphicsLib[] = {
 	{"CreateRenderTargetTexture", createRenderTargetTexture},
 	{"ClearRenderTargetTexture", clearRenderTargetTexture},
 	{"SetRenderTarget", setRenderTarget},
+	{"SetPreviousRenderTarget", setPreviousRenderTarget},
 	{"DrawTexture", drawTexture},
 	{"DrawTextureToTexture", drawTextureToTexture},
 	{NULL, NULL}};

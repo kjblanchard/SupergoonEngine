@@ -1,4 +1,6 @@
+#include <Supergoon/Graphics/texture.h>
 #include <Supergoon/camera.h>
+#include <stdbool.h>
 #ifndef __EMSCRIPTEN__
 #include <glad/glad.h>
 // must be forst<SDL3/SDL_opengl.h>
@@ -21,8 +23,10 @@
 #include <stdlib.h>
 #define MAX_CACHED_TEXTURES 64
 
-// Global or static current render target
-static Texture *g_CurrentRenderTarget = NULL;
+static Texture *_currentRenderingTarget = NULL;
+static int _currentRenderingTargetWidth = 0;
+static int _currentRenderingTargetHeight = 0;
+static Texture *_previousRenderingTarget = NULL;
 
 typedef struct Texture {
 	unsigned int ID;
@@ -45,43 +49,6 @@ void TextureClearRenderTargetImpl(Texture *texture, float r, float g, float b,
 								  float a) {
 	glClearColor(r, g, b, a);
 	glClear(GL_COLOR_BUFFER_BIT);
-}
-
-void DrawTextureToTextureImpl(Texture *dstTarget, Texture *srcTexture,
-							  Shader *shader, RectangleF *dstRect,
-							  RectangleF *srcRect, float scale) {
-	ShaderUse(shader);
-	// Transform setup
-	mat4 model;
-	glm_mat4_identity(model);
-	vec3 pos = {dstRect->x, dstRect->y, 0};
-	glm_translate(model, pos);
-	vec3 size = {dstRect->w * scale, dstRect->h * scale, 1.0f};
-	glm_scale(model, size);
-	mat4 view;
-	glm_mat4_identity(view);
-
-	ShaderSetUniformMatrix4(shader, "model", model, false);
-	ShaderSetUniformMatrix4(shader, "view", view, false);
-
-	mat4 proj;
-	glm_ortho(0.0f, dstTarget->Width, 0.0f, dstTarget->Height, -1.0f, 1.0f, proj);
-	ShaderSetUniformMatrix4(shader, "projection", proj, false);
-
-	vec4 srcRectV = {srcRect->x, srcRect->y, srcRect->w, srcRect->h};
-	vec2 texSize = {(float)srcTexture->Width, (float)srcTexture->Height};
-	ShaderSetUniformVector4fV(shader, "srcRect", srcRectV, false);
-	ShaderSetUniformVector2fV(shader, "textureSize", texSize, false);
-
-	ShaderSetUniformInteger(shader, "image", 0, false);
-	ShaderSetUniformVector3f(shader, "spriteColor", 1.0f, 1.0f, 1.0f, false);
-
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, srcTexture->ID);
-	glBindVertexArray(
-		srcTexture->VAO);  // You can reuse its VAO since it’s a simple quad
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-	glBindVertexArray(0);
 }
 
 Texture *TextureCreateImpl(void) {
@@ -136,8 +103,8 @@ Texture *TextureCreateRenderTargetImpl(int width, int height) {
 	// sensible defaults for render target texture
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,GL_CLAMP_TO_BORDER);
 
 	// Create framebuffer and attach texture as color attachment 0
 	glGenFramebuffers(1, &texture->FBO);
@@ -279,19 +246,33 @@ void DrawTextureImpl(Texture *texture, Shader *shader, RectangleF *dstRect,
 	glBindVertexArray(0);
 }
 
+void DrawTextureToTextureImpl(Texture *dstTarget, Texture *srcTexture,
+							  Shader *shader, RectangleF *dstRect,
+							  RectangleF *srcRect, float scale) {
+	SetRenderTarget(dstTarget);
+	DrawTexture(srcTexture, shader, dstRect, srcRect, false, scale, false);
+	SetPreviousRenderTarget();
+}
+
 void TextureDestroyImpl(Texture *texture) { free(texture); }
 
+void SetPreviousRenderTargetImpl(void) {
+	SetRenderTarget(_previousRenderingTarget);
+}
+
 void SetRenderTargetImpl(Texture *target) {
+	_previousRenderingTarget = _currentRenderingTarget;
 	if (target) {
+		_currentRenderingTargetWidth = target->Width;
+		_currentRenderingTargetHeight = target->Height;
 		glBindFramebuffer(GL_FRAMEBUFFER, target->FBO);
-		glViewport(0, 0, target->Width, target->Height);
-		glm_ortho(0.0f, target->Width, 0.0f, target->Height, -1.0f, 1.0f, projectionMatrix);
-		g_CurrentRenderTarget = target;
 	} else {
 		// Restore to system default framebuffer
+		_currentRenderingTargetWidth = WindowWidth();
+		_currentRenderingTargetHeight = WindowHeight();
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glm_ortho(0.0f, WindowWidth(), 0.0f, WindowHeight(), -1.0f, 1.0f, projectionMatrix);
-		glViewport(0, 0, WindowWidth(), WindowHeight());
-		g_CurrentRenderTarget = NULL;
 	}
+	_currentRenderingTarget = target;
+	glm_ortho(0.0f, _currentRenderingTargetWidth, 0.0f, _currentRenderingTargetHeight, -1.0f, 1.0f, projectionMatrix);
+	glViewport(0, 0, _currentRenderingTargetWidth, _currentRenderingTargetHeight);
 }

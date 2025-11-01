@@ -7,6 +7,7 @@ typedef struct Shader Shader;
 Texture *TextureCreate(void);
 Texture *TextureCreateRenderTarget(int width, int height);
 void SetRenderTarget(Texture *renderTarget);
+void SetPreviousRenderTarget(void);
 void TextureLoadFromBmp(Texture *texture, const char *filepath);
 int TextureGetWidth(Texture *texture);
 int TextureGetHeight(Texture *texture);

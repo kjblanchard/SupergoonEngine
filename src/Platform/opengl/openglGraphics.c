@@ -3,6 +3,7 @@
 #include <Supergoon/Primitives/rectangle.h>
 #include <Supergoon/camera.h>
 #include <Supergoon/window.h>
+#include <string.h>
 #ifndef __EMSCRIPTEN__
 #include <glad/glad.h>
 // Need to do glad first
@@ -84,6 +85,7 @@ void ShutdownGraphicsSystemImpl(void) {
 	SDL_GL_DestroyContext(_context);
 }
 void DrawStartImpl(void) {
+	SetRenderTarget(NULL);
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	SetRenderTarget(_screenFrameBufferTexture);
@@ -95,13 +97,11 @@ void DrawEndImpl(void) {
 	SetRenderTarget(NULL);
 	int texX = TextureGetWidth(_screenFrameBufferTexture);
 	int texY = TextureGetHeight(_screenFrameBufferTexture);
-	int scaleX = 1.0f;
-
 	/* if (_logicalX > 0 && _logicalY > 0) { */
 	/* 	scaleX = (float)WindowWidth() / (float)_logicalX; */
 	/* 	/1* scaleY = (float)WindowHeight() / (float)_logicalY; *1/ */
 	/* } */
-	DrawTexture(_screenFrameBufferTexture, GetDefaultShader(), &(RectangleF){0, 0, WindowWidth(), WindowHeight()}, &(RectangleF){0, 0, texX, texY}, false, scaleX, true);
+	DrawTexture(_screenFrameBufferTexture, GetDefaultShader(), &(RectangleF){0, 0, WindowWidth(), WindowHeight()}, &(RectangleF){0, 0, texX, texY}, false, 1.0f, true);
 	SDL_GL_SwapWindow(_window);
 }
 void GraphicsSetLogicalWorldSizeImpl(int width, int height) {
