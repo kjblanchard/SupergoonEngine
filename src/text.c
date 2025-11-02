@@ -120,7 +120,8 @@ void TextDraw(Text* text) {
 	int height = TextureGetHeight(letterTexture);
 	RectangleF dst = {0, 0, width, height};
 	RectangleF src = {0, 0, width, height};
-	DrawTexture(text->Font->GlyphTextures[65], GetDefaultShader(), &dst, &src, false, 1.0, false);
+	DrawTexture(text->Font->GlyphTextures[65], GetDefaultTextShader(), &dst, &src, false, 1.0, false);
+	/* DrawTexture(text->Font->GlyphTextures[65], GetDefaultShader(), &dst, &src, false, 1.0, false); */
 }
 
 void DestroyUIText(Text* text) {
