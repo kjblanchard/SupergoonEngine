@@ -24,7 +24,9 @@ static int _logicalX = 0;
 static int _logicalY = 0;
 // TODO for now, only use the refresh rate set here.. we should set it eventually.
 static unsigned int _refreshRate = 999;
+#ifndef __EMSCRIPTEN__
 static bool _vsync = true;
+#endif
 
 mat4 projectionMatrix;
 void GraphicsWindowResizeEventImpl(int width, int height) {
@@ -57,7 +59,6 @@ void InitializeGraphicsSystemImpl(void) {
 		sgLogCritical("Could not create opengl context, exiting! %s",
 					  SDL_GetError());
 	}
-	// SDL_GL_MakeCurrent(_window, _context);
 #ifndef __EMSCRIPTEN__
 	if (!gladLoadGL()) {
 		sgLogError("Failed to initialize GLAD!");
@@ -65,7 +66,6 @@ void InitializeGraphicsSystemImpl(void) {
 	}
 #endif
 	sgLogWarn("OpenGL version: %s", glGetString(GL_VERSION));
-	// Set the projection matrix to the screen size.
 	int width = WindowWidthImpl();
 	int height = WindowHeightImpl();
 	glViewport(0, 0, width, height);

@@ -65,7 +65,7 @@ void SetTextSize(UIObject* uiobject, int size) {
 	LoadedFont* current = _currentFont;
 	char* fontBase = getFontnameFromCurrentFont();
 
-	SetFont(fontBase, size);
+	TextSetFont(fontBase, size);
 	SDL_free(fontBase);
 	text->Font = _currentFont;
 	text->FontSize = size;
@@ -165,7 +165,7 @@ static LoadedFont* getLoadedFont(const char* fontName, unsigned int size) {
 	return fontToLoadInto;
 }
 
-void SetFont(const char* fontName, unsigned int size) {
+void TextSetFont(const char* fontName, unsigned int size) {
 	if (!fontName) {
 		sgLogWarn("No font name, not setting");
 		return;
@@ -439,7 +439,7 @@ void UITextOnDirty(UIObject* object) {
 	}
 }
 
-void UITextDraw(UIObject* object) {
+void TextDraw(UIObject* object) {
 	if (!object) {
 		return;
 	}
@@ -448,7 +448,7 @@ void UITextDraw(UIObject* object) {
 	DrawTexture(text->Texture, &object->Location, NULL);
 }
 
-void UITextLoad(UIObject* object) {
+void TextLoad(UIObject* object) {
 	if (!object) {
 		return;
 	}

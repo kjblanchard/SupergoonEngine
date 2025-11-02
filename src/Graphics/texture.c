@@ -16,6 +16,7 @@ extern void DrawTextureToTextureImpl(Texture *dstTarget, Texture *srcTexture,
 									 Shader *shader, RectangleF *dstRect,
 									 RectangleF *srcRect, float scale);
 extern void SetPreviousRenderTargetImpl(void);
+extern void TextureLoadFromDataImpl(Texture *texture, const char *name, int width, int height, void *data);
 
 Texture *TextureCreate(void) { return TextureCreateImpl(); }
 void TextureLoadFromBmp(Texture *texture, const char *filepath) {
@@ -48,4 +49,7 @@ void DrawTextureToTexture(Texture *dstTarget, Texture *srcTexture,
 }
 void SetPreviousRenderTarget(void) {
 	SetPreviousRenderTargetImpl();
+}
+void TextureLoadFromData(Texture *texture, const char *name, int width, int height, void *data) {
+	TextureLoadFromDataImpl(texture, name, width, height, data);
 }

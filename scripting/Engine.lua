@@ -101,6 +101,14 @@ function engine.Tools.NormalizeRect(rect)
 end
 
 --#endregion Tools
+--
+engine.Text = {}
+function engine.Text.CreateText(fontName, text)
+    return cText.CreateText(fontName, text)
+end
+function engine.Text.DrawText(textPtr)
+    return cText.DrawText(textPtr)
+end
 
 --#region Sprite
 engine.Sprite = {}

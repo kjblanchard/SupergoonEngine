@@ -1,5 +1,6 @@
 #include <Supergoon/Graphics/texture.h>
 #include <Supergoon/camera.h>
+#include <_string.h>
 #include <stdbool.h>
 #ifndef __EMSCRIPTEN__
 #include <glad/glad.h>
@@ -103,8 +104,8 @@ Texture *TextureCreateRenderTargetImpl(int width, int height) {
 	// sensible defaults for render target texture
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 	// Create framebuffer and attach texture as color attachment 0
 	glGenFramebuffers(1, &texture->FBO);
@@ -275,4 +276,19 @@ void SetRenderTargetImpl(Texture *target) {
 	_currentRenderingTarget = target;
 	glm_ortho(0.0f, _currentRenderingTargetWidth, 0.0f, _currentRenderingTargetHeight, -1.0f, 1.0f, projectionMatrix);
 	glViewport(0, 0, _currentRenderingTargetWidth, _currentRenderingTargetHeight);
+}
+
+void TextureLoadFromDataImpl(Texture *texture, const char *name, int width, int height, void *data) {
+	texture->Name = strdup(name);
+	texture->Width = width;
+	texture->Height = height;
+	glBindTexture(GL_TEXTURE_2D, texture->ID);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, texture->Width, texture->Height, 0,
+				 GL_RED, GL_UNSIGNED_BYTE, data);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glBindTexture(GL_TEXTURE_2D, 0);
 }

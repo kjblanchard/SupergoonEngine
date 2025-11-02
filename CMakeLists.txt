@@ -2,9 +2,9 @@
 set(LIBRARY_TARGET_NAME SupergoonEngine)
 set(COMPILE_OPTIONS)
 set(CMAKE_EXECUTABLE_SUFFIX
-    ".html"
-    CACHE STRING "Use html" FORCE)
-set(EXTERNAL_LIBS SDL3::SDL3-static)
+  ".html"
+  CACHE STRING "Use html" FORCE)
+set(EXTERNAL_LIBS )
 set(FOLDERS_TO_COPY scripting/)
 
 if(UNIX OR APPLE)
@@ -25,80 +25,82 @@ message(STATUS "Starting ${LIBRARY_TARGET_NAME} library initialization")
 cmake_minimum_required(VERSION 3.22)
 
 set(BUILD_SHARED_LIBS
-    OFF
-    CACHE BOOL "Build libraries as static" FORCE)
+  OFF
+  CACHE BOOL "Build libraries as static" FORCE)
 
 set(SRC_FILES
-    src/camera.c
-    src/lua.c
-    src/log.c
-    src/state.c
-    src/Input/keyboard.c
-    src/window.c
-    src/filesystem.c
-    src/tools.c
-    src/events.c
-    src/engine.c
-    src/Primitives/rectangle.c
-    src/Audio/Sfx.c
-    src/Audio/Stream.c
-    src/Audio/Audio.c
-    src/Tweening/easing.c
-    src/Tweening/tween.c
-    src/Lua/log.c
-    src/Lua/audio.c
-    src/Lua/lengine.c
-    src/Lua/linput.c
-    src/Lua/lcamera.c
-    src/Lua/scripting.c
-    # Platform specific for no
-    src/effects.c
-    src/Animation/Animator.c
-    src/gameobject.c
-    src/sprite.c
-    src/Input/mouse.c
-    # src/Input/touch.c
-    src/Platform/sdl/sdl.c
-    src/Platform/sdl/sdlInput.c
-    src/Platform/sdl/sdlWindow.c
-    src/map.c
-    src/Lua/lanimation.c
-    src/Lua/lsprite.c
-    src/Lua/lgameobject.c
-    src/Lua/lscene.c
-    src/Lua/leffects.c
-    src/Lua/lgraphics.c
-    # sound
-    src/Platform/openal/openal.c
-    src/Platform/openal/openalStream.c
-    src/Platform/openal/openalBgm.c
-    # 2d engine
-    src/Graphics/graphics.c
-    src/Graphics/texture.c
-    src/Graphics/shader.c
-    # input
-    src/Input/joystick.c
-    # UI src/UI/ui.c src/UI/uirect.c src/UI/uiobject.c src/UI/uiimage.c src/UI/uiImageAnimation.c src/UI/uitext.c
-    # src/UI/uibutton.c src/UI/uiProgressBar.c src/Lua/lui.c
+  src/camera.c
+  src/lua.c
+  src/log.c
+  src/state.c
+  src/Input/keyboard.c
+  src/window.c
+  src/filesystem.c
+  src/tools.c
+  src/events.c
+  src/engine.c
+  src/Primitives/rectangle.c
+  src/Audio/Sfx.c
+  src/Audio/Stream.c
+  src/Audio/Audio.c
+  src/Tweening/easing.c
+  src/Tweening/tween.c
+  src/Lua/log.c
+  src/Lua/audio.c
+  src/Lua/lengine.c
+  src/Lua/linput.c
+  src/Lua/lcamera.c
+  src/Lua/scripting.c
+  # Platform specific for no
+  src/effects.c
+  src/Animation/Animator.c
+  src/gameobject.c
+  src/sprite.c
+  src/Input/mouse.c
+  # src/Input/touch.c
+  src/Platform/sdl/sdl.c
+  src/Platform/sdl/sdlInput.c
+  src/Platform/sdl/sdlWindow.c
+  src/map.c
+  src/Lua/lanimation.c
+  src/Lua/lsprite.c
+  src/Lua/lgameobject.c
+  src/Lua/lscene.c
+  src/Lua/leffects.c
+  src/Lua/lgraphics.c
+  src/Lua/ltext.c
+  # sound
+  src/Platform/openal/openal.c
+  src/Platform/openal/openalStream.c
+  src/Platform/openal/openalBgm.c
+  # 2d engine
+  src/Graphics/graphics.c
+  src/Graphics/texture.c
+  src/Graphics/shader.c
+  # input
+  src/Input/joystick.c
+  src/text.c
+  # UI src/UI/ui.c src/UI/uirect.c src/UI/uiobject.c src/UI/uiimage.c src/UI/uiImageAnimation.c src/UI/uitext.c
+  # src/UI/uibutton.c src/UI/uiProgressBar.c src/Lua/lui.c
 )
 
 if(SDL_GL)
   list(APPEND SRC_FILES src/platform/opengl/glad.c src/platform/opengl/openglGraphics.c
-       src/platform/opengl/openglShader.c src/platform/opengl/openglTexture.c)
+    src/platform/opengl/openglShader.c src/platform/opengl/openglTexture.c)
 
 endif(SDL_GL)
 
 add_library(${LIBRARY_TARGET_NAME} STATIC ${SRC_FILES})
 
 set(SKIP_INSTALL_ALL
-    ON
-    CACHE BOOL "We don't want any of these external packages to install anything")
+  ON
+  CACHE BOOL "We don't want any of these external packages to install anything")
 set(CMAKE_DEBUG_POSTFIX
-    ""
-    CACHE STRING " Don't use the d for debug packages" FORCE)
+  ""
+  CACHE STRING " Don't use the d for debug packages" FORCE)
 set(CMAKE_DEBUG_TARGET_PROPERTIES
-    "DEBUG_OUTPUT" ""
-    CACHE STRING "Don't use the d for debug packages" FORCE)
+  "DEBUG_OUTPUT" ""
+  CACHE STRING "Don't use the d for debug packages" FORCE)
 
 if(SYSTEM_PACKAGES) # If we are using system packages, then we should try to find them.
 
@@ -161,34 +163,36 @@ if(SYSTEM_PACKAGES) # If we are using system packages, then we should try to fin
     list(APPEND EXTERNAL_LIBS ${LIB_LUA})
   endif(LIB_LUA)
   find_package(SDL3 CONFIG COMPONENTS SDL3-shared)
+  if(SDL3_FOUND)
+    list(APPEND EXTERNAL_LIBS SDL3::SDL3-static)
+  endif(SDL3_FOUND)
   find_package(Freetype)
   if(FREETYPE_FOUND)
-    list(APPEND EXTERNAL_LIBS ${FREETYPE_LIBRARY})
+    # list(APPEND EXTERNAL_LIBS ${FREETYPE_LIBRARY})
     target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC /usr/local/include/freetype2
-                                                             /opt/homebrew/opt/freetype/include/freetype2)
+      /opt/homebrew/opt/freetype/include/freetype2)
+    list(APPEND EXTERNAL_LIBS ${FREETYPE_LIBRARY})
   endif(FREETYPE_FOUND)
 
 endif(SYSTEM_PACKAGES)
 
 if(NOT LIB_CGLM)
   message(STATUS "CGLM not found. Fetching CGLM...")
-  set(INSTALL_CMAKE_PACKAGE_MODULE
-      OFF
-      CACHE BOOL "Dont do it" FORCE)
+  set(CGLM_SHARED OFF CACHE INTERNAL  "No shared")
+  set(CGLM_STATIC ON CACHE INTERNAL  "yes")
+  set(INSTALL_CMAKE_PACKAGE_MODULE OFF CACHE BOOL "Dont do it" FORCE)
   FetchContent_Declare(
     LIB_CGLM
     GIT_REPOSITORY https://github.com/recp/cglm
     GIT_TAG v0.9.6
     EXCLUDE_FROM_ALL)
   FetchContent_MakeAvailable(LIB_CGLM)
-  list(APPEND EXTERNAL_LIBS cglm)
+  target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC cglm)
 endif(NOT LIB_CGLM)
 
-if(NOT LIB_OGG)
+if(NOT EMSCRIPTEN AND NOT LIB_OGG)
   message(STATUS "OGG not found. Fetching OGG...")
-  set(BUILD_TESTING
-      OFF
-      CACHE BOOL "do not build tests")
+  set(BUILD_TESTING OFF CACHE BOOL "do not build tests")
   FetchContent_Declare(
     LIB_OGG
     GIT_REPOSITORY https://github.com/xiph/ogg
@@ -197,14 +201,15 @@ if(NOT LIB_OGG)
   FetchContent_MakeAvailable(LIB_OGG)
   get_target_property(OGG_INCLUDE_DIR ogg INTERFACE_INCLUDE_DIRECTORIES)
   set(OGG_LIBRARY ogg)
-  list(APPEND EXTERNAL_LIBS ogg)
-endif(NOT LIB_OGG)
+  # list(APPEND EXTERNAL_LIBS ogg)
+  target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC ogg)
+endif(NOT EMSCRIPTEN AND NOT LIB_OGG)
 
-if(NOT LIB_VORBIS)
+if(NOT EMSCRIPTEN AND NOT LIB_VORBIS)
   message(STATUS "VORBIS not found. Fetching VORBIS...")
   set(INSTALL_CMAKE_PACKAGE_MODULE
-      OFF
-      CACHE BOOL "Dont do it" FORCE)
+    OFF
+    CACHE BOOL "Dont do it" FORCE)
   FetchContent_Declare(
     LIB_VORBIS
     GIT_REPOSITORY https://github.com/xiph/vorbis
@@ -212,23 +217,14 @@ if(NOT LIB_VORBIS)
     EXCLUDE_FROM_ALL)
   FetchContent_MakeAvailable(LIB_VORBIS)
   list(APPEND EXTERNAL_LIBS vorbisenc vorbisfile vorbis)
-endif(NOT LIB_VORBIS)
+endif(NOT EMSCRIPTEN AND NOT LIB_VORBIS)
 
 if(NOT LIB_LUA)
   message(STATUS "Lua not found. Fetching Lua...")
-  set(LUA_ENABLE_TESTING
-      OFF
-      CACHE BOOL "Build SDL as a shared library")
-  set(LUA_ENABLE_SHARED
-      OFF
-      CACHE BOOL "Build SDL as a shared library")
-  set(LUA_BUILD_COMPILER
-      OFF
-      CACHE BOOL "Build SDL as a shared library")
-  set(LUA_BUILD_BINARY
-      OFF
-      CACHE BOOL "Build SDL as a shared library")
-
+  set(LUA_ENABLE_TESTING OFF CACHE BOOL "Build SDL as a shared library")
+  set(LUA_ENABLE_SHARED OFF CACHE BOOL "Build SDL as a shared library")
+  set(LUA_BUILD_COMPILER OFF CACHE BOOL "Build SDL as a shared library")
+  set(LUA_BUILD_BINARY OFF CACHE BOOL "Build SDL as a shared library")
   if(IOS) # Test for ios sim with lua, as this fails with system and needs this define.. TODO not sure if needed
     add_definitions(-DTARGET_OS_IOS=1)
     add_definitions(-DLUA_USE_IOS=1)
@@ -244,47 +240,30 @@ if(NOT LIB_LUA)
   # list(APPEND EXTERNAL_LIBS lua_static)
   list(APPEND EXTERNAL_LIBS lua_static)
 endif(NOT LIB_LUA)
-if(NOT SDL3_FOUND)
+
+if(NOT EMSCRIPTEN AND NOT SDL3_FOUND)
   message(STATUS "SDL3 not found. Fetching SDL3...")
-  set(SDL_SHARED
-      OFF
-      CACHE BOOL "Build SDL as a shared library")
-  set(SDL_STATIC
-      ON
-      CACHE BOOL "Build SDL as a shared library")
-  set(SDL_TEST
-      OFF
-      CACHE BOOL "Build SDL as a shared library")
-  set(ENABLE_SDL_STATIC
-      OFF
-      CACHE BOOL "Build SDL as a static library")
+  set(SDL_SHARED OFF CACHE BOOL "Build SDL as a shared library")
+  set(SDL_STATIC ON CACHE BOOL "Build SDL as a shared library")
+  set(SDL_TEST OFF CACHE BOOL "Build SDL as a shared library")
+  set(ENABLE_SDL_STATIC OFF CACHE BOOL "Build SDL as a static library")
   FetchContent_Declare(
     SDL3
     GIT_REPOSITORY https://github.com/libsdl-org/SDL
     GIT_TAG release-3.2.24
     EXCLUDE_FROM_ALL)
   FetchContent_MakeAvailable(SDL3)
-endif(NOT SDL3_FOUND)
-if(NOT FREETYPE_FOUND)
+  list(APPEND EXTERNAL_LIBS SDL3::SDL3-static)
+endif(NOT EMSCRIPTEN AND NOT SDL3_FOUND)
+
+if(NOT EMSCRIPTEN AND NOT FREETYPE_FOUND)
   message(STATUS "freetype not found. Fetching freetype...")
-  set(FT_DISABLE_BROTLI
-      ON
-      CACHE BOOL "Do not install when installing" FORCE)
-  set(FT_DISABLE_HARFBUZZ
-      ON
-      CACHE BOOL "Do not install when installing" FORCE)
-  set(FT_DISABLE_ZLIB
-      ON
-      CACHE BOOL "Do not use" FORCE)
-  set(FT_DISABLE_BZIP2
-      ON
-      CACHE BOOL "Do not use" FORCE)
-  set(FT_DISABLE_PNG
-      ON
-      CACHE BOOL "Do not use" FORCE)
-  set(FT_DISABLE_PNG
-      ON
-      CACHE BOOL "Do not use" FORCE)
+  set(FT_DISABLE_BROTLI ON CACHE BOOL "Do not install when installing" FORCE)
+  set(FT_DISABLE_HARFBUZZ ON CACHE BOOL "Do not install when installing" FORCE)
+  set(FT_DISABLE_ZLIB ON CACHE BOOL "Do not use" FORCE)
+  set(FT_DISABLE_BZIP2 ON CACHE BOOL "Do not use" FORCE)
+  set(FT_DISABLE_PNG ON CACHE BOOL "Do not use" FORCE)
+  set(FT_DISABLE_PNG ON CACHE BOOL "Do not use" FORCE)
   FetchContent_Declare(
     LIB_FREETYPE
     GIT_REPOSITORY https://github.com/freetype/freetype
@@ -292,7 +271,25 @@ if(NOT FREETYPE_FOUND)
     EXCLUDE_FROM_ALL)
   FetchContent_MakeAvailable(LIB_FREETYPE)
   list(APPEND EXTERNAL_LIBS freetype)
-endif(NOT FREETYPE_FOUND)
+endif(NOT EMSCRIPTEN AND NOT FREETYPE_FOUND)
+
+if(NOT EMSCRIPTEN AND NOT LIB_OPENAL)
+  message(STATUS "openal not found. Fetching openal...")
+  set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "Do not use" )
+  set(LIBTYPE "STATIC" CACHE INTERNAL "Do not use" )
+  set(ALSOFT_UTILS OFF CACHE INTERNAL "" )
+  set(ALSOFT_EXAMPLES OFF CACHE INTERNAL "" )
+  set(ALSOFT_BACKEND_WAVE OFF CACHE INTERNAL "" )
+  set(ALSOFT_EMBED_HRTF_DATA ON CACHE INTERNAL "" )
+  # set(ALSOFT_REQUIRE_COREAUDIO ON CACHE INTERNAL "" )
+  FetchContent_Declare(
+    LIB_OPENAL
+    GIT_REPOSITORY https://github.com/kcat/openal-soft
+    GIT_TAG 1.24.3
+    EXCLUDE_FROM_ALL)
+  FetchContent_MakeAvailable(LIB_OPENAL)
+  target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC OpenAL)
+endif(NOT EMSCRIPTEN AND NOT LIB_OPENAL)
 
 if(DEBUG_CMAKE_VARIABLES)
   get_cmake_property(ALL_VARIABLES VARIABLES)
@@ -303,7 +300,6 @@ endif(DEBUG_CMAKE_VARIABLES)
 
 target_compile_options(${LIBRARY_TARGET_NAME} PUBLIC ${COMPILE_OPTIONS})
 target_link_directories(${LIBRARY_TARGET_NAME} PUBLIC /usr/local/lib) # should always include from usr/local/lib
-
 target_link_libraries(${LIBRARY_TARGET_NAME} INTERFACE ${EXTERNAL_LIBS})
 
 # System is for blocking out the warnings, these are mostly external libs
@@ -311,16 +307,16 @@ target_include_directories(
   ${LIBRARY_TARGET_NAME} SYSTEM
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include /usr/local/include
   PRIVATE # linux builds
-          ${sdl3_SOURCE_DIR}/include
-          if
-          (NOT CREATE_MACOS_TUI)
-          ${freetype_SOURCE_DIR}/include
-          endif
-          (NOT CREATE_MACOS_TUI)
-          ${lib_lua_SOURCE_DIR}/lua-5.4.5/include
-          ${lib_vorbis_SOURCE_DIR}/include
-          ${lib_ogg_SOURCE_DIR}/include
-          ${lib_ogg_BINARY_DIR}/include)
+  ${sdl3_SOURCE_DIR}/include
+  if
+  (NOT CREATE_MACOS_TUI)
+  ${freetype_SOURCE_DIR}/include
+  endif
+  (NOT CREATE_MACOS_TUI)
+  ${lib_lua_SOURCE_DIR}/lua-5.4.5/include
+  ${lib_vorbis_SOURCE_DIR}/include
+  ${lib_ogg_SOURCE_DIR}/include
+  ${lib_ogg_BINARY_DIR}/include)
 
 # don't hide warnings
 target_include_directories(${LIBRARY_TARGET_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)

@@ -8,12 +8,8 @@ extern "C" {
 struct LoadedFont;
 
 typedef struct Text {
-	//  Text to display
 	char* Text;
 	struct LoadedFont* Font;
-	//  Size of the font
-	unsigned int FontSize;
-	//  Should we word wrap?
 	int WordWrap;
 	unsigned int TextSizeX;
 	unsigned int TextSizeY;
@@ -32,21 +28,21 @@ typedef struct Text {
 	sgColor Color;
 	// Texture with the rendered text to be drawn
 	Texture* Texture;
-} UIText;
+} Text;
 
 void InitializeTextSystem(void);
 void ShutdownTextSystem(void);
-
-void SetTextColor(UIObject* uiobject, int r, int g, int b, int a);
-void SetTextSize(UIObject* uiobject, int size);
-void MeasureText(UIObject* uiobject);
-void TextSetFont(const char* fontName, unsigned int size);
-void SetCenteredX(UIObject* uiobject, int centered);
-void SetCenteredY(UIObject* uiobject, int centered);
-void TextLoad(UIObject* object);
-void UITextOnDirty(UIObject* object);
-void TextDraw(UIObject* object);
-void DestroyUIText(UIObject* object);
+Text* TextCreate(void);
+void SetTextColor(Text* text, int r, int g, int b, int a);
+void SetTextSize(Text* text, int size);
+void MeasureText(Text* text);
+int TextSetFont(const char* fontName, unsigned int size);
+void SetCenteredX(Text* text, int centered);
+void SetCenteredY(Text* text, int centered);
+void TextLoad(Text* text);
+void UITextOnDirty(Text* text);
+void TextDraw(Text* text);
+void DestroyUIText(Text* text);
 
 #ifdef __cplusplus
 }

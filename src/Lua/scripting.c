@@ -10,9 +10,9 @@
 #include <Supergoon/Lua/scene.h>
 #include <Supergoon/Lua/scripting.h>
 #include <Supergoon/Lua/sprite.h>
-#include <Supergoon/Lua/ui.h>
+#include <Supergoon/text.h>
+extern void RegisterLuaTextFunctions(void);
 void RegisterAllLuaFunctions(void) {
-	// RegisterLuaUIFunctions();
 	RegisterLuaObjectFunctions();
 	RegisterLuaSceneFuncs();
 	RegisterLuaEffectsFunctions();
@@ -24,4 +24,5 @@ void RegisterAllLuaFunctions(void) {
 	RegisterLuaInputFunctions();
 	RegisterLuaCameraFunctions();
 	RegisterLuaGraphicsFunctions();
+	RegisterLuaTextFunctions();
 }

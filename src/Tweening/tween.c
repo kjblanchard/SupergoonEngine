@@ -8,12 +8,6 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-// #include <Supergoon/Tweening/easing.h>
-// #include <Supergoon/Tweening/tween.h>
-// #include <Supergoon/log.h>
-// #include <stdbool.h>
-// #include <stdlib.h>
-
 static void updateTween(sgTween* tweenPtr, Tween id);
 static void zeroTween(Tween tween);
 static void updateTweenData(sgTween* tweenPtr);

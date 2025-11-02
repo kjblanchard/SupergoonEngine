@@ -9,6 +9,7 @@ Texture *TextureCreateRenderTarget(int width, int height);
 void SetRenderTarget(Texture *renderTarget);
 void SetPreviousRenderTarget(void);
 void TextureLoadFromBmp(Texture *texture, const char *filepath);
+void TextureLoadFromData(Texture *texture, const char *name, int width, int height, void *data);
 int TextureGetWidth(Texture *texture);
 int TextureGetHeight(Texture *texture);
 void DrawTexture(Texture *texture, Shader *shader, RectangleF *dst,

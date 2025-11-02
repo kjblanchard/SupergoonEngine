@@ -24,9 +24,9 @@
 #include <Supergoon/map.h>
 #include <Supergoon/sprite.h>
 #include <Supergoon/state.h>
+#include <Supergoon/text.h>
 #include <Supergoon/tools.h>
 #include <Supergoon/tween.h>
-#include <Supergoon/ui.h>
 #include <Supergoon/window.h>
 
 static Uint64 _previousMS;
@@ -47,6 +47,7 @@ static void start(void) {
 	InitializeEventSystem();
 	CreateWindow();
 	InitializeGraphicsSystem();
+	InitializeTextSystem();
 	InitializeAudioSystem();
 	InitializeTweenSystem();
 	RegisterAllLuaFunctions();
@@ -89,7 +90,7 @@ static void update(void) {
 	if (_inputFunc) _inputFunc();
 	// UpdateUIInputSystem();
 	Ticks += 1;
-	// UpdateTweens();
+	UpdateTweens();
 	UpdateAnimators();
 	PushGamestateToLua();
 	if (_updateFunc) _updateFunc();
@@ -103,7 +104,7 @@ static void update(void) {
 }
 
 static void Quit(void) {
-	// ShutdownMapSystem();
+	ShutdownMapSystem();
 	ShutdownSpriteSystem();
 	ShutdownJoystickSystem();
 	ShutdownGraphicsSystem();
