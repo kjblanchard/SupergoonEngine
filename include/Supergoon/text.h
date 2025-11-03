@@ -1,6 +1,7 @@
 #pragma once
 #include <Supergoon/Graphics/graphics.h>
 #include <Supergoon/Primitives/Color.h>
+#include <Supergoon/Primitives/rectangle.h>
 #include <Supergoon/UI/uiobject.h>
 #ifdef __cplusplus
 extern "C" {
@@ -8,6 +9,7 @@ extern "C" {
 struct LoadedFont;
 
 typedef struct Text {
+	RectangleF Location;
 	char* Text;
 	struct LoadedFont* Font;
 	int WordWrap;
@@ -32,7 +34,7 @@ typedef struct Text {
 
 void InitializeTextSystem(void);
 void ShutdownTextSystem(void);
-Text* TextCreate(void);
+Text* TextCreate(RectangleF* location, const char* text);
 void SetTextColor(Text* text, int r, int g, int b, int a);
 void SetTextSize(Text* text, int size);
 void MeasureText(Text* text);

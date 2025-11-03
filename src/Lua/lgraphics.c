@@ -1,5 +1,6 @@
 #include <Supergoon/Graphics/shader.h>
 #include <Supergoon/Graphics/texture.h>
+#include <Supergoon/Primitives/Color.h>
 #include <Supergoon/log.h>
 #include <Supergoon/lua.h>
 #include <lauxlib.h>
@@ -52,9 +53,10 @@ static int drawTexture(lua_State *L) {
 	src.y = LuaGetFloatFromTableStackiKey(L, 4, "y");
 	src.w = LuaGetFloatFromTableStackiKey(L, 4, "w");
 	src.h = LuaGetFloatFromTableStackiKey(L, 4, "h");
+	sgColor color = {255, 255, 255, 255};
 
 	DrawTexture(LuaGetLightUserdatai(L, 1), LuaGetLightUserdatai(L, 2), &dst,
-				&src, true, 1.0, false);
+				&src, true, 1.0, false, &color);
 	return 0;
 }
 //    return cGraphics.DrawTextureToTexture(renderTargetTexture, srcTexture,

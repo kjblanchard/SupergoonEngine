@@ -1,4 +1,5 @@
 #include <Supergoon/Graphics/texture.h>
+#include <Supergoon/Primitives/Color.h>
 #include <Supergoon/camera.h>
 #include <_string.h>
 #include <stdbool.h>
@@ -48,8 +49,10 @@ void TextureBindImpl(Texture *texture) {
 
 void TextureClearRenderTargetImpl(Texture *texture, float r, float g, float b,
 								  float a) {
+	SetRenderTarget(texture);
 	glClearColor(r, g, b, a);
 	glClear(GL_COLOR_BUFFER_BIT);
+	SetPreviousRenderTarget();
 }
 
 Texture *TextureCreateImpl(void) {
@@ -201,7 +204,7 @@ cleanup:
 }
 
 void DrawTextureImpl(Texture *texture, Shader *shader, RectangleF *dstRect,
-					 RectangleF *srcRect, bool useCamera, float scale, bool flipY) {
+					 RectangleF *srcRect, bool useCamera, float scale, bool flipY, sgColor *color) {
 	// prepare transformations
 	if (flipY) {
 		dstRect->y += dstRect->h * scale;  // move origin to top
@@ -238,8 +241,8 @@ void DrawTextureImpl(Texture *texture, Shader *shader, RectangleF *dstRect,
 	ShaderSetUniformMatrix4(shader, "view", view, false);
 	ShaderSetUniformMatrix4(shader, "projection", projectionMatrix, false);
 	ShaderSetUniformInteger(shader, "image", 0, false);
-	vec3 color = {1.0f, 1.0f, 1.0f};
-	ShaderSetUniformVector3fV(shader, "spriteColor", color, false);
+	vec3 colorVec = {color->R / (float)255, color->G / (float)255, color->B / (float)255};
+	ShaderSetUniformVector3fV(shader, "spriteColor", colorVec, false);
 	glActiveTexture(GL_TEXTURE0);
 	TextureBindImpl(texture);
 	glBindVertexArray(texture->VAO);
@@ -251,7 +254,8 @@ void DrawTextureToTextureImpl(Texture *dstTarget, Texture *srcTexture,
 							  Shader *shader, RectangleF *dstRect,
 							  RectangleF *srcRect, float scale) {
 	SetRenderTarget(dstTarget);
-	DrawTexture(srcTexture, shader, dstRect, srcRect, false, scale, false);
+	sgColor color = {255, 255, 255, 255};
+	DrawTexture(srcTexture, shader, dstRect, srcRect, false, scale, false, &color);
 	SetPreviousRenderTarget();
 }
 

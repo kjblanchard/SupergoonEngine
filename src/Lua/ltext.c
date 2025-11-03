@@ -1,4 +1,5 @@
 #include <Supergoon/Graphics/texture.h>
+#include <Supergoon/Primitives/rectangle.h>
 #include <Supergoon/log.h>
 #include <Supergoon/lua.h>
 #include <Supergoon/text.h>
@@ -7,7 +8,7 @@
 #include <lua.h>
 
 static int createText(lua_State* L) {
-	if (!LuaCheckFunctionCallParamsAndTypes(_luaState, 2, LuaFunctionParameterTypeString, LuaFunctionParameterTypeInt)) {
+	if (!LuaCheckFunctionCallParamsAndTypes(_luaState, 4, LuaFunctionParameterTypeString, LuaFunctionParameterTypeInt, LuaFunctionParameterTypeTable, LuaFunctionParameterTypeString)) {
 		sgLogWarn("trying to create text with bad params");
 		return 0;
 	}
@@ -15,7 +16,13 @@ static int createText(lua_State* L) {
 		sgLogWarn("bad font passed");
 		return 0;
 	};
-	Text* text = TextCreate();
+	RectangleF location = {
+		LuaGetFloatFromTableStackiKey(L, 3, "x"),
+		LuaGetFloatFromTableStackiKey(L, 3, "y"),
+		LuaGetFloatFromTableStackiKey(L, 3, "w"),
+		LuaGetFloatFromTableStackiKey(L, 3, "h"),
+	};
+	Text* text = TextCreate(&location, LuaGetStringi(L, 4));
 	TextLoad(text);
 	LuaPushLightUserdata(L, text);
 	return 1;

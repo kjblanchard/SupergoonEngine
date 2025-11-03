@@ -1,5 +1,6 @@
 #include <Supergoon/Graphics/graphics.h>
 #include <Supergoon/Graphics/texture.h>
+#include <Supergoon/Primitives/Color.h>
 #include <Supergoon/camera.h>
 #include <Supergoon/gameobject.h>
 #include <Supergoon/sprite.h>
@@ -63,6 +64,7 @@ void DestroySprite(Sprite* sprite) {
 
 void DrawSpriteSystem(void) {
 	RectangleF dst = (RectangleF){0, 0, 0, 0};
+	sgColor color = {255, 255, 255, 255};
 	for (size_t i = 0; i < _numSprites; i++) {
 		Sprite* sprite = _sprites[i];
 		if (!sprite || !sprite->Texture || NO_FLAGS(sprite->Flags, SpriteFlagVisible)) {
@@ -72,7 +74,7 @@ void DrawSpriteSystem(void) {
 		dst.y = sprite->Parent ? sprite->Parent->Y + sprite->OffsetAndSizeRectF.y : sprite->OffsetAndSizeRectF.y;
 		dst.w = sprite->OffsetAndSizeRectF.w;
 		dst.h = sprite->OffsetAndSizeRectF.h;
-		DrawTexture(sprite->Texture, sprite->Shader, &dst, &sprite->TextureSourceRect, true, sprite->Scale, false);
+		DrawTexture(sprite->Texture, sprite->Shader, &dst, &sprite->TextureSourceRect, true, sprite->Scale, false, &color);
 	}
 }
 

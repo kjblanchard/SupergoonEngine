@@ -1,6 +1,7 @@
 #include <SDL3/SDL.h>
 #include <Supergoon/Graphics/shader.h>
 #include <Supergoon/Graphics/texture.h>
+#include <Supergoon/Primitives/Color.h>
 #include <Supergoon/camera.h>
 #include <Supergoon/filesystem.h>
 #include <Supergoon/log.h>
@@ -422,7 +423,7 @@ static void drawAnimatedTiles(void) {
 			AnimatedTile *animatedTile = &tileset->AnimatedTiles[j];
 			for (size_t k = 0; k < animatedTile->NumDrawRectangles; k++) {
 				RectangleF dst = animatedTile->DrawRectangles[k];
-				DrawTexture(tileset->TilesetTexture, GetDefaultShader(), &dst, &animatedTile->TileFrames[animatedTile->CurrentFrame].SrcRect, true, 1.0f, false);
+				DrawTexture(tileset->TilesetTexture, GetDefaultShader(), &dst, &animatedTile->TileFrames[animatedTile->CurrentFrame].SrcRect, true, 1.0f, false, &(sgColor){255, 255, 255, 255});
 			}
 		}
 	}
@@ -433,8 +434,9 @@ void DrawCurrentMap(void) {
 		return;
 	RectangleF src = {CameraGetX(), CameraGetY(), WindowWidth(), WindowHeight()};
 	RectangleF dst = {0, 0, WindowWidth(), WindowHeight()};
+	sgColor color = {255, 255, 255, 255};
 	if (_bg1Texture) {
-		DrawTexture(_bg1Texture, GetDefaultShader(), &dst, &src, false, 1.0f, false);
+		DrawTexture(_bg1Texture, GetDefaultShader(), &dst, &src, false, 1.0f, false, &color);
 	}
 	if (_currentMap) {
 		drawAnimatedTiles();

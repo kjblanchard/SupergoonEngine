@@ -4,7 +4,7 @@ extern Texture *TextureCreateImpl(void);
 extern int TextureGetWidthImpl(Texture *texture);
 extern int TextureGetHeightImpl(Texture *texture);
 extern void DrawTextureImpl(Texture *texture, Shader *shader, RectangleF *dst,
-							RectangleF *src, bool camera, float scale, bool flipY);
+							RectangleF *src, bool camera, float scale, bool flipY, sgColor *color);
 extern void TextureLoadFromBmpImpl(Texture *texture, const char *filepath);
 extern void TextureDestroyImpl(Texture *texture);
 extern void TextureBindImpl(Texture *texture);
@@ -25,8 +25,8 @@ void TextureLoadFromBmp(Texture *texture, const char *filepath) {
 int TextureGetWidth(Texture *texture) { return TextureGetWidthImpl(texture); }
 int TextureGetHeight(Texture *texture) { return TextureGetHeightImpl(texture); }
 void DrawTexture(Texture *texture, Shader *shader, RectangleF *dst,
-				 RectangleF *src, int camera, float scale, int flipY) {
-	DrawTextureImpl(texture, shader, dst, src, camera, scale, flipY);
+				 RectangleF *src, int camera, float scale, int flipY, sgColor *color) {
+	DrawTextureImpl(texture, shader, dst, src, camera, scale, flipY, color);
 }
 void TextureDestroy(Texture *texture) { TextureDestroyImpl(texture); }
 void TextureBind(Texture *texture) { TextureBindImpl(texture); }

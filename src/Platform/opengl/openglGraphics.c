@@ -1,5 +1,7 @@
+#include <SDL3/SDL_video.h>
 #include <Supergoon/Graphics/shader.h>
 #include <Supergoon/Graphics/texture.h>
+#include <Supergoon/Primitives/Color.h>
 #include <Supergoon/Primitives/rectangle.h>
 #include <Supergoon/camera.h>
 #include <Supergoon/window.h>
@@ -118,8 +120,8 @@ void DrawEndImpl(void) {
 		(float)drawHeight};
 
 	RectangleF srcRect = {0, 0, (float)fbWidth, (float)fbHeight};
-
-	DrawTexture(_screenFrameBufferTexture, GetDefaultShader(), &dstRect, &srcRect, false, 1.0f, true);
+	sgColor color = {255, 255, 255, 255};
+	DrawTexture(_screenFrameBufferTexture, GetDefaultShader(), &dstRect, &srcRect, false, 1.0f, true, &color);
 
 	SDL_GL_SwapWindow(WindowGetImpl()->Handle);
 }

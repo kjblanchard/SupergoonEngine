@@ -103,8 +103,9 @@ end
 --#endregion Tools
 --
 engine.Text = {}
-function engine.Text.CreateText(fontName, text)
-    return cText.CreateText(fontName, text)
+function engine.Text.CreateText(fontName, fontSize, location, text)
+    location = engine.Tools.NormalizeRect(location)
+    return cText.CreateText(fontName, fontSize,location, text)
 end
 function engine.Text.DrawText(textPtr)
     return cText.DrawText(textPtr)

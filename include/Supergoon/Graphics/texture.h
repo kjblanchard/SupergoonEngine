@@ -1,4 +1,5 @@
 #pragma once
+#include <Supergoon/Primitives/Color.h>
 #include <Supergoon/Primitives/rectangle.h>
 
 typedef struct Texture Texture;
@@ -13,7 +14,7 @@ void TextureLoadFromData(Texture *texture, const char *name, int width, int heig
 int TextureGetWidth(Texture *texture);
 int TextureGetHeight(Texture *texture);
 void DrawTexture(Texture *texture, Shader *shader, RectangleF *dst,
-				 RectangleF *src, int camera, float scale, int flipY);
+				 RectangleF *src, int camera, float scale, int flipY, sgColor *color);
 void TextureDestroy(Texture *texture);
 void TextureBind(Texture *texture);
 void TextureClearRenderTarget(Texture *texture, float r, float g, float b,
