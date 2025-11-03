@@ -1,7 +1,7 @@
 #include <Supergoon/Graphics/texture.h>
 #include <Supergoon/Primitives/Color.h>
 #include <Supergoon/camera.h>
-#include <_string.h>
+#include <string.h>
 #include <stdbool.h>
 #ifndef __EMSCRIPTEN__
 #include <glad/glad.h>
@@ -288,7 +288,9 @@ void TextureLoadFromDataImpl(Texture *texture, const char *name, int width, int 
 	texture->Height = height;
 	glBindTexture(GL_TEXTURE_2D, texture->ID);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, texture->Width, texture->Height, 0,
+	/* glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, texture->Width, texture->Height, 0, */
+	/* 			 GL_RED, GL_UNSIGNED_BYTE, data); */
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, texture->Width, texture->Height, 0,
 				 GL_RED, GL_UNSIGNED_BYTE, data);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);

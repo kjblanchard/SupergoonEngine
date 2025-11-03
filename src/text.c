@@ -6,10 +6,10 @@
 #include <Supergoon/log.h>
 #include <Supergoon/sprite.h>
 #include <Supergoon/text.h>
-#include <ft2build.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ft2build.h>
 #include FT_FREETYPE_H
 
 #define MAX_LOADED_FONTS 12
