@@ -423,7 +423,7 @@ static void drawAnimatedTiles(void) {
 			AnimatedTile *animatedTile = &tileset->AnimatedTiles[j];
 			for (size_t k = 0; k < animatedTile->NumDrawRectangles; k++) {
 				RectangleF dst = animatedTile->DrawRectangles[k];
-				DrawTexture(tileset->TilesetTexture, GetDefaultShader(), &dst, &animatedTile->TileFrames[animatedTile->CurrentFrame].SrcRect, true, 1.0f, false, &(sgColor){255, 255, 255, 255});
+				DrawTexture(tileset->TilesetTexture, GetDefaultShader(), &dst, &animatedTile->TileFrames[animatedTile->CurrentFrame].SrcRect, true, 1.0f, false, &(Color){255, 255, 255, 255});
 			}
 		}
 	}
@@ -434,7 +434,7 @@ void DrawCurrentMap(void) {
 		return;
 	RectangleF src = {CameraGetX(), CameraGetY(), WindowWidth(), WindowHeight()};
 	RectangleF dst = {0, 0, WindowWidth(), WindowHeight()};
-	sgColor color = {255, 255, 255, 255};
+	Color color = {255, 255, 255, 255};
 	if (_bg1Texture) {
 		DrawTexture(_bg1Texture, GetDefaultShader(), &dst, &src, false, 1.0f, false, &color);
 	}

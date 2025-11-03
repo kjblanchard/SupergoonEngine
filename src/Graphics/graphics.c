@@ -7,9 +7,12 @@ extern void DrawStartImpl(void);
 extern void GraphicsWindowResizeEventImpl(int width, int height);
 extern void GraphicsSetLogicalWorldSizeImpl(int width, int height);
 extern int GraphicsGetTargetRefreshRateImpl(void);
+extern void DrawRectImpl(RectangleF *rect, Color *color, int filled);
 
-void DrawRect(RectangleF *rect, sgColor *color, int filled) {}
-void ClearRenderTargetTexture(Texture *texture, sgColor *color) {}
+void DrawRect(RectangleF *rect, Color *color, int filled) {
+	DrawRectImpl(rect, color, filled);
+}
+void ClearRenderTargetTexture(Texture *texture, Color *color) {}
 void SetTextureAlpha(Texture *texture, int newAlpha) {}
 void UnloadTexture(Texture *texture) {}
 void UnloadUnusedTextures(void) {}

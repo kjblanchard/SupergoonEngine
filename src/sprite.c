@@ -64,7 +64,7 @@ void DestroySprite(Sprite* sprite) {
 
 void DrawSpriteSystem(void) {
 	RectangleF dst = (RectangleF){0, 0, 0, 0};
-	sgColor color = {255, 255, 255, 255};
+	Color color = {255, 255, 255, 255};
 	for (size_t i = 0; i < _numSprites; i++) {
 		Sprite* sprite = _sprites[i];
 		if (!sprite || !sprite->Texture || NO_FLAGS(sprite->Flags, SpriteFlagVisible)) {

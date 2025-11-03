@@ -29,7 +29,7 @@ typedef struct Text {
 	unsigned int NumWordWrapCharacters;
 	// For word wrapping, so we know what characters we should word wrap with
 	unsigned int* WordWrapCharacters;
-	sgColor Color;
+	struct Color Color;
 	// Texture with the rendered text to be drawn
 	Texture* Texture;
 } UIText;

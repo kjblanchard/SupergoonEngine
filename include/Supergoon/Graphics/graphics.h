@@ -18,8 +18,7 @@
  * hah..
  *
  */
-void DrawRect(RectangleF *rect, sgColor *color, int filled);
-
+void DrawRect(RectangleF *rect, Color *color, int filled);
 void UnloadTexture(Texture *texture);
 void UnloadUnusedTextures(void);
 void UnloadAllTextures(void);

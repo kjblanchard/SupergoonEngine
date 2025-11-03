@@ -598,6 +598,11 @@ function engine.DrawTexture(texture, shader, dstRect, srcRect)
     cGraphics.DrawTexture(texture, shader, dstRect, srcRect)
 end
 
+function engine.DrawRect(rect, filled)
+    rect = engine.Tools.NormalizeRect(rect)
+    cGraphics.DrawRect(rect, filled)
+end
+
 -- #endregion
 
 return engine

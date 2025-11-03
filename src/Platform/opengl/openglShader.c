@@ -23,6 +23,8 @@
 #define DEFAULT_FRAGMENT_FILENAME "2dSpriteFragment"
 #define DEFAULT_TEXT_VERTEX_FILENAME "2dTextVertex"
 #define DEFAULT_TEXT_FRAGMENT_FILENAME "2dTextFragment"
+#define DEFAULT_RECT_VERTEX_FILENAME "2dRectVertex"
+#define DEFAULT_RECT_FRAGMENT_FILENAME "2dRectFragment"
 
 typedef struct CachedShaderFile {
 	char *Data;
@@ -36,6 +38,7 @@ typedef enum ShaderType {
 } ShaderType;
 static Shader *_defaultShader = NULL;
 static Shader *_defaultTextShader = NULL;
+static Shader *_defaultRectShader = NULL;
 
 CachedShaderFile _cachedShaders[NUM_CACHED_SHADERS];
 
@@ -232,6 +235,15 @@ Shader *GetDefaultTextShaderImpl(void) {
 	_defaultTextShader = ShaderCreateImpl();
 	ShaderCompileImpl(_defaultTextShader, DEFAULT_VERTEX_FILENAME, DEFAULT_TEXT_FRAGMENT_FILENAME);
 	return _defaultTextShader;
+}
+
+Shader *GetDefaultRectShaderImpl(void) {
+	if (_defaultRectShader) {
+		return _defaultRectShader;
+	}
+	_defaultRectShader = ShaderCreateImpl();
+	ShaderCompileImpl(_defaultRectShader, DEFAULT_RECT_VERTEX_FILENAME, DEFAULT_RECT_FRAGMENT_FILENAME);
+	return _defaultRectShader;
 }
 
 void ShaderDestroyImpl(Shader *shader) { free(shader); }

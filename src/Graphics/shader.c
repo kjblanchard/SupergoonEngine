@@ -27,6 +27,7 @@ extern void ShaderSetUniformMatrix4Impl(Shader *shader, const char *name,
 
 extern Shader *GetDefaultShaderImpl(void);
 extern Shader *GetDefaultTextShaderImpl(void);
+extern Shader *GetDefaultRectShaderImpl(void);
 
 Shader *ShaderCreate(void) { return ShaderCreateImpl(); }
 Shader *GetDefaultShader(void) { return GetDefaultShaderImpl(); }
@@ -74,6 +75,11 @@ void ShaderSetUniformMatrix4(Shader *shader, const char *name, mat4 value,
 							 int useShader) {
 	ShaderSetUniformMatrix4Impl(shader, name, value, useShader);
 }
+
 Shader *GetDefaultTextShader(void) {
 	return GetDefaultTextShaderImpl();
+}
+
+Shader *GetDefaultRectShader(void) {
+	return GetDefaultRectShaderImpl();
 }

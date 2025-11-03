@@ -7,18 +7,18 @@
 #include <Supergoon/sprite.h>
 #include <Supergoon/text.h>
 #include <ft2build.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include FT_FREETYPE_H
 
-#define MAX_LOADED_FONTS 120
+#define MAX_LOADED_FONTS 12
 #define ASCII_CHAR_NUM 128
 static FT_Library _loadedLibrary = NULL;
 typedef struct LoadedFont {
 	char* FontName;
 	FT_Face FontFace;
 	int FontSize;
-	// Support ASCII only
 	Texture* GlyphTextures[ASCII_CHAR_NUM];
 } LoadedFont;
 static LoadedFont _loadedFonts[MAX_LOADED_FONTS];
@@ -27,7 +27,6 @@ static LoadedFont* _currentFont = NULL;
 static void loadTexturesForFont(LoadedFont* font) {
 	FT_Set_Pixel_Sizes(font->FontFace, 0, font->FontSize);
 	for (size_t i = 0; i < ASCII_CHAR_NUM; i++) {
-		// load character glyph
 		if (FT_Load_Char(font->FontFace, i, FT_LOAD_RENDER)) {
 			sgLogWarn("Freetype failed to load glyph!");
 			continue;
@@ -40,18 +39,18 @@ static void loadTexturesForFont(LoadedFont* font) {
 }
 
 static int getLetterYOffset(char letter, LoadedFont* font) {
-	int result = FT_Load_Char(font->FontFace, letter, FT_LOAD_DEFAULT);
-	if (result) {
-		sgLogError("Could not measure character properly.  Char %s, error %d", letter, result);
+	int error = FT_Load_Char(font->FontFace, letter, FT_LOAD_DEFAULT);
+	if (error) {
+		sgLogError("Could not measure character properly.  Char %s, error %d", letter, error);
 		return 0;
 	}
 	return font->FontFace->glyph->bitmap_top;
 }
 
 static int getLetterXOffset(Text* text, int i) {
-	int result = FT_Load_Char(text->Font->FontFace, text->Text[i], FT_LOAD_DEFAULT);
-	if (result) {
-		sgLogError("Could not measure character properly.  Char %s, error %d", text->Text[i], result);
+	int error = FT_Load_Char(text->Font->FontFace, text->Text[i], FT_LOAD_DEFAULT);
+	if (error) {
+		sgLogError("Could not measure character properly.  Char %s, error %d", text->Text[i], error);
 		return 0;
 	}
 	return text->Font->FontFace->glyph->bitmap_left;
@@ -62,7 +61,6 @@ static int getKerning(int i, char* text, LoadedFont* font) {
 		return 0;
 	}
 	if (!FT_HAS_KERNING(font->FontFace)) {
-		// sgLogDebug("No kerning for font, returning 0");
 		return 0;
 	}
 	unsigned int glyph_index_c = FT_Get_Char_Index(font->FontFace, text[i]);
@@ -79,8 +77,6 @@ static int getKerning(int i, char* text, LoadedFont* font) {
 	return result;
 }
 
-// Used for drawing, so it aligns properly
-
 static int getLetterAdvance(Text* text, int i) {
 	if (text->Text[i] == '\n' || text->Text[i] == '\r') {
 		return 0;
@@ -93,7 +89,7 @@ static int getLetterAdvance(Text* text, int i) {
 	return text->Font->FontFace->glyph->advance.x >> 6;
 }
 
-static bool CheckShouldWrap(int x, int wordLength, int glyphWidth, int maxX) {
+static bool shouldWrap(int x, int wordLength, int glyphWidth, int maxX) {
 	return x + wordLength + glyphWidth > maxX;
 }
 
@@ -107,26 +103,6 @@ static int getCenteredYPenLoc(Text* text) {
 	int y = (text->Location.h - text->TextSizeY) / 2;
 	y = yTop + y;
 	return yTop < y ? y : yTop;
-}
-
-static void redrawText(Text* text) {
-	if (text->Texture) {
-		TextureDestroy(text->Texture);
-	}
-	text->Texture = TextureCreateRenderTarget(text->Location.w, text->Location.h);
-	text->PenX = 0;
-	text->CurrentDrawnLetters = 0;
-	text->NumWordWrapCharacters = 0;
-	MeasureText(text);
-	if (text->CenteredX) {
-		text->PenX = getCenteredXPenLoc(text);
-	}
-	if (text->CenteredY) {
-		text->PenY = getCenteredYPenLoc(text);
-
-	} else {
-		text->PenY = (text->Font->FontFace->ascender * text->Font->FontSize) / text->Font->FontFace->units_per_EM;
-	}
 }
 
 static void drawLetter(Text* text) {
@@ -161,7 +137,7 @@ static void drawLetter(Text* text) {
 	//  If this is a drawable texture, draw it and advance
 	if (texture) {
 		SetRenderTarget(text->Texture);
-		sgColor color = {255, 0, 0, 255};
+		Color color = {255, 0, 0, 255};
 		DrawTexture(texture, GetDefaultTextShader(), &dst, &src, false, 1.0, false, &color);
 		SetPreviousRenderTarget();
 	}
@@ -202,23 +178,6 @@ static LoadedFont* getLoadedFont(const char* fontName, unsigned int size) {
 	return fontToLoadInto;
 }
 
-void InitializeTextSystem(void) {
-	if (!_loadedLibrary) {
-		if (FT_Init_FreeType(&_loadedLibrary)) {
-			sgLogWarn("Could not initialize FreeType library");
-		}
-	}
-}
-void ShutdownTextSystem(void) {
-	if (_loadedLibrary) FT_Done_FreeType(_loadedLibrary);
-}
-
-void SetTextColor(Text* text, int r, int g, int b, int a) {
-}
-
-void SetTextSize(Text* text, int size) {
-}
-
 static void addWordToWrapPoints(unsigned int currentWordWraps, Text* text, int location) {
 	if (currentWordWraps + 1 > text->NumWordWrapCharacters) {
 		unsigned int* newArray = realloc(text->WordWrapCharacters, sizeof(int) * (currentWordWraps + 1));
@@ -231,7 +190,7 @@ static void addWordToWrapPoints(unsigned int currentWordWraps, Text* text, int l
 	++text->NumWordWrapCharacters;
 }
 
-void MeasureText(Text* text) {
+static void measureText(Text* text) {
 	FT_Face fontFace = text->Font->FontFace;
 	assert(fontFace && text && "no font loaded for text to load");
 	// Max width and height will be the size of the uiobject, this should be loaded prior
@@ -276,7 +235,7 @@ void MeasureText(Text* text) {
 			currentWordLength += letterSize;
 		}
 		// If we should wrap to the next line, move penx to beginning, and increment peny
-		if (CheckShouldWrap(penX, currentWordLength, 0, text->Location.w)) {
+		if (shouldWrap(penX, currentWordLength, 0, text->Location.w)) {
 			addWordToWrapPoints(currentWordWraps, text, i - currentWordLetters);
 			// If current pen location is greater than the calculated text size, update
 			if (penX > textSizeX) {
@@ -313,6 +272,48 @@ void MeasureText(Text* text) {
 	}
 }
 
+static void redrawText(Text* text) {
+	if (text->Texture) {
+		TextureDestroy(text->Texture);
+	}
+	text->Texture = TextureCreateRenderTarget(text->Location.w, text->Location.h);
+	text->PenX = 0;
+	text->CurrentDrawnLetters = 0;
+	text->NumWordWrapCharacters = 0;
+	measureText(text);
+	if (text->CenteredX) {
+		text->PenX = getCenteredXPenLoc(text);
+	}
+	if (text->CenteredY) {
+		text->PenY = getCenteredYPenLoc(text);
+
+	} else {
+		text->PenY = (text->Font->FontFace->ascender * text->Font->FontSize) / text->Font->FontFace->units_per_EM;
+	}
+}
+
+void InitializeTextSystem(void) {
+	if (!_loadedLibrary) {
+		if (FT_Init_FreeType(&_loadedLibrary)) {
+			sgLogWarn("Could not initialize FreeType library");
+		}
+	}
+}
+void ShutdownTextSystem(void) {
+	for (size_t i = 0; i < MAX_LOADED_FONTS; i++) {
+		LoadedFont* font = &_loadedFonts[i];
+		if (!font) {
+			break;
+		}
+		free(font->FontName);
+		for (size_t j = 0; j < ASCII_CHAR_NUM; j++) {
+			UnloadTexture(font->GlyphTextures[j]);
+		}
+		FT_Done_Face(font->FontFace);
+	}
+	if (_loadedLibrary) FT_Done_FreeType(_loadedLibrary);
+}
+
 int TextSetFont(const char* fontName, unsigned int size) {
 	if (!fontName) {
 		sgLogWarn("No font name, not setting");
@@ -325,17 +326,12 @@ int TextSetFont(const char* fontName, unsigned int size) {
 	_currentFont = getLoadedFont(fontName, size);
 	return _currentFont != NULL;
 }
-void SetCenteredX(Text* text, int centered) {
-}
-void SetCenteredY(Text* text, int centered) {
-}
 
 void TextLoad(Text* text) {
-	text->Font = _currentFont;
-	UITextOnDirty(text);
+	TextOnDirty(text);
 }
 
-void UITextOnDirty(Text* text) {
+void TextOnDirty(Text* text) {
 	if (text && !text->Texture) {
 		redrawText(text);
 	}
@@ -345,8 +341,7 @@ void UITextOnDirty(Text* text) {
 	if (text->Location.h != h || text->Location.w != w) {
 		redrawText(text);
 	}
-
-	// If there is more letters to draw than the current, clear the texture and start from 0
+	// If there is more letters drawn than the current amount to draw, clear the texture and start from 0
 	if (text->NumLettersToDraw < text->CurrentDrawnLetters) {
 		TextureClearRenderTarget(text->Texture, 0, 0, 0, 0);
 		text->CurrentDrawnLetters = 0;
@@ -365,15 +360,21 @@ Text* TextCreate(RectangleF* location, const char* textText) {
 	text->Text = strdup(textText);
 	text->NumLettersToDraw = strlen(textText);
 	text->Location = *location;
+	text->Font = _currentFont;
 	return text;
 }
 
 void TextDraw(Text* text) {
 	if (!text->Texture) return;
 	RectangleF src = {0, 0, text->Location.w, text->Location.h};
-	sgColor color = {255, 255, 255, 255};
+	Color color = {255, 255, 255, 255};
 	DrawTexture(text->Texture, GetDefaultShader(), &text->Location, &src, false, 1.0, false, &color);
 }
 
-void DestroyUIText(Text* text) {
+void TextDestroy(Text* text) {
+	TextureDestroy(text->Texture);
+	free(text->Text);
+	text->Texture = NULL;
+	text->Text = NULL;
+	free(text);
 }

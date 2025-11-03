@@ -1,6 +1,8 @@
+#include <Supergoon/Graphics/graphics.h>
 #include <Supergoon/Graphics/shader.h>
 #include <Supergoon/Graphics/texture.h>
 #include <Supergoon/Primitives/Color.h>
+#include <Supergoon/Primitives/rectangle.h>
 #include <Supergoon/log.h>
 #include <Supergoon/lua.h>
 #include <lauxlib.h>
@@ -53,7 +55,7 @@ static int drawTexture(lua_State *L) {
 	src.y = LuaGetFloatFromTableStackiKey(L, 4, "y");
 	src.w = LuaGetFloatFromTableStackiKey(L, 4, "w");
 	src.h = LuaGetFloatFromTableStackiKey(L, 4, "h");
-	sgColor color = {255, 255, 255, 255};
+	Color color = {255, 255, 255, 255};
 
 	DrawTexture(LuaGetLightUserdatai(L, 1), LuaGetLightUserdatai(L, 2), &dst,
 				&src, true, 1.0, false, &color);
@@ -127,6 +129,21 @@ static int clearRenderTargetTexture(lua_State *L) {
 	return 1;
 }
 
+static int drawRect(lua_State *L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 2, LuaFunctionParameterTypeTable, LuaFunctionParameterTypeBoolean)) {
+		sgLogWarn("Bad params for drawRect");
+		return 0;
+	}
+	RectangleF rect = {
+		LuaGetFloatFromTableStackiKey(L, 1, "x"),
+		LuaGetFloatFromTableStackiKey(L, 1, "y"),
+		LuaGetFloatFromTableStackiKey(L, 1, "w"),
+		LuaGetFloatFromTableStackiKey(L, 1, "h")};
+	Color color = {255, 255, 255, 255};
+	DrawRect(&rect, &color, LuaGetBooli(L, 2));
+	return 0;
+}
+
 static const luaL_Reg graphicsLib[] = {
 	{"CreateShader", createShader},
 	{"CreateTexture", createTexture},
@@ -136,6 +153,7 @@ static const luaL_Reg graphicsLib[] = {
 	{"SetPreviousRenderTarget", setPreviousRenderTarget},
 	{"DrawTexture", drawTexture},
 	{"DrawTextureToTexture", drawTextureToTexture},
+	{"DrawRect", drawRect},
 	{NULL, NULL}};
 
 void RegisterLuaGraphicsFunctions(void) {

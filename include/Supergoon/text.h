@@ -6,7 +6,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-struct LoadedFont;
 
 typedef struct Text {
 	RectangleF Location;
@@ -27,7 +26,7 @@ typedef struct Text {
 	unsigned int NumWordWrapCharacters;
 	// For word wrapping, so we know what characters we should word wrap with
 	unsigned int* WordWrapCharacters;
-	sgColor Color;
+	struct Color Color;
 	// Texture with the rendered text to be drawn
 	Texture* Texture;
 } Text;
@@ -35,16 +34,11 @@ typedef struct Text {
 void InitializeTextSystem(void);
 void ShutdownTextSystem(void);
 Text* TextCreate(RectangleF* location, const char* text);
-void SetTextColor(Text* text, int r, int g, int b, int a);
-void SetTextSize(Text* text, int size);
-void MeasureText(Text* text);
 int TextSetFont(const char* fontName, unsigned int size);
-void SetCenteredX(Text* text, int centered);
-void SetCenteredY(Text* text, int centered);
 void TextLoad(Text* text);
-void UITextOnDirty(Text* text);
+void TextOnDirty(Text* text);
 void TextDraw(Text* text);
-void DestroyUIText(Text* text);
+void TextDestroy(Text* text);
 
 #ifdef __cplusplus
 }

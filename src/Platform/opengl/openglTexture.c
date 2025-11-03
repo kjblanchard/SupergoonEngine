@@ -204,7 +204,7 @@ cleanup:
 }
 
 void DrawTextureImpl(Texture *texture, Shader *shader, RectangleF *dstRect,
-					 RectangleF *srcRect, bool useCamera, float scale, bool flipY, sgColor *color) {
+					 RectangleF *srcRect, bool useCamera, float scale, bool flipY, Color *color) {
 	// prepare transformations
 	if (flipY) {
 		dstRect->y += dstRect->h * scale;  // move origin to top
@@ -254,7 +254,7 @@ void DrawTextureToTextureImpl(Texture *dstTarget, Texture *srcTexture,
 							  Shader *shader, RectangleF *dstRect,
 							  RectangleF *srcRect, float scale) {
 	SetRenderTarget(dstTarget);
-	sgColor color = {255, 255, 255, 255};
+	Color color = {255, 255, 255, 255};
 	DrawTexture(srcTexture, shader, dstRect, srcRect, false, scale, false, &color);
 	SetPreviousRenderTarget();
 }

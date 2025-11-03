@@ -105,7 +105,7 @@ static int drawRect(lua_State* L) {
 	if (!LuaCheckFunctionCallParamsAndTypes(L, 4, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeNumber)) {
 		sgLogWarn("Bad args passed into setDrawFunc");
 	}
-	DrawRect(&(RectangleF){LuaGetFloati(L, 1), LuaGetFloati(L, 2), LuaGetFloati(L, 3), LuaGetFloati(L, 4)}, &(sgColor){0, 255, 0, 255}, false);
+	DrawRect(&(RectangleF){LuaGetFloati(L, 1), LuaGetFloati(L, 2), LuaGetFloati(L, 3), LuaGetFloati(L, 4)}, &(Color){0, 255, 0, 255}, false);
 	return 0;
 }
 
@@ -113,7 +113,7 @@ static int drawRectCamOffset(lua_State* L) {
 	if (!LuaCheckFunctionCallParamsAndTypes(L, 4, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeNumber)) {
 		sgLogWarn("Bad args passed into setDrawFunc");
 	}
-	/* DrawRect(&(RectangleF){LuaGetFloati(L, 1) - CameraX, LuaGetFloati(L, 2) - CameraY, LuaGetFloati(L, 3), LuaGetFloati(L, 4)}, &(sgColor){0, 255, 0, 255}, false); */
+	/* DrawRect(&(RectangleF){LuaGetFloati(L, 1) - CameraX, LuaGetFloati(L, 2) - CameraY, LuaGetFloati(L, 3), LuaGetFloati(L, 4)}, &(Color){0, 255, 0, 255}, false); */
 	return 0;
 }
 

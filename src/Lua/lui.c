@@ -121,7 +121,7 @@ static int create9SliceImage(lua_State* L) {
 	UIObject* obj = createUIObject(L);
 	obj->Type = UIObjectTypesImage;
 	UIImageData* renderTargetImageData = SDL_malloc(sizeof(*renderTargetImageData));
-	Texture* renderTargetTexture = CreateRenderTargetTexture(obj->Location.w, obj->Location.h, (sgColor){255, 255, 255, 255});
+	Texture* renderTargetTexture = CreateRenderTargetTexture(obj->Location.w, obj->Location.h, (Color){255, 255, 255, 255});
 	Texture* nineSliceImageTexture = CreateTextureFromIndexedBMP(LuaGetStringi(L, 4));
 	renderTargetImageData->Texture = renderTargetTexture;
 	obj->Data = renderTargetImageData;
@@ -137,7 +137,7 @@ static int create9SliceImage(lua_State* L) {
 	a = LuaGetFloatFromTableStackiKey(L, 5, "a");
 	TextureSize(nineSliceImageTexture, &nineSliceImageW, &nineSliceImageH);
 	SetTextureAlpha(renderTargetTexture, a);
-	ClearRenderTargetTexture(renderTargetTexture, &(sgColor){r, g, b, a});
+	ClearRenderTargetTexture(renderTargetTexture, &(Color){r, g, b, a});
 	renderTargetImageData->SrcRect = (RectangleF){0, 0, obj->Location.w, obj->Location.h};
 	// renderTargetImageData->SrcRect = (RectangleF){0, 0, nineSliceImageW, nineSliceImageH};
 	float sizeX = LuaGetFloati(L, 6);

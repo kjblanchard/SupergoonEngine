@@ -13,6 +13,7 @@ void ShaderDestroy(Shader *shader);
 void ShaderUse(Shader *shader);
 Shader *GetDefaultShader(void);
 Shader *GetDefaultTextShader(void);
+Shader *GetDefaultRectShader(void);
 // Compiles shader info
 void ShaderCompile(Shader *shader, const char *vertexFile,
 				   const char *fragmentFile);

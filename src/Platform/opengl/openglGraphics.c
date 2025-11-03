@@ -5,6 +5,7 @@
 #include <Supergoon/Primitives/rectangle.h>
 #include <Supergoon/camera.h>
 #include <Supergoon/window.h>
+#include <cglm/cglm.h>
 #include <stdlib.h>
 #include <string.h>
 #ifndef __EMSCRIPTEN__
@@ -21,8 +22,9 @@
 
 extern void ShaderSystemShutdown(void);
 SDL_GLContext _context;
-static Texture* _screenFrameBufferTexture = NULL;
+static Texture *_screenFrameBufferTexture = NULL;
 static int _logicalX = 0;
+static GLuint vao = 0, vbo = 0;
 static int _logicalY = 0;
 // TODO for now, only use the refresh rate set here.. we should set it eventually.
 static unsigned int _refreshRate = 999;
@@ -78,6 +80,21 @@ void InitializeGraphicsSystemImpl(void) {
 #ifndef __EMSCRIPTEN__
 	SDL_GL_SetSwapInterval(_vsync);	 // vsync
 #endif
+	// Try to use the thing
+	float verts[] = {
+		0.0f, 0.0f,
+		1.0f, 0.0f,
+		1.0f, 1.0f,
+		0.0f, 1.0f,
+		0.0f, 0.0f};
+	glGenVertexArrays(1, &vao);
+	glGenBuffers(1, &vbo);
+	glBindVertexArray(vao);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void *)0);
+	glBindVertexArray(0);
 }
 
 void ShutdownGraphicsSystemImpl(void) {
@@ -120,21 +137,35 @@ void DrawEndImpl(void) {
 		(float)drawHeight};
 
 	RectangleF srcRect = {0, 0, (float)fbWidth, (float)fbHeight};
-	sgColor color = {255, 255, 255, 255};
+	Color color = {255, 255, 255, 255};
 	DrawTexture(_screenFrameBufferTexture, GetDefaultShader(), &dstRect, &srcRect, false, 1.0f, true, &color);
 
 	SDL_GL_SwapWindow(WindowGetImpl()->Handle);
 }
 
-/* void DrawEndImpl(void) { */
-/* 	SetRenderTarget(NULL); */
-/* 	int texX = TextureGetWidth(_screenFrameBufferTexture); */
-/* 	int texY = TextureGetHeight(_screenFrameBufferTexture); */
-/* 	int scaleX = texX / WindowWidth(); */
-/* 	int scaleY = texY / WindowHeight(); */
-/* 	DrawTexture(_screenFrameBufferTexture, GetDefaultShader(), &(RectangleF){0, 0, WindowWidth(), WindowHeight()}, &(RectangleF){0, 0, texX, texY}, false, 1.0f, true); */
-/* 	SDL_GL_SwapWindow(_window); */
-/* } */
+void DrawRectImpl(RectangleF *rect, Color *color, int filled) {
+	Shader *shader = GetDefaultRectShader();
+	ShaderUse(shader);
+	// model = translation + scale
+	mat4 model;
+	glm_mat4_identity(model);
+	glm_translate(model, (vec3){rect->x, rect->y, 0.0f});
+	glm_scale(model, (vec3){rect->w, rect->h, 1.0f});
+	vec4 colorV = {color->R / (float)255, color->G / (float)255, color->B / (float)255, color->A / (float)255};
+
+	ShaderSetUniformMatrix4(shader, "projection", projectionMatrix, false);
+	ShaderSetUniformMatrix4(shader, "model", model, false);
+	ShaderSetUniformVector4fV(shader, "color", colorV, false);
+	glBindVertexArray(vao);
+	if (filled) {
+		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	} else {
+		glDrawArrays(GL_LINE_STRIP, 0, 5);
+	}
+	glBindVertexArray(0);
+	glUseProgram(0);
+}
+
 void GraphicsSetLogicalWorldSizeImpl(int width, int height) {
 	_logicalX = width;
 	_logicalY = height;

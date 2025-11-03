@@ -14,7 +14,7 @@ void TextureLoadFromData(Texture *texture, const char *name, int width, int heig
 int TextureGetWidth(Texture *texture);
 int TextureGetHeight(Texture *texture);
 void DrawTexture(Texture *texture, Shader *shader, RectangleF *dst,
-				 RectangleF *src, int camera, float scale, int flipY, sgColor *color);
+				 RectangleF *src, int camera, float scale, int flipY, Color *color);
 void TextureDestroy(Texture *texture);
 void TextureBind(Texture *texture);
 void TextureClearRenderTarget(Texture *texture, float r, float g, float b,

@@ -387,7 +387,7 @@ static void redrawText(UIObject* object, UIText* text) {
 	if (text->Texture) {
 		SDL_DestroyTexture(text->Texture);
 	}
-	text->Texture = CreateRenderTargetTexture(object->Location.w, object->Location.h, (sgColor){0, 0, 0, 0});
+	text->Texture = CreateRenderTargetTexture(object->Location.w, object->Location.h, (Color){0, 0, 0, 0});
 	if (text->Color.R != 0 || text->Color.G != 0 || text->Color.B != 0 || text->Color.A != 0) {
 		SetTextColor(object, text->Color.R, text->Color.G, text->Color.B, text->Color.A);
 	}
@@ -426,8 +426,8 @@ void UITextOnDirty(UIObject* object) {
 
 	// If there is more letters to draw than the current, clear the texture and start from 0
 	if (text->NumLettersToDraw < text->CurrentDrawnLetters) {
-		// sgColor color = {0, 255, 0, 255};
-		ClearRenderTargetTexture(text->Texture, &(sgColor){0, 0, 0, 0});
+		// Color color = {0, 255, 0, 255};
+		ClearRenderTargetTexture(text->Texture, &(Color){0, 0, 0, 0});
 		text->CurrentDrawnLetters = 0;
 		text->PenX = getCenteredXPenLoc(object, text);
 		text->PenY = getCenteredYPenLoc(object, text);
