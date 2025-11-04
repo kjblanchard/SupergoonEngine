@@ -1,6 +1,8 @@
 #include <Supergoon/filesystem.h>
 #include <Supergoon/log.h>
-#include <Supergoon/pch.h>
+#include <stdio.h>
+#include <time.h>
+#include <stdarg.h>
 
 #define MAX_LOG_SIZE 4000
 
@@ -17,7 +19,7 @@ static FILE *openDebugFile = NULL;
  * @param level The log level to log this as.
  * @param data_to_write The data to write to the log.
  */
-static void Log(sgLogLevel level, const char *data_to_write);
+static void logInternal(sgLogLevel level, const char *data_to_write);
 /**
  * @brief The log level to log at, this should be sent in via settings.
  */
@@ -46,7 +48,7 @@ int ShutdownLogSystem(void) {
 		sgLogError("Couldn't close logging file.");
 	return !result;
 }
-static void Log(sgLogLevel level, const char *thing_to_write) {
+static void logInternal(sgLogLevel level, const char *thing_to_write) {
 	time_t current_time;
 	time(&current_time);
 	struct tm *gm_time = gmtime(&current_time);
@@ -67,7 +69,7 @@ static void LogSetup(sgLogLevel level, const char *fmt, va_list args) {
 	char buf[MAX_LOG_SIZE];
 	vsnprintf(buf, sizeof(buf), fmt, args);
 	va_end(args);
-	Log(level, buf);
+	logInternal(level, buf);
 }
 
 static int ShouldLog(sgLogLevel level) {
