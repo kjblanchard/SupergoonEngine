@@ -6,6 +6,7 @@
 #include <Supergoon/log.h>
 #include <Supergoon/sprite.h>
 #include <Supergoon/text.h>
+#include <assert.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
