@@ -29,64 +29,64 @@ set(BUILD_SHARED_LIBS
   CACHE BOOL "Build libraries as static" FORCE)
 
 set(SRC_FILES
-  src/camera.c
-  src/lua.c
-  src/log.c
-  src/state.c
-  src/Input/keyboard.c
-  src/window.c
-  src/filesystem.c
-  src/tools.c
-  src/events.c
-  src/engine.c
-  src/Primitives/rectangle.c
-  src/Audio/Sfx.c
-  src/Audio/Stream.c
-  src/Audio/Audio.c
-  src/Tweening/easing.c
-  src/Tweening/tween.c
-  src/Lua/log.c
-  src/Lua/audio.c
-  src/Lua/lengine.c
-  src/Lua/linput.c
-  src/Lua/lcamera.c
-  src/Lua/scripting.c
+  ./src/camera.c
+  ./src/lua.c
+  ./src/log.c
+  ./src/state.c
+  ./src/Input/keyboard.c
+  ./src/window.c
+  ./src/filesystem.c
+  ./src/tools.c
+  ./src/events.c
+  ./src/engine.c
+  ./src/Primitives/rectangle.c
+  ./src/Audio/Sfx.c
+  ./src/Audio/Stream.c
+  ./src/Audio/Audio.c
+  ./src/Tweening/easing.c
+  ./src/Tweening/tween.c
+  ./src/Lua/log.c
+  ./src/Lua/audio.c
+  ./src/Lua/lengine.c
+  ./src/Lua/linput.c
+  ./src/Lua/lcamera.c
+  ./src/Lua/scripting.c
   # Platform specific for no
-  src/effects.c
-  src/Animation/Animator.c
-  src/gameobject.c
-  src/sprite.c
-  src/Input/mouse.c
-  # src/Input/touch.c
-  src/Platform/sdl/sdl.c
-  src/Platform/sdl/sdlInput.c
-  src/Platform/sdl/sdlWindow.c
-  src/map.c
-  src/Lua/lanimation.c
-  src/Lua/lsprite.c
-  src/Lua/lgameobject.c
-  src/Lua/lscene.c
-  src/Lua/leffects.c
-  src/Lua/lgraphics.c
-  src/Lua/ltext.c
+  ./src/effects.c
+  ./src/Animation/Animator.c
+  ./src/gameobject.c
+  ./src/sprite.c
+  ./src/Input/mouse.c
+  # ./src/Input/touch.c
+  ./src/Platform/sdl/sdl.c
+  ./src/Platform/sdl/sdlInput.c
+  ./src/Platform/sdl/sdlWindow.c
+  ./src/map.c
+  ./src/Lua/lanimation.c
+  ./src/Lua/lsprite.c
+  ./src/Lua/lgameobject.c
+  ./src/Lua/lscene.c
+  ./src/Lua/leffects.c
+  ./src/Lua/lgraphics.c
+  ./src/Lua/ltext.c
   # sound
-  src/Platform/openal/openal.c
-  src/Platform/openal/openalStream.c
-  src/Platform/openal/openalBgm.c
+  ./src/Platform/openal/openal.c
+  ./src/Platform/openal/openalStream.c
+  ./src/Platform/openal/openalBgm.c
   # 2d engine
-  src/Graphics/graphics.c
-  src/Graphics/texture.c
-  src/Graphics/shader.c
+  ./src/Graphics/graphics.c
+  ./src/Graphics/texture.c
+  ./src/Graphics/shader.c
   # input
-  src/Input/joystick.c
-  src/text.c
-  # UI src/UI/ui.c src/UI/uirect.c src/UI/uiobject.c src/UI/uiimage.c src/UI/uiImageAnimation.c src/UI/uitext.c
-  # src/UI/uibutton.c src/UI/uiProgressBar.c src/Lua/lui.c
+  ./src/Input/joystick.c
+  ./src/text.c
+  # UI ./src/UI/ui.c src/UI/uirect.c src/UI/uiobject.c src/UI/uiimage.c src/UI/uiImageAnimation.c src/UI/uitext.c
+  # ./src/UI/uibutton.c src/UI/uiProgressBar.c src/Lua/lui.c
 )
 
 if(SDL_GL)
-  list(APPEND SRC_FILES src/platform/opengl/glad.c src/platform/opengl/openglGraphics.c
-    src/platform/opengl/openglShader.c src/platform/opengl/openglTexture.c)
+  list(APPEND SRC_FILES ./src/platform/opengl/glad.c src/platform/opengl/openglGraphics.c
+    ./src/platform/opengl/openglShader.c src/platform/opengl/openglTexture.c)
 
 endif(SDL_GL)
 
