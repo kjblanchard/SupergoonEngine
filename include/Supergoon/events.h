@@ -1,13 +1,12 @@
 #pragma once
 #include <stdint.h>
 
-typedef union SDL_Event Event;
-
 /**
  * @brief The builtin events for the engine.  This struct will be filled with ids you
  * can use to push events of this type to the event system
  */
 typedef struct BuiltinEventTypes {
+	uint32_t QuitGameEvent;
 	uint32_t LoadBgmEvent;
 	uint32_t PlayBgmEvent;
 	uint32_t StopBgmEvent;
@@ -23,7 +22,7 @@ extern BuiltinEventTypes BuiltinEventIds;
 /**
  * @brief Initialize the event engine
  */
-void InitializeEventEngine(void);
+void InitializeEventSystem(void);
 /**
  * @brief Push an event to be handled next update.
  * Events are handled at that start of an update loop.
@@ -41,16 +40,16 @@ void PushEvent(uint32_t eventType, int eventCode, void *data, void *data2);
  * @param event
  * @return int
  */
-int HandleEvents(Event *event);
+int HandleEvents(void *event);
 /**
  * @brief Function to a custom event handler function, this will be called after the
  * builtin event handler
  *
  * @param EventHandlerFunction
  */
-void SetCustomEventHandler(int (*eventHandlerFunction)(Event *event));
+void SetCustomEventHandler(int (*eventHandlerFunction)(void *event));
 /**
  * @brief Function to a custom event handler function, this will be called after the
  * builtin event handler
  */
-int HandleCustomEventHandler(Event *event);
+int HandleCustomEventHandler(void *event);

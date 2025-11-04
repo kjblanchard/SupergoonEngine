@@ -1,8 +1,8 @@
 #include <Supergoon/Tweening/tween.h>
 #include <Supergoon/effects.h>
-#include <Supergoon/graphics.h>
+// #include <Supergoon/graphics.h>
 #include <Supergoon/log.h>
-#include <SupergoonEngine/window.h>
+#include <Supergoon/window.h>
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -14,7 +14,7 @@ static void fadeScreenStartFunc(void* userdata) {
 	_currentlyFading = true;
 }
 static void fadeScreenUpdateFunc(void* userdata) {
-	SetTextureAlpha(_imguiGameTexture, _screenFadeInt);
+	// SetTextureAlpha(_fullScreenTexture, _screenFadeInt);
 }
 static void fadeScreenEndFunc(void* userdata) {
 	_currentlyFading = false;

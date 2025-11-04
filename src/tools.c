@@ -1,9 +1,31 @@
-#include <SupergoonEngine/tools.h>
+#include <Supergoon/tools.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef tui
+#include <time.h>
+#include <unistd.h>
+#else
+#include <SDL3/SDL.h>
+#endif
+
+void sgSleepMS(int ms) {
+#ifdef tui
+	usleep(ms * 1000);
+#else
+	SDL_Delay(ms);
+#endif
+}
+
+uint64_t getCurrentMSTicks(void) {
+#ifdef tui
+	return clock() / (CLOCKS_PER_SEC / 1000);
+#else
+	return SDL_GetTicks();
+#endif
+}
 
 int sgasprintf(char **strp, const char *fmt, ...) {
 	va_list args;
@@ -35,6 +57,22 @@ int sgasprintf(char **strp, const char *fmt, ...) {
 
 	*strp = buf;
 	return len;
+}
+
+int
+sgstrncasecmp(const char *s1, const char *s2, size_t n)
+{
+    if (n == 0) return 0;
+
+    while (n-- != 0 && tolower(*s1) == tolower(*s2)) {
+        if (n == 0 || *s1 == '\0' || *s2 == '\0')
+            break;
+        s1++;
+        s2++;
+    }
+
+    return tolower(*(const unsigned char *)s1)
+        - tolower(*(const unsigned char *)s2);
 }
 
 // This was causing issues when there was "player1" and "player1Battler" in animations

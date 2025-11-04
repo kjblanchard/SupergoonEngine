@@ -1,12 +1,13 @@
+#include <Supergoon/Graphics/graphics.h>
+#include <Supergoon/Graphics/texture.h>
+#include <Supergoon/Primitives/Color.h>
+#include <Supergoon/camera.h>
 #include <Supergoon/gameobject.h>
-#include <Supergoon/graphics.h>
 #include <Supergoon/sprite.h>
-#include <SupergoonEngine/camera.h>
-#include <SupergoonEngine/gameobject.h>
-#include <SupergoonEngine/sprite.h>
-#include <SupergoonEngine/tools.h>
+#include <Supergoon/tools.h>
 #include <limits.h>
 #include <stdlib.h>
+#include <string.h>
 
 static size_t _firstSpriteHole = NO_HOLE;
 static size_t _numSprites = 0;
@@ -32,8 +33,10 @@ static Sprite* getFreeSprite(void) {
 
 Sprite* NewSprite(void) {
 	Sprite* sprite = getFreeSprite();
-	sprite->Parent = 0;
+	sprite->Parent = NULL;
 	sprite->Texture = NULL;
+	sprite->Shader = NULL;
+	sprite->Scale = 1.0f;
 	sprite->Flags = 0;
 	sprite->TextureSourceRect = (RectangleF){0, 0, 0, 0};
 	sprite->OffsetAndSizeRectF = (RectangleF){0, 0, 0, 0};
@@ -50,7 +53,6 @@ void DestroySprite(Sprite* sprite) {
 			continue;
 		}
 		UnloadTexture(sprite->Texture);
-		sprite->Parent = NULL;
 		sprite->Texture = NULL;
 		sprite->Flags = SpriteFlagDestroyed;
 		if (_firstSpriteHole == NO_HOLE || i < _firstSpriteHole) {
@@ -61,25 +63,18 @@ void DestroySprite(Sprite* sprite) {
 }
 
 void DrawSpriteSystem(void) {
-	RectangleF dst = {0, 0, 0, 0};
+	RectangleF dst = (RectangleF){0, 0, 0, 0};
+	Color color = {255, 255, 255, 255};
 	for (size_t i = 0; i < _numSprites; i++) {
 		Sprite* sprite = _sprites[i];
-		if (!sprite || !sprite->Texture || NO_FLAGS(sprite->Flags, SpriteFlagVisible) || HAS_ALL_FLAGS(sprite->Flags, SpriteFlagUI)) {
-			// if (!sprite || !sprite->Texture || NO_FLAGS(sprite->Flags, SpriteFlagVisible)  !(sprite->Flags & SpriteFlagVisible) || sprite->Flags & SpriteFlagUI) {
+		if (!sprite || !sprite->Texture || NO_FLAGS(sprite->Flags, SpriteFlagVisible)) {
 			continue;
 		}
-		float globalX = 0;
-		float globalY = 0;
-		if (sprite->Parent) {
-			globalX = sprite->Parent->X;
-			globalY = sprite->Parent->Y;
-		}
-		dst.x = SDL_roundf(globalX + sprite->OffsetAndSizeRectF.x - CameraX);
-		dst.y = SDL_roundf(globalY + sprite->OffsetAndSizeRectF.y - CameraY);
-
+		dst.x = sprite->Parent ? sprite->Parent->X + sprite->OffsetAndSizeRectF.x : sprite->OffsetAndSizeRectF.x;
+		dst.y = sprite->Parent ? sprite->Parent->Y + sprite->OffsetAndSizeRectF.y : sprite->OffsetAndSizeRectF.y;
 		dst.w = sprite->OffsetAndSizeRectF.w;
 		dst.h = sprite->OffsetAndSizeRectF.h;
-		DrawTexture(sprite->Texture, &dst, &sprite->TextureSourceRect);
+		DrawTexture(sprite->Texture, sprite->Shader, &dst, &sprite->TextureSourceRect, true, sprite->Scale, false, &color);
 	}
 }
 
@@ -87,7 +82,7 @@ void ShutdownSpriteSystem(void) {
 	for (size_t i = 0; i < _sizeSprites; i++) {
 		UnloadTexture(_sprites[i]->Texture);
 	}
-	SDL_free(_sprites);
+	free(_sprites);
 	_sprites = NULL;
 	_numSprites = 0;
 	_sizeSprites = 4;

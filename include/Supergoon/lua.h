@@ -8,7 +8,7 @@ typedef struct lua_State* LuaState;
 // Defined in lua.c
 extern LuaState _luaState;
 
-void InitializeLuaEngine(void);
+void InitializeLuaSystem(void);
 void LuaRunFile(const char* path);
 int LuaGetStackSize(LuaState L);
 void LuaPopStack(LuaState L, int num);
@@ -18,7 +18,7 @@ int LuaGetStack(LuaState L);
 void LuaRemoveIndex(LuaState L, int index);
 // Moves the tip to the index passed in, pushing everything else up.  Useful for if you pass func args first.
 void LuaMoveStackTipToIndex(LuaState L, int index);
-void sgCloseLua(void);
+void ShutdownLuaSystem(void);
 // Tables
 void LuaPushTableFromGlobal(LuaState L, const char* global);
 void LuaPushTableFromFile(LuaState L, const char* path);
@@ -98,6 +98,14 @@ void LuaPushString(LuaState L, const char* data);
 void LuaEnsureRegistryTable(LuaState L, const char* registryKey);
 int LuaRegistryGetSubTableEntry(LuaState L, const char* registryKey, int subKey);
 void LuaRegistrySetSubTableEntry(LuaState L, const char* registryKey, int subKey, int valueIndex);
+/**
+ * @brief Creates a reference in the lua registry.  It will use what is at the top of the stack.  It doesn't modify the stack
+ *
+ * @param L Lua state
+ * @return int the ref
+ */
+int LuaCreateRefInLuaRegistry(LuaState L, int i);
+void LuaPushRefValueInLuaRegistry(LuaState L, int refInt);
 // Functions
 void LuaGetLuaFuncAtIndex(LuaState L, int index);
 void LuaGetLuaFunc(LuaState L, const char* field);
@@ -111,9 +119,10 @@ typedef enum LuaFunctionParameterTypes {
 	LuaFunctionParameterTypeNumber,
 	LuaFunctionParameterTypeString,
 	LuaFunctionParameterTypeFunction,
-	LuaFUnctionParameterTypeUserdata,
+	LuaFunctionParameterTypeUserdata,
 	LuaFunctionParameterTypeTable,
 	LuaFunctionParameterTypeBoolean,
+	LuaFunctionParameterTypeMax,
 
 } LuaFunctionParameterTypes;
 // Checks to see if the stack has the specific number of arguments, with the following params.. use TypePass to skip checking that arg.

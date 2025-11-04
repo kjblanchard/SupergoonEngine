@@ -1,6 +1,6 @@
 #pragma once
+#include <Supergoon/Graphics/graphics.h>
 #include <Supergoon/UI/uiobject.h>
-#include <Supergoon/graphics.h>
 #ifdef __cplusplus
 extern "C" {
 #endif

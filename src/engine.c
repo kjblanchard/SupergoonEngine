@@ -1,194 +1,122 @@
+
+#include <SDL3/SDL_init.h>
+#include <ogg/ogg.h>
+#define SDL_MAIN_USE_CALLBACKS
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+#include <Supergoon/Animation/animator.h>
 #include <Supergoon/Audio/Audio.h>
+#include <Supergoon/Graphics/graphics.h>
 #include <Supergoon/Input/joystick.h>
 #include <Supergoon/Input/keyboard.h>
-#include <Supergoon/clock.h>
+#include <Supergoon/Input/mouse.h>
+#include <Supergoon/Lua/engine.h>
+#include <Supergoon/Lua/scripting.h>
+#include <Supergoon/Platform/sdl/sdl.h>
+#include <Supergoon/Tweening/tween.h>
+#include <Supergoon/camera.h>
 #include <Supergoon/engine.h>
 #include <Supergoon/events.h>
+#include <Supergoon/filesystem.h>
+#include <Supergoon/gameobject.h>
 #include <Supergoon/log.h>
 #include <Supergoon/lua.h>
+#include <Supergoon/map.h>
 #include <Supergoon/sprite.h>
 #include <Supergoon/state.h>
+#include <Supergoon/text.h>
+#include <Supergoon/tools.h>
+#include <Supergoon/tween.h>
 #include <Supergoon/window.h>
-#include <SupergoonEngine/Animation/animator.h>
-#include <SupergoonEngine/Lua/engine.h>
-#include <SupergoonEngine/Lua/scripting.h>
-#include <SupergoonEngine/camera.h>
-#include <SupergoonEngine/gameobject.h>
-#include <SupergoonEngine/graphics.h>
-#include <SupergoonEngine/map.h>
-#include <SupergoonEngine/sprite.h>
-#include <SupergoonEngine/ui.h>
-#include <SupergoonEngine/window.h>
-#ifdef imgui
-#include <Supergoon/Debug/ImGui.hpp>
-#endif
-#ifdef __EMSCRIPTEN__
-#include <emscripten.h>
-#endif
 
-static bool sdlEventLoop(void);
-// Functions in mouce.c
-void updateMouseSystem(void);
-void updateTouchSystem(void);
-// Functions in Audio.c
-extern void initializeAudio(void);
-extern void closeAudio(void);
-extern void audioUpdate(void);
-// Function in tween.c
-extern void initializeTweenEngine(void);
-extern void updateTweens(void);
-// Function in filesystem.c
-extern void shutdownEngineFilesystem(void);
-Uint64 previousCounter;
-Uint64 _frequency;
-float deltaTimeSeconds;
-static void (*_startFunc)(void) = NULL;
+static Uint64 _previousMS;
+static float _deltaTimeSeconds;
+// This needs to be defined in the program that will be utilizing the engine.
+extern void(StartImpl)(void);
 static void (*_updateFunc)(void) = NULL;
 static void (*_drawFunc)(void) = NULL;
 static void (*_inputFunc)(void) = NULL;
-static int (*_handleEventFunc)(Event *) = NULL;
-#ifdef imgui
-bool _isGameSimulatorRunning = true;
-#endif
-static bool quit = false;
-static void Quit(void);
+static int (*_handleEventFunc)(void *) = NULL;
 
-static bool Start(void) {
-	sgLogWarn("Starting the things");
-	if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMEPAD)) {
-		sgLogError("Could not init sdl, %s", SDL_GetError());
-		return false;
-	}
-	sgInitializeDebugLogFile();
+static void start(void) {
+	InitializeSdl();
+	InitializeLogSystem();
 	InitializeKeyboardSystem();
-	initializeGraphicsSystem();
-	geInitializeJoysticks();
-	InitializeLuaEngine();
-	InitializeEventEngine();
+	InitializeJoystickSystem();
+	InitializeLuaSystem();
+	InitializeEventSystem();
 	CreateWindow();
-	initializeAudio();
-	initializeTweenEngine();
-	InitializeUISystem();
+	InitializeGraphicsSystem();
+	InitializeTextSystem();
+	InitializeAudioSystem();
+	InitializeTweenSystem();
 	RegisterAllLuaFunctions();
-// Try to normalize the initial delay of loading everything
-#ifndef __EMSCRIPTEN__
-	for (size_t i = 0; i < 10; i++) {
-		sdlEventLoop();
-		SDL_Delay(1);
-	}
-#endif
-
-	_frequency = SDL_GetPerformanceFrequency();	 // ticks per second
-	previousCounter = SDL_GetPerformanceCounter();
-	deltaTimeSeconds = 0;
-	return true;
-}
-static bool sdlEventLoop(void) {
-	static SDL_Event event;
-	bool quit = false;
-	while (SDL_PollEvent(&event)) {
-		switch (event.type) {
-			case SDL_EVENT_QUIT:
-				return true;
-		}
-#ifdef imgui
-		if (!HandleImGuiEvent(&event)) {
-			continue;
-		}
-#endif
-		if (_handleEventFunc) {
-			quit = _handleEventFunc(&event);
-		}
-		HandleEvents(&event);
-	}
-	return quit;
+	_previousMS = getCurrentMSTicks();
+	_deltaTimeSeconds = 0;
 }
 
 static void handleFramerate(Uint64 *now) {
 #ifdef __EMSCRIPTEN__
 	return;
 #endif
-	if (TARGET_FPS != 999) {  // If we are doing a capped frame rate, we should also wait between frames.
-		Uint64 frame_end = SDL_GetPerformanceCounter();
-		Uint64 elapsed_ticks = frame_end - *now;
-		Uint64 elapsed_ns = (elapsed_ticks * 1000000000ULL) / _frequency;
-		const Uint64 FRAME_DURATION_NS = 1000000000 / TARGET_FPS;
-		if (elapsed_ns < FRAME_DURATION_NS) {
-			SDL_DelayPrecise(FRAME_DURATION_NS - elapsed_ns);
+	int refreshRate = GraphicsGetTargetRefreshRate();
+	if (refreshRate != 999) {  // If we are doing a capped frame rate, we should also wait between frames.
+		uint64_t current = getCurrentMSTicks();
+		Uint64 elapsedMS = current - _previousMS;
+		const Uint64 FRAME_DURATION_MS = 1000 / refreshRate;
+		if (elapsedMS < FRAME_DURATION_MS) {
+			sgSleepMS(FRAME_DURATION_MS - elapsedMS);
 		}
 	}
 }
 
 static void draw(void) {
 	DrawStart();
-	drawCurrentMap();
+	DrawCurrentMap();
 	DrawSpriteSystem();
 	if (_drawFunc) _drawFunc();
-	DrawUISystem();
+	// DrawUISystem();
+	// DrawEnd();
 	DrawEnd();
 }
 
-static void Update(void) {
-	Uint64 now = SDL_GetPerformanceCounter();
-	deltaTimeSeconds = (now - previousCounter) / (float)_frequency;
-	previousCounter = now;
-	DeltaTimeMilliseconds = deltaTimeSeconds * 1000;
-	DeltaTimeSeconds = deltaTimeSeconds;
-	quit = sdlEventLoop();
-	if (quit) {
-#ifdef __EMSCRIPTEN__
-		emscripten_cancel_main_loop();
-		Quit();
-#else
-		return;
-#endif
-	}
-	// #ifdef imgui
-	// 		// If we are im imgui and the game is "paused", we should just Draw and update imgui.
-	// 		if (!_isGameSimulatorRunning) {
-	// 		}
-	// #endif
-
-	// Update
+static void update(void) {
+	Uint64 now = getCurrentMSTicks();
+	DeltaTimeMilliseconds = now - _previousMS;
+	_previousMS = now;
+	DeltaTimeSeconds = DeltaTimeMilliseconds / 1000;
+	UpdateAudioSystem();
 	UpdateKeyboardSystem();
 	if (_inputFunc) _inputFunc();
-	UpdateUIInputSystem();
+	// UpdateUIInputSystem();
 	Ticks += 1;
-	updateTweens();
+	UpdateTweens();
 	UpdateAnimators();
 	PushGamestateToLua();
-	GameObjectSystemUpdate();
 	if (_updateFunc) _updateFunc();
-	UpdateUISystem();
-	geUpdateControllerLastFrame();
-	updateMouseSystem();
-	updateTouchSystem();
-	UpdateCamera();
+	// UpdateUISystem();
+	UpdateControllerSystem();
+	UpdateMouseSystem();
+	// UpdateTouchSystem();
+	UpdateCameraSystem();
 	draw();
 	handleFramerate(&now);
-	audioUpdate();
 }
 
 static void Quit(void) {
-	shutdownMapSystem();
+	ShutdownMapSystem();
 	ShutdownSpriteSystem();
-	sgCloseDebugLogFile();
 	ShutdownJoystickSystem();
-	sgCloseLua();
-	closeAudio();
-	shutdownGraphicsSystem();
+	ShutdownGraphicsSystem();
+	ShutdownLuaSystem();
+	ShutdownAudioSystem();
+	// ShutdownUISystem();
 	CloseWindow();
-	ShutdownUISystem();
-	shutdownEngineFilesystem();
-	SDL_Quit();
+	ShutdownEngineSilesystem();
+	ShutdownLogSystem();
 }
 
-void SetStartFunction(void (*startFunc)(void)) {
-	_startFunc = startFunc;
-}
-
-void SetHandleEventFunction(int (*eventFunc)(Event *)) {
+void SetHandleEventFunction(int (*eventFunc)(void *)) {
 	_handleEventFunc = eventFunc;
 }
 
@@ -203,18 +131,24 @@ void SetInputFunction(void (*updateFunc)(void)) {
 	_inputFunc = updateFunc;
 }
 
-void Run(void) {
-	bool started = Start();
-	if (!started) {
-		sgLogCritical("Could not start program, exiting");
-	}
-	if (_startFunc) _startFunc();
-#ifdef __EMSCRIPTEN__
-	emscripten_set_main_loop(Update, 0, 1);
-#else
-	while (!quit) {
-		Update();
-	}
-#endif
+SDL_AppResult SDL_AppInit(void **appState, int argc, char *argv[]) {
+	start();
+	StartImpl();
+	return SDL_APP_CONTINUE;
+}
+
+// Event handlers return if the game should quit
+SDL_AppResult SDL_AppEvent(void *appState, SDL_Event *event) {
+	if (HandleEvents(event)) return SDL_APP_SUCCESS;
+	if (_handleEventFunc && _handleEventFunc(event)) return SDL_APP_SUCCESS;
+	return SDL_APP_CONTINUE;
+}
+
+SDL_AppResult SDL_AppIterate(void *appState) {
+	update();
+	return SDL_APP_CONTINUE;
+}
+
+void SDL_AppQuit(void *appState, SDL_AppResult result) {
 	Quit();
 }

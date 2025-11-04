@@ -1,5 +1,6 @@
 #include <SDL3/SDL.h>
 #include <Supergoon/Animation/animator.h>
+#include <Supergoon/Lua/ui.h>
 #include <Supergoon/UI/ui.h>
 #include <Supergoon/UI/uiImageAnimation.h>
 #include <Supergoon/UI/uiProgressBar.h>
@@ -12,10 +13,8 @@
 #include <Supergoon/log.h>
 #include <Supergoon/lua.h>
 #include <Supergoon/sprite.h>
-#include <SupergoonEngine/Animation/animator.h>
-#include <SupergoonEngine/Lua/ui.h>
-#include <SupergoonEngine/tools.h>
-#include <SupergoonEngine/ui.h>
+#include <Supergoon/tools.h>
+#include <Supergoon/ui.h>
 #include <lauxlib.h>
 #include <lua.h>
 
@@ -92,7 +91,6 @@ static int createImageAnimator(lua_State* L) {
 	imageAnimation->AnimatorHandle = 9999;
 	Sprite* sprite = NewSprite();
 	sprite->Texture = CreateTextureFromIndexedBMP(LuaGetStringi(L, 4));
-	sprite->Parent = NULL;
 	sprite->TextureSourceRect.x = LuaGetFloatFromTableStackiKey(L, 5, "x");
 	sprite->TextureSourceRect.y = LuaGetFloatFromTableStackiKey(L, 5, "y");
 	sprite->TextureSourceRect.h = LuaGetFloatFromTableStackiKey(L, 5, "h");
@@ -123,7 +121,7 @@ static int create9SliceImage(lua_State* L) {
 	UIObject* obj = createUIObject(L);
 	obj->Type = UIObjectTypesImage;
 	UIImageData* renderTargetImageData = SDL_malloc(sizeof(*renderTargetImageData));
-	Texture* renderTargetTexture = CreateRenderTargetTexture(obj->Location.w, obj->Location.h, (sgColor){255, 255, 255, 255});
+	Texture* renderTargetTexture = CreateRenderTargetTexture(obj->Location.w, obj->Location.h, (Color){255, 255, 255, 255});
 	Texture* nineSliceImageTexture = CreateTextureFromIndexedBMP(LuaGetStringi(L, 4));
 	renderTargetImageData->Texture = renderTargetTexture;
 	obj->Data = renderTargetImageData;
@@ -139,7 +137,7 @@ static int create9SliceImage(lua_State* L) {
 	a = LuaGetFloatFromTableStackiKey(L, 5, "a");
 	TextureSize(nineSliceImageTexture, &nineSliceImageW, &nineSliceImageH);
 	SetTextureAlpha(renderTargetTexture, a);
-	ClearRenderTargetTexture(renderTargetTexture, &(sgColor){r, g, b, a});
+	ClearRenderTargetTexture(renderTargetTexture, &(Color){r, g, b, a});
 	renderTargetImageData->SrcRect = (RectangleF){0, 0, obj->Location.w, obj->Location.h};
 	// renderTargetImageData->SrcRect = (RectangleF){0, 0, nineSliceImageW, nineSliceImageH};
 	float sizeX = LuaGetFloati(L, 6);
@@ -264,7 +262,7 @@ static int createProgressBar(lua_State* L) {
 
 static int updateProgressBarPercent(lua_State* L) {
 	// args - name, loc table, parent userdata, table color
-	if (!LuaCheckFunctionCallParamsAndTypes(L, 2, LuaFUnctionParameterTypeUserdata, LuaFunctionParameterTypeInt)) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 2, LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeInt)) {
 		sgLogError("Could not update progress bar percent");
 		return 0;
 	}
@@ -375,7 +373,7 @@ static int getUIObjectSize(lua_State* L) {
 }
 
 static int playUIAnimation(lua_State* L) {
-	if (!LuaCheckFunctionCallParamsAndTypes(L, 3, LuaFUnctionParameterTypeUserdata, LuaFunctionParameterTypeString, LuaFunctionParameterTypeInt)) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 3, LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeString, LuaFunctionParameterTypeInt)) {
 		sgLogWarn("Bad params sent to play animation");
 	}
 	UIObject* object = LuaGetLightUserdatai(L, 1);

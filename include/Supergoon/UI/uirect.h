@@ -6,7 +6,7 @@
 extern "C" {
 #endif
 typedef struct UIRect {
-	sgColor Color;
+	Color Color;
 } UIRect;
 
 void UIRectDraw(UIObject* object);

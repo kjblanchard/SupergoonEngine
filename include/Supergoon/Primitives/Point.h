@@ -1,4 +1,11 @@
 #pragma once
-typedef struct sgPoint {
-  int X, Y;
-} sgPoint;
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct Point {
+	int X, Y;
+} Point;
+#ifdef __cplusplus
+}
+#endif

@@ -1,10 +1,11 @@
 #include <Supergoon/Animation/animator.h>
 #include <Supergoon/lua.h>
 #include <Supergoon/state.h>
-#include <SupergoonEngine/Animation/animator.h>
-#include <SupergoonEngine/tools.h>
+#include <Supergoon/tools.h>
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define NO_NEXT_ANIM -1
 AnimationDataArray _animationData;
@@ -13,22 +14,22 @@ AnimatorArray _animators;
 static void cleanUsedAnimationData(AnimationData* data) {
 	if (data->frames) {
 		for (size_t i = 0; i < data->frameCount; i++) {
-			SDL_free(data->frames[i].filename);
+			free(data->frames[i].filename);
 			data->frames[i].filename = NULL;
 		}
-		SDL_free(data->frames);
+		free(data->frames);
 		data->frames = NULL;
 	}
 	if (data->meta.frameTags) {
 		for (size_t i = 0; i < data->meta.frameTagCount; i++) {
-			SDL_free(data->meta.frameTags[i].name);
+			free(data->meta.frameTags[i].name);
 			data->meta.frameTags[i].name = NULL;
 		}
-		SDL_free(data->meta.frameTags);
+		free(data->meta.frameTags);
 		data->meta.frameTags = NULL;
 	}
 	if (data->meta.image) {
-		SDL_free(data->meta.image);
+		free(data->meta.image);
 		data->meta.image = NULL;
 	}
 	data->meta.frameTagCount = 0;
@@ -229,9 +230,9 @@ void DestroyAnimator(AnimatorHandle animator) {
 	}
 	Animator* anim = &_animators.Animators[animator];
 	assert(anim && "No anim");
-	SDL_free(anim->Name);
+	free(anim->Name);
 	anim->Name = NULL;
-	SDL_free(anim->Filename);
+	free(anim->Filename);
 	anim->Filename = NULL;
 	DestroySprite(anim->Sprite);
 	removeAnimationDataRef(anim->Data);

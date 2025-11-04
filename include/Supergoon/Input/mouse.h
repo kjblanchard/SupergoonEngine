@@ -10,13 +10,15 @@ typedef enum MouseButtons {
 } MouseButtons;
 
 // Gets the mouse position in the game window
-// when imgui, it needs to translate to the game, otherwise just returns mouse pos in window.
 void GetGameMousePos(float* x, float* y);
 // Checks to see if the mouse overlapped here.
 int IsMouseOverlapRect(int x, int y, int width, int height);
 int IsMouseButtonDown(int button);
 int IsMouseButtonJustPressed(int button);
 int IsMouseButtonJustReleased(int button);
+// Functions in mouce.c
+void UpdateMouseSystem(void);
+void UpdateTouchSystem(void);
 
 #ifdef __cplusplus
 }

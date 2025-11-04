@@ -1,3 +1,4 @@
+#include <Supergoon/Graphics/graphics.h>
 #include <Supergoon/UI/ui.h>
 #include <Supergoon/UI/uiImageAnimation.h>
 #include <Supergoon/UI/uiProgressBar.h>
@@ -7,9 +8,8 @@
 #include <Supergoon/UI/uiobject.h>
 #include <Supergoon/UI/uirect.h>
 #include <Supergoon/UI/uitext.h>
-#include <Supergoon/graphics.h>
 #include <Supergoon/log.h>
-#include <SupergoonEngine/ui.h>
+#include <Supergoon/ui.h>
 #include <assert.h>
 #include <stdlib.h>
 
@@ -41,13 +41,6 @@ static void drawUIObject(UIObject* object) {
 		default:
 			break;
 	}
-// Draw debug box in imgui
-#ifdef imgui
-	if (object->Flags & UIObjectFlagDebugBox) {
-		static sgColor debugColor = {255, 255, 255, 255};
-		DrawRect(&object->Location, &debugColor, false);
-	}
-#endif
 	for (size_t i = 0; i < object->ChildrenCount; i++) {
 		drawUIObject(object->Children[i]);
 	}

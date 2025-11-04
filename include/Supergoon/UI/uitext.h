@@ -1,13 +1,13 @@
 #pragma once
+#include <Supergoon/Graphics/graphics.h>
 #include <Supergoon/Primitives/Color.h>
 #include <Supergoon/UI/uiobject.h>
-#include <Supergoon/graphics.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
 struct LoadedFont;
 
-typedef struct UIText {
+typedef struct Text {
 	//  Text to display
 	char* Text;
 	struct LoadedFont* Font;
@@ -29,23 +29,23 @@ typedef struct UIText {
 	unsigned int NumWordWrapCharacters;
 	// For word wrapping, so we know what characters we should word wrap with
 	unsigned int* WordWrapCharacters;
-	sgColor Color;
+	struct Color Color;
 	// Texture with the rendered text to be drawn
 	Texture* Texture;
 } UIText;
 
-void InitializeUITextSystem(void);
-void ShutdownUITextSystem(void);
+void InitializeTextSystem(void);
+void ShutdownTextSystem(void);
 
 void SetTextColor(UIObject* uiobject, int r, int g, int b, int a);
 void SetTextSize(UIObject* uiobject, int size);
 void MeasureText(UIObject* uiobject);
-void SetFont(const char* fontName, unsigned int size);
+void TextSetFont(const char* fontName, unsigned int size);
 void SetCenteredX(UIObject* uiobject, int centered);
 void SetCenteredY(UIObject* uiobject, int centered);
-void UITextLoad(UIObject* object);
+void TextLoad(UIObject* object);
 void UITextOnDirty(UIObject* object);
-void UITextDraw(UIObject* object);
+void TextDraw(UIObject* object);
 void DestroyUIText(UIObject* object);
 
 #ifdef __cplusplus

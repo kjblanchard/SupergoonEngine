@@ -100,3 +100,5 @@ void StopTween(Tween tween);
 void SetTweenFunctions(Tween tween, TweenStartFunc start, TweenUpdateFunc update, TweenEndFunc end);
 // Sets the userdata to be passed to update funcs on a tween that has already been created with CreateXTween
 void SetTweenUserdata(Tween tween, void* userdata);
+void InitializeTweenSystem(void);
+void UpdateTweens(void);

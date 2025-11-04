@@ -27,13 +27,13 @@ typedef enum sgLogLevel {
  *
  * @return 1 if successful, 0 if failed.
  */
-int sgInitializeDebugLogFile(void);
+int InitializeLogSystem(void);
 /**
  * @brief Closes the open file for logging.
  *
  * @return
  */
-int sgCloseDebugLogFile(void);
+int ShutdownLogSystem(void);
 /**
  * @brief Log a Debug log in a printf format
  *
@@ -66,7 +66,8 @@ void sgLogError(const char *format, ...);
  */
 void sgLogCritical(const char *fmt, ...);
 /**
- * @brief Sets a log function that will be called on every log function, usually used for outputting the logs somewhere else as well (imgui)
+ * @brief Sets a log function that will be called on every log function, usually used for outputting the logs somewhere else as well
+ * @param Time string, Message string, Log level
  */
 void sgSetDebugFunction(void (*)(const char *, const char *, int));
 /**

@@ -22,7 +22,7 @@ void SetStartFunction(void (*startFunc)(void));
  * @param eventFunc The function that should be called, this function should return 0 to continue,
  * 1 for quit, 2 for error quit
  */
-void SetHandleEventFunction(int (*eventFunc)(Event*));
+void SetHandleEventFunction(int (*eventFunc)(void*));
 /**
  * @brief Set the Input Function object, used in the update loop before any gameobject updates, etc
  *

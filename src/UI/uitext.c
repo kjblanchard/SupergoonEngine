@@ -1,10 +1,10 @@
 #include <SDL3/SDL.h>
+#include <Supergoon/Graphics/graphics.h>
 #include <Supergoon/UI/uiobject.h>
 #include <Supergoon/UI/uitext.h>
 #include <Supergoon/filesystem.h>
 #include <Supergoon/log.h>
-#include <SupergoonEngine/graphics.h>
-#include <SupergoonEngine/tools.h>
+#include <Supergoon/tools.h>
 #include <assert.h>
 #include <ctype.h>
 #include <ft2build.h>
@@ -65,7 +65,7 @@ void SetTextSize(UIObject* uiobject, int size) {
 	LoadedFont* current = _currentFont;
 	char* fontBase = getFontnameFromCurrentFont();
 
-	SetFont(fontBase, size);
+	TextSetFont(fontBase, size);
 	SDL_free(fontBase);
 	text->Font = _currentFont;
 	text->FontSize = size;
@@ -165,7 +165,7 @@ static LoadedFont* getLoadedFont(const char* fontName, unsigned int size) {
 	return fontToLoadInto;
 }
 
-void SetFont(const char* fontName, unsigned int size) {
+void TextSetFont(const char* fontName, unsigned int size) {
 	if (!fontName) {
 		sgLogWarn("No font name, not setting");
 		return;
@@ -387,7 +387,7 @@ static void redrawText(UIObject* object, UIText* text) {
 	if (text->Texture) {
 		SDL_DestroyTexture(text->Texture);
 	}
-	text->Texture = CreateRenderTargetTexture(object->Location.w, object->Location.h, (sgColor){0, 0, 0, 0});
+	text->Texture = CreateRenderTargetTexture(object->Location.w, object->Location.h, (Color){0, 0, 0, 0});
 	if (text->Color.R != 0 || text->Color.G != 0 || text->Color.B != 0 || text->Color.A != 0) {
 		SetTextColor(object, text->Color.R, text->Color.G, text->Color.B, text->Color.A);
 	}
@@ -426,8 +426,8 @@ void UITextOnDirty(UIObject* object) {
 
 	// If there is more letters to draw than the current, clear the texture and start from 0
 	if (text->NumLettersToDraw < text->CurrentDrawnLetters) {
-		// sgColor color = {0, 255, 0, 255};
-		ClearRenderTargetTexture(text->Texture, &(sgColor){0, 0, 0, 0});
+		// Color color = {0, 255, 0, 255};
+		ClearRenderTargetTexture(text->Texture, &(Color){0, 0, 0, 0});
 		text->CurrentDrawnLetters = 0;
 		text->PenX = getCenteredXPenLoc(object, text);
 		text->PenY = getCenteredYPenLoc(object, text);
@@ -439,7 +439,7 @@ void UITextOnDirty(UIObject* object) {
 	}
 }
 
-void UITextDraw(UIObject* object) {
+void TextDraw(UIObject* object) {
 	if (!object) {
 		return;
 	}
@@ -448,7 +448,7 @@ void UITextDraw(UIObject* object) {
 	DrawTexture(text->Texture, &object->Location, NULL);
 }
 
-void UITextLoad(UIObject* object) {
+void TextLoad(UIObject* object) {
 	if (!object) {
 		return;
 	}

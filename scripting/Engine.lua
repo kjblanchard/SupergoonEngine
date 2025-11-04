@@ -1,11 +1,16 @@
 local engine = {}
-local scenes = require("scenes")
 local gamestate = require("gameState")
 
 --#region Coroutine
 engine.Coroutine = {
     tasks = {}
 }
+
+function engine.StartDebugger()
+    if os.getenv("LUA_DEBUGGING") == "1" then
+        require("mobdebug").start()
+    end
+end
 
 -- Adds a wait to a coroutine, the coroutine will wait the amount of seconds during the coroutine update
 function engine.Coroutine.Wait(seconds)
@@ -60,9 +65,9 @@ function engine.Coroutine.run(co)
         " status=" .. (type(co) == "thread" and coroutine.status(co) or "n/a"))
     assert(type(co) == "thread", "Coroutine:run expects a coroutine")
     table.insert(engine.Coroutine.tasks, {
-        co = co,
-        delay = 0.01 -- start next frame
-    })
+            co = co,
+            delay = 0.01 -- start next frame
+        })
     engine.Log.LogDebug("Task count now " .. tostring(#engine.Coroutine.tasks))
 end
 
@@ -96,14 +101,28 @@ function engine.Tools.NormalizeRect(rect)
 end
 
 --#endregion Tools
+--
+engine.Text = {}
+function engine.Text.CreateText(fontName, fontSize, location, text)
+    location = engine.Tools.NormalizeRect(location)
+    return cText.CreateText(fontName, fontSize,location, text)
+end
+function engine.Text.DrawText(textPtr)
+    return cText.DrawText(textPtr)
+end
 
 --#region Sprite
 engine.Sprite = {}
 engine.Sprite.Sprites = {}
-function engine.Sprite.NewSprite(imageName, parentPtr, textureSrcRectTable, offsetSizeRectTable)
+function engine.Sprite.NewSprite(imageName, parent, textureSrcRectTable, offsetSizeRectTable)
     textureSrcRectTable = engine.Tools.NormalizeRect(textureSrcRectTable)
     offsetSizeRectTable = engine.Tools.NormalizeRect(offsetSizeRectTable)
-    return cSprite.NewSprite(imageName, parentPtr, textureSrcRectTable, offsetSizeRectTable)
+    return cSprite.NewSprite(imageName, parent, textureSrcRectTable, offsetSizeRectTable)
+end
+
+---Should be a percentage
+function engine.Sprite.SetScale(spritePtr, scaleFloat)
+    return cSprite.SetSpriteScale(spritePtr, scaleFloat)
 end
 
 function engine.Sprite.DestroySprite(spritePtr)
@@ -136,6 +155,10 @@ function engine.Input.KeyboardKeyDown(key)
     return engine.Input.UIButtonPresses.Down[key] or cInput.IsKeyboardKeyDown(key)
 end
 
+function engine.Input.GetKeysPressedThisFrame()
+    return cInput.GetKeysPressedThisFrameString()
+end
+
 engine.Input._UIButtonLastState = {}
 engine.Input.UIButtonThisFrame = {}
 ---Updates the internal input system in lua so you don't have to call keydown, just pressed, etc.
@@ -159,24 +182,44 @@ end
 
 --#region Log
 engine.Log = {}
+engine.Log.LogColorsDefault = 0
+engine.Log.LogColorsBlack = 0
+engine.Log.LogColorsRed = 1
+engine.Log.LogColorsGreen = 2
+engine.Log.LogColorsYellow = 3
+engine.Log.LogColorsBlue = 4
+engine.Log.LogColorsMagenta = 5
+engine.Log.LogColorsCyan = 6
+engine.Log.LogColorsWhite = 7
+engine.Log.LogLevelsDebug = 1
+engine.Log.LogLevelsInfo = 2
+engine.Log.LogLevelsWarn = 3
+engine.Log.LogLevelsError = 4
+engine.Log.LogLevelsCritical = 5
+engine.Log.LogStyleDefault = 0
+engine.Log.LogStyleBold = 1
 function engine.Log.LogDebug(message)
-    cLog.Log(message, 1)
+    cLog.Log(message, engine.Log.LogLevelsDebug)
 end
 
 function engine.Log.LogInfo(message)
-    cLog.Log(message, 2)
+    cLog.Log(message, engine.Log.LogLevelsInfo)
 end
 
 function engine.Log.LogWarn(message)
-    cLog.Log(message, 3)
+    cLog.Log(message, engine.Log.LogLevelsWarn)
 end
 
 function engine.Log.LogError(message)
-    cLog.Log(message, 4)
+    cLog.Log(message, engine.Log.LogLevelsError)
 end
 
 function engine.Log.LogCritical(message)
-    cLog.Log(message, 5)
+    cLog.Log(message, engine.Log.LogLevelsCritical)
+end
+
+function engine.Log.SetLogFunction(func)
+    cLog.SetLogFunc(func)
 end
 
 --#endregion Log
@@ -206,7 +249,7 @@ function engine.Gameobject.Sprite(ptr)
 end
 
 -- Calls the create function for the gameobject below ..
-function engine.Gameobject.CreateGameObjectInCurrentMap()
+function engine.Gameobject.CreateGameObject()
     return cGameObject.CreateGameObject()
 end
 
@@ -358,14 +401,6 @@ function engine.Scene.LoadScene(mapKey)
     gamestate.nextScene = mapKey
 end
 
-function engine.Scene.LoadDefaultScene()
-    local defaultScene = scenes["default"]
-    local sceneTable = scenes.scenes[defaultScene]
-    local co = engine.Scene.LoadSceneCo(sceneTable[1], sceneTable[2], sceneTable[3], sceneTable[4], sceneTable[5],
-        sceneTable[6])
-    engine.Coroutine.run(co)
-end
-
 --#endregion Scene
 
 --#region Window
@@ -460,9 +495,9 @@ end
 
 function engine.Collision.CheckForCollision(a, b)
     return a.x < b.x + b.w and
-        a.x + a.w > b.x and
-        a.y < b.y + b.h and
-        a.y + a.h > b.y
+    a.x + a.w > b.x and
+    a.y < b.y + b.h and
+    a.y + a.h > b.y
 end
 
 --#endregion Collision
@@ -508,15 +543,66 @@ end
 
 --Is the game running on a mobile platform.
 function engine.IsMobile()
-    return cEngine.IsMobile
+    return cEngine.IsMobile()
 end
 
 --- Is the screen fading?  Use this to track when the screen is fading
 ---@return boolean true if screen is fading.
 function engine.IsScreenFading()
-    return cEffects.IsScreenFading
+    return cEffects.IsScreenFading()
+end
+
+---Quits the game
+---@return nil
+function engine.Quit()
+    return cEngine.Quit()
 end
 
 --#endregion Core
+
+--#region Graphics
+
+---Creates a shader and compiles it..
+---@param vertexFilename string filename with no extension of a file inside of the assets/shaders folder
+---@param fragmentFilename any filename with no extension of a fiel inside of the assets/shaders folder
+---@return lightuserdata Shader ptr
+function engine.CreateShader(vertexFilename, fragmentFilename)
+    return cGraphics.CreateShader(vertexFilename, fragmentFilename)
+end
+
+function engine.CreateTexture(filename)
+    return cGraphics.CreateTexture(filename)
+end
+
+function engine.CreateRenderTargetTexture(width, height)
+    return cGraphics.CreateRenderTargetTexture(width, height)
+end
+
+function engine.DrawTextureToTexture(renderTargetTexture, srcTexture, shader, dstRect, srcRect)
+    dstRect = engine.Tools.NormalizeRect(dstRect)
+    srcRect = engine.Tools.NormalizeRect(srcRect)
+    cGraphics.DrawTextureToTexture(renderTargetTexture, srcTexture, shader, dstRect, srcRect)
+end
+
+function engine.SetRenderTarget(renderTargetTexture)
+    cGraphics.SetRenderTarget(renderTargetTexture)
+end
+
+function engine.ClearRenderTarget(renderTargetTexture, r, g, b, a)
+    cGraphics.ClearRenderTargetTexture(renderTargetTexture, r, g, b, a)
+end
+
+function engine.DrawTexture(texture, shader, dstRect, srcRect)
+    dstRect = engine.Tools.NormalizeRect(dstRect)
+    srcRect = engine.Tools.NormalizeRect(srcRect)
+    cGraphics.DrawTexture(texture, shader, dstRect, srcRect)
+end
+
+function engine.DrawRect(rect, filled)
+    rect = engine.Tools.NormalizeRect(rect)
+    cGraphics.DrawRect(rect, filled)
+end
+
+-- #endregion
 
 return engine

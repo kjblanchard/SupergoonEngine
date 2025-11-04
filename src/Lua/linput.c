@@ -1,16 +1,34 @@
 #include <Supergoon/Input/keyboard.h>
+#include <Supergoon/Lua/input.h>
 #include <Supergoon/log.h>
 #include <Supergoon/lua.h>
-#include <SupergoonEngine/Lua/input.h>
 #include <lauxlib.h>
 #include <lua.h>
+#include <stdbool.h>
+#ifdef tui
+#include <SupergoonEngine/Platform/cursesInput.h>
+#endif
 
 static int isKeyboardKeyPressed(lua_State* L) {
-	if (LuaGetStackSize(L) != 1 || !LuaIsInt(L, 1)) {
-		sgLogWarn("Bad params sent into keyboard key pressed from lua");
-		return 0;
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 1, LuaFunctionParameterTypePass)) {
+		sgLogWarn("Bad params sent into keyboard key pressed");
+		LuaPushBool(L, false);
+		return 1;
 	}
-	LuaPushBool(L, IsKeyboardKeyJustPressed(LuaGetIntFromStacki(L, 1)));
+	int key = 0;
+	if (lua_type(L, 1) == LUA_TSTRING) {
+		const char* s = lua_tostring(L, 1);
+		if (s && s[0] != '\0') {
+			key = (int)s[0];  // ASCII
+		}
+	} else if (lua_type(L, 1) == LUA_TNUMBER) {
+		key = (int)lua_tointeger(L, 1);
+	} else {
+		sgLogWarn("Bad key passed, returning false");
+		LuaPushBool(L, false);
+		return 1;
+	}
+	LuaPushBool(L, IsKeyboardKeyJustPressed(key));
 	return 1;
 }
 
@@ -23,9 +41,24 @@ static int isKeyboardKeyDown(lua_State* L) {
 	return 1;
 }
 
+static int getKeysPressedThisFrame(lua_State* L) {
+	if (LuaGetStackSize(L) != 0) {
+		sgLogWarn("Bad params sent into keyboard key pressed from lua");
+		return 0;
+	}
+#ifndef tui
+	LuaPushString(L, "");
+	return 1;
+#else
+	LuaPushString(L, _keysPressedThisFrame);
+	return 1;
+#endif
+}
+
 static const luaL_Reg inputLib[] = {
 	{"IsKeyboardKeyPressed", isKeyboardKeyPressed},
 	{"IsKeyboardKeyDown", isKeyboardKeyDown},
+	{"GetKeysPressedThisFrameString", getKeysPressedThisFrame},
 	{NULL, NULL}};
 
 void RegisterLuaInputFunctions(void) {

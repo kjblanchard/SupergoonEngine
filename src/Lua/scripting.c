@@ -1,26 +1,28 @@
-#include <SupergoonEngine/Lua/animation.h>
-#include <SupergoonEngine/Lua/audio.h>
-#include <SupergoonEngine/Lua/camera.h>
-#include <SupergoonEngine/Lua/effects.h>
-#include <SupergoonEngine/Lua/engine.h>
-#include <SupergoonEngine/Lua/input.h>
-#include <SupergoonEngine/Lua/log.h>
-#include <SupergoonEngine/Lua/object.h>
-#include <SupergoonEngine/Lua/scene.h>
-#include <SupergoonEngine/Lua/scripting.h>
-#include <SupergoonEngine/Lua/sprite.h>
-#include <SupergoonEngine/Lua/ui.h>
+#include <Supergoon/Lua/animation.h>
+#include <Supergoon/Lua/audio.h>
+#include <Supergoon/Lua/camera.h>
+#include <Supergoon/Lua/effects.h>
+#include <Supergoon/Lua/engine.h>
+#include <Supergoon/Lua/graphics.h>
+#include <Supergoon/Lua/input.h>
+#include <Supergoon/Lua/log.h>
+#include <Supergoon/Lua/object.h>
+#include <Supergoon/Lua/scene.h>
+#include <Supergoon/Lua/scripting.h>
+#include <Supergoon/Lua/sprite.h>
+#include <Supergoon/text.h>
+extern void RegisterLuaTextFunctions(void);
 void RegisterAllLuaFunctions(void) {
-	// should be consolidated
-	RegisterLuaUIFunctions();
-	RegisterLuaLogFunctions();
-	RegisterLuaAudioFunctions();
 	RegisterLuaObjectFunctions();
 	RegisterLuaSceneFuncs();
-	RegisterLuaEngineFunctions();
 	RegisterLuaEffectsFunctions();
-	RegisterLuaInputFunctions();
 	RegisterLuaSpriteFunctions();
 	RegisterLuaAnimationFunctions();
+	RegisterLuaLogFunctions();
+	RegisterLuaAudioFunctions();
+	RegisterLuaEngineFunctions();
+	RegisterLuaInputFunctions();
 	RegisterLuaCameraFunctions();
+	RegisterLuaGraphicsFunctions();
+	RegisterLuaTextFunctions();
 }

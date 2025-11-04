@@ -1,6 +1,6 @@
 #include <SDL3/SDL.h>
 #include <Supergoon/Input/mouse.h>
-#include <SupergoonEngine/window.h>
+#include <Supergoon/window.h>
 
 static bool _lastFrameMouseButtons[3] = {false};
 static bool _thisFrameMouseButtons[3] = {false};
@@ -15,24 +15,24 @@ void handleMouseEvent(const SDL_Event* event) {
 	_thisFrameMouseButtons[buttonNum] = buttonPressed;
 }
 
-void updateMouseSystem(void) {
+void UpdateMouseSystem(void) {
 	for (int i = 0; i < 3; ++i) {
 		_lastFrameMouseButtons[i] = _thisFrameMouseButtons[i];
 	}
 }
 
 void GetGameMousePos(float* x, float* y) {
-	float mouseX, mouseY;
-	SDL_GetMouseState(&mouseX, &mouseY);
-	int relX = mouseX - _gameImagePosX;
-	int relY = mouseY - _gameImagePosY;
-	if (relX >= 0 && relY >= 0 && relX < _gameImageWidth && relY < _gameImageHeight) {
-		*x = relX / _gameImageScale;
-		*y = relY / _gameImageScale;
-	} else {
-		*x = -1;
-		*y = -1;
-	}
+	// float mouseX, mouseY;
+	// SDL_GetMouseState(&mouseX, &mouseY);
+	// int relX = mouseX - _gameImagePosX;
+	// int relY = mouseY - _gameImagePosY;
+	// if (relX >= 0 && relY >= 0 && relX < _gameImageWidth && relY < _gameImageHeight) {
+	// 	*x = relX / _gameImageScale;
+	// 	*y = relY / _gameImageScale;
+	// } else {
+	// 	*x = -1;
+	// 	*y = -1;
+	// }
 }
 
 int IsMouseOverlapRect(int x, int y, int width, int height) {

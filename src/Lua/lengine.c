@@ -1,17 +1,18 @@
+#include <SDL3/SDL.h>
 #include <Supergoon/Audio/Audio.h>
+#include <Supergoon/Graphics/graphics.h>
+#include <Supergoon/Lua/engine.h>
+#include <Supergoon/Lua/object.h>
+#include <Supergoon/Lua/scene.h>
+#include <Supergoon/camera.h>
 #include <Supergoon/engine.h>
+#include <Supergoon/events.h>
+#include <Supergoon/gameobject.h>
 #include <Supergoon/log.h>
 #include <Supergoon/lua.h>
 #include <Supergoon/map.h>
 #include <Supergoon/state.h>
 #include <Supergoon/window.h>
-#include <SupergoonEngine/Lua/engine.h>
-#include <SupergoonEngine/Lua/object.h>
-#include <SupergoonEngine/Lua/scene.h>
-#include <SupergoonEngine/camera.h>
-#include <SupergoonEngine/gameobject.h>
-#include <SupergoonEngine/map.h>
-#include <SupergoonEngine/window.h>
 #include <lauxlib.h>
 #include <lua.h>
 
@@ -33,10 +34,7 @@ static int setScalingOptions(lua_State* L) {
 		sgLogWarn("Bad parameters passed into scaling options from lua");
 		return 0;
 	}
-	int logX = LuaGetIntFromStacki(L, 1);
-	int logY = LuaGetIntFromStacki(L, 2);
-	SetScalingOptions(logX, logY);
-	SetCameraSize(logX, logY);
+	GraphicsSetLogicalWorldSize(LuaGetIntFromStacki(L, 1), LuaGetIntFromStacki(L, 2));
 	return 0;
 }
 
@@ -56,7 +54,7 @@ static void updateFunc(void) {
 		lua_rawgeti(_luaState, LUA_REGISTRYINDEX, _updateFuncRef);
 		if (lua_pcall(_luaState, 0, 0, 0) != LUA_OK) {
 			const char* err = lua_tostring(_luaState, -1);
-			fprintf(stderr, "Error in update func: %s\n", err);
+			sgLogError("Error in update func: %s", err);
 			lua_pop(_luaState, 1);
 		}
 	}
@@ -67,7 +65,7 @@ static void drawFunc(void) {
 		lua_rawgeti(_luaState, LUA_REGISTRYINDEX, _drawFuncRef);
 		if (lua_pcall(_luaState, 0, 0, 0) != LUA_OK) {
 			const char* err = lua_tostring(_luaState, -1);
-			fprintf(stderr, "Error in update func: %s\n", err);
+			sgLogError("Error in update func: %s", err);
 			lua_pop(_luaState, 1);
 		}
 	}
@@ -107,7 +105,7 @@ static int drawRect(lua_State* L) {
 	if (!LuaCheckFunctionCallParamsAndTypes(L, 4, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeNumber)) {
 		sgLogWarn("Bad args passed into setDrawFunc");
 	}
-	DrawRect(&(RectangleF){LuaGetFloati(L, 1), LuaGetFloati(L, 2), LuaGetFloati(L, 3), LuaGetFloati(L, 4)}, &(sgColor){0, 255, 0, 255}, false);
+	DrawRect(&(RectangleF){LuaGetFloati(L, 1), LuaGetFloati(L, 2), LuaGetFloati(L, 3), LuaGetFloati(L, 4)}, &(Color){0, 255, 0, 255}, false);
 	return 0;
 }
 
@@ -115,22 +113,34 @@ static int drawRectCamOffset(lua_State* L) {
 	if (!LuaCheckFunctionCallParamsAndTypes(L, 4, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeNumber)) {
 		sgLogWarn("Bad args passed into setDrawFunc");
 	}
-	DrawRect(&(RectangleF){LuaGetFloati(L, 1) - CameraX, LuaGetFloati(L, 2) - CameraY, LuaGetFloati(L, 3), LuaGetFloati(L, 4)}, &(sgColor){0, 255, 0, 255}, false);
+	/* DrawRect(&(RectangleF){LuaGetFloati(L, 1) - CameraX, LuaGetFloati(L, 2) - CameraY, LuaGetFloati(L, 3), LuaGetFloati(L, 4)}, &(Color){0, 255, 0, 255}, false); */
 	return 0;
 }
 
 static int getCurrentMapName(lua_State* L) {
-	if (!_currentMap) {
-		return 0;
-	}
-	LuaPushString(L, _currentMap->BaseFilename);
-	return 1;
+	return 0;
+	// #ifdef tui
+	// 	return 0;
+	// #else
+	// 	if (!_currentMap) {
+	// 		return 0;
+	// 	}
+	// 	LuaPushString(L, _currentMap->BaseFilename);
+	// 	return 1;
+	// #endif
+}
+
+static int pushQuit(lua_State* L) {
+	PushEvent(BuiltinEventIds.QuitGameEvent, 0, NULL, NULL);
+	sgLogWarn("Pushing quit");
+	return 0;
 }
 
 static const luaL_Reg sceneLib[] = {
 	{"SetWindowOptions", setWindowOptions},
 	{"SetScalingOptions", setScalingOptions},
 	{"SetUpdateFunc", setUpdateFunc},
+	{"Quit", pushQuit},
 	{"SetInputFunc", setInputFunc},
 	{"SetDrawFunc", setDrawFunc},
 	{"DrawRect", drawRect},

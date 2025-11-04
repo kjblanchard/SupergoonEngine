@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 typedef struct UIProgressBarData {
-	sgColor Color;
+	Color Color;
 	int BarPercent;
 } UIProgressBarData;
 
