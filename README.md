@@ -23,3 +23,4 @@
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
+- See libraries for their specific licenses, specifically OpenALSoft with LGPL

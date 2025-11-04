@@ -64,7 +64,7 @@ void ShutdownEngineSilesystem(void) {
 
 char *GetContentOfFileString(const char *fullFilePath) {
 	FILE *filePointer;
-	filePointer = fopen(fullFilePath, "r");
+	filePointer = fopen(fullFilePath, "rb");
 	if (!filePointer) {
 		sgLogWarn("Could not open file for reading, returning null");
 		return NULL;
