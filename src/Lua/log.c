@@ -26,7 +26,7 @@ static int setLogFunc(lua_State* L) {
 	return 0;
 }
 
-static int log(lua_State* L) {
+static int logFunc(lua_State* L) {
 	if (LuaGetStackSize(L) != 2 || !LuaIsString(L, 1) || !LuaIsInt(L, 2)) {
 		sgLogWarn("Bad log function params!");
 		return 0;
@@ -53,7 +53,7 @@ static int log(lua_State* L) {
 }
 
 static const luaL_Reg uiLib[] = {
-	{"Log", log},
+	{"Log", logFunc},
 	{"SetLogFunc", setLogFunc},
 	{NULL, NULL}};
 
