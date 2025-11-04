@@ -85,8 +85,8 @@ set(SRC_FILES
 )
 
 if(SDL_GL)
-  list(APPEND SRC_FILES src/platform/opengl/glad.c src/platform/opengl/openglGraphics.c
-       src/platform/opengl/openglShader.c src/platform/opengl/openglTexture.c)
+  list(APPEND SRC_FILES src/Platform/opengl/glad.c src/Platform/opengl/openglGraphics.c
+       src/Platform/opengl/openglShader.c src/Platform/opengl/openglTexture.c)
 
 endif(SDL_GL)
 
