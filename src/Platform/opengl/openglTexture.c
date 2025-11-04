@@ -2,6 +2,7 @@
 #include <Supergoon/Primitives/Color.h>
 #include <Supergoon/camera.h>
 #include <string.h>
+#include <Supergoon/tools.h>
 #include <stdbool.h>
 #ifndef __EMSCRIPTEN__
 #include <glad/glad.h>

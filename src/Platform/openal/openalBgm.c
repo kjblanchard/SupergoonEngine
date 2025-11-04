@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <Supergoon/tools.h>
 
 Bgm* BgmNew(void) {
 	Bgm* bgm = malloc(sizeof(*bgm));
@@ -29,6 +30,7 @@ static void getLoopPointsFromVorbisComments(Bgm* bgm, double* loopBegin, double*
 	const char* end = "LOOPEND=";
 	for (int i = 0; i < vc->comments; ++i) {
 		char* comment = vc->user_comments[i];
+
 		if (strncasecmp(comment, start, strlen(start)) == 0) {
 			float startTime = atof(comment + strlen(start));
 			*loopBegin = startTime;

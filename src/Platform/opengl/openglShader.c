@@ -10,6 +10,7 @@
 #include <Supergoon/Platform/opengl/openglGraphics.h>
 #include <Supergoon/filesystem.h>
 #include <Supergoon/log.h>
+#include <Supergoon/tools.h>
 #include <cglm/mat4.h>
 #include <cglm/vec2.h>
 #include <cglm/vec3.h>
@@ -50,6 +51,7 @@ char *getShaderDataFromFile(const char *filename) {
 	char *filepath;
 	asprintf(&filepath, "%sassets/shaders/%s%s%s", GetBasePath(), filename,
 			 suffix, ".glsl");
+	sgLogWarn("Opening file %s", filepath);
 	char *data = GetContentOfFileString(filepath);
 	free(filepath);
 	return data;
@@ -130,6 +132,9 @@ void ShaderCompileImpl(Shader *shader, const char *vertexSourceFile,
 	if (!vertexData || !fragmentData) {
 		sgLogWarn("Could not get shader data, compilation failure!");
 	}
+	sgLogWarn(
+		"Data is %s and data is \n %s", vertexData, fragmentData
+	);
 	unsigned int sVertex, sFragment;
 	// vertex Shader
 	sVertex = glCreateShader(GL_VERTEX_SHADER);

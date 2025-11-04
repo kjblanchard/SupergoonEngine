@@ -56,6 +56,7 @@ int sgasprintf(char** strp, const char* fmt, ...);
 #ifdef _WIN32
 // No native asprintf on Windows, use your own
 #define asprintf sgasprintf
+#define strncasecmp sgstrncasecmp
 #endif
 
 // Returns true if strings are equal
