@@ -7,7 +7,7 @@ engine.Coroutine = {
 }
 
 function engine.StartDebugger()
-    if os.getenv("LUA_DEBUGGING") == "1" then
+    if os.getenv("LUA_DEBUGGING") == 1 then
         require("mobdebug").start()
     end
 end
@@ -107,8 +107,8 @@ function engine.Text.CreateText(fontName, fontSize, location, text)
     location = engine.Tools.NormalizeRect(location)
     return cText.CreateText(fontName, fontSize,location, text)
 end
-function engine.Text.DrawText(textPtr)
-    return cText.DrawText(textPtr)
+function engine.Text.DrawText(textPtr, offsetX, offsetY)
+    return cText.DrawText(textPtr, offsetX, offsetY)
 end
 
 --#region Sprite

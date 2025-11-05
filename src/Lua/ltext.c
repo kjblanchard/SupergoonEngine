@@ -29,11 +29,11 @@ static int createText(lua_State* L) {
 }
 
 static int drawText(lua_State* L) {
-	if (!LuaCheckFunctionCallParamsAndTypes(_luaState, 1, LuaFunctionParameterTypeUserdata)) {
+	if (!LuaCheckFunctionCallParamsAndTypes(_luaState, 3, LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeNumber)) {
 		sgLogWarn("trying to draw text with bad params");
 		return 0;
 	}
-	TextDraw(LuaGetLightUserdatai(L, 1));
+	TextDraw(LuaGetLightUserdatai(L, 1), LuaGetFloati(L, 2), LuaGetFloati(L, 3));
 	return 0;
 }
 

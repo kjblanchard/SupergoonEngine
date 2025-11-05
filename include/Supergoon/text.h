@@ -37,7 +37,7 @@ Text* TextCreate(RectangleF* location, const char* text);
 int TextSetFont(const char* fontName, unsigned int size);
 void TextLoad(Text* text);
 void TextOnDirty(Text* text);
-void TextDraw(Text* text);
+void TextDraw(Text* text, float offsetX, float offsetY);
 void TextDestroy(Text* text);
 
 #ifdef __cplusplus
