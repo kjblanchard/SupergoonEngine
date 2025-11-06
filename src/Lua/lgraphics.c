@@ -5,6 +5,7 @@
 #include <Supergoon/Primitives/rectangle.h>
 #include <Supergoon/log.h>
 #include <Supergoon/lua.h>
+#include <Supergoon/text.h>
 #include <lauxlib.h>
 #include <lua.h>
 static int createShader(lua_State *L) {
@@ -32,6 +33,81 @@ static int createTexture(lua_State *L) {
 	Texture *texture = TextureCreate();
 	TextureLoadFromBmp(texture, LuaGetStringi(L, 1));
 	LuaPushLightUserdata(L, texture);
+	return 1;
+}
+
+static int create9SliceImage(lua_State *L) {
+	// args - dst, filename, color, xSize of 9slice, ySize of 9slice
+	sgLogWarn("doing it");
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 5, LuaFunctionParameterTypeTable, LuaFunctionParameterTypeString, LuaFunctionParameterTypeTable, LuaFunctionParameterTypeInt, LuaFunctionParameterTypeInt)) {
+		LuaPushNil(L);
+		return 1;
+	}
+	RectangleF dst = {
+		LuaGetFloatFromTableStackiKey(L, 1, "x"),
+		LuaGetFloatFromTableStackiKey(L, 1, "y"),
+		LuaGetFloatFromTableStackiKey(L, 1, "w"),
+		LuaGetFloatFromTableStackiKey(L, 1, "h"),
+	};
+	Color color = {
+		LuaGetFloatFromTableStackiKey(L, 3, "r"),
+		LuaGetFloatFromTableStackiKey(L, 3, "g"),
+		LuaGetFloatFromTableStackiKey(L, 3, "b"),
+		LuaGetFloatFromTableStackiKey(L, 3, "a"),
+	};
+	const char *filename = LuaGetStringi(L, 2);
+	Texture *renderTargetTexture = TextureCreateRenderTarget(dst.w, dst.h);
+	Texture *nineSliceImageTexture = TextureCreate();
+	TextureLoadFromBmp(nineSliceImageTexture, filename);
+	int nineSliceImageW = TextureGetWidth(nineSliceImageTexture);
+	int nineSliceImageH = TextureGetHeight(nineSliceImageTexture);
+	TextureClearRenderTarget(renderTargetTexture, color.R / (float)255, color.G / (float)255, color.B / (float)255, color.A / (float)255);
+	float sizeX = LuaGetFloati(L, 4);
+	float sizeY = LuaGetFloati(L, 5);
+	// / Draw the corners
+	// tl
+	RectangleF srcRect = {0, 0, sizeX, sizeY};
+	RectangleF dstRect = {0, 0, sizeX, sizeY};
+	DrawTextureToTexture(renderTargetTexture, nineSliceImageTexture, GetDefaultShader(), &dstRect, &srcRect, 1.0);
+	// tr
+	srcRect = (RectangleF){nineSliceImageW - sizeX, 0, sizeX, sizeY};
+	dstRect = (RectangleF){dst.w - sizeX, 0, sizeX, sizeY};
+	DrawTextureToTexture(renderTargetTexture, nineSliceImageTexture, GetDefaultShader(), &dstRect, &srcRect, 1.0);
+	// // bl
+	srcRect = (RectangleF){0, nineSliceImageH - sizeY, sizeX, sizeY};
+	dstRect = (RectangleF){0, dst.h - sizeY, sizeX, sizeY};
+	DrawTextureToTexture(renderTargetTexture, nineSliceImageTexture, GetDefaultShader(), &dstRect, &srcRect, 1.0);
+	// br
+	srcRect = (RectangleF){nineSliceImageW - sizeX, nineSliceImageH - sizeY, sizeX, sizeY};
+	dstRect = (RectangleF){dst.w - sizeX, dst.h - sizeY, sizeX, sizeY};
+	DrawTextureToTexture(renderTargetTexture, nineSliceImageTexture, GetDefaultShader(), &dstRect, &srcRect, 1.0);
+	// draw the bars
+	int length = dst.w - (sizeX);
+	int height = dst.h - (sizeY);
+	// top
+	srcRect = (RectangleF){1 + sizeX, 0, 1, sizeY};
+	for (size_t i = sizeX; i < length; i++) {
+		dstRect = (RectangleF){(float)i, 0, 1, sizeY};
+		DrawTextureToTexture(renderTargetTexture, nineSliceImageTexture, GetDefaultShader(), &dstRect, &srcRect, 1.0);
+	}
+	// bottom
+	for (size_t i = sizeX; i < length; i++) {
+		dstRect = (RectangleF){(float)i, dst.h - sizeY + 4, 1, sizeY};
+		DrawTextureToTexture(renderTargetTexture, nineSliceImageTexture, GetDefaultShader(), &dstRect, &srcRect, 1.0);
+	}
+	// left
+	srcRect = (RectangleF){0, sizeY + 1, sizeX, 1};
+	for (size_t i = sizeY; i < height; i++) {
+		dstRect = (RectangleF){0, (float)i, sizeX, 1};
+		DrawTextureToTexture(renderTargetTexture, nineSliceImageTexture, GetDefaultShader(), &dstRect, &srcRect, 1.0);
+	}
+	// right
+	for (size_t i = sizeY; i < height; i++) {
+		dstRect = (RectangleF){dst.w - sizeX + 3, (float)i, sizeX, 1};
+		DrawTextureToTexture(renderTargetTexture, nineSliceImageTexture, GetDefaultShader(), &dstRect, &srcRect, 1.0);
+	}
+	UnloadTexture(nineSliceImageTexture);
+	LuaPushLightUserdata(L, renderTargetTexture);
 	return 1;
 }
 
@@ -144,14 +220,34 @@ static int drawRect(lua_State *L) {
 	return 0;
 }
 
+static int drawNineSlice(lua_State *L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 2, LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeTable)) {
+		sgLogWarn("Bad params for nine slice draw");
+		return 0;
+	}
+	Texture *texture = LuaGetLightUserdatai(L, 1);
+	RectangleF dst;
+	dst.x = LuaGetFloatFromTableStackiKey(L, 2, "x");
+	dst.y = LuaGetFloatFromTableStackiKey(L, 2, "y");
+	dst.w = LuaGetFloatFromTableStackiKey(L, 2, "w");
+	dst.h = LuaGetFloatFromTableStackiKey(L, 2, "h");
+	RectangleF src = {0, 0, TextureGetWidth(texture), TextureGetHeight(texture)};
+	Color color = {255, 255, 255, 255};
+	DrawTexture(texture, GetDefaultShader(), &dst,
+				&src, false, 1.0, false, &color);
+	return 0;
+}
+
 static const luaL_Reg graphicsLib[] = {
 	{"CreateShader", createShader},
 	{"CreateTexture", createTexture},
+	{"Create9SliceTexture", create9SliceImage},
 	{"CreateRenderTargetTexture", createRenderTargetTexture},
 	{"ClearRenderTargetTexture", clearRenderTargetTexture},
 	{"SetRenderTarget", setRenderTarget},
 	{"SetPreviousRenderTarget", setPreviousRenderTarget},
 	{"DrawTexture", drawTexture},
+	{"DrawNineSlice", drawNineSlice},
 	{"DrawTextureToTexture", drawTextureToTexture},
 	{"DrawRect", drawRect},
 	{NULL, NULL}};
