@@ -13,6 +13,10 @@ void LuaRunFile(const char* path);
 int LuaGetStackSize(LuaState L);
 void LuaPopStack(LuaState L, int num);
 void LuaClearStack(LuaState L);
+// Sets a global from the tip of the stack, pops it
+void LuaSetGlobal(LuaState L, const char* global);
+// Sets a global to nil so LuaGC will catch it.
+void LuaUnsetGlobal(LuaState L, const char* global);
 // Gets the number of items on the stack, remember that the index starts at 1.
 int LuaGetStack(LuaState L);
 void LuaRemoveIndex(LuaState L, int index);

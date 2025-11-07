@@ -11,15 +11,32 @@ local function createTextFromTable(name, dataTable, objTable)
     if not font or not fontSize or not dataTable.rect or not dataTable.text then
         engine.Log.LogWarn(string.format("Bad table passed in for text for %s table", name))
     end
-    engine.StartDebugger()
-    objTable.ptr = engine.Text.CreateText(font, fontSize, objTable.rect,dataTable.text)
     currentFont = font
     currentFontSize = fontSize
+    local numChars = dataTable.chars or #dataTable.text
+    local x = dataTable.centerX ~= false
+    local y = dataTable.centerY ~= false
+    objTable.ptr = engine.Text.CreateText(font, fontSize, objTable.rect,dataTable.text, numChars,x, y )
+
 end
 
 local function drawText(parentOffsetX, parentOffsetY, textDataTable)
     if textDataTable and textDataTable.ptr then
         engine.Text.DrawText(textDataTable.ptr, parentOffsetX, parentOffsetY)
+    end
+
+    if textDataTable.dataTable.d then
+        engine.StartDebugger()
+        local test = {
+            x = textDataTable.rect.x,
+            y = textDataTable.rect.y,
+            w = textDataTable.rect.w,
+            h = textDataTable.rect.h,
+        }
+        test.x = test.x + parentOffsetX
+        test.y = test.y + parentOffsetY
+        engine.DrawRect(test, false)
+
     end
 end
 
@@ -57,12 +74,12 @@ local classTypeDrawTable = {
 function LoadUIObjectFromTable(parentObj, dataName, dataTable)
     local newChildTable = {
         dataTable = dataTable,
+        visible = dataTable.visible ~= false,
         children = {},
-        rect = {},
+        rect = {table.unpack(dataTable.rect)},
         parent = parentObj,
         ptr = 0
     }
-    engine.StartDebugger()
     newChildTable.rect = engine.Tools.NormalizeRect(dataTable.rect)
     if dataTable.class and classTypeFunctionTable[dataTable.class] then
         classTypeFunctionTable[dataTable.class](dataName, dataTable, newChildTable)
@@ -93,8 +110,8 @@ function UI.CreateUIPanelFromScriptFile(file)
 end
 
 local function drawUIRecursive(parentX, parentY, tableData)
-    engine.StartDebugger()
-    if classTypeDrawTable[tableData.dataTable.class] then
+    if not tableData.visible then return end
+    if  classTypeDrawTable[tableData.dataTable.class] then
         classTypeDrawTable[tableData.dataTable.class](parentX, parentY, tableData)
     end
     for _, childTable in pairs(tableData.children) do

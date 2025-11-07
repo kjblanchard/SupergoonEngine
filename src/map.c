@@ -10,12 +10,10 @@
 #include <Supergoon/state.h>
 #include <Supergoon/tools.h>
 #include <Supergoon/window.h>
-#include <math.h>
 #include <stdio.h>
 #include <string.h>
 
 const uint8_t NUM_WALLS = 4;
-
 static void handleTiledLayerGroup(Tilemap *map);
 static void handleTiledObjectGroup(Tilemap *map);
 // Get the rect for gid, used when determining the src rect of a gid.
@@ -159,56 +157,9 @@ static void loadTilesetTextures(Tilemap *map) {
 	}
 }
 
-static TiledPropertyTypes getPropertyTypeForStack(void) {
-	if (LuaIsInt(_luaState, -1)) {
-		return TiledPropertyTypeInt;
-	} else if (LuaIsFloat(_luaState, -1)) {
-		return TiledPropertyTypeFloat;
-	} else {
-		return TiledPropertyTypeString;
-	}
-}
-
 static void handleTiledObjectEntities(Tilemap *map) {
 	LuaGetTable(_luaState, "objects");
-	map->NumObjects = LuaGetTableLength(_luaState);
-	map->Objects = calloc(map->NumObjects, sizeof(TiledObject));
-	for (size_t i = 0; i < (size_t)map->NumObjects; i++) {
-		TiledObject *object = &map->Objects[i];
-		LuaPushTableObjectToStacki(_luaState, i);
-		object->Id = LuaGetInt(_luaState, "id");
-		object->ObjectType = atoi(LuaGetString(_luaState, "type"));
-		object->X = LuaGetFloat(_luaState, "x");
-		object->Y = LuaGetFloat(_luaState, "y");
-		object->Width = LuaGetFloat(_luaState, "width");
-		object->Height = LuaGetFloat(_luaState, "height");
-		LuaGetTable(_luaState, "properties");
-		object->NumProperties = LuaGetTableLengthMap(_luaState);
-		if (object->NumProperties == 0) {
-			LuaPopStack(_luaState, 2);
-			continue;
-		}
-		object->Properties = calloc(object->NumProperties, sizeof(TiledProperty));
-		LuaStartTableKeyValueIteration(_luaState);
-		for (size_t j = 0; j < (size_t)object->NumProperties; j++) {
-			if (!LuaNextTableKeyValueIterate(_luaState)) {
-				break;
-			}
-			TiledProperty *property = &object->Properties[j];
-			property->Name = LuaAllocateStringStack(_luaState, -2);
-			property->PropertyType = getPropertyTypeForStack();
-			if (property->PropertyType == TiledPropertyTypeInt) {
-				property->Data.IntData = LuaGetIntFromStack(_luaState);
-			} else if (property->PropertyType == TiledPropertyTypeFloat) {
-				property->Data.FloatData = LuaGetFloatFromStack(_luaState);
-			} else {
-				property->Data.StringData = LuaAllocateStringStack(_luaState, -1);
-			}
-			LuaPopStack(_luaState, 1);
-		}
-		LuaEndTableKeyValueIteration(_luaState);
-		LuaPopStack(_luaState, 2);
-	}
+	LuaSetGlobal(_luaState, map->BaseFilename);
 	LuaPopStack(_luaState, 1);
 }
 static void handleTiledSolidObjects(Tilemap *map) {
@@ -389,6 +340,7 @@ static void freeTiledTilemap(Tilemap *map) {
 		SDL_free(map->Solids);
 	}
 	SDL_free(map->Tilesets);
+	LuaUnsetGlobal(_luaState, map->BaseFilename);
 	SDL_free(map->BaseFilename);
 	SDL_free(map);
 	map = NULL;

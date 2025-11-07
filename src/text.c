@@ -7,10 +7,10 @@
 #include <Supergoon/sprite.h>
 #include <Supergoon/text.h>
 #include <assert.h>
+#include <ft2build.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ft2build.h>
 #include FT_FREETYPE_H
 
 #define MAX_LOADED_FONTS 12
@@ -273,7 +273,8 @@ static void measureText(Text* text) {
 	}
 }
 
-static void redrawText(Text* text) {
+// Used if we need to redraw all of the text, usually done if recentering, resizing, etc
+void TextRedrawText(Text* text) {
 	if (text->Texture) {
 		TextureDestroy(text->Texture);
 	}
@@ -334,13 +335,13 @@ void TextLoad(Text* text) {
 
 void TextOnDirty(Text* text) {
 	if (text && !text->Texture) {
-		redrawText(text);
+		TextRedrawText(text);
 	}
 	// Recreate texture if the size has changed
 	float w = TextureGetWidth(text->Texture);
 	float h = TextureGetHeight(text->Texture);
 	if (text->Location.h != h || text->Location.w != w) {
-		redrawText(text);
+		TextRedrawText(text);
 	}
 	// If there is more letters drawn than the current amount to draw, clear the texture and start from 0
 	if (text->NumLettersToDraw < text->CurrentDrawnLetters) {

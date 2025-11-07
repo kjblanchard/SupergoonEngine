@@ -1,9 +1,9 @@
 #include <Supergoon/Graphics/texture.h>
 #include <Supergoon/Primitives/Color.h>
 #include <Supergoon/camera.h>
-#include <string.h>
 #include <Supergoon/tools.h>
 #include <stdbool.h>
+#include <string.h>
 #ifndef __EMSCRIPTEN__
 #include <glad/glad.h>
 // must be forst<SDL3/SDL_opengl.h>
@@ -260,7 +260,38 @@ void DrawTextureToTextureImpl(Texture *dstTarget, Texture *srcTexture,
 	SetPreviousRenderTarget();
 }
 
-void TextureDestroyImpl(Texture *texture) { free(texture); }
+void TextureDestroyImpl(Texture *texture) {
+	if (!texture) return;
+
+	// Delete texture object
+	if (texture->ID != 0) {
+		glDeleteTextures(1, &texture->ID);
+		texture->ID = 0;
+	}
+
+	// Delete framebuffer if it exists
+	if (texture->FBO != 0) {
+		glDeleteFramebuffers(1, &texture->FBO);
+		texture->FBO = 0;
+	}
+
+	// Delete VAO if it exists
+	if (texture->VAO != 0) {
+		glDeleteVertexArrays(1, &texture->VAO);
+		texture->VAO = 0;
+	}
+
+	// Free the name string if allocated dynamically
+	if (texture->Name) {
+		free(texture->Name);
+		texture->Name = NULL;
+	}
+
+	// Optional: clear other metadata
+	texture->Width = 0;
+	texture->Height = 0;
+	free(texture);
+}
 
 void SetPreviousRenderTargetImpl(void) {
 	SetRenderTarget(_previousRenderingTarget);

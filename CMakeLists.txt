@@ -90,15 +90,6 @@ if(SDL_GL)
 
 endif(SDL_GL)
 
-message(STATUS "SDL_GL: ${SDL_GL}")
-message(STATUS "SRC_FILES contains ${SRC_FILES}")
-foreach(f ${SRC_FILES})
-  message(STATUS "  Checking file: ${f}")
-  if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${f}")
-    message(WARNING "  File does NOT exist!")
-  endif()
-endforeach()
-
 add_library(${LIBRARY_TARGET_NAME} STATIC ${SRC_FILES})
 
 set(SKIP_INSTALL_ALL

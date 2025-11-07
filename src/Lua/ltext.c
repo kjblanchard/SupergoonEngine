@@ -8,7 +8,7 @@
 #include <lua.h>
 
 static int createText(lua_State* L) {
-	if (!LuaCheckFunctionCallParamsAndTypes(_luaState, 4, LuaFunctionParameterTypeString, LuaFunctionParameterTypeInt, LuaFunctionParameterTypeTable, LuaFunctionParameterTypeString)) {
+	if (!LuaCheckFunctionCallParamsAndTypes(_luaState, 7, LuaFunctionParameterTypeString, LuaFunctionParameterTypeInt, LuaFunctionParameterTypeTable, LuaFunctionParameterTypeString, LuaFunctionParameterTypeInt, LuaFunctionParameterTypeBoolean, LuaFunctionParameterTypeBoolean)) {
 		sgLogWarn("trying to create text with bad params");
 		return 0;
 	}
@@ -23,9 +23,23 @@ static int createText(lua_State* L) {
 		LuaGetFloatFromTableStackiKey(L, 3, "h"),
 	};
 	Text* text = TextCreate(&location, LuaGetStringi(L, 4));
+
+	text->NumLettersToDraw = LuaGetIntFromStacki(L, 5);
+	text->CenteredX = LuaGetBooli(L, 6);
+	text->CenteredY = LuaGetBooli(L, 7);
 	TextLoad(text);
 	LuaPushLightUserdata(L, text);
 	return 1;
+}
+
+static int updateText(lua_State* L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 1, LuaFunctionParameterTypeUserdata)) {
+		sgLogWarn("bad update text params");
+		return 0;
+	}
+	Text* text = (Text*)LuaGetLightUserdatai(L, 1);
+	if (text) TextOnDirty(text);
+	return 0;
 }
 
 static int drawText(lua_State* L) {
@@ -36,9 +50,23 @@ static int drawText(lua_State* L) {
 	TextDraw(LuaGetLightUserdatai(L, 1), LuaGetFloati(L, 2), LuaGetFloati(L, 3));
 	return 0;
 }
+static int setTextCentered(lua_State* L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(_luaState, 3, LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeBoolean, LuaFunctionParameterTypeBoolean)) {
+		sgLogWarn("trying to set text centered badly");
+		return 0;
+	}
+	Text* text = LuaGetLightUserdatai(L, 1);
+	text->CenteredX = LuaGetBooli(L, 2);
+	text->CenteredY = LuaGetBooli(L, 3);
+	TextRedrawText(text);
+	TextOnDirty(text);
+	return 0;
+}
 
 static const luaL_Reg textLib[] = {
 	{"CreateText", createText},
+	{"UpdateText", updateText},
+	{"SetTextCentered", setTextCentered},
 	{"DrawText", drawText},
 	{NULL, NULL}};
 

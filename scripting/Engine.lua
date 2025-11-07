@@ -103,13 +103,19 @@ end
 --#endregion Tools
 --
 engine.Text = {}
-function engine.Text.CreateText(fontName, fontSize, location, text)
+function engine.Text.CreateText(fontName, fontSize, location, text, numChars, centerX, centerY)
     location = engine.Tools.NormalizeRect(location)
-    return cText.CreateText(fontName, fontSize,location, text)
+    return cText.CreateText(fontName, fontSize,location, text, numChars, centerX, centerY)
 end
 function engine.Text.DrawText(textPtr, offsetX, offsetY)
     return cText.DrawText(textPtr, offsetX, offsetY)
 end
+
+function engine.Text.SetTextCentered(ptr, x, y)
+    return cText.SetTextCentered(ptr, x, y)
+end
+
+
 
 --#region Sprite
 engine.Sprite = {}
@@ -338,8 +344,19 @@ function engine.Map.LoadTilemap(mapname)
     cScene.LoadMap(mapname)
 end
 
-function engine.Map.LoadTilemapObjects()
-    cScene.LoadObjectsOnMap()
+function engine.Map.LoadTilemapObjects(mapname, functionLoader)
+    local map = _G[mapname]
+    if map then
+        for i = 1, #map, 1 do
+            local obj = map[i]
+            local objName = obj["type"]
+            if functionLoader and functionLoader[objName] then
+                functionLoader[objName](obj)
+            end
+        end
+    end
+
+
 end
 
 function engine.MapName()
@@ -397,8 +414,14 @@ function engine.Scene.LoadSceneEx(mapname, uiname, bgm, volume, fadeInTimeSec, f
     engine.Coroutine.run(co)
 end
 
-function engine.Scene.LoadScene(mapKey)
-    gamestate.nextScene = mapKey
+function engine.Scene.LoadScene(sceneDataTable, loaderFunc)
+    -- gamestate.nextScene = mapKey
+    engine.Audio.PlayBGM(sceneDataTable[3])
+    engine.Map.LoadTilemap(sceneDataTable[1])
+    local ui = require("UI")
+    ui.CreateUIPanelFromScriptFile(sceneDataTable[2])
+    engine.Map.LoadTilemapObjects(sceneDataTable[1],loaderFunc )
+
 end
 
 --#endregion Scene
@@ -427,18 +450,6 @@ end
 
 --#endregion Effects
 
---#region Draw
-engine.Draw = {}
-
-function engine.Draw.DrawRect(rect)
-    cEngine.DrawRect(rect.x, rect.y, rect.w, rect.h)
-end
-
-function engine.Draw.DrawRectCamOffset(rect)
-    cEngine.DrawRectCamOffset(rect.x, rect.y, rect.w, rect.h)
-end
-
---#endregion Draw
 
 --#region Animation
 engine.Animation = {}
