@@ -490,6 +490,10 @@ function engine.Camera.SetCameraFollowTarget(gameobject)
     return cCamera.SetCameraFollowTarget(gameobject)
 end
 
+function engine.Camera.WorldToScreen(x, y)
+    
+end
+
 --#endregion Camera
 
 --#region Collision
@@ -609,9 +613,18 @@ function engine.DrawTexture(texture, shader, dstRect, srcRect)
     cGraphics.DrawTexture(texture, shader, dstRect, srcRect)
 end
 
-function engine.DrawRect(rect, filled)
+local debugBoxes = {}
+function engine.DrawRect(rect, filled, cameraOffset)
     rect = engine.Tools.NormalizeRect(rect)
-    cGraphics.DrawRect(rect, filled)
+    table.insert(debugBoxes, {rect, filled, cameraOffset})
+end
+
+function engine.DrawAllDebugBoxes()
+    for i = 1, #debugBoxes, 1 do
+        local box = debugBoxes[i]
+        cGraphics.DrawRect(box[1], box[2], box[3])
+    end
+    debugBoxes = {}
 end
 
 -- #endregion

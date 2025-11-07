@@ -3,6 +3,7 @@
 #include <Supergoon/log.h>
 #include <Supergoon/lua.h>
 #include <Supergoon/text.h>
+#include <_string.h>
 #include <assert.h>
 #include <lauxlib.h>
 #include <lua.h>
@@ -27,6 +28,7 @@ static int createText(lua_State* L) {
 	text->NumLettersToDraw = LuaGetIntFromStacki(L, 5);
 	text->CenteredX = LuaGetBooli(L, 6);
 	text->CenteredY = LuaGetBooli(L, 7);
+	text->WordWrap = true;
 	TextLoad(text);
 	LuaPushLightUserdata(L, text);
 	return 1;
@@ -38,6 +40,22 @@ static int updateText(lua_State* L) {
 		return 0;
 	}
 	Text* text = (Text*)LuaGetLightUserdatai(L, 1);
+	if (text) TextOnDirty(text);
+	return 0;
+}
+
+static int updateTextText(lua_State* L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 2, LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeString)) {
+		sgLogWarn("bad update text params");
+		return 0;
+	}
+	Text* text = (Text*)LuaGetLightUserdatai(L, 1);
+	if (!text) return 0;
+	if (text->Text) free(text->Text);
+	if (text->Texture) TextureDestroy(text->Texture);
+	text->Texture = NULL;
+	text->Text = strdup(LuaGetStringi(L, 2));
+	text->NumLettersToDraw = strlen(text->Text);
 	if (text) TextOnDirty(text);
 	return 0;
 }
@@ -66,6 +84,7 @@ static int setTextCentered(lua_State* L) {
 static const luaL_Reg textLib[] = {
 	{"CreateText", createText},
 	{"UpdateText", updateText},
+	{"UpdateTextText", updateTextText},
 	{"SetTextCentered", setTextCentered},
 	{"DrawText", drawText},
 	{NULL, NULL}};

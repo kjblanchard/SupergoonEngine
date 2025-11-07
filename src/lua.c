@@ -556,8 +556,10 @@ const char *LuaGetParamType(LuaFunctionParameterTypes paramType) {
 			return "table";
 		case LuaFunctionParameterTypeUserdata:
 			return "userdata";
+		case LuaFunctionParameterTypeBoolean:
+			return "boolean";
 		default:
-			return "not implemented?";
+			return "type not impelemented?  please fix";
 	}
 }
 

@@ -38,7 +38,6 @@ static int createTexture(lua_State *L) {
 
 static int create9SliceImage(lua_State *L) {
 	// args - dst, filename, color, xSize of 9slice, ySize of 9slice
-	sgLogWarn("doing it");
 	if (!LuaCheckFunctionCallParamsAndTypes(L, 5, LuaFunctionParameterTypeTable, LuaFunctionParameterTypeString, LuaFunctionParameterTypeTable, LuaFunctionParameterTypeInt, LuaFunctionParameterTypeInt)) {
 		LuaPushNil(L);
 		return 1;
@@ -206,17 +205,18 @@ static int clearRenderTargetTexture(lua_State *L) {
 }
 
 static int drawRect(lua_State *L) {
-	if (!LuaCheckFunctionCallParamsAndTypes(L, 2, LuaFunctionParameterTypeTable, LuaFunctionParameterTypeBoolean)) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 3, LuaFunctionParameterTypeTable, LuaFunctionParameterTypeBoolean, LuaFunctionParameterTypeBoolean)) {
 		sgLogWarn("Bad params for drawRect");
 		return 0;
 	}
+
 	RectangleF rect = {
 		LuaGetFloatFromTableStackiKey(L, 1, "x"),
 		LuaGetFloatFromTableStackiKey(L, 1, "y"),
 		LuaGetFloatFromTableStackiKey(L, 1, "w"),
 		LuaGetFloatFromTableStackiKey(L, 1, "h")};
 	Color color = {255, 255, 255, 255};
-	DrawRect(&rect, &color, LuaGetBooli(L, 2));
+	DrawRect(&rect, &color, LuaGetBooli(L, 2), LuaGetBooli(L, 3));
 	return 0;
 }
 

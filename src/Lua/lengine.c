@@ -101,14 +101,6 @@ static int setDrawFunc(lua_State* L) {
 	return 0;
 }
 
-static int drawRect(lua_State* L) {
-	if (!LuaCheckFunctionCallParamsAndTypes(L, 4, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeNumber)) {
-		sgLogWarn("Bad args passed into setDrawFunc");
-	}
-	DrawRect(&(RectangleF){LuaGetFloati(L, 1), LuaGetFloati(L, 2), LuaGetFloati(L, 3), LuaGetFloati(L, 4)}, &(Color){0, 255, 0, 255}, false);
-	return 0;
-}
-
 static int drawRectCamOffset(lua_State* L) {
 	if (!LuaCheckFunctionCallParamsAndTypes(L, 4, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeNumber)) {
 		sgLogWarn("Bad args passed into setDrawFunc");
@@ -118,16 +110,11 @@ static int drawRectCamOffset(lua_State* L) {
 }
 
 static int getCurrentMapName(lua_State* L) {
-	return 0;
-	// #ifdef tui
-	// 	return 0;
-	// #else
-	// 	if (!_currentMap) {
-	// 		return 0;
-	// 	}
-	// 	LuaPushString(L, _currentMap->BaseFilename);
-	// 	return 1;
-	// #endif
+	if (!_currentMap) {
+		return 0;
+	}
+	LuaPushString(L, _currentMap->BaseFilename);
+	return 1;
 }
 
 static int pushQuit(lua_State* L) {
@@ -143,7 +130,6 @@ static const luaL_Reg sceneLib[] = {
 	{"Quit", pushQuit},
 	{"SetInputFunc", setInputFunc},
 	{"SetDrawFunc", setDrawFunc},
-	{"DrawRect", drawRect},
 	{"DrawRectCamOffset", drawRectCamOffset},
 	{"MapName", getCurrentMapName},
 	{NULL, NULL}};

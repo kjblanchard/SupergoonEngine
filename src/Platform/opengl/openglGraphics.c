@@ -143,7 +143,7 @@ void DrawEndImpl(void) {
 	SDL_GL_SwapWindow(WindowGetImpl()->Handle);
 }
 
-void DrawRectImpl(RectangleF *rect, Color *color, int filled) {
+void DrawRectImpl(RectangleF *rect, Color *color, int filled, int useCamera) {
 	Shader *shader = GetDefaultRectShader();
 	ShaderUse(shader);
 	// model = translation + scale
@@ -152,10 +152,17 @@ void DrawRectImpl(RectangleF *rect, Color *color, int filled) {
 	glm_translate(model, (vec3){rect->x, rect->y, 0.0f});
 	glm_scale(model, (vec3){rect->w, rect->h, 1.0f});
 	vec4 colorV = {color->R / (float)255, color->G / (float)255, color->B / (float)255, color->A / (float)255};
+	mat4 view;
+	glm_mat4_identity(view);
+	if (useCamera) {
+		vec3 negCameraPos = {-CameraGetX(), -CameraGetY(), 0.0f};
+		glm_translate(view, negCameraPos);
+	}
 
 	ShaderSetUniformMatrix4(shader, "projection", projectionMatrix, false);
 	ShaderSetUniformMatrix4(shader, "model", model, false);
 	ShaderSetUniformVector4fV(shader, "color", colorV, false);
+	ShaderSetUniformMatrix4(shader, "view", view, false);
 	glBindVertexArray(vao);
 	if (filled) {
 		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);

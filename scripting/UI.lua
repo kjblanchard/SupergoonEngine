@@ -70,11 +70,15 @@ local classTypeDrawTable = {
     nineSlice = draw9Slice
 }
 
+function UI.UpdateTextText(textPtr, newText)
+    cText.UpdateTextText(textPtr, newText)
+end
+
 
 function LoadUIObjectFromTable(parentObj, dataName, dataTable)
     local newChildTable = {
         dataTable = dataTable,
-        visible = dataTable.visible ~= false,
+        visible = (dataTable.visible == nil) and true or dataTable.visible,
         children = {},
         rect = {table.unpack(dataTable.rect)},
         parent = parentObj,
@@ -94,19 +98,23 @@ end
 
 function UI.CreateUIPanelFromScriptFile(file)
     if UI.UITree[file] then return end
+    local dataTable = require(file)
     local newParentPanel = {
-        dataTable = require(file),
+        dataTable = dataTable,
+        visible = (dataTable.visible == nil) and true or dataTable.visible,
         children = {},
         rect = engine.Tools.NormalizeRect({0,0,0,0}),
         parent = 0,
-        ptr = 0
+        ptr = 0,
     }
-    engine.Log.LogWarn("Creating")
     for childDataName, childDataTable in pairs(newParentPanel.dataTable.children) do
         engine.Log.LogWarn("Creating child")
         LoadUIObjectFromTable(newParentPanel, childDataName, childDataTable)
     end
     UI.UITree[file] = newParentPanel
+    if newParentPanel.dataTable.startFunc then
+        newParentPanel.dataTable.startFunc()
+    end
 end
 
 local function drawUIRecursive(parentX, parentY, tableData)
