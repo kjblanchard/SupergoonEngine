@@ -1,11 +1,16 @@
 cmake_minimum_required(VERSION 3.5)
+message(STATUS "Starting ${EXECUTABLE_TARGET_NAME} engine initialization")
 set(COMPILE_OPTIONS)
 set(EXTERNAL_LIBS)
-set(FOLDERS_TO_COPY scripting/)
 # Should we show everything, or just a few.
 set(CMAKE_INSTALL_MESSAGE LAZY)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
+set(BUILD_SHARED_LIBS
+    OFF
+    CACHE BOOL "Build libraries as static" FORCE)
+
+# Build system Specific
 if(CMAKE_GENERATOR STREQUAL "Xcode")
   message(STATUS "Setting Build to Universal Binary")
   set(CMAKE_OSX_ARCHITECTURES
@@ -23,13 +28,7 @@ if(DEBUG_ASAN AND CMAKE_BUILD_TYPE STREQUAL "Debug")
   endif()
 endif()
 
-if(SDL_BACKEND)
-  add_definitions(-Dsdlbackend)
-endif(SDL_BACKEND)
-if(SDL_GL)
-  add_definitions(-Dsdlglbackend)
-endif(SDL_GL)
-
+# Platform specific
 if(EMSCRIPTEN)
   set(CMAKE_EXECUTABLE_SUFFIX
       ".html"
@@ -50,31 +49,19 @@ elseif(APPLE)
         ${CMAKE_SOURCE_DIR}/cmake/AppIcon.icns
         CACHE STRING "Icon path")
   endif(NOT CREATE_MACOS_TUI)
-
 endif(EMSCRIPTEN)
 
-message(STATUS "Starting ${EXECUTABLE_TARGET_NAME} game initialization")
+# Compile definitions based on backend
+if(SDL_BACKEND)
+  add_definitions(-Dsdlbackend)
+endif(SDL_BACKEND)
+if(SDL_GL)
+  add_definitions(-Dsdlglbackend)
+endif(SDL_GL)
 
 if(UNIX OR APPLE)
-  list(
-    APPEND
-    COMPILE_OPTIONS
-    -Wall
-    -Wextra
-    -Wpedantic
-    -Wdeprecated
-    # -Wno-deprecated-redundant-constexpr-static-def -Wno-deprecated-literal-operator -Wno-macro-redefined
-    # -Wno-conversion Disable conversion if you want to check all the warnings, etc
-    -Wno-unused-parameter
-    -Wno-sign-compare)
+  list(APPEND COMPILE_OPTIONS -Wall -Wextra -Wpedantic -Wdeprecated -Wno-unused-parameter -Wno-sign-compare)
 endif(UNIX OR APPLE)
-
-message(STATUS "Starting ${EXECUTABLE_TARGET_NAME} library initialization")
-cmake_minimum_required(VERSION 3.22)
-
-set(BUILD_SHARED_LIBS
-    OFF
-    CACHE BOOL "Build libraries as static" FORCE)
 
 set(SRC_FILES
     src/camera.c
@@ -99,7 +86,6 @@ set(SRC_FILES
     src/Lua/linput.c
     src/Lua/lcamera.c
     src/Lua/scripting.c
-    # Platform specific for no
     src/effects.c
     src/Animation/Animator.c
     src/gameobject.c
@@ -127,18 +113,13 @@ set(SRC_FILES
     src/Graphics/shader.c
     # input
     src/Input/joystick.c
-    src/text.c
-    # UI src/UI/ui.c src/UI/uirect.c src/UI/uiobject.c src/UI/uiimage.c src/UI/uiImageAnimation.c src/UI/uitext.c
-    # src/UI/uibutton.c src/UI/uiProgressBar.c src/Lua/lui.c
-)
+    src/text.c)
 
 if(SDL_GL)
   list(APPEND SRC_FILES src/Platform/opengl/glad.c src/Platform/opengl/openglGraphics.c
        src/Platform/opengl/openglShader.c src/Platform/opengl/openglTexture.c)
-
 endif(SDL_GL)
 
-# add_library(${EXECUTABLE_TARGET_NAME} STATIC ${SRC_FILES})
 add_executable(${EXECUTABLE_TARGET_NAME} ${IS_BUNDLE} ${IS_WIN32} ${SRC_FILES} ${DEBUG_FILES} ${ICON_PATH})
 
 set(SKIP_INSTALL_ALL
@@ -441,18 +422,9 @@ target_include_directories(
   ${EXECUTABLE_TARGET_NAME} SYSTEM
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include /usr/local/include
   PRIVATE # linux builds
-          ${sdl3_SOURCE_DIR}/include
-          if
-          (NOT CREATE_MACOS_TUI)
-          ${freetype_SOURCE_DIR}/include
-          endif
-          (NOT CREATE_MACOS_TUI)
-          ${lib_lua_SOURCE_DIR}/lua-5.4.5/include
-          ${lib_vorbis_SOURCE_DIR}/include
-          ${lib_ogg_SOURCE_DIR}/include
-          ${lib_ogg_BINARY_DIR}/include)
+          ${sdl3_SOURCE_DIR}/include ${freetype_SOURCE_DIR}/include ${lib_lua_SOURCE_DIR}/lua-5.4.5/include
+          ${lib_vorbis_SOURCE_DIR}/include ${lib_ogg_SOURCE_DIR}/include ${lib_ogg_BINARY_DIR}/include)
 
-# don't hide warnings
 target_include_directories(${EXECUTABLE_TARGET_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(
   ${EXECUTABLE_TARGET_NAME}
@@ -461,6 +433,6 @@ target_include_directories(
                                                                                          # include directory
 
 install(
-  DIRECTORY ${FOLDERS_TO_COPY}
+  DIRECTORY scripting/
   DESTINATION ${INSTALL_DIR}/assets/lua
   COMPONENT assets)
