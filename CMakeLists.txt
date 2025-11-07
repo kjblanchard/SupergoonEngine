@@ -4,6 +4,31 @@ set(EXTERNAL_LIBS)
 set(FOLDERS_TO_COPY scripting/)
 # Should we show everything, or just a few.
 set(CMAKE_INSTALL_MESSAGE LAZY)
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+if(CMAKE_GENERATOR STREQUAL "Xcode")
+  message(STATUS "Setting Build to Universal Binary")
+  set(CMAKE_OSX_ARCHITECTURES
+      "x86_64;arm64"
+      CACHE STRING "" FORCE)
+endif(CMAKE_GENERATOR STREQUAL "Xcode")
+
+if(DEBUG_ASAN AND CMAKE_BUILD_TYPE STREQUAL "Debug")
+  if(NOT (APPLE AND (CMAKE_SYSTEM_NAME STREQUAL "iOS" OR CMAKE_SYSTEM_NAME STREQUAL "iossimulator"))
+     AND NOT (CMAKE_SYSTEM_NAME STREQUAL "Emscripten"))
+    message(STATUS "Enabling AddressSanitizer in Debug mode")
+    set(ASAN_FLAGS "-fsanitize=address -fno-omit-frame-pointer")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${ASAN_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ASAN_FLAGS}")
+  endif()
+endif()
+
+if(SDL_BACKEND)
+  add_definitions(-Dsdlbackend)
+endif(SDL_BACKEND)
+if(SDL_GL)
+  add_definitions(-Dsdlglbackend)
+endif(SDL_GL)
 
 if(EMSCRIPTEN)
   set(CMAKE_EXECUTABLE_SUFFIX
@@ -159,7 +184,7 @@ elseif(EMSCRIPTEN)
       LINK_FLAGS
       "${LINK_FLAGS} -O0 -s SAFE_HEAP=2 -s STACK_OVERFLOW_CHECK=1 \
       --preload-file ${CMAKE_SOURCE_DIR}/assets@/assets \
-      --preload-file ${CMAKE_SOURCE_DIR}/src/scripts@/assets/lua/ \
+      --preload-file ${CMAKE_SOURCE_DIR}/src@/assets/lua/ \
       --preload-file ${ENGINE_SCRIPT_PATH}@/assets/lua/")
 endif()
 
