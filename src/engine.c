@@ -133,7 +133,7 @@ void SetInputFunction(void (*updateFunc)(void)) {
 
 SDL_AppResult SDL_AppInit(void **appState, int argc, char *argv[]) {
 	start();
-	StartImpl();
+	LuaRunFile("assets/lua/main.lua");
 	return SDL_APP_CONTINUE;
 }
 

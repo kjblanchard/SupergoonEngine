@@ -1,11 +1,34 @@
-# Variables
-set(LIBRARY_TARGET_NAME SupergoonEngine)
+cmake_minimum_required(VERSION 3.5)
 set(COMPILE_OPTIONS)
-set(CMAKE_EXECUTABLE_SUFFIX
-    ".html"
-    CACHE STRING "Use html" FORCE)
 set(EXTERNAL_LIBS)
 set(FOLDERS_TO_COPY scripting/)
+# Should we show everything, or just a few.
+set(CMAKE_INSTALL_MESSAGE LAZY)
+
+if(EMSCRIPTEN)
+  set(CMAKE_EXECUTABLE_SUFFIX
+      ".html"
+      CACHE STRING "Use html" FORCE)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -s USE_SDL=3 -s USE_ZLIB=1  -s USE_VORBIS=1 -s USE_OGG=1 ")
+  set(LINK_FLAGS
+      "${LINK_FLAGS} -s ALLOW_MEMORY_GROWTH=1 -s USE_SDL=3 -s USE_VORBIS=1 -s USE_OGG=1 -s FULL_ES3=1 -s USE_WEBGL2=1 -s STACK_SIZE=1mb -s EXPORTED_RUNTIME_METHODS=cwrap -sMAX_WEBGL_VERSION=2 -sMIN_WEBGL_VERSION=2 -s 'DEFAULT_LIBRARY_FUNCS_TO_INCLUDE=[\"$autoResumeAudioContext\",\"$dynCall\"]'"
+  )
+elseif(APPLE)
+  set(CMAKE_OSX_DEPLOYMENT_TARGET
+      "10.14"
+      CACHE STRING "Minimum OS X deployment version")
+  if(NOT CREATE_MACOS_TUI)
+    set(IS_BUNDLE
+        "MACOSX_BUNDLE"
+        CACHE STRING "Is this a bundle")
+    set(ICON_PATH
+        ${CMAKE_SOURCE_DIR}/cmake/AppIcon.icns
+        CACHE STRING "Icon path")
+  endif(NOT CREATE_MACOS_TUI)
+
+endif(EMSCRIPTEN)
+
+message(STATUS "Starting ${EXECUTABLE_TARGET_NAME} game initialization")
 
 if(UNIX OR APPLE)
   list(
@@ -21,7 +44,7 @@ if(UNIX OR APPLE)
     -Wno-sign-compare)
 endif(UNIX OR APPLE)
 
-message(STATUS "Starting ${LIBRARY_TARGET_NAME} library initialization")
+message(STATUS "Starting ${EXECUTABLE_TARGET_NAME} library initialization")
 cmake_minimum_required(VERSION 3.22)
 
 set(BUILD_SHARED_LIBS
@@ -90,7 +113,8 @@ if(SDL_GL)
 
 endif(SDL_GL)
 
-add_library(${LIBRARY_TARGET_NAME} STATIC ${SRC_FILES})
+# add_library(${EXECUTABLE_TARGET_NAME} STATIC ${SRC_FILES})
+add_executable(${EXECUTABLE_TARGET_NAME} ${IS_BUNDLE} ${IS_WIN32} ${SRC_FILES} ${DEBUG_FILES} ${ICON_PATH})
 
 set(SKIP_INSTALL_ALL
     ON
@@ -101,6 +125,43 @@ set(CMAKE_DEBUG_POSTFIX
 set(CMAKE_DEBUG_TARGET_PROPERTIES
     "DEBUG_OUTPUT" ""
     CACHE STRING "Don't use the d for debug packages" FORCE)
+
+if(APPLE)
+  set_target_properties(${EXECUTABLE_TARGET_NAME} PROPERTIES MACOSX_BUNDLE_INFO_PLIST
+                                                             ${CMAKE_SOURCE_DIR}/cmake/Info.plist)
+  set_source_files_properties(${ICON_PATH} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+  set_source_files_properties(${CMAKE_SOURCE_DIR}/cmake/Info.plist PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+  set_target_properties(
+    ${EXECUTABLE_TARGET_NAME}
+    PROPERTIES XCODE_ATTRIBUTE_CODE_SIGN_ENTITLEMENTS "${CMAKE_SOURCE_DIR}/cmake/EscapeTheFate.entitlements"
+               # XCODE_ATTRIBUTE_CODE_SIGN_STYLE "Automatic"
+               XCODE_ATTRIBUTE_CODE_SIGN_STYLE "Manual"
+               XCODE_ATTRIBUTE_DEVELOPMENT_TEAM "H34NGW287W"
+               # when building on github, we don't want to sign anything cause there is no cert
+               XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED "NO"
+               XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED "NO"
+               # XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "Apple Development"
+  )
+
+elseif(EMSCRIPTEN)
+  if(EXISTS "${CMAKE_SOURCE_DIR}/SupergoonEngine/scripting")
+    set(ENGINE_SCRIPT_PATH "${CMAKE_SOURCE_DIR}/SupergoonEngine/scripting")
+  elseif(EXISTS "${CMAKE_BINARY_DIR}/_deps/supergoonengine-src/scripting")
+    set(ENGINE_SCRIPT_PATH "${CMAKE_BINARY_DIR}/_deps/supergoonengine-src/scripting")
+  else()
+    message(WARNING "SupergoonEngine scripting folder not found, skipping preload.")
+    set(ENGINE_SCRIPT_PATH "")
+  endif()
+
+  set_target_properties(
+    ${EXECUTABLE_TARGET_NAME}
+    PROPERTIES
+      LINK_FLAGS
+      "${LINK_FLAGS} -O0 -s SAFE_HEAP=2 -s STACK_OVERFLOW_CHECK=1 \
+      --preload-file ${CMAKE_SOURCE_DIR}/assets@/assets \
+      --preload-file ${CMAKE_SOURCE_DIR}/src/scripts@/assets/lua/ \
+      --preload-file ${ENGINE_SCRIPT_PATH}@/assets/lua/")
+endif()
 
 if(SYSTEM_PACKAGES) # If we are using system packages, then we should try to find them.
 
@@ -169,8 +230,8 @@ if(SYSTEM_PACKAGES) # If we are using system packages, then we should try to fin
   find_package(Freetype)
   if(FREETYPE_FOUND)
     # list(APPEND EXTERNAL_LIBS ${FREETYPE_LIBRARY})
-    target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC /usr/local/include/freetype2
-                                                             /opt/homebrew/opt/freetype/include/freetype2)
+    target_include_directories(${EXECUTABLE_TARGET_NAME} PUBLIC /usr/local/include/freetype2
+                                                                /opt/homebrew/opt/freetype/include/freetype2)
     list(APPEND EXTERNAL_LIBS ${FREETYPE_LIBRARY})
   endif(FREETYPE_FOUND)
 
@@ -193,7 +254,7 @@ if(NOT LIB_CGLM)
     GIT_TAG v0.9.6
     EXCLUDE_FROM_ALL)
   FetchContent_MakeAvailable(LIB_CGLM)
-  target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC cglm)
+  target_link_libraries(${EXECUTABLE_TARGET_NAME} PUBLIC cglm)
 endif(NOT LIB_CGLM)
 
 if(NOT EMSCRIPTEN AND NOT LIB_OGG)
@@ -210,7 +271,7 @@ if(NOT EMSCRIPTEN AND NOT LIB_OGG)
   get_target_property(OGG_INCLUDE_DIR ogg INTERFACE_INCLUDE_DIRECTORIES)
   set(OGG_LIBRARY ogg)
   # list(APPEND EXTERNAL_LIBS ogg)
-  target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC ogg)
+  target_link_libraries(${EXECUTABLE_TARGET_NAME} PUBLIC ogg)
 endif(NOT EMSCRIPTEN AND NOT LIB_OGG)
 
 if(NOT EMSCRIPTEN AND NOT LIB_VORBIS)
@@ -336,7 +397,7 @@ if(NOT EMSCRIPTEN AND NOT LIB_OPENAL)
     GIT_TAG 1.24.3
     EXCLUDE_FROM_ALL)
   FetchContent_MakeAvailable(LIB_OPENAL)
-  target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC OpenAL)
+  target_link_libraries(${EXECUTABLE_TARGET_NAME} PUBLIC OpenAL)
 endif(NOT EMSCRIPTEN AND NOT LIB_OPENAL)
 
 if(DEBUG_CMAKE_VARIABLES)
@@ -346,13 +407,13 @@ if(DEBUG_CMAKE_VARIABLES)
   endforeach()
 endif(DEBUG_CMAKE_VARIABLES)
 
-target_compile_options(${LIBRARY_TARGET_NAME} PUBLIC ${COMPILE_OPTIONS})
-target_link_directories(${LIBRARY_TARGET_NAME} PUBLIC /usr/local/lib) # should always include from usr/local/lib
-target_link_libraries(${LIBRARY_TARGET_NAME} INTERFACE ${EXTERNAL_LIBS})
+target_compile_options(${EXECUTABLE_TARGET_NAME} PUBLIC ${COMPILE_OPTIONS})
+target_link_directories(${EXECUTABLE_TARGET_NAME} PUBLIC /usr/local/lib) # should always include from usr/local/lib
+target_link_libraries(${EXECUTABLE_TARGET_NAME} PUBLIC ${EXTERNAL_LIBS})
 
 # System is for blocking out the warnings, these are mostly external libs
 target_include_directories(
-  ${LIBRARY_TARGET_NAME} SYSTEM
+  ${EXECUTABLE_TARGET_NAME} SYSTEM
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include /usr/local/include
   PRIVATE # linux builds
           ${sdl3_SOURCE_DIR}/include
@@ -367,7 +428,12 @@ target_include_directories(
           ${lib_ogg_BINARY_DIR}/include)
 
 # don't hide warnings
-target_include_directories(${LIBRARY_TARGET_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(${EXECUTABLE_TARGET_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(
+  ${EXECUTABLE_TARGET_NAME}
+  PRIVATE ${CMAKE_SOURCE_DIR}/src/engine/include ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}_
+          /emsdk/upstream/emscripten/cache/sysroot/include /usr/local/include/freetype2) # Add the freetype2 specific
+                                                                                         # include directory
 
 install(
   DIRECTORY ${FOLDERS_TO_COPY}
