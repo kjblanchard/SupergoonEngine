@@ -3,7 +3,7 @@
 #include <Supergoon/log.h>
 #include <Supergoon/lua.h>
 #include <Supergoon/text.h>
-#include <_string.h>
+#include <string.h>
 #include <assert.h>
 #include <lauxlib.h>
 #include <lua.h>
