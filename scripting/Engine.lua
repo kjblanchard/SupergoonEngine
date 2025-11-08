@@ -22,8 +22,6 @@ function engine.Coroutine.update()
     for i = #engine.Coroutine.tasks, 1, -1 do
         local task = engine.Coroutine.tasks[i]
         task.delay = task.delay - gamestate.DeltaTimeSeconds
-
-
         if task.delay <= 0 then
             local ok, delayOrErr = coroutine.resume(task.co)
             if not ok then
