@@ -120,7 +120,7 @@ if(SDL_GL)
        src/Platform/opengl/openglShader.c src/Platform/opengl/openglTexture.c)
 endif(SDL_GL)
 
-add_executable(${EXECUTABLE_TARGET_NAME} ${IS_BUNDLE} ${IS_WIN32} ${SRC_FILES} ${DEBUG_FILES} ${ICON_PATH})
+add_executable(${EXECUTABLE_TARGET_NAME} MACOSX_BUNDLE WIN32 ${SRC_FILES} ${DEBUG_FILES} ${ICON_PATH})
 
 set(SKIP_INSTALL_ALL
     ON

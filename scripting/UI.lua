@@ -5,6 +5,19 @@ local engine = require("Engine")
 local currentFont = ""
 local currentFontSize = nil
 
+local function createImageFromTable(name, dataTable, objTable)
+    objTable.texture = engine.CreateTexture(dataTable.filename)
+    dataTable.srcRect = engine.Tools.NormalizeRect(dataTable.srcRect)
+    objTable.rect = engine.Tools.NormalizeRect(dataTable.rect)
+
+end
+
+local function drawImage(parentOffsetX, parentOffsetY, imageTable)
+    if imageTable and imageTable.texture then
+        engine.DrawTexture(imageTable.texture, engine.GetSpriteShader(), imageTable.rect, imageTable.dataTable.srcRect)
+    end
+end
+
 local function createTextFromTable(name, dataTable, objTable)
     local font = dataTable.font or currentFont
     local fontSize = dataTable.fontSize or currentFontSize
@@ -62,12 +75,14 @@ end
 -- Function that takes in name, dataTable (from load file or obj) and the new object
 local classTypeFunctionTable = {
     text = createTextFromTable,
-    nineSlice = create9SliceFromTable
+    nineSlice = create9SliceFromTable,
+    image = createImageFromTable
 }
 
 local classTypeDrawTable = {
     text = drawText,
-    nineSlice = draw9Slice
+    nineSlice = draw9Slice,
+    image = drawImage
 }
 
 function UI.UpdateTextText(textPtr, newText)

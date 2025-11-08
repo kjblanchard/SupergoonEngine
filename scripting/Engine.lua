@@ -489,7 +489,7 @@ function engine.Camera.SetCameraFollowTarget(gameobject)
 end
 
 function engine.Camera.WorldToScreen(x, y)
-    
+
 end
 
 --#endregion Camera
@@ -581,6 +581,11 @@ end
 ---@return lightuserdata Shader ptr
 function engine.CreateShader(vertexFilename, fragmentFilename)
     return cGraphics.CreateShader(vertexFilename, fragmentFilename)
+end
+
+---@return lightuserdata ptr to the default sprite shader
+function engine.GetSpriteShader()
+    return cGraphics.GetSpriteShader()
 end
 
 function engine.CreateTexture(filename)

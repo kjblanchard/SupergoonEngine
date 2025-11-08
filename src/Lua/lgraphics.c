@@ -189,6 +189,12 @@ static int setPreviousRenderTarget(lua_State *L) {
 	return 0;
 }
 
+static int getStandardSpriteShader(lua_State *L) {
+	LuaPushLightUserdata(L, GetDefaultShader());
+	GetDefaultShader();
+	return 1;
+}
+
 static int clearRenderTargetTexture(lua_State *L) {
 	if (!LuaCheckFunctionCallParamsAndTypes(
 			L, 5, LuaFunctionParameterTypeUserdata,
@@ -250,6 +256,7 @@ static const luaL_Reg graphicsLib[] = {
 	{"DrawNineSlice", drawNineSlice},
 	{"DrawTextureToTexture", drawTextureToTexture},
 	{"DrawRect", drawRect},
+	{"GetSpriteShader", getStandardSpriteShader},
 	{NULL, NULL}};
 
 void RegisterLuaGraphicsFunctions(void) {
