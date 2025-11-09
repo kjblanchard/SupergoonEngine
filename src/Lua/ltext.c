@@ -3,10 +3,10 @@
 #include <Supergoon/log.h>
 #include <Supergoon/lua.h>
 #include <Supergoon/text.h>
-#include <string.h>
 #include <assert.h>
 #include <lauxlib.h>
 #include <lua.h>
+#include <string.h>
 
 static int createText(lua_State* L) {
 	if (!LuaCheckFunctionCallParamsAndTypes(_luaState, 7, LuaFunctionParameterTypeString, LuaFunctionParameterTypeInt, LuaFunctionParameterTypeTable, LuaFunctionParameterTypeString, LuaFunctionParameterTypeInt, LuaFunctionParameterTypeBoolean, LuaFunctionParameterTypeBoolean)) {
@@ -41,6 +41,19 @@ static int updateText(lua_State* L) {
 	}
 	Text* text = (Text*)LuaGetLightUserdatai(L, 1);
 	if (text) TextOnDirty(text);
+	return 0;
+}
+
+static int updateLettersText(lua_State* L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 2, LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeNumber)) {
+		sgLogWarn("bad update text lettersparams");
+		return 0;
+	}
+	Text* text = (Text*)LuaGetLightUserdatai(L, 1);
+	if (!text) return 0;
+	text->NumLettersToDraw = LuaGetIntFromStacki(L, 2);
+	TextOnDirty(text);
+
 	return 0;
 }
 
@@ -86,6 +99,7 @@ static const luaL_Reg textLib[] = {
 	{"UpdateText", updateText},
 	{"UpdateTextText", updateTextText},
 	{"SetTextCentered", setTextCentered},
+	{"SetTextNumLetters", updateLettersText},
 	{"DrawText", drawText},
 	{NULL, NULL}};
 

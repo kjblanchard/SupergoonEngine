@@ -19,8 +19,7 @@ if(CMAKE_GENERATOR STREQUAL "Xcode")
 endif(CMAKE_GENERATOR STREQUAL "Xcode")
 
 if(DEBUG_ASAN AND CMAKE_BUILD_TYPE STREQUAL "Debug")
-  if(NOT (APPLE AND (CMAKE_SYSTEM_NAME STREQUAL "iOS" OR CMAKE_SYSTEM_NAME STREQUAL "iossimulator"))
-     AND NOT (CMAKE_SYSTEM_NAME STREQUAL "Emscripten"))
+  if(NOT (APPLE AND (CMAKE_SYSTEM_NAME STREQUAL "iOS" OR CMAKE_SYSTEM_NAME STREQUAL "iossimulator")) AND NOT (CMAKE_SYSTEM_NAME STREQUAL "Emscripten"))
     message(STATUS "Enabling AddressSanitizer in Debug mode")
     set(ASAN_FLAGS "-fsanitize=address -fno-omit-frame-pointer")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${ASAN_FLAGS}")
@@ -79,14 +78,14 @@ set(SRC_FILES
     src/Audio/Stream.c
     src/Audio/Audio.c
     src/Tweening/easing.c
-    src/Tweening/tween.c
+    # src/Tweening/tween.c
     src/Lua/log.c
     src/Lua/audio.c
     src/Lua/lengine.c
     src/Lua/linput.c
     src/Lua/lcamera.c
     src/Lua/scripting.c
-    src/effects.c
+    # src/effects.c
     src/Animation/Animator.c
     src/gameobject.c
     src/sprite.c
@@ -116,8 +115,7 @@ set(SRC_FILES
     src/text.c)
 
 if(SDL_GL)
-  list(APPEND SRC_FILES src/Platform/opengl/glad.c src/Platform/opengl/openglGraphics.c
-       src/Platform/opengl/openglShader.c src/Platform/opengl/openglTexture.c)
+  list(APPEND SRC_FILES src/Platform/opengl/glad.c src/Platform/opengl/openglGraphics.c src/Platform/opengl/openglShader.c src/Platform/opengl/openglTexture.c)
 endif(SDL_GL)
 
 add_executable(${EXECUTABLE_TARGET_NAME} MACOSX_BUNDLE WIN32 ${SRC_FILES} ${DEBUG_FILES} ${ICON_PATH})
@@ -133,8 +131,7 @@ set(CMAKE_DEBUG_TARGET_PROPERTIES
     CACHE STRING "Don't use the d for debug packages" FORCE)
 
 if(APPLE)
-  set_target_properties(${EXECUTABLE_TARGET_NAME} PROPERTIES MACOSX_BUNDLE_INFO_PLIST
-                                                             ${CMAKE_SOURCE_DIR}/cmake/Info.plist)
+  set_target_properties(${EXECUTABLE_TARGET_NAME} PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/cmake/Info.plist)
   set_source_files_properties(${ICON_PATH} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
   set_source_files_properties(${CMAKE_SOURCE_DIR}/cmake/Info.plist PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
   set_target_properties(
@@ -236,8 +233,7 @@ if(SYSTEM_PACKAGES) # If we are using system packages, then we should try to fin
   find_package(Freetype)
   if(FREETYPE_FOUND)
     # list(APPEND EXTERNAL_LIBS ${FREETYPE_LIBRARY})
-    target_include_directories(${EXECUTABLE_TARGET_NAME} PUBLIC /usr/local/include/freetype2
-                                                                /opt/homebrew/opt/freetype/include/freetype2)
+    target_include_directories(${EXECUTABLE_TARGET_NAME} PUBLIC /usr/local/include/freetype2 /opt/homebrew/opt/freetype/include/freetype2)
     list(APPEND EXTERNAL_LIBS ${FREETYPE_LIBRARY})
   endif(FREETYPE_FOUND)
 
@@ -422,15 +418,14 @@ target_include_directories(
   ${EXECUTABLE_TARGET_NAME} SYSTEM
   PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include /usr/local/include
   PRIVATE # linux builds
-          ${sdl3_SOURCE_DIR}/include ${freetype_SOURCE_DIR}/include ${lib_lua_SOURCE_DIR}/lua-5.4.5/include
-          ${lib_vorbis_SOURCE_DIR}/include ${lib_ogg_SOURCE_DIR}/include ${lib_ogg_BINARY_DIR}/include)
+          ${sdl3_SOURCE_DIR}/include ${freetype_SOURCE_DIR}/include ${lib_lua_SOURCE_DIR}/lua-5.4.5/include ${lib_vorbis_SOURCE_DIR}/include
+          ${lib_ogg_SOURCE_DIR}/include ${lib_ogg_BINARY_DIR}/include)
 
 target_include_directories(${EXECUTABLE_TARGET_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(
-  ${EXECUTABLE_TARGET_NAME}
-  PRIVATE ${CMAKE_SOURCE_DIR}/src/engine/include ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}_
-          /emsdk/upstream/emscripten/cache/sysroot/include /usr/local/include/freetype2) # Add the freetype2 specific
-                                                                                         # include directory
+  ${EXECUTABLE_TARGET_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src/engine/include ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}_
+                                    /emsdk/upstream/emscripten/cache/sysroot/include /usr/local/include/freetype2) # Add the freetype2 specific include
+                                                                                                                   # directory
 
 install(
   DIRECTORY scripting/

@@ -1,16 +1,17 @@
 local engine = {}
 local gamestate = require("gameState")
 
---#region Coroutine
-engine.Coroutine = {
-    tasks = {}
-}
-
 function engine.StartDebugger()
     if os.getenv("LUA_DEBUGGING") == "1" then
         require("mobdebug").start()
     end
 end
+
+--#region Coroutine
+engine.Coroutine = {
+    tasks = {}
+}
+
 
 -- Adds a wait to a coroutine, the coroutine will wait the amount of seconds during the coroutine update
 function engine.Coroutine.Wait(seconds)
@@ -25,48 +26,30 @@ function engine.Coroutine.update()
         if task.delay <= 0 then
             local ok, delayOrErr = coroutine.resume(task.co)
             if not ok then
-                print("Scheduler coroutine error: " .. tostring(delayOrErr))
+                --print("Scheduler coroutine error: " .. tostring(delayOrErr))
                 table.remove(engine.Coroutine.tasks, i)
             elseif coroutine.status(task.co) == "dead" then
                 table.remove(engine.Coroutine.tasks, i)
             else
                 -- Make sure resumed value is a valid number
+                -- this delay causes trouble when doing a yield in a coroutine, why is it needed?
                 local delay = tonumber(delayOrErr) or 0
-                task.delay = math.max(0.01, delay)
+                task.delay = math.max(0.00, delay)
             end
         end
     end
 end
 
--- function engine.Coroutine.run(co)
-
---     assert(type(co) == "thread", "Scheduler:run expects a coroutine")
-
---     local ok, delayOrErr = coroutine.resume(co)
---     if not ok then
---         print("Scheduler coroutine error on run: " .. tostring(delayOrErr))
---         return
---     end
---     if coroutine.status(co) ~= "dead" then
---         local delay = tonumber(delayOrErr) or 0
---         table.insert(engine.Coroutine.tasks, {
---             co = co,
---             delay = math.max(0.01, delay)
---         })
---     end
--- end
-
 ---Starts a coroutine, adds it to be updated in the engine update and will handle waits appropriately.
 ---@param co any
 function engine.Coroutine.run(co)
-    engine.Log.LogDebug("Coroutine.run called, type=" .. tostring(type(co)) ..
-        " status=" .. (type(co) == "thread" and coroutine.status(co) or "n/a"))
+    -- engine.Log.LogDebug("Coroutine.run called, type=" .. tostring(type(co)) ..  " status=" .. (type(co) == "thread" and coroutine.status(co) or "n/a"))
     assert(type(co) == "thread", "Coroutine:run expects a coroutine")
     table.insert(engine.Coroutine.tasks, {
-            co = co,
-            delay = 0.01 -- start next frame
-        })
-    engine.Log.LogDebug("Task count now " .. tostring(#engine.Coroutine.tasks))
+        co = co,
+        delay = 0.01     -- start next frame
+    })
+    -- engine.Log.LogDebug("Task count now " .. tostring(#engine.Coroutine.tasks))
 end
 
 --#endregion Coroutine
@@ -103,8 +86,9 @@ end
 engine.Text = {}
 function engine.Text.CreateText(fontName, fontSize, location, text, numChars, centerX, centerY)
     location = engine.Tools.NormalizeRect(location)
-    return cText.CreateText(fontName, fontSize,location, text, numChars, centerX, centerY)
+    return cText.CreateText(fontName, fontSize, location, text, numChars, centerX, centerY)
 end
+
 function engine.Text.DrawText(textPtr, offsetX, offsetY)
     return cText.DrawText(textPtr, offsetX, offsetY)
 end
@@ -113,7 +97,9 @@ function engine.Text.SetTextCentered(ptr, x, y)
     return cText.SetTextCentered(ptr, x, y)
 end
 
-
+function engine.Text.SetTextNumLetters(ptr, numLetters)
+    cText.SetTextNumLetters(ptr, numLetters);
+end
 
 --#region Sprite
 engine.Sprite = {}
@@ -353,8 +339,6 @@ function engine.Map.LoadTilemapObjects(mapname, functionLoader)
             end
         end
     end
-
-
 end
 
 function engine.MapName()
@@ -418,8 +402,7 @@ function engine.Scene.LoadScene(sceneDataTable, loaderFunc)
     engine.Map.LoadTilemap(sceneDataTable[1])
     local ui = require("UI")
     ui.CreateUIPanelFromScriptFile(sceneDataTable[2])
-    engine.Map.LoadTilemapObjects(sceneDataTable[1],loaderFunc )
-
+    engine.Map.LoadTilemapObjects(sceneDataTable[1], loaderFunc)
 end
 
 --#endregion Scene
@@ -508,9 +491,9 @@ end
 
 function engine.Collision.CheckForCollision(a, b)
     return a.x < b.x + b.w and
-    a.x + a.w > b.x and
-    a.y < b.y + b.h and
-    a.y + a.h > b.y
+        a.x + a.w > b.x and
+        a.y < b.y + b.h and
+        a.y + a.h > b.y
 end
 
 --#endregion Collision
@@ -619,7 +602,7 @@ end
 local debugBoxes = {}
 function engine.DrawRect(rect, filled, cameraOffset)
     rect = engine.Tools.NormalizeRect(rect)
-    table.insert(debugBoxes, {rect, filled, cameraOffset})
+    table.insert(debugBoxes, { rect, filled, cameraOffset })
 end
 
 function engine.DrawAllDebugBoxes()
@@ -631,5 +614,15 @@ function engine.DrawAllDebugBoxes()
 end
 
 -- #endregion
+
+---Gets a tweened value with linear tweening
+---@param startVal number the starting value of the tween
+---@param endVal number the end value of the tween
+---@param currentTime number current time in seconds since running this tween
+---@param maxTime number the max time of the tween
+---@return number current value of the tween.
+function engine.Tween(startVal, endVal, currentTime, maxTime)
+    return cEngine.GetTweenedValue(startVal, endVal, currentTime, maxTime)
+end
 
 return engine

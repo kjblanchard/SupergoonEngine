@@ -4,6 +4,7 @@
 #include <Supergoon/Lua/engine.h>
 #include <Supergoon/Lua/object.h>
 #include <Supergoon/Lua/scene.h>
+#include <Supergoon/Tweening/easing.h>
 #include <Supergoon/camera.h>
 #include <Supergoon/engine.h>
 #include <Supergoon/events.h>
@@ -102,7 +103,7 @@ static int setDrawFunc(lua_State* L) {
 }
 
 static int drawRectCamOffset(lua_State* L) {
-	if (!LuaCheckFunctionCallParamsAndTypes(L, 4, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeNumber)) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 5, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeNumber)) {
 		sgLogWarn("Bad args passed into setDrawFunc");
 	}
 	/* DrawRect(&(RectangleF){LuaGetFloati(L, 1) - CameraX, LuaGetFloati(L, 2) - CameraY, LuaGetFloati(L, 3), LuaGetFloati(L, 4)}, &(Color){0, 255, 0, 255}, false); */
@@ -122,6 +123,27 @@ static int pushQuit(lua_State* L) {
 	sgLogWarn("Pushing quit");
 	return 0;
 }
+/* typedef enum TweenEaseTypes { */
+/* 	TweenEaseTypesLinear = 0 */
+/* } TweenEaseTypes; */
+
+static int getTweenedValue(lua_State* L) {
+	// Startval, endval, currenttime, endTime
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 4, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeNumber)) {
+		sgLogWarn("Bad tween args");
+	}
+	/* TweenEaseTypes easeType = LuaGetIntFromStacki(L, 4); */
+	// current time seconds / total time seconds
+	float start = LuaGetFloati(L, 1);
+	float end = LuaGetFloati(L, 2);
+	float currentTimeSeconds = LuaGetFloati(L, 3);
+	float totalTimeSeconds = LuaGetFloati(L, 4);
+	float progressPercent = geLinearInterpolation(currentTimeSeconds / totalTimeSeconds);
+	float progressValue = start + ((end - start) * progressPercent);
+	progressValue = progressValue > end ? end : progressValue;
+	LuaPushFloat(L, progressValue);
+	return 1;
+}
 
 static const luaL_Reg sceneLib[] = {
 	{"SetWindowOptions", setWindowOptions},
@@ -129,6 +151,7 @@ static const luaL_Reg sceneLib[] = {
 	{"SetUpdateFunc", setUpdateFunc},
 	{"Quit", pushQuit},
 	{"SetInputFunc", setInputFunc},
+	{"GetTweenedValue", getTweenedValue},
 	{"SetDrawFunc", setDrawFunc},
 	{"DrawRectCamOffset", drawRectCamOffset},
 	{"MapName", getCurrentMapName},

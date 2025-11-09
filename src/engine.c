@@ -13,7 +13,6 @@
 #include <Supergoon/Lua/engine.h>
 #include <Supergoon/Lua/scripting.h>
 #include <Supergoon/Platform/sdl/sdl.h>
-#include <Supergoon/Tweening/tween.h>
 #include <Supergoon/camera.h>
 #include <Supergoon/engine.h>
 #include <Supergoon/events.h>
@@ -26,7 +25,6 @@
 #include <Supergoon/state.h>
 #include <Supergoon/text.h>
 #include <Supergoon/tools.h>
-#include <Supergoon/tween.h>
 #include <Supergoon/window.h>
 
 static Uint64 _previousMS;
@@ -49,7 +47,6 @@ static void start(void) {
 	InitializeGraphicsSystem();
 	InitializeTextSystem();
 	InitializeAudioSystem();
-	InitializeTweenSystem();
 	RegisterAllLuaFunctions();
 	_previousMS = getCurrentMSTicks();
 	_deltaTimeSeconds = 0;
@@ -90,7 +87,6 @@ static void update(void) {
 	if (_inputFunc) _inputFunc();
 	// UpdateUIInputSystem();
 	Ticks += 1;
-	UpdateTweens();
 	UpdateAnimators();
 	PushGamestateToLua();
 	if (_updateFunc) _updateFunc();

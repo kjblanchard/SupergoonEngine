@@ -9,7 +9,6 @@ local function createImageFromTable(name, dataTable, objTable)
     objTable.texture = engine.CreateTexture(dataTable.filename)
     dataTable.srcRect = engine.Tools.NormalizeRect(dataTable.srcRect)
     objTable.rect = engine.Tools.NormalizeRect(dataTable.rect)
-
 end
 
 local function drawImage(parentOffsetX, parentOffsetY, imageTable)
@@ -29,8 +28,7 @@ local function createTextFromTable(name, dataTable, objTable)
     local numChars = dataTable.chars or #dataTable.text
     local x = dataTable.centerX ~= false
     local y = dataTable.centerY ~= false
-    objTable.ptr = engine.Text.CreateText(font, fontSize, objTable.rect,dataTable.text, numChars,x, y )
-
+    objTable.ptr = engine.Text.CreateText(font, fontSize, objTable.rect, dataTable.text, numChars, x, y)
 end
 
 local function drawText(parentOffsetX, parentOffsetY, textDataTable)
@@ -49,24 +47,24 @@ local function drawText(parentOffsetX, parentOffsetY, textDataTable)
         test.x = test.x + parentOffsetX
         test.y = test.y + parentOffsetY
         engine.DrawRect(test, false)
-
     end
 end
 
 local function create9SliceFromTable(name, dataTable, objTable)
-    dataTable.color = engine.Tools.NormalizeArrayTableWithKeys(dataTable.color, {"r", "g", "b", "a"})
+    dataTable.color = engine.Tools.NormalizeArrayTableWithKeys(dataTable.color, { "r", "g", "b", "a" })
     objTable.ptr = cGraphics.Create9SliceTexture(
         objTable.rect,
         dataTable.filename,
         dataTable.color,
         dataTable.xSize,
         dataTable.ySize
-        )
+    )
 end
 
 local function draw9Slice(parentOffsetX, parentOffsetY, textDataTable)
     if textDataTable and textDataTable.ptr then
-        local drawRect = {textDataTable.rect.x + parentOffsetX, textDataTable.rect.y + parentOffsetY, textDataTable.rect.w, textDataTable.rect.h}
+        local drawRect = { textDataTable.rect.x + parentOffsetX, textDataTable.rect.y + parentOffsetY, textDataTable
+            .rect.w, textDataTable.rect.h }
         drawRect = engine.Tools.NormalizeRect(drawRect)
         cGraphics.DrawNineSlice(textDataTable.ptr, drawRect)
     end
@@ -89,13 +87,12 @@ function UI.UpdateTextText(textPtr, newText)
     cText.UpdateTextText(textPtr, newText)
 end
 
-
 function LoadUIObjectFromTable(parentObj, dataName, dataTable)
     local newChildTable = {
         dataTable = dataTable,
         visible = (dataTable.visible == nil) and true or dataTable.visible,
         children = {},
-        rect = {table.unpack(dataTable.rect)},
+        rect = { table.unpack(dataTable.rect) },
         parent = parentObj,
         ptr = 0
     }
@@ -118,12 +115,11 @@ function UI.CreateUIPanelFromScriptFile(file)
         dataTable = dataTable,
         visible = (dataTable.visible == nil) and true or dataTable.visible,
         children = {},
-        rect = engine.Tools.NormalizeRect({0,0,0,0}),
+        rect = engine.Tools.NormalizeRect({ 0, 0, 0, 0 }),
         parent = 0,
         ptr = 0,
     }
     for childDataName, childDataTable in pairs(newParentPanel.dataTable.children) do
-        engine.Log.LogWarn("Creating child")
         LoadUIObjectFromTable(newParentPanel, childDataName, childDataTable)
     end
     UI.UITree[file] = newParentPanel
@@ -134,11 +130,11 @@ end
 
 local function drawUIRecursive(parentX, parentY, tableData)
     if not tableData.visible then return end
-    if  classTypeDrawTable[tableData.dataTable.class] then
+    if classTypeDrawTable[tableData.dataTable.class] then
         classTypeDrawTable[tableData.dataTable.class](parentX, parentY, tableData)
     end
     for _, childTable in pairs(tableData.children) do
-        drawUIRecursive(parentX + tableData.rect.x, parentY + tableData.rect.y,childTable )
+        drawUIRecursive(parentX + tableData.rect.x, parentY + tableData.rect.y, childTable)
     end
 end
 
