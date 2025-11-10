@@ -47,7 +47,7 @@ function engine.Coroutine.run(co)
     assert(type(co) == "thread", "Coroutine:run expects a coroutine")
     table.insert(engine.Coroutine.tasks, {
         co = co,
-        delay = 0.01     -- start next frame
+        delay = 0.01 -- start next frame
     })
     -- engine.Log.LogDebug("Task count now " .. tostring(#engine.Coroutine.tasks))
 end
@@ -300,6 +300,7 @@ end
 
 ---Loads and Plays a BGM in the background slot
 function engine.Audio.PlayBGMBackground(soundName, volume)
+    volume = volume or 1.0
     cAudio.PlayBgm(soundName, volume, 1)
 end
 

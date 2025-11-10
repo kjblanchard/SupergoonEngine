@@ -137,6 +137,7 @@ static void handleProcessedBuffer(Stream* stream) {
 }
 
 void StreamUpdate(Stream* stream) {
+	if (!stream->IsPlaying) return;
 	ALint processed_buffers, state;
 	alGetSourcei(stream->Source, AL_SOURCE_STATE, &state);
 	alGetSourcei(stream->Source, AL_BUFFERS_PROCESSED, &processed_buffers);
@@ -175,7 +176,14 @@ void StreamUpdateVolume(Stream* stream, float volume) {
 
 void StreamPlay(Stream* stream) {
 	alSourcePlay(stream->Source);
+	stream->IsPlaying = true;
 	if (alGetError() != AL_NO_ERROR) {
 		sgLogError("Error starting playback\n");
 	}
+}
+
+void StreamStop(Stream* stream) {
+	alSourceStop(stream->Source);
+	RestartStream(stream);
+	stream->IsPlaying = false;
 }

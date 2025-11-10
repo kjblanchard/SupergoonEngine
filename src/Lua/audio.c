@@ -24,6 +24,19 @@ static int playBgm(lua_State* L) {
 	return 0;
 }
 
+static int restartBgm(lua_State* L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 3, LuaFunctionParameterTypeString, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeInt)) {
+		return 0;
+	}
+	SetBgmTrack(LuaGetIntFromStacki(L, 3));
+	Stream
+	RestartStream();
+	LoadBgm(LuaGetStringi(L, 1), LuaGetFloati(L, 2), -1);
+	PlayBgm();
+	return 0;
+
+}
+
 static int unpauseBgm(lua_State* L) {
 	if (!LuaCheckFunctionCallParamsAndTypes(L, 1, LuaFunctionParameterTypeInt)) {
 		return 0;

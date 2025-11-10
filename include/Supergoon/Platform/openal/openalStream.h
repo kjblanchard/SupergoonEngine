@@ -22,6 +22,7 @@ void StreamLoad(Stream *stream);
 void StreamUpdateVolume(Stream *stream, float volume);
 void StreamUpdate(Stream *stream);
 void StreamPlay(Stream *stream);
+void StreamStop(Stream *stream);
 
 #ifdef __cplusplus
 }

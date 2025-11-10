@@ -12,9 +12,10 @@
 #include <string.h>
 #include <vorbis/vorbisfile.h>
 
-#define MAX_STREAMS 4
-static unsigned int _stream = 0;
-Stream* _mainStream = NULL;
+#define MAX_STREAMS 2
+static unsigned int _currentStreamID = 0;
+Stream* _streams[MAX_STREAMS];
+/* Stream* _mainStream = NULL; */
 
 typedef struct BgmLoadArgs {
 	char* Name;
@@ -25,8 +26,6 @@ typedef struct BgmLoadArgs {
 
 typedef struct AudioBgmAsset {
 	Bgm* BgmPtr;
-	// char* Name;
-	// float Volume;
 	bool IsFading;
 } AudioBgmAsset;
 
@@ -42,7 +41,6 @@ static bool initializeAL(void) {
 	const ALCchar* name;
 	ALCdevice* device;
 	ALCcontext* ctx;
-	/* Open and initialize a device */
 	device = NULL;
 	if (!device)
 		device = alcOpenDevice(NULL);
@@ -72,14 +70,16 @@ void InitializeAudioImpl(void) {
 	if (!result) {
 		sgLogError("Could not load audio system!");
 	}
-	_mainStream = StreamNew();
+	for (int i = 0; i < MAX_STREAMS; ++i) {
+		_streams[i] = StreamNew();
+	}
 }
 void SetBgmTrackImpl(int track) {
 	if (track < 0 || track >= MAX_STREAMS) {
 		sgLogWarn("Track passed in is not available, track unchanged, please use between 0 and %d", MAX_STREAMS);
 		return;
 	}
-	_stream = track;
+	_currentStreamID = track;
 }
 static void loadBgmInternal(BgmLoadArgs* args) {
 	AudioBgmAsset* bgmAsset = &_bgmAssets[args->Track];
@@ -107,33 +107,34 @@ void LoadBgmImpl(const char* filename, float volume, int loops) {
 	BgmLoadArgs args;
 	args.Name = strdup(filename);
 	args.Loops = loops;
-	args.Track = _stream;
+	args.Track = _currentStreamID;
 	args.Volume = volume;
 	loadBgmInternal(&args);
-	AudioBgmAsset* bgmAsset = &_bgmAssets[_stream];
-	_mainStream->BgmData = bgmAsset->BgmPtr;
-	StreamLoad(_mainStream);
+	AudioBgmAsset* bgmAsset = &_bgmAssets[_currentStreamID];
+	Stream* stream = _streams[_currentStreamID];
+	stream->BgmData = bgmAsset->BgmPtr;
+	StreamLoad(stream);
 	free(args.Name);
 }
 
 void PlayBgmImpl(void) {
 	UpdatePlayingBgmVolumeImpl();
-	StreamPlay(_mainStream);
-	// BgmPlay(_bgmAssets[event->user.code].BgmPtr);
+	StreamPlay(_streams[_currentStreamID]);
 }
 
 void PauseBgmImpl(void) {
 }
+
 void StopBgmImpl(void) {
+	StreamStop(_streams[_currentStreamID]);
 }
+
 void StopBgmFadeoutImpl(void) {
 }
 void UpdatePlayingBgmVolumeImpl(void) {
 	for (size_t i = 0; i < MAX_STREAMS; i++) {
 		if (!_bgmAssets[i].BgmPtr) continue;
-		// Update the stream volume
-		StreamUpdateVolume(_mainStream, _globalBgmVolume * _bgmAssets[i].BgmPtr->Volume);
-		// _bgmAssets[i].BgmPtr->Volume = _globalBgmVolume * _bgmAssets[i].Volume;
+		StreamUpdateVolume(_streams[i], _globalBgmVolume * _bgmAssets[i].BgmPtr->Volume);
 	}
 }
 void SetGlobalBgmVolumeImpl(float volume) {
@@ -148,7 +149,8 @@ void AudioEventHandlerImpl(void* event) {}
 void CloseAudioImpl(void) {
 }
 void AudioUpdateImpl(void) {
-	if (_mainStream) {
-		StreamUpdate(_mainStream);
+	for (int i = 0; i < MAX_STREAMS; ++i) {
+		if (!_bgmAssets[i].BgmPtr) continue;
+		StreamUpdate(_streams[i]);
 	}
 }
