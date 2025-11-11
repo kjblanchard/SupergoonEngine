@@ -1,5 +1,6 @@
 #include <Supergoon/Lua/object.h>
 #include <Supergoon/Lua/scene.h>
+#include <Supergoon/Primitives/rectangle.h>
 #include <Supergoon/gameobject.h>
 #include <Supergoon/log.h>
 #include <Supergoon/lua.h>
@@ -19,11 +20,25 @@ static int loadMap(lua_State *L) {
 	_luaState = previous;
 	return 0;
 }
-
-static int loadObjectsFromMap(lua_State *L) { return 0; }
+static int checkRectAgainstSceneSolids(lua_State *L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 1, LuaFunctionParameterTypeTable)) {
+		sgLogWarn("Bad params passed to check scene rect");
+		return 0;
+	}
+	RectangleF rect = {
+		LuaGetFloatFromTableStackiKey(L, 1, "x"),
+		LuaGetFloatFromTableStackiKey(L, 1, "y"),
+		LuaGetFloatFromTableStackiKey(L, 1, "w"),
+		LuaGetFloatFromTableStackiKey(L, 1, "h"),
+	};
+	CheckRectForCollisionWithSolids(&rect);
+	LuaPushFloat(L, rect.x);
+	LuaPushFloat(L, rect.y);
+	return 2;
+}
 
 static const luaL_Reg sceneLib[] = {{"LoadMap", loadMap},
-									{"LoadObjectsOnMap", loadObjectsFromMap},
+									{"ResolveCollisionWithSolids", checkRectAgainstSceneSolids},
 									{NULL, NULL}};
 
 void RegisterLuaSceneFuncs(void) {

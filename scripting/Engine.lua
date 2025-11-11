@@ -342,62 +342,12 @@ function engine.Map.LoadTilemapObjects(mapname, functionLoader)
     end
 end
 
-function engine.MapName()
-    return cEngine.MapName()
+function engine.Map.ResolveCollisionWithSolids(rect)
+    rect = engine.Tools.NormalizeRect(rect)
+    return cScene.ResolveCollisionWithSolids(rect)
 end
 
---#endregion Map
-
---#region Scene
-engine.Scene = {}
-function engine.Scene.LoadSceneCo(mapname, uiname, bgm, volume, fadeInTimeSec, fadeOutTimeSec)
-    return coroutine.create(function()
-        if fadeInTimeSec > 0 then
-            engine.Effects.FadeoutScreen(fadeInTimeSec)
-            engine.Coroutine.Wait(fadeInTimeSec)
-        end
-        engine.Map.LoadTilemap(mapname)
-        engine.Gameobject.SetGameObjectsToBeDestroyed(false)
-        engine.Map.LoadTilemapObjects()
-        engine.Gameobject.DestroyGameObjects()
-        local ui = require("UI")
-        -- Destroy all ui panels that are not donotdestroy.
-        for key, value in pairs(ui.UIInstance) do
-            if value.data ~= nil and value.doNotDestroy == false then
-                engine.Log.LogWarn("Destroying panel " .. key)
-                ui.DestroyPanel(value)
-                ui.UIInstance[key] = nil
-                value = nil
-            end
-        end
-        -- Load ui if needed
-        if uiname ~= nil then
-            local name = "ui/" .. uiname
-            engine.Log.LogDebug("Loading " .. name)
-            local success, testui = pcall(require, name)
-            if success then
-                ui.CreateUIFromUIFile(testui)
-            else
-                engine.Log.LogError("Failed to load UI: " .. name .. " — " .. tostring(testui))
-            end
-        end
-
-        if fadeOutTimeSec > 0 then
-            engine.Effects.FadeinScreen(fadeOutTimeSec)
-            engine.Coroutine.Wait(fadeOutTimeSec)
-        end
-        if bgm ~= nil then engine.Audio.PlayBGM(bgm, volume) end
-        gamestate.sceneChange = false
-    end)
-end
-
-function engine.Scene.LoadSceneEx(mapname, uiname, bgm, volume, fadeInTimeSec, fadeOutTimeSec)
-    if uiname == "" then uiname = nil end
-    local co = engine.Scene.LoadSceneCo(mapname, uiname, bgm, volume, fadeInTimeSec, fadeOutTimeSec)
-    engine.Coroutine.run(co)
-end
-
-function engine.Scene.LoadScene(sceneDataTable, loaderFunc)
+function engine.Map.LoadScene(sceneDataTable, loaderFunc)
     -- gamestate.nextScene = mapKey
     engine.Audio.PlayBGM(sceneDataTable[3])
     engine.Map.LoadTilemap(sceneDataTable[1])
@@ -406,7 +356,12 @@ function engine.Scene.LoadScene(sceneDataTable, loaderFunc)
     engine.Map.LoadTilemapObjects(sceneDataTable[1], loaderFunc)
 end
 
---#endregion Scene
+function engine.MapName()
+    return cEngine.MapName()
+end
+
+--#endregion Map
+
 
 --#region Window
 engine.Window = {}
@@ -481,9 +436,6 @@ end
 --#region Collision
 
 engine.Collision = {}
-function engine.Collision.CheckGameobjectForCollision(gameobject)
-    return cGameObject.CheckSolids(gameobject)
-end
 
 function engine.Collision.CheckRectForCollision(rectTable)
     local rect = engine.Tools.NormalizeRect(rectTable)

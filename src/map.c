@@ -2,6 +2,7 @@
 #include <Supergoon/Graphics/shader.h>
 #include <Supergoon/Graphics/texture.h>
 #include <Supergoon/Primitives/Color.h>
+#include <Supergoon/Primitives/rectangle.h>
 #include <Supergoon/camera.h>
 #include <Supergoon/filesystem.h>
 #include <Supergoon/log.h>
@@ -491,23 +492,12 @@ void ShutdownMapSystem(void) {
 	}
 }
 
-// void CheckGameobjectForCollisionWithSolids(GameObject *gameobject) {
-//   SDL_FRect playerRect = {gameobject->X, gameobject->Y, gameobject->W,
-//                           gameobject->H};
-//   CheckRectForCollisionWithSolids(&playerRect);
-// }
-//
-// void CheckRectForCollisionWithSolids(RectangleF *rect) {
-//   for (int i = 0; i < _currentMap->NumSolids; i++) {
-//     SDL_FRect solidRect = {_currentMap->Solids[i].x,
-//     _currentMap->Solids[i].y,
-//                            _currentMap->Solids[i].w,
-//                            _currentMap->Solids[i].h};
-//
-//     if (SDL_HasRectIntersectionFloat(rect, &solidRect)) {
-//       // Handle the collision: adjust player position
-//       // This is just a simple axis-aligned response
-//       RectResolveCollision(rect, &solidRect);
-//     }
-//   }
-// }
+void CheckRectForCollisionWithSolids(RectangleF *rect) {
+	for (int i = 0; i < _currentMap->NumSolids; i++) {
+		RectangleF *solid = &_currentMap->Solids[i];
+		RectangleF solidRect = {solid->x, solid->y, solid->w, solid->h};
+		if (RectIsCollision(rect, &solidRect)) {
+			RectResolveCollision(rect, &solidRect);
+		}
+	}
+}

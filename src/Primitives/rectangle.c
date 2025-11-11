@@ -1,7 +1,15 @@
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_rect.h>
 #include <Supergoon/Primitives/rectangle.h>
 #include <math.h>
 
-// TODO this shouldn't go here..
+int RectIsCollision(RectangleF* lhs, RectangleF* rhs) {
+	return !(lhs->x + lhs->w < rhs->x ||
+			 lhs->x > rhs->x + rhs->w ||
+			 lhs->y + lhs->h < rhs->y ||
+			 lhs->y > rhs->y + rhs->h);
+}
+
 void RectResolveCollision(RectangleF* lhs, RectangleF* rhs) {
 	float dx1 = (rhs->x + rhs->w) - lhs->x;	 // left overlap
 	float dx2 = (lhs->x + lhs->w) - rhs->x;	 // right overlap
