@@ -25,16 +25,14 @@ static int playBgm(lua_State* L) {
 }
 
 static int restartBgm(lua_State* L) {
-	if (!LuaCheckFunctionCallParamsAndTypes(L, 3, LuaFunctionParameterTypeString, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeInt)) {
-		return 0;
-	}
-	SetBgmTrack(LuaGetIntFromStacki(L, 3));
-	Stream
-	RestartStream();
-	LoadBgm(LuaGetStringi(L, 1), LuaGetFloati(L, 2), -1);
-	PlayBgm();
+	/* if (!LuaCheckFunctionCallParamsAndTypes(L, 3, LuaFunctionParameterTypeString, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeInt)) { */
+	/* 	return 0; */
+	/* } */
+	/* SetBgmTrack(LuaGetIntFromStacki(L, 3)); */
+	/* RestartStream(); */
+	/* LoadBgm(LuaGetStringi(L, 1), LuaGetFloati(L, 2), -1); */
+	/* PlayBgm(); */
 	return 0;
-
 }
 
 static int unpauseBgm(lua_State* L) {
