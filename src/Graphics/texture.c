@@ -1,6 +1,6 @@
 #include <Supergoon/Graphics/texture.h>
 
-extern Texture *TextureCreateImpl(void);
+extern Texture *TextureCreateImpl(const char *name);
 extern int TextureGetWidthImpl(Texture *texture);
 extern int TextureGetHeightImpl(Texture *texture);
 extern void DrawTextureImpl(Texture *texture, Shader *shader, RectangleF *dst,
@@ -12,13 +12,15 @@ extern Texture *TextureCreateRenderTargetImpl(int width, int height);
 extern void SetRenderTargetImpl(Texture *renderTarget);
 extern void TextureClearRenderTargetImpl(Texture *texture, float r, float g,
 										 float b, float a);
+extern Texture *TextureCreateNoCacheImpl(void);
 extern void DrawTextureToTextureImpl(Texture *dstTarget, Texture *srcTexture,
 									 Shader *shader, RectangleF *dstRect,
 									 RectangleF *srcRect, float scale);
 extern void SetPreviousRenderTargetImpl(void);
 extern void TextureLoadFromDataImpl(Texture *texture, const char *name, int width, int height, void *data);
 
-Texture *TextureCreate(void) { return TextureCreateImpl(); }
+Texture *TextureCreateNoCache(void) { return TextureCreateNoCacheImpl(); }
+Texture *TextureCreate(const char *name) { return TextureCreateImpl(name); }
 void TextureLoadFromBmp(Texture *texture, const char *filepath) {
 	TextureLoadFromBmpImpl(texture, filepath);
 }
@@ -30,7 +32,7 @@ void DrawTexture(Texture *texture, Shader *shader, RectangleF *dst,
 }
 void TextureDestroy(Texture *texture) { TextureDestroyImpl(texture); }
 void TextureBind(Texture *texture) { TextureBindImpl(texture); }
-Texture *TextureCreate(void);
+Texture *TmeextureCreate(void);
 Texture *TextureCreateRenderTarget(int width, int height) {
 	return TextureCreateRenderTargetImpl(width, height);
 }

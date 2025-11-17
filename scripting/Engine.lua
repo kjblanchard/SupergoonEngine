@@ -222,6 +222,10 @@ function engine.Gameobject.Position(ptr)
     return cGameObject.Position(ptr)
 end
 
+function engine.Gameobject.Destroy(ptr)
+    return cGameObject.DestroyGameObject(ptr)
+end
+
 function engine.Gameobject.SetPosition(ptr, x, y)
     return cGameObject.SetPosition(ptr, x, y)
 end
@@ -349,11 +353,11 @@ end
 
 function engine.Map.LoadScene(sceneDataTable, loaderFunc)
     -- gamestate.nextScene = mapKey
-    engine.Audio.PlayBGM(sceneDataTable[3])
     engine.Map.LoadTilemap(sceneDataTable[1])
     local ui = require("UI")
     ui.CreateUIPanelFromScriptFile(sceneDataTable[2])
     engine.Map.LoadTilemapObjects(sceneDataTable[1], loaderFunc)
+    engine.Audio.PlayBGM(sceneDataTable[3])
 end
 
 function engine.MapName()
@@ -481,6 +485,10 @@ end
 
 function engine.SetDrawFunc(func)
     cEngine.SetDrawFunc(func)
+end
+
+function engine.SetQuitFunc(func)
+    cEngine.SetQuitFunc(func)
 end
 
 --Should be called in your update function, updates the coroutines that use wait, etc.

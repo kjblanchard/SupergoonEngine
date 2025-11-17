@@ -20,8 +20,6 @@
 #include <Supergoon/log.h>
 #include <Supergoon/window.h>
 #include <cglm/cglm.h>
-// #define STB_IMAGE_IMPLEMENTATION
-// #include <stb_image.h>
 #include <stdio.h>
 #include <stdlib.h>
 #define MAX_CACHED_TEXTURES 64
@@ -30,6 +28,8 @@ static Texture *_currentRenderingTarget = NULL;
 static int _currentRenderingTargetWidth = 0;
 static int _currentRenderingTargetHeight = 0;
 static Texture *_previousRenderingTarget = NULL;
+static int _currentCachedTextures = 0;
+Texture *_cachedTextures[MAX_CACHED_TEXTURES];
 
 typedef struct Texture {
 	unsigned int ID;
@@ -37,6 +37,7 @@ typedef struct Texture {
 	unsigned int Height;
 	unsigned int VAO;
 	unsigned int FBO;
+	int RefCount;
 	char *Name;
 } Texture;
 
@@ -44,9 +45,25 @@ void TextureBindImpl(Texture *texture) {
 	glBindTexture(GL_TEXTURE_2D, texture->ID);
 }
 
-// Texture _cachedTextures[MAX_CACHED_TEXTURES];
-// static Texture* getTextureFromCache(const char* filename) {
-// }
+static Texture *getTextureFromCache(const char *filename) {
+	Texture *returnTexture = NULL;
+	for (int i = 0; i < _currentCachedTextures; ++i) {
+		if (strcmp(filename, _cachedTextures[i]->Name) == 0) {
+			returnTexture = _cachedTextures[i];
+			break;
+		}
+	}
+	return returnTexture;
+}
+
+static void cacheTexture(Texture *texture) {
+	for (int i = 0; i < _currentCachedTextures; ++i) {
+		if (!_cachedTextures[i]) {
+			_cachedTextures[i] = texture;
+			return;
+		}
+	}
+}
 
 void TextureClearRenderTargetImpl(Texture *texture, float r, float g, float b,
 								  float a) {
@@ -55,33 +72,41 @@ void TextureClearRenderTargetImpl(Texture *texture, float r, float g, float b,
 	glClear(GL_COLOR_BUFFER_BIT);
 	SetPreviousRenderTarget();
 }
-
-Texture *TextureCreateImpl(void) {
+Texture *TextureCreateNoCacheImpl(void) {
 	Texture *texture = malloc(sizeof(Texture));
 	texture->ID = 0;
 	texture->Width = 0;
 	texture->Height = 0;
 	texture->FBO = 0;
 	texture->Name = NULL;
+	texture->RefCount = 1;
 	// configure VAO/VBO
 	unsigned int VBO;
 	float vertices[] = {// pos      // tex
 						0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
 						0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
 						1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f};
-
 	glGenVertexArrays(1, &texture->VAO);
 	glGenBuffers(1, &VBO);
-
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
 	glBindVertexArray(texture->VAO);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 	glGenTextures(1, &texture->ID);
+	return texture;
+}
+
+Texture *TextureCreateImpl(const char *name) {
+	Texture *texture = getTextureFromCache(name);
+	if (texture) {
+		++texture->RefCount;
+		return texture;
+	}
+	texture = TextureCreateNoCacheImpl();
+	cacheTexture(texture);
 	return texture;
 }
 Texture *TextureCreateRenderTargetImpl(int width, int height) {
@@ -93,6 +118,7 @@ Texture *TextureCreateRenderTargetImpl(int width, int height) {
 	texture->Height = height;
 	texture->VAO = 0;
 	texture->FBO = 0;
+	texture->RefCount = 1;
 	asprintf(&texture->Name, "%d_%d_render_target_framebuffer", width, height);
 	// Create GL texture
 #ifndef __EMSCRIPTEN__
@@ -262,6 +288,8 @@ void DrawTextureToTextureImpl(Texture *dstTarget, Texture *srcTexture,
 
 void TextureDestroyImpl(Texture *texture) {
 	if (!texture) return;
+	--texture->RefCount;
+	if (texture->RefCount > 0) return;
 
 	// Delete texture object
 	if (texture->ID != 0) {

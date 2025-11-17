@@ -1,4 +1,5 @@
 #include <Supergoon/Animation/animator.h>
+#include <Supergoon/log.h>
 #include <Supergoon/lua.h>
 #include <Supergoon/state.h>
 #include <Supergoon/tools.h>
@@ -60,7 +61,7 @@ static void removeAnimationDataRef(AnimationData* data) {
 		if (&thing->Data == data) {
 			if (_animationData.AnimationArray[i].RefCount > 0) {
 				--_animationData.AnimationArray[i].RefCount;
-				if (_animationData.AnimationArray[i].RefCount == 0) {
+				if (_animationData.AnimationArray[i].RefCount < 1) {
 					cleanUsedAnimationData(data);
 				}
 			} else {
@@ -78,7 +79,9 @@ static AnimationData* findAnimationData(const char* name) {
 		if (currentPtr->RefCount == 0) {
 			continue;
 		}
+		sgLogWarn("Looking for %s against %s", name, currentPtr->Data.meta.image);
 		if (strcmpWithSuffix(name, currentPtr->Data.meta.image, ".bmp")) {
+			sgLogWarn("found, increasing refcount");
 			++currentPtr->RefCount;
 			return &_animationData.AnimationArray[i].Data;
 		}

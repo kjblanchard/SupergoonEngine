@@ -9,14 +9,7 @@ extern void GraphicsSetLogicalWorldSizeImpl(int width, int height);
 extern int GraphicsGetTargetRefreshRateImpl(void);
 extern void DrawRectImpl(RectangleF *rect, Color *color, int filled, int cameraOffset);
 
-void DrawRect(RectangleF *rect, Color *color, int filled, int cameraOffset) {
-	DrawRectImpl(rect, color, filled, cameraOffset);
-}
-void ClearRenderTargetTexture(Texture *texture, Color *color) {}
-void SetTextureAlpha(Texture *texture, int newAlpha) {}
-void UnloadTexture(Texture *texture) {}
-void UnloadUnusedTextures(void) {}
-void UnloadAllTextures(void) {}
+void DrawRect(RectangleF *rect, Color *color, int filled, int cameraOffset) { DrawRectImpl(rect, color, filled, cameraOffset); }
 void InitializeGraphicsSystem(void) { InitializeGraphicsSystemImpl(); }
 void ShutdownGraphicsSystem(void) { ShutdownGraphicsSystemImpl(); }
 void DrawStart(void) { DrawStartImpl(); }

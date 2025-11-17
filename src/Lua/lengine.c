@@ -20,6 +20,7 @@
 static int _inputFuncRef = LUA_REFNIL;
 static int _updateFuncRef = LUA_REFNIL;
 static int _drawFuncRef = LUA_REFNIL;
+static int _quitFuncRef = LUA_REFNIL;
 
 static int setWindowOptions(lua_State* L) {
 	if (LuaGetStackSize(L) != 3 || !LuaIsInt(L, 1) || !LuaIsInt(L, 2) || !LuaIsString(L, 3)) {
@@ -72,6 +73,17 @@ static void drawFunc(void) {
 	}
 }
 
+static void quitFunc(void) {
+	if (_drawFuncRef != LUA_REFNIL) {
+		lua_rawgeti(_luaState, LUA_REGISTRYINDEX, _drawFuncRef);
+		if (lua_pcall(_luaState, 0, 0, 0) != LUA_OK) {
+			const char* err = lua_tostring(_luaState, -1);
+			sgLogError("Error in update func: %s", err);
+			lua_pop(_luaState, 1);
+		}
+	}
+}
+
 static int setInputFunc(lua_State* L) {
 	if (LuaGetStackSize(L) != 1 || !LuaIsLuaFunc(L, 1)) {
 		sgLogWarn("Bad parameters passed into setupda options from lua");
@@ -99,6 +111,16 @@ static int setDrawFunc(lua_State* L) {
 	}
 	_drawFuncRef = luaL_ref(_luaState, LUA_REGISTRYINDEX);
 	SetDrawFunction(drawFunc);
+	return 0;
+}
+
+static int setQuitFunc(lua_State* L) {
+	if (LuaGetStackSize(L) != 1 || !LuaIsLuaFunc(L, 1)) {
+		sgLogWarn("Bad parameters passed into setupda options from lua");
+		return 0;
+	}
+	_quitFuncRef = luaL_ref(_luaState, LUA_REGISTRYINDEX);
+	SetQuitFunction(quitFunc);
 	return 0;
 }
 
@@ -153,6 +175,7 @@ static const luaL_Reg sceneLib[] = {
 	{"SetInputFunc", setInputFunc},
 	{"GetTweenedValue", getTweenedValue},
 	{"SetDrawFunc", setDrawFunc},
+	{"SetQuitFunc", setQuitFunc},
 	{"DrawRectCamOffset", drawRectCamOffset},
 	{"MapName", getCurrentMapName},
 	{NULL, NULL}};

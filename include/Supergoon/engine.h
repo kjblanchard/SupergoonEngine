@@ -41,5 +41,6 @@ void SetUpdateFunction(void (*updateFunc)(void));
  * @param drawFunc Function to be called when drawing
  */
 void SetDrawFunction(void (*drawFunc)(void));
+void SetQuitFunction(void (*quitFunc)(void));
 
 void Run(void);

@@ -5,7 +5,9 @@
 typedef struct Texture Texture;
 typedef struct Shader Shader;
 
-Texture *TextureCreate(void);
+Texture *TextureCreateNoCache(void);
+// Caches the texture result, useful if you want to have the engine handle it.
+Texture *TextureCreate(const char *name);
 Texture *TextureCreateRenderTarget(int width, int height);
 void SetRenderTarget(Texture *renderTarget);
 void SetPreviousRenderTarget(void);

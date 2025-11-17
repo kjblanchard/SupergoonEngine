@@ -15,7 +15,6 @@
 #define MAX_STREAMS 2
 static unsigned int _currentStreamID = 0;
 Stream* _streams[MAX_STREAMS];
-/* Stream* _mainStream = NULL; */
 
 typedef struct BgmLoadArgs {
 	char* Name;
@@ -147,6 +146,10 @@ void PlaySfxOneShotImpl(const char* name, float volume) {
 }
 void AudioEventHandlerImpl(void* event) {}
 void CloseAudioImpl(void) {
+	for (int i = 0; i < MAX_STREAMS; ++i) {
+		AudioBgmAsset* asset = &_bgmAssets[i];
+		BgmDelete(asset->BgmPtr);
+	}
 }
 void AudioUpdateImpl(void) {
 	for (int i = 0; i < MAX_STREAMS; ++i) {

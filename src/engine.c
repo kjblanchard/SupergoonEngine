@@ -33,6 +33,7 @@ static float _deltaTimeSeconds;
 extern void(StartImpl)(void);
 static void (*_updateFunc)(void) = NULL;
 static void (*_drawFunc)(void) = NULL;
+static void (*_quitFunc)(void) = NULL;
 static void (*_inputFunc)(void) = NULL;
 static int (*_handleEventFunc)(void *) = NULL;
 
@@ -100,32 +101,23 @@ static void update(void) {
 }
 
 static void Quit(void) {
+	if (_quitFunc) _quitFunc();
 	ShutdownMapSystem();
 	ShutdownSpriteSystem();
 	ShutdownJoystickSystem();
 	ShutdownGraphicsSystem();
 	ShutdownLuaSystem();
 	ShutdownAudioSystem();
-	// ShutdownUISystem();
 	CloseWindow();
 	ShutdownEngineSilesystem();
 	ShutdownLogSystem();
 }
 
-void SetHandleEventFunction(int (*eventFunc)(void *)) {
-	_handleEventFunc = eventFunc;
-}
-
-void SetUpdateFunction(void (*updateFunc)(void)) {
-	_updateFunc = updateFunc;
-}
-
-void SetDrawFunction(void (*drawFunc)(void)) {
-	_drawFunc = drawFunc;
-}
-void SetInputFunction(void (*updateFunc)(void)) {
-	_inputFunc = updateFunc;
-}
+void SetHandleEventFunction(int (*eventFunc)(void *)) { _handleEventFunc = eventFunc; }
+void SetUpdateFunction(void (*updateFunc)(void)) { _updateFunc = updateFunc; }
+void SetDrawFunction(void (*drawFunc)(void)) { _drawFunc = drawFunc; }
+void SetInputFunction(void (*updateFunc)(void)) { _inputFunc = updateFunc; }
+void SetQuitFunction(void (*quitFunc)(void)) { _quitFunc = quitFunc; }
 
 SDL_AppResult SDL_AppInit(void **appState, int argc, char *argv[]) {
 	start();

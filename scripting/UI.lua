@@ -50,6 +50,10 @@ local function drawText(parentOffsetX, parentOffsetY, textDataTable)
     end
 end
 
+local function destroyText(dataTable)
+    if dataTable then cGraphics.DestroyText(dataTable.ptr) end
+end
+
 local function create9SliceFromTable(name, dataTable, objTable)
     dataTable.color = engine.Tools.NormalizeArrayTableWithKeys(dataTable.color, { "r", "g", "b", "a" })
     objTable.ptr = cGraphics.Create9SliceTexture(
@@ -69,6 +73,9 @@ local function draw9Slice(parentOffsetX, parentOffsetY, textDataTable)
         cGraphics.DrawNineSlice(textDataTable.ptr, drawRect)
     end
 end
+local function destroy9Slice(dataTable)
+    if dataTable then cGraphics.DestroyTexture(dataTable.ptr) end
+end
 
 -- Function that takes in name, dataTable (from load file or obj) and the new object
 local classTypeFunctionTable = {
@@ -81,6 +88,12 @@ local classTypeDrawTable = {
     text = drawText,
     nineSlice = draw9Slice,
     image = drawImage
+}
+
+local classTypeDestroyTable = {
+    nineSlice = destroy9Slice,
+    text = destroyText
+
 }
 
 function UI.UpdateTextText(textPtr, newText)
@@ -138,9 +151,24 @@ local function drawUIRecursive(parentX, parentY, tableData)
     end
 end
 
+local function destroyUIRecursive(tableData)
+    if classTypeDestroyTable[tableData.dataTable.class] then
+        classTypeDestroyTable[tableData.dataTable.class]()
+    end
+    for _, childTable in pairs(tableData.children) do
+        destroyUIRecursive(childTable)
+    end
+end
+
 function UI.DrawUI()
     for _, panelChild in pairs(UI.UITree) do
         drawUIRecursive(0, 0, panelChild)
+    end
+end
+
+function UI.DestroyUI()
+    for _, panelChild in pairs(UI.UITree) do
+        destroyUIRecursive(panelChild)
     end
 end
 

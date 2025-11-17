@@ -32,7 +32,7 @@ static void loadTexturesForFont(LoadedFont* font) {
 			sgLogWarn("Freetype failed to load glyph!");
 			continue;
 		}
-		Texture* texture = TextureCreate();
+		Texture* texture = TextureCreateNoCache();
 		font->GlyphTextures[i] = texture;
 		char name[2] = {i, '\0'};
 		TextureLoadFromData(texture, name, font->FontFace->glyph->bitmap.width, font->FontFace->glyph->bitmap.rows, font->FontFace->glyph->bitmap.buffer);
@@ -309,7 +309,7 @@ void ShutdownTextSystem(void) {
 		}
 		free(font->FontName);
 		for (size_t j = 0; j < ASCII_CHAR_NUM; j++) {
-			UnloadTexture(font->GlyphTextures[j]);
+			TextureDestroy(font->GlyphTextures[j]);
 		}
 		FT_Done_Face(font->FontFace);
 	}
@@ -375,6 +375,7 @@ void TextDraw(Text* text, float parentX, float parentY) {
 }
 
 void TextDestroy(Text* text) {
+	sgLogWarn("Destroying the text!");
 	TextureDestroy(text->Texture);
 	free(text->Text);
 	text->Texture = NULL;

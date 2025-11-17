@@ -125,6 +125,7 @@ typedef struct Tilemap {
 	LayerGroup LayerGroups[2];
 	RectangleF *Solids;
 	int NumSolids;
+	Texture *BackgroundTexture;
 } Tilemap;
 
 // Draws the current map bg layers and animated tiles.

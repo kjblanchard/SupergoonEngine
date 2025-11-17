@@ -1,4 +1,5 @@
 #include <Supergoon/Graphics/graphics.h>
+#include <Supergoon/Graphics/shader.h>
 #include <Supergoon/Graphics/texture.h>
 #include <Supergoon/Primitives/Color.h>
 #include <Supergoon/camera.h>
@@ -52,7 +53,8 @@ void DestroySprite(Sprite* sprite) {
 		if (sprite != _sprites[i]) {
 			continue;
 		}
-		UnloadTexture(sprite->Texture);
+		ShaderDestroy(sprite->Shader);
+		TextureDestroy(sprite->Texture);
 		sprite->Texture = NULL;
 		sprite->Flags = SpriteFlagDestroyed;
 		if (_firstSpriteHole == NO_HOLE || i < _firstSpriteHole) {
@@ -80,7 +82,7 @@ void DrawSpriteSystem(void) {
 
 void ShutdownSpriteSystem(void) {
 	for (size_t i = 0; i < _sizeSprites; i++) {
-		UnloadTexture(_sprites[i]->Texture);
+		TextureDestroy(_sprites[i]->Texture);
 	}
 	free(_sprites);
 	_sprites = NULL;

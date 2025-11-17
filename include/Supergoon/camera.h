@@ -7,6 +7,8 @@ void SetCameraZoom(float zoom);
 void SetCameraBounds(float x, float y);
 float CameraGetX(void);
 float CameraGetY(void);
+float CameraGetWidth(void);
+float CameraGetHeight(void);
 /**
  * @brief  Sets the camera size, should likely be set to the window size.
  * @param x

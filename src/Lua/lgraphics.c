@@ -30,8 +30,9 @@ static int createTexture(lua_State *L) {
 			"filenames for shader source");
 		return 0;
 	}
-	Texture *texture = TextureCreate();
-	TextureLoadFromBmp(texture, LuaGetStringi(L, 1));
+	const char *name = LuaGetStringi(L, 1);
+	Texture *texture = TextureCreate(name);
+	TextureLoadFromBmp(texture, name);
 	LuaPushLightUserdata(L, texture);
 	return 1;
 }
@@ -56,7 +57,7 @@ static int create9SliceImage(lua_State *L) {
 	};
 	const char *filename = LuaGetStringi(L, 2);
 	Texture *renderTargetTexture = TextureCreateRenderTarget(dst.w, dst.h);
-	Texture *nineSliceImageTexture = TextureCreate();
+	Texture *nineSliceImageTexture = TextureCreate(filename);
 	TextureLoadFromBmp(nineSliceImageTexture, filename);
 	int nineSliceImageW = TextureGetWidth(nineSliceImageTexture);
 	int nineSliceImageH = TextureGetHeight(nineSliceImageTexture);
@@ -105,7 +106,7 @@ static int create9SliceImage(lua_State *L) {
 		dstRect = (RectangleF){dst.w - sizeX + 3, (float)i, sizeX, 1};
 		DrawTextureToTexture(renderTargetTexture, nineSliceImageTexture, GetDefaultShader(), &dstRect, &srcRect, 1.0);
 	}
-	UnloadTexture(nineSliceImageTexture);
+	TextureDestroy(nineSliceImageTexture);
 	LuaPushLightUserdata(L, renderTargetTexture);
 	return 1;
 }
@@ -172,6 +173,15 @@ static int createRenderTargetTexture(lua_State *L) {
 												 LuaGetIntFromStacki(L, 2));
 	LuaPushLightUserdata(L, texture);
 	return 1;
+}
+
+static int destroyTexture(lua_State *L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 1, LuaFunctionParameterTypeUserdata)) {
+		sgLogWarn("Bad params passed to destroy render target texture");
+		return 0;
+	}
+	TextureDestroy(LuaGetLightUserdatai(L, 1));
+	return 0;
 }
 
 static int setRenderTarget(lua_State *L) {
@@ -249,6 +259,7 @@ static const luaL_Reg graphicsLib[] = {
 	{"CreateTexture", createTexture},
 	{"Create9SliceTexture", create9SliceImage},
 	{"CreateRenderTargetTexture", createRenderTargetTexture},
+	{"DestroyTexture", destroyTexture},
 	{"ClearRenderTargetTexture", clearRenderTargetTexture},
 	{"SetRenderTarget", setRenderTarget},
 	{"SetPreviousRenderTarget", setPreviousRenderTarget},

@@ -1,9 +1,9 @@
 #include <Supergoon/camera.h>
+#include <cglm/vec2.h>
 #include <cglm/vec3.h>
 #include <math.h>
 vec3 cameraPos = {0, 0, 0};
-float CamSizeX = 0;
-float CamSizeY = 0;
+vec2 cameraSize = {0, 0};
 float BoundsX = 0;
 float BoundsY = 0;
 float CameraZoom = 1.0f;
@@ -11,8 +11,10 @@ float* followX;
 float* followY;
 
 void UpdateCameraSystem(void) {
-	double viewWidth = CamSizeX;
-	double viewHeight = CamSizeY;
+	/* double viewWidth = cameraSize[0]; */
+	/* double viewHeight = cameraSize[1]; */
+	double viewWidth = 480;
+	double viewHeight = 270;
 	double camX = 0;
 	double camY = 0;
 	if (followX && followY) {
@@ -50,8 +52,8 @@ void SetCameraBounds(float x, float y) {
 }
 
 void SetCameraSize(float x, float y) {
-	CamSizeX = x;
-	CamSizeY = y;
+	cameraSize[0] = x;
+	cameraSize[1] = y;
 }
 
 void SetCameraZoom(float zoom) {
@@ -63,3 +65,6 @@ float CameraGetX(void) {
 float CameraGetY(void) {
 	return cameraPos[1];
 }
+
+float CameraGetWidth(void) { return cameraSize[0]; }
+float CameraGetHeight(void) { return cameraSize[1]; }

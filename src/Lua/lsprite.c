@@ -15,8 +15,9 @@ static int newSprite(lua_State* L) {
 	}
 	Sprite* sprite = NewSprite();
 	sprite->Parent = LuaGetLightUserdatai(L, 2);
-	sprite->Texture = TextureCreate();
-	TextureLoadFromBmp(sprite->Texture, LuaGetStringi(L, 1));
+	const char* name = LuaGetStringi(L, 1);
+	sprite->Texture = TextureCreate(name);
+	TextureLoadFromBmp(sprite->Texture, name);
 	sprite->Shader = ShaderCreate();
 	ShaderCompile(sprite->Shader, "2dSpriteVertex", "2dSpriteFragment");
 	sprite->TextureSourceRect.x = LuaGetFloatFromTableStackiKey(L, 3, "x");

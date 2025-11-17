@@ -94,8 +94,18 @@ static int setTextCentered(lua_State* L) {
 	return 0;
 }
 
+static int destroyText(lua_State* L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(_luaState, 1, LuaFunctionParameterTypeUserdata)) {
+		sgLogWarn("trying to destroy text badly");
+		return 0;
+	}
+	TextDestroy(LuaGetLightUserdatai(L, 1));
+	return 0;
+}
+
 static const luaL_Reg textLib[] = {
 	{"CreateText", createText},
+	{"DestroyText", destroyText},
 	{"UpdateText", updateText},
 	{"UpdateTextText", updateTextText},
 	{"SetTextCentered", setTextCentered},

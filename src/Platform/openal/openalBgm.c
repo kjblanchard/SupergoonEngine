@@ -1,12 +1,12 @@
 #include <AL/al.h>
 #include <Supergoon/Platform/openal/openalBgm.h>
 #include <Supergoon/log.h>
+#include <Supergoon/tools.h>
 #include <assert.h>
 #include <ogg/ogg.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <Supergoon/tools.h>
 
 Bgm* BgmNew(void) {
 	Bgm* bgm = malloc(sizeof(*bgm));
@@ -83,7 +83,9 @@ void BgmLoad(Bgm* bgm) {
 }
 
 void BgmDelete(Bgm* bgm) {
+	if (!bgm) return;
+	ov_clear(bgm->VorbisFile);
 	free(bgm->VorbisFile);
 	free(bgm->Filename);
-	ov_clear(bgm->VorbisFile);
+	free(bgm);
 }

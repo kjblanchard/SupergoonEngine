@@ -62,6 +62,7 @@ static void preloadStreamWithData(Stream* stream) {
 	}
 }
 void StreamLoad(Stream* stream) {
+	stream->TotalBytesReadThisLoop = 0;
 	assert(stream->BgmData && "No bgm in stream load!");
 	alSourceRewind(stream->Source);
 	alSourcei(stream->Source, AL_BUFFER, 0);

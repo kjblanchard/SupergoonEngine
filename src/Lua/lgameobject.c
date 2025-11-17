@@ -60,8 +60,19 @@ static int createGameObject(lua_State* L) {
 	return 1;
 }
 
+static int deleteGameObject(lua_State* L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 1, LuaFunctionParameterTypeUserdata)) {
+		sgLogWarn("bad gameobject passed to delete gameobject");
+		return 0;
+	}
+	GameObject* go = (GameObject*)LuaGetLightUserdatai(L, 1);
+	if (go) GameObjectDestroy(go);
+	return 0;
+}
+
 static const luaL_Reg objectLib[] = {
 	{"CreateGameObject", createGameObject},
+	{"DestroyGameObject", deleteGameObject},
 	{"Position", getGameobjectPosition},
 	{"SetPosition", setGameobjectPosition},
 	{"Id", getGameobjectId},

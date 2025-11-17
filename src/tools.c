@@ -79,25 +79,40 @@ int sgstrncasecmp(const char *s1, const char *s2, size_t n) {
 // }
 
 // TODO this was vibe coded .. prolly make this better.
+/* int strcmpWithSuffix(const char *lhs, const char *rhs, const char *suffix) { */
+/* 	if (!lhs || !rhs) { */
+/* 		sgLogInfo("Passed a null string into compare.. returning false"); */
+/* 		return 0;  // false */
+/* 	} */
+/* 	size_t lhsLen = strlen(lhs); */
+/* 	size_t rhsLen = strlen(rhs); */
+/* 	size_t suffixLen = strlen(suffix); */
+/* 	// check suffix first */
+/* 	if (lhsLen < suffixLen || rhsLen < suffixLen) return 0; */
+/* 	if (strcmp(lhs + lhsLen - suffixLen, suffix) != 0) { */
+/* 		return 0; */
+/* 	} */
+/* 	return strncmp(lhs, rhs, lhsLen - suffixLen) == 0; */
+/* } */
+
 int strcmpWithSuffix(const char *lhs, const char *rhs, const char *suffix) {
-	if (!lhs || !rhs) {
-		sgLogInfo("Passed a null string into compare.. returning false");
-		return 0;  // false
-	}
+	if (!lhs || !rhs) return 0;
 
 	size_t lhsLen = strlen(lhs);
 	size_t rhsLen = strlen(rhs);
 	size_t suffixLen = strlen(suffix);
 
-	// check suffix first
-	if (lhsLen < suffixLen || rhsLen < suffixLen) return 0;
+	// rhs must end with the suffix
+	if (rhsLen < suffixLen) return 0;
 
-	if (strcmp(lhs + lhsLen - suffixLen, suffix) != 0) {
+	if (strcmp(rhs + rhsLen - suffixLen, suffix) != 0) {
+		// rhs doesn't end with suffix
 		return 0;
 	}
 
-	// compare strings without the suffix
-	if (lhsLen != rhsLen) return 0;
+	// now check if lhs == rhs without suffix
+	size_t baseLen = rhsLen - suffixLen;
+	if (lhsLen != baseLen) return 0;
 
-	return strncmp(lhs, rhs, lhsLen - suffixLen) == 0;
+	return strncmp(lhs, rhs, baseLen) == 0;
 }

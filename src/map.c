@@ -20,12 +20,8 @@ static void handleTiledObjectGroup(Tilemap *map);
 // Get the rect for gid, used when determining the src rect of a gid.
 static void GetRectForGid(int gid, Tileset *tileset, RectangleF *rect);
 Tilemap *_currentMap = NULL;
-#define MAX_PREVIOUS_MAPS_CACHE 2
+#define MAX_PREVIOUS_MAPS_CACHE 3
 static Tilemap *_previousMaps[MAX_PREVIOUS_MAPS_CACHE] = {NULL};
-// BG texture below the character
-static Texture *_bg1Texture = NULL;
-// BG texture above the character
-static Texture *_bg2Texture = NULL;
 
 static void createAnimatedTiles(Tilemap *map, Tileset *tileset) {
 	LuaGetTable(_luaState, "tiles");
@@ -153,7 +149,7 @@ static void loadTilesetTextures(Tilemap *map) {
 		if (nameLen >= 4 && strcmp(imageName + nameLen - 4, ".bmp") == 0) {
 			imageName[nameLen - 4] = '\0';
 		}
-		map->Tilesets[i].TilesetTexture = TextureCreate();
+		map->Tilesets[i].TilesetTexture = TextureCreate(map->Tilesets[i].Image);
 		TextureLoadFromBmp(map->Tilesets[i].TilesetTexture, map->Tilesets[i].Image);
 	}
 }
@@ -266,12 +262,8 @@ static void handleAnimatedTile(Tilemap *map, Tileset *srcTileset,
 static void createBackgroundsFromTilemap(Tilemap *map) {
 	int mapWidth = map->Width * map->TileWidth;
 	int mapHeight = map->Height * map->TileHeight;
-	if (_bg1Texture) {
-		TextureDestroy(_bg1Texture);
-	}
-	//_bg1Texture = TextureCreate();
-	_bg1Texture = TextureCreateRenderTarget(mapWidth, mapHeight);
-	SetRenderTarget(_bg1Texture);
+	map->BackgroundTexture = TextureCreateRenderTarget(mapWidth, mapHeight);
+	SetRenderTarget(map->BackgroundTexture);
 	loadTilesetTextures(map);
 	LayerGroup *bg1LayerGroup = &map->LayerGroups[0];
 	RectangleF dstRect = {0, 0, map->TileWidth, map->TileHeight};
@@ -294,7 +286,7 @@ static void createBackgroundsFromTilemap(Tilemap *map) {
 				}
 				GetRectForGid(tileGid, srcTileset, &srcRect);
 				Texture *srcTexture = srcTileset->TilesetTexture;
-				DrawTextureToTexture(_bg1Texture, srcTexture, GetDefaultShader(), &dstRect, &srcRect, 1.0f);
+				DrawTextureToTexture(map->BackgroundTexture, srcTexture, GetDefaultShader(), &dstRect, &srcRect, 1.0f);
 			}
 		}
 	}
@@ -302,6 +294,7 @@ static void createBackgroundsFromTilemap(Tilemap *map) {
 }
 
 static void freeTiledTilemap(Tilemap *map) {
+	sgLogWarn("chearing tiled map with name %s ", map->BaseFilename);
 	for (size_t i = 0; i < 2; i++) {
 		for (size_t j = 0; j < (size_t)map->LayerGroups[i].NumLayers; j++) {
 			SDL_free(map->LayerGroups[i].Layers[j].Data);
@@ -343,6 +336,7 @@ static void freeTiledTilemap(Tilemap *map) {
 	SDL_free(map->Tilesets);
 	LuaUnsetGlobal(_luaState, map->BaseFilename);
 	SDL_free(map->BaseFilename);
+	TextureDestroy(map->BackgroundTexture);
 	SDL_free(map);
 	map = NULL;
 }
@@ -385,104 +379,84 @@ static void drawAnimatedTiles(void) {
 void DrawCurrentMap(void) {
 	if (!_currentMap)
 		return;
-	RectangleF src = {CameraGetX(), CameraGetY(), WindowWidth(), WindowHeight()};
-	RectangleF dst = {0, 0, WindowWidth(), WindowHeight()};
+	float camWidth = CameraGetWidth();
+	float camHeight = CameraGetHeight();
+	sgLogWarn("Cam width is %f and height is %f", camWidth, camHeight);
+	camWidth = camWidth > WindowWidth() ? WindowWidth() : camWidth;
+	camHeight = camHeight > WindowHeight() ? WindowHeight() : camHeight;
+	sgLogWarn("now Cam width is %f and height is %f", camWidth, camHeight);
+	RectangleF src = {CameraGetX(), CameraGetY(), camWidth, camHeight};
+	RectangleF dst = {0, 0, camWidth, camHeight};
+	/* RectangleF dst = {0, 0, WindowWidth(), WindowHeight()}; */
 	Color color = {255, 255, 255, 255};
-	if (_bg1Texture) {
-		DrawTexture(_bg1Texture, GetDefaultShader(), &dst, &src, false, 1.0f, false, &color);
-	}
+	DrawTexture(_currentMap->BackgroundTexture, GetDefaultShader(), &dst, &src, false, 1.0f, false, &color);
 	if (_currentMap) {
 		drawAnimatedTiles();
 	}
-	if (_bg2Texture) {
-		// DrawTexture(_bg2Texture, &dst, &src);
-	}
 }
-// TODO this was ai.. probably need to check this and fix.
+static void moveToFront(Tilemap **arr, int idx) {
+	if (idx <= 0) return;
+
+	Tilemap *tmp = arr[idx];
+
+	for (int i = idx; i > 0; --i) {
+		arr[i] = arr[i - 1];
+	}
+
+	arr[0] = tmp;
+}
+
+static void insertAtFront(Tilemap **arr, Tilemap *map) {
+	// find how many valid entries we have
+	int count = 0;
+	for (int i = 0; i < MAX_PREVIOUS_MAPS_CACHE; ++i) {
+		if (arr[i])
+			count++;
+		else
+			break;	// guaranteed no gaps
+	}
+	if (count == MAX_PREVIOUS_MAPS_CACHE) {
+		// full → destroy last map
+		freeTiledTilemap(arr[MAX_PREVIOUS_MAPS_CACHE - 1]);
+		count--;  // effectively frees one slot
+	}
+	// shift everything right by one, up to count
+	for (int i = count; i > 0; --i) {
+		arr[i] = arr[i - 1];
+	}
+	arr[0] = map;
+}
+
+// We should keep a small cache of maps so that we don't always reload
+// Order them by the last loaded one, and clear that one when needed, and always keep them sorted.
+// _previousMaps[0] should always be the map that is loaded, then the most recently second loaded, and we should replace the last one
 static Tilemap *checkCache(const char *mapName) {
-	if (!_currentMap) {
-		return NULL;
-	}
+	for (int i = 0; i < MAX_PREVIOUS_MAPS_CACHE; ++i) {
+		Tilemap *t = _previousMaps[i];
+		if (!t) break;	// no more valid entries
 
-	Tilemap *returnMap = NULL;
-	int foundIndex = -1;
-	unsigned int cacheSize = 0;
-
-	// First pass: look for cache hit
-	for (size_t i = 0; i < MAX_PREVIOUS_MAPS_CACHE; i++) {
-		if (_previousMaps[i] == NULL)
-			break;
-
-		if (strcmp(mapName, _previousMaps[i]->BaseFilename) == 0) {
-			returnMap = _previousMaps[i];
-			foundIndex = i;
-			break;
+		if (strcmp(t->BaseFilename, mapName) == 0) {
+			moveToFront(_previousMaps, i);
+			return _previousMaps[0];
 		}
 	}
-
-	// Second pass: determine actual cache size
-	for (cacheSize = 0;
-		 cacheSize < MAX_PREVIOUS_MAPS_CACHE && _previousMaps[cacheSize] != NULL;
-		 ++cacheSize);
-
-	// If cache hit, remove it from cache (shift others left)
-	if (foundIndex >= 0) {
-		for (size_t i = foundIndex; i < cacheSize - 1; i++) {
-			_previousMaps[i] = _previousMaps[i + 1];
-		}
-		_previousMaps[cacheSize - 1] = NULL;
-		// Caller is expected to assign this to _currentMap
-		return returnMap;
-	}
-
-	// Cache current map if it is different from the map being loaded
-	if (_currentMap && strcmp(mapName, _currentMap->BaseFilename) != 0) {
-		// If cache is full, free the last entry
-		if (cacheSize == MAX_PREVIOUS_MAPS_CACHE) {
-			Tilemap *map = _previousMaps[cacheSize - 1];
-			if (map) {
-				freeTiledTilemap(map);
-			}
-			cacheSize--;  // Reduce cacheSize to make room
-		}
-
-		// Shift existing entries down to make space at index 0
-		for (size_t i = cacheSize; i > 0; i--) {
-			_previousMaps[i] = _previousMaps[i - 1];
-		}
-		_previousMaps[0] = _currentMap;
-	} else {
-		// If current map is already the one being loaded, just return it
-		return _currentMap;
-	}
-
-	return returnMap;
+	return NULL;
 }
 
 void LoadMap(const char *mapName) {
-	Tilemap *nextMap = checkCache(mapName);
-	if (_currentMap && nextMap == _currentMap) {
-		return;
+	Tilemap *map = checkCache(mapName);
+	if (!map) {
+		// Not found — parse new map
+		map = parseTiledTilemap(mapName);
+		createBackgroundsFromTilemap(map);
+		insertAtFront(_previousMaps, map);
 	}
-	if (!nextMap) {
-		nextMap = parseTiledTilemap(mapName);
-	}
-	_currentMap = nextMap;
-	createBackgroundsFromTilemap(_currentMap);
+	_currentMap = map;
 	SetCameraBounds(_currentMap->Width * _currentMap->TileWidth, _currentMap->Height * _currentMap->TileHeight);
+	SetCameraSize(_currentMap->Width * _currentMap->TileWidth, _currentMap->Height * _currentMap->TileHeight);
 }
 
 void ShutdownMapSystem(void) {
-	if (_bg1Texture) {
-		TextureDestroy(_bg1Texture);
-	}
-	if (_bg2Texture) {
-		TextureDestroy(_bg2Texture);
-	}
-	if (_currentMap) {
-		freeTiledTilemap(_currentMap);
-		_currentMap = NULL;
-	}
 	for (size_t i = 0; i < MAX_PREVIOUS_MAPS_CACHE; i++) {
 		if (_previousMaps[i] == NULL) {
 			break;
