@@ -74,8 +74,6 @@ set(SRC_FILES
     src/events.c
     src/engine.c
     src/Primitives/rectangle.c
-    src/Audio/Sfx.c
-    src/Audio/Stream.c
     src/Audio/Audio.c
     src/Tweening/easing.c
     # src/Tweening/tween.c
@@ -104,6 +102,7 @@ set(SRC_FILES
     src/Lua/ltext.c
     # sound
     src/Platform/openal/openal.c
+    src/Platform/openal/openalSfx.c
     src/Platform/openal/openalStream.c
     src/Platform/openal/openalBgm.c
     # 2d engine

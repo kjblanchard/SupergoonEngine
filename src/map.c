@@ -381,10 +381,8 @@ void DrawCurrentMap(void) {
 		return;
 	float camWidth = CameraGetWidth();
 	float camHeight = CameraGetHeight();
-	sgLogWarn("Cam width is %f and height is %f", camWidth, camHeight);
 	camWidth = camWidth > WindowWidth() ? WindowWidth() : camWidth;
 	camHeight = camHeight > WindowHeight() ? WindowHeight() : camHeight;
-	sgLogWarn("now Cam width is %f and height is %f", camWidth, camHeight);
 	RectangleF src = {CameraGetX(), CameraGetY(), camWidth, camHeight};
 	RectangleF dst = {0, 0, camWidth, camHeight};
 	/* RectangleF dst = {0, 0, WindowWidth(), WindowHeight()}; */

@@ -13,7 +13,7 @@ typedef struct sgStream {
 sgStream* sgStreamNew(void);
 // Initialize a stream, used by engine
 void sgStreamInit(sgStream* stream);
-bool sgStreamIsFinished(sgStream* stream);
+int sgStreamIsFinished(sgStream* stream);
 void sgStreamFree(sgStream* stream);
 // Close a stream, used by engine
 void sgStreamClose(sgStream* stream);

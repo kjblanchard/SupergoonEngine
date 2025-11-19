@@ -2,6 +2,7 @@
 #include <AL/alc.h>
 #include <Supergoon/Platform/openal/openal.h>
 #include <Supergoon/Platform/openal/openalBgm.h>
+#include <Supergoon/Platform/openal/openalSfx.h>
 #include <Supergoon/Platform/openal/openalStream.h>
 #include <Supergoon/filesystem.h>
 #include <Supergoon/log.h>
@@ -72,6 +73,7 @@ void InitializeAudioImpl(void) {
 	for (int i = 0; i < MAX_STREAMS; ++i) {
 		_streams[i] = StreamNew();
 	}
+	InitializeSfxSystem();
 }
 void SetBgmTrackImpl(int track) {
 	if (track < 0 || track >= MAX_STREAMS) {
@@ -143,6 +145,7 @@ void SetGlobalBgmVolumeImpl(float volume) {
 void SetGlobalSfxVolumeImpl(float volume) {
 }
 void PlaySfxOneShotImpl(const char* name, float volume) {
+	SfxPlayOneShot(name, volume);
 }
 void AudioEventHandlerImpl(void* event) {}
 void CloseAudioImpl(void) {
@@ -156,4 +159,5 @@ void AudioUpdateImpl(void) {
 		if (!_bgmAssets[i].BgmPtr) continue;
 		StreamUpdate(_streams[i]);
 	}
+	UpdateSfxSystem();
 }

@@ -1,4 +1,5 @@
 #pragma once
+#include <stdint.h>
 #define BGM_NUM_BUFFERS 4
 #define MAX_SFX_SOUNDS 10
 #define BGM_BUFFER_SAMPLES 8192	  // 8kb
