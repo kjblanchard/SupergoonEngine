@@ -159,5 +159,4 @@ void AudioUpdateImpl(void) {
 		if (!_bgmAssets[i].BgmPtr) continue;
 		StreamUpdate(_streams[i]);
 	}
-	UpdateSfxSystem();
 }

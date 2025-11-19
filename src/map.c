@@ -294,7 +294,6 @@ static void createBackgroundsFromTilemap(Tilemap *map) {
 }
 
 static void freeTiledTilemap(Tilemap *map) {
-	sgLogWarn("chearing tiled map with name %s ", map->BaseFilename);
 	for (size_t i = 0; i < 2; i++) {
 		for (size_t j = 0; j < (size_t)map->LayerGroups[i].NumLayers; j++) {
 			SDL_free(map->LayerGroups[i].Layers[j].Data);

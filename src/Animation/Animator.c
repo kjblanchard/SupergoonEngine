@@ -79,9 +79,7 @@ static AnimationData* findAnimationData(const char* name) {
 		if (currentPtr->RefCount == 0) {
 			continue;
 		}
-		sgLogWarn("Looking for %s against %s", name, currentPtr->Data.meta.image);
 		if (strcmpWithSuffix(name, currentPtr->Data.meta.image, ".bmp")) {
-			sgLogWarn("found, increasing refcount");
 			++currentPtr->RefCount;
 			return &_animationData.AnimationArray[i].Data;
 		}
