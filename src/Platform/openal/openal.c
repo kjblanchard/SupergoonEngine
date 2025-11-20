@@ -82,15 +82,8 @@ void SetBgmTrackImpl(int track) {
 	}
 	_currentStreamID = track;
 }
-static void loadBgmInternal(BgmLoadArgs* args) {
+static void loadBgmInternal(BgmLoadArgs* args, char* fullPath) {
 	AudioBgmAsset* bgmAsset = &_bgmAssets[args->Track];
-	char* fullPath = NULL;
-	asprintf(&fullPath, "%sassets/audio/bgm/%s%s", GetBasePath(), args->Name, ".ogg");
-	// If BGM is already in this track, we should return as it's already loaded
-	if (bgmAsset->BgmPtr && bgmAsset->BgmPtr->Filename && !strcmp(bgmAsset->BgmPtr->Filename, fullPath)) {
-		free(fullPath);
-		return;
-	}
 	// If theres already a bgm in there, then we should delete it.
 	if (bgmAsset->BgmPtr) {
 		BgmDelete(bgmAsset->BgmPtr);
@@ -105,13 +98,21 @@ static void loadBgmInternal(BgmLoadArgs* args) {
 }
 
 void LoadBgmImpl(const char* filename, float volume, int loops) {
+	char* fullPath = NULL;
+	AudioBgmAsset* bgmAsset = &_bgmAssets[_currentStreamID];
+	asprintf(&fullPath, "%sassets/audio/bgm/%s%s", GetBasePath(), filename, ".ogg");
+	// If BGM is already in this track, we should return as it's already loaded
+	if (bgmAsset->BgmPtr && bgmAsset->BgmPtr->Filename && strcmp(bgmAsset->BgmPtr->Filename, fullPath) == 0) {
+		sgLogWarn("This is already playing, returning");
+		free(fullPath);
+		return;
+	}
 	BgmLoadArgs args;
 	args.Name = strdup(filename);
 	args.Loops = loops;
 	args.Track = _currentStreamID;
 	args.Volume = volume;
-	loadBgmInternal(&args);
-	AudioBgmAsset* bgmAsset = &_bgmAssets[_currentStreamID];
+	loadBgmInternal(&args, fullPath);
 	Stream* stream = _streams[_currentStreamID];
 	stream->BgmData = bgmAsset->BgmPtr;
 	StreamLoad(stream);

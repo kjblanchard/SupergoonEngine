@@ -77,8 +77,8 @@ set(SRC_FILES
     src/Audio/Audio.c
     src/Tweening/easing.c
     # src/Tweening/tween.c
-    src/Lua/log.c
-    src/Lua/audio.c
+    src/Lua/llog.c
+    src/Lua/laudio.c
     src/Lua/lengine.c
     src/Lua/linput.c
     src/Lua/lcamera.c
