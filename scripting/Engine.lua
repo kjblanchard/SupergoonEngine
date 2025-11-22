@@ -354,8 +354,10 @@ end
 function engine.Map.LoadScene(sceneDataTable, loaderFunc)
     -- gamestate.nextScene = mapKey
     engine.Map.LoadTilemap(sceneDataTable[1])
-    local ui = require("UI")
-    ui.CreateUIPanelFromScriptFile(sceneDataTable[2])
+    if sceneDataTable[2] ~= "" then
+        local ui = require("UI")
+        ui.CreateUIPanelFromScriptFile(sceneDataTable[2])
+    end
     engine.Map.LoadTilemapObjects(sceneDataTable[1], loaderFunc)
     engine.Audio.PlayBGM(sceneDataTable[3])
 end
