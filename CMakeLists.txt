@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+
 message(STATUS "Starting ${EXECUTABLE_TARGET_NAME} engine initialization")
 set(COMPILE_OPTIONS)
 set(EXTERNAL_LIBS)
@@ -59,7 +59,7 @@ if(SDL_GL)
 endif(SDL_GL)
 
 if(UNIX OR APPLE)
-  list(APPEND COMPILE_OPTIONS -Wall -Wextra -Wpedantic -Wdeprecated -Wno-unused-parameter -Wno-sign-compare)
+  list(APPEND COMPILE_OPTIONS -Wall -Wextra -Wno-pedantic -Wdeprecated -Wno-unused-parameter -Wno-sign-compare)
 endif(UNIX OR APPLE)
 
 set(SRC_FILES
@@ -219,11 +219,12 @@ if(SYSTEM_PACKAGES) # If we are using system packages, then we should try to fin
 
   find_library(
     LIB_LUA
-    NAMES lua lua_static
-    HINTS /opt/homebrew/bin/ /usr/local/bin /usr/local/lib)
+    NAMES lua lua_static lua5.4
+    HINTS /opt/homebrew/bin/ /usr/local/bin /usr/local/lib /usr/bin/)
 
   if(LIB_LUA)
     list(APPEND EXTERNAL_LIBS ${LIB_LUA})
+    target_include_directories(${EXECUTABLE_TARGET_NAME} PUBLIC /usr/include/lua5.4) #local debian install
   endif(LIB_LUA)
   find_package(SDL3 CONFIG COMPONENTS SDL3-shared)
   if(SDL3_FOUND)
@@ -232,7 +233,7 @@ if(SYSTEM_PACKAGES) # If we are using system packages, then we should try to fin
   find_package(Freetype)
   if(FREETYPE_FOUND)
     # list(APPEND EXTERNAL_LIBS ${FREETYPE_LIBRARY})
-    target_include_directories(${EXECUTABLE_TARGET_NAME} PUBLIC /usr/local/include/freetype2 /opt/homebrew/opt/freetype/include/freetype2)
+    target_include_directories(${EXECUTABLE_TARGET_NAME} PUBLIC /usr/local/include/freetype2 /opt/homebrew/opt/freetype/include/freetype2 /usr/include/freetype2)
     list(APPEND EXTERNAL_LIBS ${FREETYPE_LIBRARY})
   endif(FREETYPE_FOUND)
 
