@@ -103,7 +103,6 @@ void LoadBgmImpl(const char* filename, float volume, int loops) {
 	asprintf(&fullPath, "%sassets/audio/bgm/%s%s", GetBasePath(), filename, ".ogg");
 	// If BGM is already in this track, we should return as it's already loaded
 	if (bgmAsset->BgmPtr && bgmAsset->BgmPtr->Filename && strcmp(bgmAsset->BgmPtr->Filename, fullPath) == 0) {
-		sgLogWarn("This is already playing, returning");
 		free(fullPath);
 		return;
 	}
