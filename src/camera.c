@@ -1,3 +1,5 @@
+#include <SDL3/SDL_scancode.h>
+#include <Supergoon/Input/keyboard.h>
 #include <Supergoon/camera.h>
 #include <cglm/vec2.h>
 #include <cglm/vec3.h>
@@ -11,8 +13,6 @@ float* followX;
 float* followY;
 
 void UpdateCameraSystem(void) {
-	/* double viewWidth = cameraSize[0]; */
-	/* double viewHeight = cameraSize[1]; */
 	double viewWidth = 480;
 	double viewHeight = 270;
 	double camX = 0;

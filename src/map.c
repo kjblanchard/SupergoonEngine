@@ -382,9 +382,10 @@ void DrawCurrentMap(void) {
 	float camHeight = CameraGetHeight();
 	camWidth = camWidth > WindowWidth() ? WindowWidth() : camWidth;
 	camHeight = camHeight > WindowHeight() ? WindowHeight() : camHeight;
-	RectangleF src = {CameraGetX(), CameraGetY(), camWidth, camHeight};
-	RectangleF dst = {0, 0, camWidth, camHeight};
-	/* RectangleF dst = {0, 0, WindowWidth(), WindowHeight()}; */
+	int texWidth = TextureGetWidth(_currentMap->BackgroundTexture);
+	int texHeight = TextureGetWidth(_currentMap->BackgroundTexture);
+	RectangleF src = {0, 0, texWidth, texHeight};
+	RectangleF dst = {-CameraGetX(), -CameraGetY(), texWidth, texHeight};
 	Color color = {255, 255, 255, 255};
 	DrawTexture(_currentMap->BackgroundTexture, GetDefaultShader(), &dst, &src, false, 1.0f, false, &color);
 	if (_currentMap) {
