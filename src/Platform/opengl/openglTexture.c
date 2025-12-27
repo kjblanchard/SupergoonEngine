@@ -100,8 +100,13 @@ Texture *TextureCreateNoCacheImpl(void) {
 	glBindTexture(GL_TEXTURE_2D, texture->ID);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	int clamp = GL_CLAMP_TO_BORDER;
+#ifdef __EMSCRIPTEN__
+	clamp = GL_CLAMP_TO_EDGE;
+#endif
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, clamp);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, clamp);
 	return texture;
 }
 
@@ -140,8 +145,12 @@ Texture *TextureCreateRenderTargetImpl(int width, int height) {
 	// sensible defaults for render target texture
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	int clamp = GL_CLAMP_TO_BORDER;
+#ifdef __EMSCRIPTEN__
+	clamp = GL_CLAMP_TO_EDGE;
+#endif
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, clamp);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, clamp);
 
 	// Create framebuffer and attach texture as color attachment 0
 	glGenFramebuffers(1, &texture->FBO);

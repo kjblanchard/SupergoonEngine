@@ -1,4 +1,5 @@
 #include <SDL3/SDL.h>
+#include <Supergoon/log.h>
 #include <Supergoon/tools.h>
 #include <ctype.h>
 #include <stdarg.h>
@@ -69,50 +70,27 @@ int sgstrncasecmp(const char *s1, const char *s2, size_t n) {
 	return tolower(*(const unsigned char *)s1) - tolower(*(const unsigned char *)s2);
 }
 
-// This was causing issues when there was "player1" and "player1Battler" in animations
-// int strcmpWithSuffix(const char *lhs, const char *rhs, const char *suffix) {
-// 	if (!lhs || !rhs) {
-// 		sgLogInfo("Passed a null string into compare.. returning false");
-// 		return false;
-// 	}
-// 	return strncmp(lhs, rhs, strlen(suffix)) == 0;
-// }
-
-// TODO this was vibe coded .. prolly make this better.
-/* int strcmpWithSuffix(const char *lhs, const char *rhs, const char *suffix) { */
-/* 	if (!lhs || !rhs) { */
-/* 		sgLogInfo("Passed a null string into compare.. returning false"); */
-/* 		return 0;  // false */
-/* 	} */
-/* 	size_t lhsLen = strlen(lhs); */
-/* 	size_t rhsLen = strlen(rhs); */
-/* 	size_t suffixLen = strlen(suffix); */
-/* 	// check suffix first */
-/* 	if (lhsLen < suffixLen || rhsLen < suffixLen) return 0; */
-/* 	if (strcmp(lhs + lhsLen - suffixLen, suffix) != 0) { */
-/* 		return 0; */
-/* 	} */
-/* 	return strncmp(lhs, rhs, lhsLen - suffixLen) == 0; */
-/* } */
-
 int strcmpWithSuffix(const char *lhs, const char *rhs, const char *suffix) {
-	if (!lhs || !rhs) return 0;
+	sgLogWarn("Starting compare, %s | %s", lhs, rhs);
+    if (!lhs || !rhs || !suffix) return 0;
 
-	size_t lhsLen = strlen(lhs);
-	size_t rhsLen = strlen(rhs);
-	size_t suffixLen = strlen(suffix);
+    size_t rhsLen = strlen(rhs);
+    size_t suffixLen = strlen(suffix);
 
-	// rhs must end with the suffix
-	if (rhsLen < suffixLen) return 0;
+    // rhs must end with suffix
+    if (rhsLen < suffixLen) return 0;
+    if (strcmp(rhs + rhsLen - suffixLen, suffix) != 0) return 0;
 
-	if (strcmp(rhs + rhsLen - suffixLen, suffix) != 0) {
-		// rhs doesn't end with suffix
-		return 0;
-	}
+    // find last '/'
+    const char *base = strrchr(rhs, '/');
+    base = base ? base + 1 : rhs;  // if no slash, whole string is basename
 
-	// now check if lhs == rhs without suffix
-	size_t baseLen = rhsLen - suffixLen;
-	if (lhsLen != baseLen) return 0;
+    // compute basename length without suffix
+    size_t baseLen = strlen(base) - suffixLen;
 
-	return strncmp(lhs, rhs, baseLen) == 0;
+    // lhs must match the basename (minus suffix)
+    if (strlen(lhs) != baseLen) return 0;
+	sgLogWarn("Comparing %s with %s", lhs, base);
+
+    return strncmp(lhs, base, baseLen) == 0;
 }

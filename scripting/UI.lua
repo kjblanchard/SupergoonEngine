@@ -46,7 +46,7 @@ local function drawText(parentOffsetX, parentOffsetY, textDataTable)
         }
         test.x = test.x + parentOffsetX
         test.y = test.y + parentOffsetY
-        engine.DrawRect(test, false)
+        engine.DrawRect(test, false, false)
     end
 end
 
@@ -93,7 +93,6 @@ local classTypeDrawTable = {
 local classTypeDestroyTable = {
     nineSlice = destroy9Slice,
     text = destroyText
-
 }
 
 function UI.UpdateTextText(textPtr, newText)
