@@ -228,7 +228,7 @@ if(SYSTEM_PACKAGES) # If we are using system packages, then we should try to fin
   endif(LIB_LUA)
   find_package(SDL3 CONFIG COMPONENTS SDL3-shared)
   if(SDL3_FOUND)
-    list(APPEND EXTERNAL_LIBS SDL3::SDL3-static)
+      list(APPEND EXTERNAL_LIBS SDL3::SDL3)
   endif(SDL3_FOUND)
   find_package(Freetype)
   if(FREETYPE_FOUND)
@@ -411,7 +411,7 @@ endif(DEBUG_CMAKE_VARIABLES)
 
 target_compile_options(${EXECUTABLE_TARGET_NAME} PUBLIC ${COMPILE_OPTIONS})
 target_link_directories(${EXECUTABLE_TARGET_NAME} PUBLIC /usr/local/lib) # should always include from usr/local/lib
-target_link_libraries(${EXECUTABLE_TARGET_NAME} PUBLIC ${EXTERNAL_LIBS})
+target_link_libraries(${EXECUTABLE_TARGET_NAME} PUBLIC m ${EXTERNAL_LIBS})
 
 # System is for blocking out the warnings, these are mostly external libs
 target_include_directories(
