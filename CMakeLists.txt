@@ -411,7 +411,11 @@ endif(DEBUG_CMAKE_VARIABLES)
 
 target_compile_options(${EXECUTABLE_TARGET_NAME} PUBLIC ${COMPILE_OPTIONS})
 target_link_directories(${EXECUTABLE_TARGET_NAME} PUBLIC /usr/local/lib) # should always include from usr/local/lib
-target_link_libraries(${EXECUTABLE_TARGET_NAME} PUBLIC m ${EXTERNAL_LIBS})
+target_link_libraries(${EXECUTABLE_TARGET_NAME} PUBLIC ${EXTERNAL_LIBS})
+
+if(LINK_M)
+    target_link_libraries(${EXECUTABLE_TARGET_NAME} PUBLIC m)
+endif(LINK_M)
 
 # System is for blocking out the warnings, these are mostly external libs
 target_include_directories(
