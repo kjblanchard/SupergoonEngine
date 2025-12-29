@@ -113,9 +113,9 @@ static int create9SliceImage(lua_State *L) {
 
 static int drawTexture(lua_State *L) {
 	if (!LuaCheckFunctionCallParamsAndTypes(
-			L, 4, LuaFunctionParameterTypeUserdata,
+			L, 5, LuaFunctionParameterTypeUserdata,
 			LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeTable,
-			LuaFunctionParameterTypeTable)) {
+			LuaFunctionParameterTypeTable, LuaFunctionParameterTypeBoolean)) {
 		sgLogWarn(
 			"Bad function call to create shader, requires two strings for "
 			"filenames for shader source");
@@ -134,7 +134,7 @@ static int drawTexture(lua_State *L) {
 	Color color = {255, 255, 255, 255};
 
 	DrawTexture(LuaGetLightUserdatai(L, 1), LuaGetLightUserdatai(L, 2), &dst,
-				&src, true, 1.0, false, &color);
+				&src, LuaGetBooli(L, 5), 1.0, false, &color);
 	return 0;
 }
 //    return cGraphics.DrawTextureToTexture(renderTargetTexture, srcTexture,

@@ -225,7 +225,6 @@ Shader *GetDefaultShaderImpl(void) {
 	}
 	_defaultShader = ShaderCreateImpl();
 	ShaderCompileImpl(_defaultShader, DEFAULT_VERTEX_FILENAME, DEFAULT_FRAGMENT_FILENAME);
-
 	return _defaultShader;
 }
 

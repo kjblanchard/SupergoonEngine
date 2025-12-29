@@ -556,10 +556,11 @@ function engine.ClearRenderTarget(renderTargetTexture, r, g, b, a)
     cGraphics.ClearRenderTargetTexture(renderTargetTexture, r, g, b, a)
 end
 
-function engine.DrawTexture(texture, shader, dstRect, srcRect)
+function engine.DrawTexture(texture, shader, dstRect, srcRect, camera)
+    if camera == nil then camera = false end
     dstRect = engine.Tools.NormalizeRect(dstRect)
     srcRect = engine.Tools.NormalizeRect(srcRect)
-    cGraphics.DrawTexture(texture, shader, dstRect, srcRect)
+    cGraphics.DrawTexture(texture, shader, dstRect, srcRect, camera)
 end
 
 local debugBoxes = {}

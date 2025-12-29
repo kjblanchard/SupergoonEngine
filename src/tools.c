@@ -71,7 +71,6 @@ int sgstrncasecmp(const char *s1, const char *s2, size_t n) {
 }
 
 int strcmpWithSuffix(const char *lhs, const char *rhs, const char *suffix) {
-	sgLogWarn("Starting compare, %s | %s", lhs, rhs);
     if (!lhs || !rhs || !suffix) return 0;
 
     size_t rhsLen = strlen(rhs);
@@ -90,7 +89,6 @@ int strcmpWithSuffix(const char *lhs, const char *rhs, const char *suffix) {
 
     // lhs must match the basename (minus suffix)
     if (strlen(lhs) != baseLen) return 0;
-	sgLogWarn("Comparing %s with %s", lhs, base);
 
     return strncmp(lhs, base, baseLen) == 0;
 }

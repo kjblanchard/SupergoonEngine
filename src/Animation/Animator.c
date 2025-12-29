@@ -41,14 +41,12 @@ static void cleanUsedAnimationData(AnimationData* data) {
 static AnimationData* findFreeAnimationData(void) {
 	for (size_t i = 0; i < _animationData.Size; i++) {
 		if (_animationData.AnimationArray[i].RefCount == 0) {
-			sgLogWarn("Found one to use!");
 			// create new animation data
 			cleanUsedAnimationData(&_animationData.AnimationArray[i].Data);
 			++_animationData.AnimationArray[i].RefCount;
 			return &_animationData.AnimationArray[i].Data;
 		}
 	}
-	sgLogWarn("Resizing array");
 	RESIZE_ARRAY(_animationData.AnimationArray, _animationData.Count, _animationData.Size, AnimationDataRef);
 	AnimationDataRef* ref = &_animationData.AnimationArray[_animationData.Count];
 	ref->RefCount = 1;
@@ -82,7 +80,6 @@ static AnimationData* findAnimationData(const char* name) {
 			continue;
 		}
 		if (strcmpWithSuffix(name, currentPtr->Data.meta.image, ".bmp")) {
-			sgLogWarn("Found one with strcmp");
 			++currentPtr->RefCount;
 			return &_animationData.AnimationArray[i].Data;
 		}
@@ -173,10 +170,8 @@ AnimatorHandle CreateAnimator(const char* filename) {
 	Animator* anim = &_animators.Animators[handle];
 	anim->Name = strdup(filename);
 	asprintf(&anim->Filename, "assets/aseprite/%s.lua", filename);
-	sgLogWarn("Searching for anim data %s", anim->Filename);
 	anim->Data = findAnimationData(filename);
 	if (!anim->Data) {
-		sgLogWarn("None found, going to create new");
 		anim->Data = findFreeAnimationData();
 		LuaPushTableFromFile(_luaState, anim->Filename);
 		loadAsepriteData(anim->Data);
