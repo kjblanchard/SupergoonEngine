@@ -44,3 +44,10 @@ void SetDrawFunction(void (*drawFunc)(void));
 void SetQuitFunction(void (*quitFunc)(void));
 
 void Run(void);
+
+extern void (*_startFunc)(void);
+extern void (*_updateFunc)(void);
+extern void (*_drawFunc)(void);
+extern void (*_quitFunc)(void);
+extern void (*_inputFunc)(void);
+extern int (*_handleEventFunc)(void*);

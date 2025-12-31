@@ -7,23 +7,44 @@ local currentFontSize = nil
 -- used to cache the draw image rect
 local drawImageRect = { x = 0, y = 0, w = 0, h = 0 }
 
+---Struct definitions
+---
+---@class UIObject 
+---@field dataTable table Data provided by the uiFile for this object
+---@field visible boolean Is this object visible
+---@field rect table XYWH table for where this object is located in comparison to it's parent
+---@field parent table The parent UIObject
+---@field ptr lightuserdata The C pointer to this, is 0 by default
+---@field [string] any additional fields based on the type
+---
+---
+---
+---
+---
+---
+---
+---
+---@param name string not used?
+---@param dataTable table UI table props
+---@param objTable UIObject UI object that this will load into
 local function createImageFromTable(name, dataTable, objTable)
     objTable.texture = engine.CreateTexture(dataTable.filename)
     dataTable.srcRect = engine.Tools.NormalizeRect(dataTable.srcRect)
     objTable.rect = engine.Tools.NormalizeRect(dataTable.rect)
 end
 
-local function drawImage(parentOffsetX, parentOffsetY, uiObject)
-    if uiObject and uiObject.texture then
-        -- drawImageRect.x = imageTable.rect.x + parentOffsetX
-        -- drawImageRect.y = imageTable.rect.y + parentOffsetY
-        drawImageRect.x = uiObject.rect.x
-        drawImageRect.y = uiObject.rect.y
-        drawImageRect.w = uiObject.rect.w
-        drawImageRect.h = uiObject.rect.h
-        engine.DrawTexture(uiObject.texture, engine.GetSpriteShader(), drawImageRect, uiObject.dataTable.srcRect, uiObject.dataTable.camera)
+---@param parentOffsetX number parent offset, not used?
+---@param parentOffsetY number parent offset, not used?
+---@param objTable UIObject UI object that this will load into
+local function drawImage(parentOffsetX, parentOffsetY, objTable)
+    if objTable and objTable.texture then
+        drawImageRect.x = objTable.rect.x
+        drawImageRect.y = objTable.rect.y
+        drawImageRect.w = objTable.rect.w
+        drawImageRect.h = objTable.rect.h
+        engine.DrawTexture(objTable.texture, engine.GetSpriteShader(), drawImageRect, objTable.dataTable.srcRect, objTable.dataTable.camera)
     end
-    if uiObject.dataTable.d then
+    if objTable.dataTable.d then
         engine.DrawRect(drawImageRect, false, false)
     end
 end
@@ -112,21 +133,23 @@ function UI.UpdateTextText(textPtr, newText)
     cText.UpdateTextText(textPtr, newText)
 end
 
-function LoadUIObjectFromTable(parentObj, dataName, uiObject)
+
+function LoadUIObjectFromTable(parentObj, dataName, uiObjectDataTable)
+    ---@type UIObject
     local newChildTable = {
-        dataTable = uiObject,
-        visible = (uiObject.visible == nil) and true or uiObject.visible,
+        dataTable = uiObjectDataTable,
+        visible = (uiObjectDataTable.visible == nil) and true or uiObjectDataTable.visible,
         children = {},
-        rect = { table.unpack(uiObject.rect) },
+        rect = { table.unpack(uiObjectDataTable.rect) },
         parent = parentObj,
         ptr = 0
     }
-    newChildTable.rect = engine.Tools.NormalizeRect(uiObject.rect)
-    if uiObject.class and classTypeFunctionTable[uiObject.class] then
-        classTypeFunctionTable[uiObject.class](dataName, uiObject, newChildTable)
+    newChildTable.rect = engine.Tools.NormalizeRect(uiObjectDataTable.rect)
+    if uiObjectDataTable.class and classTypeFunctionTable[uiObjectDataTable.class] then
+        classTypeFunctionTable[uiObjectDataTable.class](dataName, uiObjectDataTable, newChildTable)
     end
-    if uiObject.children then
-        for childName, childValue in pairs(uiObject.children) do
+    if uiObjectDataTable.children then
+        for childName, childValue in pairs(uiObjectDataTable.children) do
             LoadUIObjectFromTable(newChildTable, childName, childValue)
         end
     end

@@ -30,12 +30,7 @@
 static Uint64 _previousMS;
 static float _deltaTimeSeconds;
 // This needs to be defined in the program that will be utilizing the engine.
-extern void(StartImpl)(void);
-static void (*_updateFunc)(void) = NULL;
-static void (*_drawFunc)(void) = NULL;
-static void (*_quitFunc)(void) = NULL;
-static void (*_inputFunc)(void) = NULL;
-static int (*_handleEventFunc)(void *) = NULL;
+/* extern void(StartImpl)(void); */
 
 static void start(void) {
 	InitializeSdl();
@@ -70,8 +65,8 @@ static void handleFramerate(Uint64 *now) {
 
 static void draw(void) {
 	DrawStart();
-	DrawCurrentMap();
-	DrawSpriteSystem();
+	/* DrawCurrentMap(); */
+	/* DrawSpriteSystem(); */
 	if (_drawFunc) _drawFunc();
 	// DrawUISystem();
 	// DrawEnd();
@@ -121,7 +116,7 @@ void SetQuitFunction(void (*quitFunc)(void)) { _quitFunc = quitFunc; }
 
 SDL_AppResult SDL_AppInit(void **appState, int argc, char *argv[]) {
 	start();
-	LuaRunFile("assets/lua/main.lua");
+	if(_startFunc) _startFunc();
 	return SDL_APP_CONTINUE;
 }
 
