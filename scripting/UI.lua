@@ -202,7 +202,6 @@ function UI.GetWorldXYForObject(uiObject)
     local y = uiObject.rect.y
     local parent = uiObject.parent
     while parent do
-        engine.Log.LogWarn("Current x " .. x .. " parent x " .. parent.rect.x)
         x = x + parent.rect.x
         y = y + parent.rect.y
         parent = parent.parent
