@@ -21,7 +21,7 @@ local function drawImage(parentOffsetX, parentOffsetY, uiObject)
         drawImageRect.y = uiObject.rect.y
         drawImageRect.w = uiObject.rect.w
         drawImageRect.h = uiObject.rect.h
-        engine.DrawTexture(uiObject.texture, engine.GetSpriteShader(), drawImageRect, uiObject.dataTable.srcRect)
+        engine.DrawTexture(uiObject.texture, engine.GetSpriteShader(), drawImageRect, uiObject.dataTable.srcRect, uiObject.dataTable.camera)
     end
     if uiObject.dataTable.d then
         engine.DrawRect(drawImageRect, false, false)
