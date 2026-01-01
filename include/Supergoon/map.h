@@ -13,7 +13,6 @@
 extern "C" {
 #endif
 
-struct GameObject;
 #include <Supergoon/Primitives/rectangle.h>
 
 // Tiled properties can be of many types, use this before accessing the union on

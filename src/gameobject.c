@@ -9,18 +9,18 @@ static size_t _currentId = 1;
 static size_t _firstGameObjectHole = NO_HOLE;
 static size_t _numGameObjects;
 static size_t _sizeGameObjects;
-static GameObject** _gameObjects;
+static sgGameObject** _gameObjects;
 
-static GameObject* getFreeGameObject(void) {
+static sgGameObject* getFreeGameObject(void) {
 	// If there are no holes, grab from the end of the array
 	if (_firstGameObjectHole == NO_HOLE) {
-		RESIZE_ARRAY_PTR_ALLOC(_gameObjects, _numGameObjects, _sizeGameObjects, GameObject);
-		GameObject* go = _gameObjects[_numGameObjects];
+		RESIZE_ARRAY_PTR_ALLOC(_gameObjects, _numGameObjects, _sizeGameObjects, sgGameObject);
+		sgGameObject* go = _gameObjects[_numGameObjects];
 		go->Num = _numGameObjects;
 		++_numGameObjects;
 		return go;
 	}
-	GameObject* returnGo = _gameObjects[_firstGameObjectHole];
+	sgGameObject* returnGo = _gameObjects[_firstGameObjectHole];
 	returnGo->Num = _firstGameObjectHole;
 	size_t holeIndex = _firstGameObjectHole;
 	if (holeIndex == _numGameObjects - 1) {
@@ -43,14 +43,14 @@ static GameObject* getFreeGameObject(void) {
 	}
 }
 
-GameObject* GameObjectCreate(void) {
-	GameObject* newGameObject = getFreeGameObject();
+sgGameObject* GameObjectCreate(void) {
+	sgGameObject* newGameObject = getFreeGameObject();
 	newGameObject->Id = _currentId++;
 	newGameObject->X = newGameObject->Y = 0;
 	return newGameObject;
 }
 
-void GameObjectDestroy(GameObject* gameobject) {
+void GameObjectDestroy(sgGameObject* gameobject) {
 	gameobject->Id = 0;
 	gameobject->X = 0;
 	gameobject->Y = 0;

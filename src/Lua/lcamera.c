@@ -18,7 +18,7 @@ static int setCameraFollowTarget(lua_State* L) {
 		sgLogWarn("Passed a nil ref into camera follow");
 		return 0;
 	}
-	GameObject* go = (GameObject*)LuaGetLightUserdatai(L, 1);
+	sgGameObject* go = (sgGameObject*)LuaGetLightUserdatai(L, 1);
 	if (!go) {
 		sgLogWarn("Bad gameobject passed to camera follow target");
 		return 0;

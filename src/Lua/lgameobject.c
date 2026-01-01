@@ -12,7 +12,7 @@ static int getGameobjectPosition(lua_State* L) {
 		sgLogWarn("Bad args trying to set go position from lua");
 		return 0;
 	}
-	GameObject* go = (GameObject*)LuaGetLightUserdatai(L, 1);
+	sgGameObject* go = (sgGameObject*)LuaGetLightUserdatai(L, 1);
 	if (!go) {
 		sgLogWarn("Bad cast from go Lua");
 		LuaPushNil(L);
@@ -28,7 +28,7 @@ static int setGameobjectPosition(lua_State* L) {
 		sgLogWarn("Bad args trying to set go position from lua");
 		return 0;
 	}
-	GameObject* go = (GameObject*)LuaGetLightUserdatai(L, 1);
+	sgGameObject* go = (sgGameObject*)LuaGetLightUserdatai(L, 1);
 	if (!go) {
 		sgLogWarn("bad thing");
 		return 0;
@@ -44,7 +44,7 @@ static int getGameobjectId(lua_State* L) {
 		LuaPushNil(L);
 		return 1;
 	}
-	GameObject* go = (GameObject*)LuaGetLightUserdatai(L, 1);
+	sgGameObject* go = (sgGameObject*)LuaGetLightUserdatai(L, 1);
 	if (!go) {
 		sgLogWarn("Bad cast from go Lua");
 		LuaPushNil(L);
@@ -55,7 +55,7 @@ static int getGameobjectId(lua_State* L) {
 }
 
 static int createGameObject(lua_State* L) {
-	GameObject* go = GameObjectCreate();
+	sgGameObject* go = GameObjectCreate();
 	LuaPushLightUserdata(L, go);
 	return 1;
 }
@@ -65,7 +65,7 @@ static int deleteGameObject(lua_State* L) {
 		sgLogWarn("bad gameobject passed to delete gameobject");
 		return 0;
 	}
-	GameObject* go = (GameObject*)LuaGetLightUserdatai(L, 1);
+	sgGameObject* go = (sgGameObject*)LuaGetLightUserdatai(L, 1);
 	if (go) GameObjectDestroy(go);
 	return 0;
 }

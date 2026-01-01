@@ -3,10 +3,10 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-typedef struct GameObject GameObject;
+typedef struct sgGameObject GameObject;
 typedef struct Texture Texture;
 typedef struct Shader Shader;
-struct GameObject;
+struct sgGameObject;
 typedef enum SpriteFlags {
 	SpriteFlagVisible = 1 << 0,
 	SpriteFlagDestroyed = 1 << 1,
