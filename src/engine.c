@@ -65,11 +65,10 @@ static void handleFramerate(Uint64 *now) {
 
 static void draw(void) {
 	DrawStart();
-	/* DrawCurrentMap(); */
+	DrawCurrentMap();
 	/* DrawSpriteSystem(); */
 	if (_drawFunc) _drawFunc();
 	// DrawUISystem();
-	// DrawEnd();
 	DrawEnd();
 }
 
@@ -115,6 +114,7 @@ void SetInputFunction(void (*updateFunc)(void)) { _inputFunc = updateFunc; }
 void SetQuitFunction(void (*quitFunc)(void)) { _quitFunc = quitFunc; }
 
 SDL_AppResult SDL_AppInit(void **appState, int argc, char *argv[]) {
+	if(_initializeFunc) _initializeFunc();
 	start();
 	if(_startFunc) _startFunc();
 	return SDL_APP_CONTINUE;

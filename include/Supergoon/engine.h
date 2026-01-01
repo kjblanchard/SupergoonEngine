@@ -45,6 +45,7 @@ void SetQuitFunction(void (*quitFunc)(void));
 
 void Run(void);
 
+extern void (*_initializeFunc)(void);
 extern void (*_startFunc)(void);
 extern void (*_updateFunc)(void);
 extern void (*_drawFunc)(void);

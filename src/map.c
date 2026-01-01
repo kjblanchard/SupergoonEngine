@@ -105,7 +105,7 @@ static Tilemap *parseTiledTilemap(const char *tiledFilename) {
 	map->TileHeight = LuaGetInt(_luaState, "tileheight");
 	createTilesets(map);
 	createLayers(map);
-	LuaPopStack(_luaState, 1);	// tiled map table
+	/* LuaPopStack(_luaState, 1);	// tiled map table */
 	LuaClearStack(_luaState);	// for good measure :)
 	return map;
 }
@@ -383,7 +383,7 @@ void DrawCurrentMap(void) {
 	camWidth = camWidth > WindowWidth() ? WindowWidth() : camWidth;
 	camHeight = camHeight > WindowHeight() ? WindowHeight() : camHeight;
 	int texWidth = TextureGetWidth(_currentMap->BackgroundTexture);
-	int texHeight = TextureGetWidth(_currentMap->BackgroundTexture);
+	int texHeight = TextureGetHeight(_currentMap->BackgroundTexture);
 	RectangleF src = {0, 0, texWidth, texHeight};
 	RectangleF dst = {-CameraGetX(), -CameraGetY(), texWidth, texHeight};
 	Color color = {255, 255, 255, 255};
