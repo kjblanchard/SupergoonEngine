@@ -18,7 +18,7 @@ typedef struct Sprite {
 	RectangleF OffsetAndSizeRectF;
 	float Scale;
 	Shader* Shader;
-	SpriteFlags Flags;
+	unsigned int Flags;
 } Sprite;
 
 Sprite* NewSprite(void);

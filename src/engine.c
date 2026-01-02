@@ -66,9 +66,8 @@ static void handleFramerate(Uint64 *now) {
 static void draw(void) {
 	DrawStart();
 	DrawCurrentMap();
-	/* DrawSpriteSystem(); */
+	DrawSpriteSystem();
 	if (_drawFunc) _drawFunc();
-	// DrawUISystem();
 	DrawEnd();
 }
 

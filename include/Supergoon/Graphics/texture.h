@@ -2,6 +2,11 @@
 #include <Supergoon/Primitives/Color.h>
 #include <Supergoon/Primitives/rectangle.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+	
+
 typedef struct Texture Texture;
 typedef struct Shader Shader;
 
@@ -24,3 +29,6 @@ void TextureClearRenderTarget(Texture *texture, float r, float g, float b,
 void DrawTextureToTexture(Texture *dstTarget, Texture *srcTexture,
 						  Shader *shader, RectangleF *dstRect,
 						  RectangleF *srcRect, float scale);
+#ifdef __cplusplus
+}
+#endif
