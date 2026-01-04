@@ -84,6 +84,7 @@ void DrawSpriteSystem(void) {
 void ShutdownSpriteSystem(void) {
 	for (size_t i = 0; i < _sizeSprites; i++) {
 		TextureDestroy(_sprites[i]->Texture);
+		free(_sprites[i]);
 	}
 	free(_sprites);
 	_sprites = NULL;
