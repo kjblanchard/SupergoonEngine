@@ -53,7 +53,8 @@ void DestroySprite(Sprite* sprite) {
 		if (sprite != _sprites[i]) {
 			continue;
 		}
-		ShaderDestroy(sprite->Shader);
+		// If we are using the default shader, this breaks.
+		if (GetDefaultShader() != sprite->Shader) ShaderDestroy(sprite->Shader);
 		TextureDestroy(sprite->Texture);
 		sprite->Texture = NULL;
 		sprite->Flags = SpriteFlagDestroyed;
