@@ -30,12 +30,14 @@ if(DEBUG_ASAN AND CMAKE_BUILD_TYPE STREQUAL "Debug")
     endif()
 endif()
 
-# Platform specific
+# Platform specific executable flags
 if(EMSCRIPTEN)
+    message(STATUS "Enabling Emscripten flags for supergoon engine ")
     set(CMAKE_EXECUTABLE_SUFFIX
         ".html"
         CACHE STRING "Use html" FORCE)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -s USE_SDL=3 -s USE_ZLIB=1  -s USE_VORBIS=1 -s USE_OGG=1 ")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s USE_SDL=3 -s USE_ZLIB=1  -s USE_VORBIS=1 -s USE_OGG=1 ")
     set(LINK_FLAGS
         "${LINK_FLAGS} -s ALLOW_MEMORY_GROWTH=1 -s USE_SDL=3 -s USE_VORBIS=1 -s USE_OGG=1 -s FULL_ES3=1 -s USE_WEBGL2=1 -s STACK_SIZE=1mb -s EXPORTED_RUNTIME_METHODS=cwrap -sMAX_WEBGL_VERSION=2 -sMIN_WEBGL_VERSION=2 -s 'DEFAULT_LIBRARY_FUNCS_TO_INCLUDE=[\"$autoResumeAudioContext\",\"$dynCall\"]'"
     )
@@ -43,14 +45,12 @@ elseif(APPLE)
     set(CMAKE_OSX_DEPLOYMENT_TARGET
         "10.14"
         CACHE STRING "Minimum OS X deployment version")
-    if(NOT CREATE_MACOS_TUI)
-        set(IS_BUNDLE
-            "MACOSX_BUNDLE"
-            CACHE STRING "Is this a bundle")
-        set(ICON_PATH
-            ${CMAKE_SOURCE_DIR}/cmake/AppIcon.icns
-            CACHE STRING "Icon path")
-    endif(NOT CREATE_MACOS_TUI)
+    set(IS_BUNDLE
+        "MACOSX_BUNDLE"
+        CACHE STRING "Is this a bundle")
+    set(ICON_PATH
+        ${CMAKE_SOURCE_DIR}/cmake/AppIcon.icns
+        CACHE STRING "Icon path")
 endif(EMSCRIPTEN)
 
 # Compile definitions based on backend

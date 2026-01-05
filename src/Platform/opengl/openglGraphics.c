@@ -39,13 +39,14 @@ void GraphicsWindowResizeEventImpl(int width, int height) {
 	}
 	glViewport(0, 0, width, height);
 	glm_ortho(0.0f, width, height, 0.0f, -1.0f, 1.0f, projectionMatrix);
-	int texWidth = width;
-	int texHeight = height;
-	if (_logicalX && _logicalY) {
-		texWidth = _logicalX;
-		texHeight = _logicalY;
-	}
-	SetCameraSize(texWidth, texHeight);
+	//Don't need to set camera width, that should be the size of the currently loaded map.
+	/* int texWidth = width; */
+	/* int texHeight = height; */
+	/* if (_logicalX && _logicalY) { */
+	/* 	texWidth = _logicalX; */
+	/* 	texHeight = _logicalY; */
+	/* } */
+	/* SetCameraSize(texWidth, texHeight); */
 }
 
 void InitializeGraphicsSystemImpl(void) {
