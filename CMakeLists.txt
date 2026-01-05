@@ -62,7 +62,20 @@ if(SDL_GL)
 endif(SDL_GL)
 
 if(UNIX OR APPLE)
-    list(APPEND COMPILE_OPTIONS -Wall -Wextra -Wno-pedantic -Wdeprecated -Wno-unused-parameter -Wno-sign-compare)
+    list(APPEND COMPILE_OPTIONS 
+        -Wall 
+        -Wextra 
+        -Wdeprecated 
+        -Wno-unused-parameter 
+        -Wno-sign-compare 
+        -Wshadow
+        # -Wconversion
+        # -Wsign-conversion
+        -Wnull-dereference
+        -Wdouble-promotion
+        -Wformat=2
+    )
+
 endif(UNIX OR APPLE)
 
 set(SRC_FILES

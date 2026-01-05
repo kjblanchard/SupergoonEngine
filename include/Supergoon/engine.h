@@ -10,6 +10,10 @@
  */
 #include <Supergoon/events.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Set the Start Function object
  *
@@ -52,3 +56,6 @@ extern void (*_drawFunc)(void);
 extern void (*_quitFunc)(void);
 extern void (*_inputFunc)(void);
 extern int (*_handleEventFunc)(void*);
+#ifdef __cplusplus
+}
+#endif

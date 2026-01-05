@@ -13,10 +13,14 @@ float* followX;
 float* followY;
 
 void UpdateCameraSystem(void) {
-	double viewWidth = 480;
-	double viewHeight = 270;
-	double camX = 0;
-	double camY = 0;
+	/* double viewWidth = 480; */
+	/* double viewHeight = 270; */
+	/* double camX = 0; */
+	/* double camY = 0; */
+	float viewWidth = 480;
+	float viewHeight = 270;
+	float camX = 0;
+	float camY = 0;
 	if (followX && followY) {
 		/* camX = round(*followX) - viewWidth / 2.0f; */
 		/* camY = round(*followY) - viewHeight / 2.0f; */
