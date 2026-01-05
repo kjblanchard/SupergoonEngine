@@ -375,7 +375,6 @@ void TextDraw(Text* text, float parentX, float parentY) {
 }
 
 void TextDestroy(Text* text) {
-	sgLogWarn("Destroying the text!");
 	TextureDestroy(text->Texture);
 	if (text->WordWrapCharacters) free(text->WordWrapCharacters);
 	free(text->Text);
