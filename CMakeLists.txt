@@ -155,6 +155,7 @@ if(APPLE)
         PROPERTIES XCODE_ATTRIBUTE_CODE_SIGN_ENTITLEMENTS "${CMAKE_SOURCE_DIR}/cmake/EscapeTheFate.entitlements"
         # XCODE_ATTRIBUTE_CODE_SIGN_STYLE "Automatic"
         XCODE_ATTRIBUTE_CODE_SIGN_STYLE "Manual"
+        XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET "13.0"
         XCODE_ATTRIBUTE_DEVELOPMENT_TEAM "H34NGW287W"
         # when building on github, we don't want to sign anything cause there is no cert
         XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED "NO"
