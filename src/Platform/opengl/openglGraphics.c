@@ -70,7 +70,7 @@ void InitializeGraphicsSystemImpl(void) {
 		return;
 	}
 #endif
-	sgLogWarn("OpenGL version: %s", glGetString(GL_VERSION));
+	sgLogDebug("OpenGL version: %s", glGetString(GL_VERSION));
 	int width = WindowWidthImpl();
 	int height = WindowHeightImpl();
 	glViewport(0, 0, width, height);
