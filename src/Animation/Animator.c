@@ -1,6 +1,6 @@
 #include <Supergoon/Animation/animator.h>
 #include <Supergoon/log.h>
-#include <Supergoon/lua.h>
+#include <Supergoon/json.h>
 #include <Supergoon/state.h>
 #include <Supergoon/tools.h>
 #include <assert.h>
@@ -88,39 +88,47 @@ static AnimationData* findAnimationData(const char* name) {
 }
 
 // Aseprite table must be on stack prior to calling this, then it
-static void loadAsepriteData(AnimationData* animationData) {
-	LuaGetTable(_luaState, "frames");
-	animationData->frameCount = LuaGetTableLength(_luaState);
+static void loadAsepriteData(const char* name, AnimationData* animationData) {
+	/* json_object* frameObject = jobj(object, "frames"); */
+	json_object* root = jGetObjectFromFile(name);
+	if(!root){
+		sgLogError("Could not load animation data for %s", name);
+		return;
+	}
+	json_object* frameObject = jobj(root, "frames");
+	/* LuaGetTable(_luaState, "frames"); */
+	/* animationData->frameCount = LuaGetTableLength(_luaState); */
+	animationData->frameCount = jGetObjectArrayLength(frameObject);
 	animationData->frames = calloc(animationData->frameCount, sizeof(Frame));
 	for (size_t i = 0; i < animationData->frameCount; i++) {
 		Frame* frame = &animationData->frames[i];
-		LuaPushTableObjectToStacki(_luaState, i);
-		frame->duration = LuaGetInt(_luaState, "duration");
-		LuaGetTable(_luaState, "frame");
-		frame->frame.x = LuaGetInt(_luaState, "x");
-		frame->frame.y = LuaGetInt(_luaState, "y");
-		frame->frame.w = LuaGetInt(_luaState, "w");
-		frame->frame.h = LuaGetInt(_luaState, "h");
-		LuaPopStack(_luaState, 1);
-		frame->rotated = LuaGetBool(_luaState, "rotated");
-		LuaGetTable(_luaState, "sourceSize");
-		frame->sourceSize.h = LuaGetInt(_luaState, "h");
-		frame->sourceSize.w = LuaGetInt(_luaState, "w");
-		LuaPopStack(_luaState, 1);
-		LuaPopStack(_luaState, 1);
+		json_object* currentObj = jGetObjectInObjectWithIndex(frameObject, i);
+		/* LuaPushTableObjectToStacki(_luaState, i); */
+		/* frame->duration = LuaGetInt(_luaState, "duration"); */
+		frame->duration = jint(currentObj, "duration");
+		json_object* rectObj = jobj(currentObj, "frame");
+		/* LuaGetTable(_luaState, "frame"); */
+
+		frame->frame.x = jint(rectObj, "x");
+		frame->frame.y = jint(rectObj, "y");
+		frame->frame.w = jint(rectObj, "w");
+		frame->frame.h = jint(rectObj, "h");
+		frame->rotated = jbool(currentObj, "rotated");
+		json_object* sourceSizeObject = jobj(currentObj, "sourceSize");
+		frame->sourceSize.h = jint(sourceSizeObject, "h");
+		frame->sourceSize.w = jint(sourceSizeObject, "w");
 	}
-	LuaPopStack(_luaState, 1);
-	LuaGetTable(_luaState, "meta");
-	animationData->meta.image = LuaAllocateString(_luaState, "image");
-	LuaGetTable(_luaState, "frameTags");
-	animationData->meta.frameTagCount = LuaGetTableLength(_luaState);
+	json_object* metaObject = jobj(root, "meta");
+	animationData->meta.image = strdup(jstr(metaObject, "image"));
+	json_object* frameTabObject = jobj(metaObject, "frameTags");
+	animationData->meta.frameTagCount = jGetObjectArrayLength(frameTabObject);
 	animationData->meta.frameTags = calloc(animationData->meta.frameTagCount, sizeof(FrameTag));
 	for (size_t i = 0; i < animationData->meta.frameTagCount; i++) {
-		LuaPushTableObjectToStacki(_luaState, i);
-		animationData->meta.frameTags[i].name = LuaAllocateString(_luaState, "name");
-		animationData->meta.frameTags[i].from = LuaGetInt(_luaState, "from");
-		animationData->meta.frameTags[i].to = LuaGetInt(_luaState, "to");
-		const char* direction = LuaGetString(_luaState, "direction");
+		json_object* currentObj = jGetObjectInObjectWithIndex(frameTabObject, i);
+		animationData->meta.frameTags[i].name = strdup(jstr(currentObj, "name"));
+		animationData->meta.frameTags[i].from = jint(currentObj, "from");
+		animationData->meta.frameTags[i].to = jint(currentObj, "to");
+		const char* direction = jstr(currentObj, "direction");
 		if (strcmp(direction, "pingpong") == 0) {
 			animationData->meta.frameTags[i].direction = AnimationDataDirectionsPingPong;
 
@@ -129,9 +137,8 @@ static void loadAsepriteData(AnimationData* animationData) {
 		} else {
 			animationData->meta.frameTags[i].direction = AnimationDataDirectionsDefault;
 		}
-		LuaPopStack(_luaState, 1);
 	}
-	LuaPopStack(_luaState, 1);
+	jReleaseObjectFromFile(root);
 }
 
 static void setNewAnim(Animator* anim) {
@@ -169,13 +176,11 @@ AnimatorHandle CreateAnimator(const char* filename) {
 	assert(handle < _animators.Size && "Size not correct");
 	Animator* anim = &_animators.Animators[handle];
 	anim->Name = strdup(filename);
-	asprintf(&anim->Filename, "assets/aseprite/%s.lua", filename);
+	asprintf(&anim->Filename, "assets/aseprite/%s.json", filename);
 	anim->Data = findAnimationData(filename);
 	if (!anim->Data) {
 		anim->Data = findFreeAnimationData();
-		LuaPushTableFromFile(_luaState, anim->Filename);
-		loadAsepriteData(anim->Data);
-		LuaPopStack(_luaState, 1);
+		loadAsepriteData(anim->Filename, anim->Data);
 	}
 	return handle;
 }

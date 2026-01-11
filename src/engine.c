@@ -10,8 +10,8 @@
 #include <Supergoon/Input/joystick.h>
 #include <Supergoon/Input/keyboard.h>
 #include <Supergoon/Input/mouse.h>
-#include <Supergoon/Lua/engine.h>
-#include <Supergoon/Lua/scripting.h>
+/* #include <Supergoon/Lua/engine.h> */
+/* #include <Supergoon/Lua/scripting.h> */
 #include <Supergoon/Platform/sdl/sdl.h>
 #include <Supergoon/camera.h>
 #include <Supergoon/engine.h>
@@ -19,7 +19,7 @@
 #include <Supergoon/filesystem.h>
 #include <Supergoon/gameobject.h>
 #include <Supergoon/log.h>
-#include <Supergoon/lua.h>
+/* #include <Supergoon/lua.h> */
 #include <Supergoon/map.h>
 #include <Supergoon/sprite.h>
 #include <Supergoon/state.h>
@@ -37,13 +37,13 @@ static void start(void) {
 	InitializeLogSystem();
 	InitializeKeyboardSystem();
 	InitializeJoystickSystem();
-	InitializeLuaSystem();
+	/* InitializeLuaSystem(); */
 	InitializeEventSystem();
 	CreateWindow();
 	InitializeGraphicsSystem();
 	InitializeTextSystem();
 	InitializeAudioSystem();
-	RegisterAllLuaFunctions();
+	/* RegisterAllLuaFunctions(); */
 	_previousMS = getCurrentMSTicks();
 	_deltaTimeSeconds = 0;
 }
@@ -82,7 +82,7 @@ static void update(void) {
 	// UpdateUIInputSystem();
 	Ticks += 1;
 	UpdateAnimators();
-	PushGamestateToLua();
+	/* PushGamestateToLua(); */
 	if (_updateFunc) _updateFunc();
 	// UpdateUISystem();
 	UpdateControllerSystem();
@@ -99,7 +99,7 @@ static void Quit(void) {
 	ShutdownSpriteSystem();
 	ShutdownJoystickSystem();
 	ShutdownGraphicsSystem();
-	ShutdownLuaSystem();
+	/* ShutdownLuaSystem(); */
 	ShutdownAudioSystem();
 	CloseWindow();
 	ShutdownEngineSilesystem();

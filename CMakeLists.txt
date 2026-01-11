@@ -80,7 +80,8 @@ endif(UNIX OR APPLE)
 
 set(SRC_FILES
     src/camera.c
-    src/lua.c
+    # src/lua.c
+    src/json.c
     src/log.c
     src/state.c
     src/Input/keyboard.c
@@ -93,12 +94,12 @@ set(SRC_FILES
     src/Audio/Audio.c
     src/Tweening/easing.c
     # src/Tweening/tween.c
-    src/Lua/llog.c
-    src/Lua/laudio.c
-    src/Lua/lengine.c
-    src/Lua/linput.c
-    src/Lua/lcamera.c
-    src/Lua/scripting.c
+    # src/Lua/llog.c
+    # src/Lua/laudio.c
+    # src/Lua/lengine.c
+    # src/Lua/linput.c
+    # src/Lua/lcamera.c
+    # src/Lua/scripting.c
     # src/effects.c
     src/Animation/Animator.c
     src/gameobject.c
@@ -109,13 +110,13 @@ set(SRC_FILES
     src/Platform/sdl/sdlInput.c
     src/Platform/sdl/sdlWindow.c
     src/map.c
-    src/Lua/lanimation.c
-    src/Lua/lsprite.c
-    src/Lua/lgameobject.c
-    src/Lua/lscene.c
-    src/Lua/leffects.c
-    src/Lua/lgraphics.c
-    src/Lua/ltext.c
+    # src/Lua/lanimation.c
+    # src/Lua/lsprite.c
+    # src/Lua/lgameobject.c
+    # src/Lua/lscene.c
+    # src/Lua/leffects.c
+    # src/Lua/lgraphics.c
+    # src/Lua/ltext.c
     # sound
     src/Platform/openal/openal.c
     src/Platform/openal/openalSfx.c
@@ -179,8 +180,9 @@ elseif(EMSCRIPTEN)
         LINK_FLAGS
         "${LINK_FLAGS} -O0 -s SAFE_HEAP=2 -s STACK_OVERFLOW_CHECK=1 \
         --preload-file ${CMAKE_SOURCE_DIR}/assets@/assets \
-        --preload-file ${CMAKE_SOURCE_DIR}/src@/assets/lua/ \
-        --preload-file ${ENGINE_SCRIPT_PATH}@/assets/lua/")
+        # --preload-file ${CMAKE_SOURCE_DIR}/src@/assets/lua/ \
+        # --preload-file ${ENGINE_SCRIPT_PATH}@/assets/lua/"
+    )
     endif()
 
     if(SYSTEM_PACKAGES) # If we are using system packages, then we should try to find them.
@@ -235,15 +237,15 @@ elseif(EMSCRIPTEN)
             list(APPEND EXTERNAL_LIBS ${LIB_OGG})
         endif(LIB_OGG)
 
-        find_library(
-            LIB_LUA
-            NAMES lua lua_static lua5.4
-            HINTS /opt/homebrew/bin/ /usr/local/bin /usr/local/lib /usr/bin/)
+        # find_library(
+        #     LIB_LUA
+        #     NAMES lua lua_static lua5.4
+        #     HINTS /opt/homebrew/bin/ /usr/local/bin /usr/local/lib /usr/bin/)
 
-        if(LIB_LUA)
-            list(APPEND EXTERNAL_LIBS ${LIB_LUA})
-            target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC /usr/include/lua5.4) #local debian install
-        endif(LIB_LUA)
+        # if(LIB_LUA)
+        #     list(APPEND EXTERNAL_LIBS ${LIB_LUA})
+        #     target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC /usr/include/lua5.4) #local debian install
+        # endif(LIB_LUA)
         find_package(SDL3 CONFIG COMPONENTS SDL3-shared)
         if(SDL3_FOUND)
             list(APPEND EXTERNAL_LIBS SDL3::SDL3)
@@ -312,35 +314,35 @@ elseif(EMSCRIPTEN)
         list(APPEND EXTERNAL_LIBS vorbisenc vorbisfile vorbis)
     endif(NOT EMSCRIPTEN AND NOT LIB_VORBIS)
 
-    if(NOT LIB_LUA)
-        message(STATUS "Lua not found. Fetching Lua...")
-        set(LUA_ENABLE_TESTING
-            OFF
-            CACHE BOOL "Build SDL as a shared library")
-        set(LUA_ENABLE_SHARED
-            OFF
-            CACHE BOOL "Build SDL as a shared library")
-        set(LUA_BUILD_COMPILER
-            OFF
-            CACHE BOOL "Build SDL as a shared library")
-        set(LUA_BUILD_BINARY
-            OFF
-            CACHE BOOL "Build SDL as a shared library")
-        if(IOS) # Test for ios sim with lua, as this fails with system and needs this define.. TODO not sure if needed
-            add_definitions(-DTARGET_OS_IOS=1)
-            add_definitions(-DLUA_USE_IOS=1)
-        endif(IOS)
+    # if(NOT LIB_LUA)
+    #     message(STATUS "Lua not found. Fetching Lua...")
+    #     set(LUA_ENABLE_TESTING
+    #         OFF
+    #         CACHE BOOL "Build SDL as a shared library")
+    #     set(LUA_ENABLE_SHARED
+    #         OFF
+    #         CACHE BOOL "Build SDL as a shared library")
+    #     set(LUA_BUILD_COMPILER
+    #         OFF
+    #         CACHE BOOL "Build SDL as a shared library")
+    #     set(LUA_BUILD_BINARY
+    #         OFF
+    #         CACHE BOOL "Build SDL as a shared library")
+    #     if(IOS) # Test for ios sim with lua, as this fails with system and needs this define.. TODO not sure if needed
+    #         add_definitions(-DTARGET_OS_IOS=1)
+    #         add_definitions(-DLUA_USE_IOS=1)
+    #     endif(IOS)
 
-        FetchContent_Declare(
-            LIB_LUA
-            GIT_REPOSITORY https://github.com/walterschell/Lua.git
-            GIT_TAG v5.4.5
-            EXCLUDE_FROM_ALL)
-        FetchContent_MakeAvailable(LIB_LUA)
+    #     FetchContent_Declare(
+    #         LIB_LUA
+    #         GIT_REPOSITORY https://github.com/walterschell/Lua.git
+    #         GIT_TAG v5.4.5
+    #         EXCLUDE_FROM_ALL)
+    #     FetchContent_MakeAvailable(LIB_LUA)
 
-        # list(APPEND EXTERNAL_LIBS lua_static)
-        list(APPEND EXTERNAL_LIBS lua_static)
-    endif(NOT LIB_LUA)
+    #     # list(APPEND EXTERNAL_LIBS lua_static)
+    #     list(APPEND EXTERNAL_LIBS lua_static)
+    # endif(NOT LIB_LUA)
 
     if(NOT EMSCRIPTEN AND NOT SDL3_FOUND)
         message(STATUS "SDL3 not found. Fetching SDL3...")
@@ -444,7 +446,7 @@ elseif(EMSCRIPTEN)
         ${LIBRARY_TARGET_NAME} SYSTEM
         PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include /usr/local/include
         PRIVATE # linux builds
-        ${sdl3_SOURCE_DIR}/include ${freetype_SOURCE_DIR}/include ${lib_lua_SOURCE_DIR}/lua-5.4.5/include ${lib_vorbis_SOURCE_DIR}/include
+        # ${sdl3_SOURCE_DIR}/include ${freetype_SOURCE_DIR}/include ${lib_lua_SOURCE_DIR}/lua-5.4.5/include ${lib_vorbis_SOURCE_DIR}/include
         ${lib_ogg_SOURCE_DIR}/include ${lib_ogg_BINARY_DIR}/include)
 
     target_include_directories(${LIBRARY_TARGET_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -453,7 +455,7 @@ elseif(EMSCRIPTEN)
         /emsdk/upstream/emscripten/cache/sysroot/include /usr/local/include/freetype2) # Add the freetype2 specific include
     # directory
 
-    install(
-        DIRECTORY scripting/
-        DESTINATION ${INSTALL_DIR}/assets/lua
-        COMPONENT assets)
+    # install(
+    #     DIRECTORY scripting/
+    #     # DESTINATION ${INSTALL_DIR}/assets/lua
+    #     COMPONENT assets)
