@@ -186,7 +186,6 @@ elseif(EMSCRIPTEN)
     endif()
 
     if(SYSTEM_PACKAGES) # If we are using system packages, then we should try to find them.
-
         find_library(
             LIB_OPENAL
             PATH_SUFFIXES .dylib .a .dll
@@ -284,15 +283,14 @@ elseif(EMSCRIPTEN)
     endif(NOT LIB_CGLM)
 
     if(NOT JSON-C_FOUND)
-        message(STATUS "jsonc not found. Fetching OGG...")
+        message(STATUS "jsonc not found. Fetching...")
         FetchContent_Declare(
             LIB_JSON-C
             GIT_REPOSITORY https://github.com/json-c/json-c
             GIT_TAG json-c-0.18-20240915
             EXCLUDE_FROM_ALL)
         FetchContent_MakeAvailable(LIB_JSON-C)
-        target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC json-c::json-c)
-
+        target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC json-c)
     endif(NOT JSON-C_FOUND)
 
     if(NOT EMSCRIPTEN AND NOT LIB_OGG)
