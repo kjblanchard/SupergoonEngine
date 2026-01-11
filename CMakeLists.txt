@@ -283,6 +283,18 @@ elseif(EMSCRIPTEN)
         target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC cglm)
     endif(NOT LIB_CGLM)
 
+    if(NOT JSON-C_FOUND)
+        message(STATUS "jsonc not found. Fetching OGG...")
+        FetchContent_Declare(
+            LIB_JSON-C
+            GIT_REPOSITORY https://github.com/json-c/json-c
+            GIT_TAG json-c-0.18-20240915
+            EXCLUDE_FROM_ALL)
+        FetchContent_MakeAvailable(LIB_JSON-C)
+        target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC json-c::json-c)
+
+    endif(NOT JSON-C_FOUND)
+
     if(NOT EMSCRIPTEN AND NOT LIB_OGG)
         message(STATUS "OGG not found. Fetching OGG...")
         set(BUILD_TESTING
