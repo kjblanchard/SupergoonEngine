@@ -289,7 +289,7 @@ static void loadTilesetTextures(Tilemap* map) {
 			map->Tilesets[i].Image[len - 4] = '\0';
 
 		map->Tilesets[i].TilesetTexture = TextureCreate(map->Tilesets[i].Image);
-		TextureLoadFromBmp(map->Tilesets[i].TilesetTexture,
+		TextureLoadFromPng(map->Tilesets[i].TilesetTexture,
 						   map->Tilesets[i].Image);
 	}
 }
