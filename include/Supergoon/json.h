@@ -28,7 +28,12 @@ JsonObjectTypes jGetObjectType(json_object* o);
 json_object* jGetObjectInObjectWithIndex(json_object* o, int index);
 int jGetObjectArrayLength(json_object* o);
 json_object* jGetObjectFromFile(const char* file);
+
 void jReleaseObjectFromFile(json_object* o);
+
+typedef void (*JsonIterFn)(const char* key, void* value, void* userData);
+void jforeach_obj(void* obj, JsonIterFn fn, void* userData);
+
 
 #ifdef __cplusplus
 }
