@@ -288,7 +288,10 @@ elseif(EMSCRIPTEN)
             LIB_JSON-C
             GIT_REPOSITORY https://github.com/json-c/json-c
             GIT_TAG json-c-0.18-20240915
-            EXCLUDE_FROM_ALL)
+            EXCLUDE_FROM_ALL
+            CMAKE_ARGS -DDISABLE_WERROR=YES
+
+        )
         FetchContent_MakeAvailable(LIB_JSON-C)
         target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC json-c)
         target_include_directories( ${LIBRARY_TARGET_NAME} PUBLIC ${lib_json-c_SOURCE_DIR} ${lib_json-c_SOURCE_DIR}/include ${json-c_SOURCE_DIR} ${json-c_BINARY_DIR}  )
