@@ -355,7 +355,7 @@ elseif(EMSCRIPTEN)
     #     list(APPEND EXTERNAL_LIBS lua_static)
     # endif(NOT LIB_LUA)
 
-    if(NOT EMSCRIPTEN AND NOT SDL3_FOUND)
+    if(NOT SDL3_FOUND)
         message(STATUS "SDL3 not found. Fetching SDL3...")
         set(SDL_SHARED
             OFF
