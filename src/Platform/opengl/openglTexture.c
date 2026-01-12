@@ -194,29 +194,13 @@ int TextureGetHeightImpl(Texture *texture) { return texture->Height; }
 
 void TextureLoadFromPngImpl(Texture *texture, const char *filepath) {
 	char *fullFilepath;
-	/* asprintf(&fullFilepath, "%sassets/img/%s.png", GetBasePath(), filepath); */
-	asprintf(&fullFilepath, "%sassets/img/%s", GetBasePath(), filepath);
-	/* SDL_Surface *surface = SDL_LoadBMP(fullFilepath); */
+	asprintf(&fullFilepath, "%sassets/img/%s.png", GetBasePath(), filepath);
 	SDL_Surface *surface = SDL_LoadPNG(fullFilepath);
 	if (!surface) {
 		sgLogError("Could not load bmp into surface, %s %s", fullFilepath,
 				   SDL_GetError());
 		goto cleanup;
 	}
-	/* SDL_Color transparentColor = {255, 0, 255, 255}; */
-	/* if (!SDL_SetSurfaceColorKey(surface, true, */
-	/* 							SDL_MapSurfaceRGB(surface, transparentColor.r, */
-	/* 											  transparentColor.g, */
-	/* 											  transparentColor.b))) { */
-	/* 	sgLogWarn("Failed to set color key: %s", SDL_GetError()); */
-	/* 	goto cleanup; */
-	/* } */
-	/* SDL_Surface *converted = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32); */
-	/* if (!converted) { */
-	/* 	sgLogWarn("Failed to convert, %s", SDL_GetError()); */
-	/* 	goto cleanup; */
-	/* } */
-	/* SDL_DestroySurface(surface); */
 	texture->Name = strdup(filepath);
 	texture->Width = surface->w;
 	texture->Height = surface->h;

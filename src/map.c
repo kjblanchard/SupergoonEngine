@@ -285,7 +285,7 @@ static void loadTilesetTextures(Tilemap* map) {
 
 		int len = strlen(map->Tilesets[i].Image);
 		if (len > 4 &&
-			strcmp(map->Tilesets[i].Image + len - 4, ".bmp") == 0)
+			strcmp(map->Tilesets[i].Image + len - 4, ".png") == 0)
 			map->Tilesets[i].Image[len - 4] = '\0';
 
 		map->Tilesets[i].TilesetTexture = TextureCreate(map->Tilesets[i].Image);
