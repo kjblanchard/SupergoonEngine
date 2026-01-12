@@ -291,7 +291,7 @@ elseif(EMSCRIPTEN)
             EXCLUDE_FROM_ALL)
         FetchContent_MakeAvailable(LIB_JSON-C)
         target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC json-c)
-    target_include_directories( ${LIBRARY_TARGET_NAME} PUBLIC ${lib_json-c_SOURCE_DIR} ${lib_json-c_SOURCE_DIR}/include)
+    target_include_directories( ${LIBRARY_TARGET_NAME} PUBLIC ${lib_json-c_SOURCE_DIR} ${lib_json-c_SOURCE_DIR}/include ${json-c_SOURCE_DIR} ${json-c_SOURCE_DIR}/include  )
     endif(NOT JSON-C_FOUND)
 
     if(NOT EMSCRIPTEN AND NOT LIB_OGG)
