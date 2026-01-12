@@ -3,6 +3,7 @@
 #include <json_object.h>
 #include <json_types.h>
 #include <json_util.h>
+#include <json.h>
 
 json_object* jobj(json_object* o, const char* key) {
 	json_object* out = NULL;
@@ -55,8 +56,6 @@ json_object* jGetObjectInObjectWithIndex(json_object* o, int index) {
 int jGetObjectArrayLength(json_object* o) { return json_object_array_length(o); }
 json_object* jGetObjectFromFile(const char* file) { return json_object_from_file(file); }
 void jReleaseObjectFromFile(json_object* o) { json_object_put(o); }
-
-#include <json-c/json.h>
 
 void jforeach_obj(void* obj, JsonIterFn fn, void* userData) {
 	json_object* o = (json_object*)obj;
