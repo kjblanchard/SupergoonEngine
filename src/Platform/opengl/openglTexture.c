@@ -197,7 +197,7 @@ void TextureLoadFromPngImpl(Texture *texture, const char *filepath) {
 	asprintf(&fullFilepath, "%sassets/img/%s.png", GetBasePath(), filepath);
 	SDL_Surface *surface = SDL_LoadPNG(fullFilepath);
 	if (!surface) {
-		sgLogError("Could not load bmp into surface, %s %s", fullFilepath,
+		sgLogError("Could not load png into surface, %s %s", fullFilepath,
 				   SDL_GetError());
 		goto cleanup;
 	}
