@@ -79,7 +79,7 @@ static AnimationData* findAnimationData(const char* name) {
 		if (currentPtr->RefCount == 0) {
 			continue;
 		}
-		if (strcmpWithSuffix(name, currentPtr->Data.meta.image, ".bmp")) {
+		if (strcmpWithSuffix(name, currentPtr->Data.meta.image, ".png")) {
 			++currentPtr->RefCount;
 			return &_animationData.AnimationArray[i].Data;
 		}
