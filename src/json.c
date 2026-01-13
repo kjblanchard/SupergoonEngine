@@ -1,9 +1,9 @@
 #include <Supergoon/json.h>
 #include <Supergoon/log.h>
+#include <json.h>
 #include <json_object.h>
 #include <json_types.h>
 #include <json_util.h>
-#include <json.h>
 
 json_object* jobj(json_object* o, const char* key) {
 	json_object* out = NULL;
@@ -31,7 +31,7 @@ const char* jstr(json_object* o, const char* key) {
 	return v ? json_object_get_string(v) : NULL;
 }
 
-const char* jstrIndex(json_object* o, int index){
+const char* jstrIndex(json_object* o, int index) {
 	json_object* v = json_object_array_get_idx(o, index);
 	return v ? json_object_get_string(v) : "";
 }
@@ -41,6 +41,10 @@ int jbool(json_object* o, const char* key) {
 	return json_object_get_boolean(v);
 }
 
+bool jKeyExists(json_object* o, const char* key) {
+	json_object* v = jobj(o, key);
+	return v ? true : false;
+}
 
 JsonObjectTypes jGetObjectType(json_object* o) {
 	switch (json_object_get_type(o)) {

@@ -1,4 +1,5 @@
 #pragma once
+#include <stdbool.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -34,7 +35,7 @@ void jReleaseObjectFromFile(json_object* o);
 
 typedef void (*JsonIterFn)(const char* key, void* value, void* userData);
 void jforeach_obj(void* obj, JsonIterFn fn, void* userData);
-
+bool jKeyExists(json_object* o, const char* key);
 
 #ifdef __cplusplus
 }

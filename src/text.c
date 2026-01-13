@@ -279,6 +279,7 @@ void TextRedrawText(Text* text) {
 		TextureDestroy(text->Texture);
 	}
 	text->Texture = TextureCreateRenderTarget(text->Location.w, text->Location.h);
+	TextureClearRenderTarget(text->Texture, 0,0,0,0);
 	text->PenX = 0;
 	text->CurrentDrawnLetters = 0;
 	text->NumWordWrapCharacters = 0;
