@@ -70,12 +70,6 @@ static TiledPropertyTypes getPropertyTypeForJson(json_object* value) {
 	}
 }
 
-//
-// ------------------------------------------------------------
-// TMJ parsing
-// ------------------------------------------------------------
-//
-
 static void createAnimatedTiles(Tileset* tileset, json_object* ts) {
 	json_object* tiles = jobj(ts, "tiles");
 	if (!tiles)
@@ -88,9 +82,7 @@ static void createAnimatedTiles(Tileset* tileset, json_object* ts) {
 	for (size_t i = 0; i < tileset->NumAnimatedTiles; i++) {
 		json_object* tile = jGetObjectInObjectWithIndex(tiles, i);
 		AnimatedTile* anim = &tileset->AnimatedTiles[i];
-
 		anim->GID = jint(tile, "id") + tileset->FirstGid;
-
 		json_object* animArr = jobj(tile, "animation");
 		anim->NumFrames = jGetObjectArrayLength(animArr);
 		anim->TileFrames =
