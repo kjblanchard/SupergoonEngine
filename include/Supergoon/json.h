@@ -23,6 +23,7 @@ float jfloat(json_object* o, const char* key);
 int jbool(json_object* o, const char* key);
 
 const char* jstr(json_object* o, const char* key);
+const char* jstrIndex(json_object* o, int index);
 
 JsonObjectTypes jGetObjectType(json_object* o);
 json_object* jGetObjectInObjectWithIndex(json_object* o, int index);

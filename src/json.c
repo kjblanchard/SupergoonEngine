@@ -16,6 +16,11 @@ int jint(json_object* o, const char* key) {
 	return v ? json_object_get_int(v) : 0;
 }
 
+int jintIndex(json_object* o, int index) {
+	json_object* v = json_object_array_get_idx(o, index);
+	return v ? json_object_get_int(v) : 0;
+}
+
 float jfloat(json_object* o, const char* key) {
 	json_object* v = jobj(o, key);
 	return v ? (float)json_object_get_double(v) : 0.0f;
@@ -26,15 +31,16 @@ const char* jstr(json_object* o, const char* key) {
 	return v ? json_object_get_string(v) : NULL;
 }
 
+const char* jstrIndex(json_object* o, int index){
+	json_object* v = json_object_array_get_idx(o, index);
+	return v ? json_object_get_string(v) : "";
+}
+
 int jbool(json_object* o, const char* key) {
 	json_object* v = jobj(o, key);
 	return json_object_get_boolean(v);
 }
 
-int jintIndex(json_object* o, int index) {
-	json_object* v = json_object_array_get_idx(o, index);
-	return v ? json_object_get_int(v) : 0;
-}
 
 JsonObjectTypes jGetObjectType(json_object* o) {
 	switch (json_object_get_type(o)) {
