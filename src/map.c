@@ -337,22 +337,6 @@ static void drawAnimatedTiles(void) {
 		Tileset* ts = &_currentMap->Tilesets[i];
 		for (size_t j = 0; j < ts->NumAnimatedTiles; j++) {
 			AnimatedTile* a = &ts->AnimatedTiles[j];
-			a->CurrentMSOnFrame += DeltaTimeMilliseconds;
-
-			while (a->CurrentMSOnFrame >=
-				   a->TileFrames[a->CurrentFrame].MsTime) {
-				a->CurrentMSOnFrame -=
-					a->TileFrames[a->CurrentFrame].MsTime;
-				a->CurrentFrame =
-					(a->CurrentFrame + 1) % a->NumFrames;
-			}
-		}
-	}
-
-	for (size_t i = 0; i < _currentMap->NumTilesets; i++) {
-		Tileset* ts = &_currentMap->Tilesets[i];
-		for (size_t j = 0; j < ts->NumAnimatedTiles; j++) {
-			AnimatedTile* a = &ts->AnimatedTiles[j];
 			for (size_t k = 0; k < a->NumDrawRectangles; k++) {
 				DrawTexture(ts->TilesetTexture,
 							GetDefaultShader(),
@@ -365,6 +349,25 @@ static void drawAnimatedTiles(void) {
 	}
 }
 
+void UpdateCurrentMap(void) {
+	if (!_currentMap) return;
+	for (size_t i = 0; i < _currentMap->NumTilesets; i++) {
+		Tileset* ts = &_currentMap->Tilesets[i];
+		for (size_t j = 0; j < ts->NumAnimatedTiles; j++) {
+			AnimatedTile* a = &ts->AnimatedTiles[j];
+			a->CurrentMSOnFrame += DeltaTimeMilliseconds;
+
+			while (a->CurrentMSOnFrame >=
+				   a->TileFrames[a->CurrentFrame].MsTime) {
+				a->CurrentMSOnFrame -=
+					a->TileFrames[a->CurrentFrame].MsTime;
+				a->CurrentFrame =
+					(a->CurrentFrame + 1) % a->NumFrames;
+			}
+		}
+	}
+}
+
 void DrawCurrentMap(void) {
 	if (!_currentMap) return;
 
@@ -372,12 +375,11 @@ void DrawCurrentMap(void) {
 	int h = TextureGetHeight(_currentMap->BackgroundTexture);
 
 	RectangleF src = {0, 0, w, h};
-	/* RectangleF dst = {-CameraGetX(), -CameraGetY(), w, h}; */
-	RectangleF dst = {floorf(-CameraGetX()), floorf(-CameraGetY()), w, h};
+	RectangleF dst = {0, 0, w, h};
 
 	DrawTexture(_currentMap->BackgroundTexture,
 				GetDefaultShader(), &dst, &src,
-				false, 1.0f, false,
+				true, 1.0f, false,
 				&(Color){255, 255, 255, 255});
 
 	drawAnimatedTiles();

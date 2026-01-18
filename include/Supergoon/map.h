@@ -126,6 +126,7 @@ typedef struct Tilemap {
 	Texture *BackgroundTexture;
 } Tilemap;
 
+void UpdateCurrentMap(void);
 // Draws the current map bg layers and animated tiles.
 void DrawCurrentMap(void);
 // Used when resetting or closing the game, clears out any static info like a

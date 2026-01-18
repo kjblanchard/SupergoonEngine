@@ -73,15 +73,13 @@ static void update(void) {
 	DeltaTimeSeconds = DeltaTimeMilliseconds / 1000;
 	UpdateAudioSystem();
 	UpdateKeyboardSystem();
+	UpdateCurrentMap();
 	if (_inputFunc) _inputFunc();
-	// UpdateUIInputSystem();
 	Ticks += 1;
 	UpdateAnimators();
 	if (_updateFunc) _updateFunc();
-	// UpdateUISystem();
 	UpdateControllerSystem();
 	UpdateMouseSystem();
-	// UpdateTouchSystem();
 	UpdateCameraSystem();
 	draw();
 	handleFramerate(&now);
