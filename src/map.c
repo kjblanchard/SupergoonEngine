@@ -372,7 +372,8 @@ void DrawCurrentMap(void) {
 	int h = TextureGetHeight(_currentMap->BackgroundTexture);
 
 	RectangleF src = {0, 0, w, h};
-	RectangleF dst = {-CameraGetX(), -CameraGetY(), w, h};
+	/* RectangleF dst = {-CameraGetX(), -CameraGetY(), w, h}; */
+	RectangleF dst = {floorf(-CameraGetX()), floorf(-CameraGetY()), w, h};
 
 	DrawTexture(_currentMap->BackgroundTexture,
 				GetDefaultShader(), &dst, &src,
