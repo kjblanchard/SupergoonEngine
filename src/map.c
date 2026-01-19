@@ -439,7 +439,7 @@ void LoadMap(const char* name) {
 	Tilemap* map = checkCache(name);
 	if (!map) {
 		char path[256];
-		snprintf(path, sizeof(path), "assets/tiled/%s.tmj", name);
+		snprintf(path, sizeof(path), "%sassets/tiled/%s.tmj", GetBasePath(), name);
 
 		json_object* root = jGetObjectFromFile(path);
 		if (!root) return;

@@ -5,6 +5,7 @@
 #include <Supergoon/log.h>
 int InitializeSdl(void) {
 	int options = 0;
+	SDL_SetHint(SDL_HINT_MAC_BACKGROUND_APP, "0");
 	options |= SDL_INIT_VIDEO | SDL_INIT_GAMEPAD;
 	if (!SDL_Init(options)) {
 		sgLogError("Could not init sdl, %s", SDL_GetError());
