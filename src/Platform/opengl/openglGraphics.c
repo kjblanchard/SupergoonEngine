@@ -29,7 +29,7 @@ static int _logicalY = 0;
 // TODO for now, only use the refresh rate set here.. we should set it eventually.
 static unsigned int _refreshRate = 999;
 #ifndef __EMSCRIPTEN__
-static bool _vsync = true;
+static bool _vsync = 0;
 #endif
 
 mat4 projectionMatrix;
@@ -39,7 +39,7 @@ void GraphicsWindowResizeEventImpl(int width, int height) {
 	}
 	glViewport(0, 0, width, height);
 	glm_ortho(0.0f, width, height, 0.0f, -1.0f, 1.0f, projectionMatrix);
-	//Don't need to set camera width, that should be the size of the currently loaded map.
+	// Don't need to set camera width, that should be the size of the currently loaded map.
 	/* int texWidth = width; */
 	/* int texHeight = height; */
 	/* if (_logicalX && _logicalY) { */

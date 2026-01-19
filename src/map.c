@@ -375,7 +375,12 @@ void DrawCurrentMap(void) {
 	int h = TextureGetHeight(_currentMap->BackgroundTexture);
 
 	RectangleF src = {0, 0, w, h};
+
 	RectangleF dst = {0, 0, w, h};
+	dst.x = floor(dst.x);
+	dst.y = floor(dst.y);
+	dst.w = floor(dst.w);
+	dst.h = floor(dst.h);
 
 	DrawTexture(_currentMap->BackgroundTexture,
 				GetDefaultShader(), &dst, &src,

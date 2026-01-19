@@ -43,7 +43,7 @@ static void start(void) {
 	_deltaTimeSeconds = 0;
 }
 
-static void handleFramerate(Uint64 *now) {
+static void handleFramerate(Uint64* now) {
 #ifdef __EMSCRIPTEN__
 	return;
 #endif
@@ -97,31 +97,31 @@ static void Quit(void) {
 	ShutdownLogSystem();
 }
 
-void SetHandleEventFunction(int (*eventFunc)(void *)) { _handleEventFunc = eventFunc; }
+void SetHandleEventFunction(int (*eventFunc)(void*)) { _handleEventFunc = eventFunc; }
 void SetUpdateFunction(void (*updateFunc)(void)) { _updateFunc = updateFunc; }
 void SetDrawFunction(void (*drawFunc)(void)) { _drawFunc = drawFunc; }
 void SetInputFunction(void (*updateFunc)(void)) { _inputFunc = updateFunc; }
 void SetQuitFunction(void (*quitFunc)(void)) { _quitFunc = quitFunc; }
 
-SDL_AppResult SDL_AppInit(void **appState, int argc, char *argv[]) {
-	if(_initializeFunc) _initializeFunc();
+SDL_AppResult SDL_AppInit(void** appState, int argc, char* argv[]) {
+	if (_initializeFunc) _initializeFunc();
 	start();
-	if(_startFunc) _startFunc();
+	if (_startFunc) _startFunc();
 	return SDL_APP_CONTINUE;
 }
 
 // Event handlers return if the game should quit
-SDL_AppResult SDL_AppEvent(void *appState, SDL_Event *event) {
+SDL_AppResult SDL_AppEvent(void* appState, SDL_Event* event) {
 	if (HandleEvents(event)) return SDL_APP_SUCCESS;
 	if (_handleEventFunc && _handleEventFunc(event)) return SDL_APP_SUCCESS;
 	return SDL_APP_CONTINUE;
 }
 
-SDL_AppResult SDL_AppIterate(void *appState) {
+SDL_AppResult SDL_AppIterate(void* appState) {
 	update();
 	return SDL_APP_CONTINUE;
 }
 
-void SDL_AppQuit(void *appState, SDL_AppResult result) {
+void SDL_AppQuit(void* appState, SDL_AppResult result) {
 	Quit();
 }
