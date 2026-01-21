@@ -71,6 +71,7 @@ static void update(void) {
 	DeltaTimeMilliseconds = now - _previousMS;
 	_previousMS = now;
 	DeltaTimeSeconds = DeltaTimeMilliseconds / 1000;
+	UpdateCameraSystem();
 	UpdateAudioSystem();
 	UpdateKeyboardSystem();
 	UpdateCurrentMap();
@@ -80,7 +81,6 @@ static void update(void) {
 	if (_updateFunc) _updateFunc();
 	UpdateControllerSystem();
 	UpdateMouseSystem();
-	UpdateCameraSystem();
 	draw();
 	handleFramerate(&now);
 }
