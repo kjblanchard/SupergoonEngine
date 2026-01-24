@@ -64,7 +64,13 @@ json_object* jGetObjectInObjectWithIndex(json_object* o, int index) {
 	return json_object_array_get_idx(o, index);
 }
 int jGetObjectArrayLength(json_object* o) { return json_object_array_length(o); }
-json_object* jGetObjectFromFile(const char* file) { return json_object_from_file(file); }
+json_object* jGetObjectFromFile(const char* file) {
+	json_object* obj = json_object_from_file(file);
+	if (!obj) {
+		sgLogError("Failure parsing file %s: %s", file, json_util_get_last_err());
+	}
+	return obj;
+}
 void jReleaseObjectFromFile(json_object* o) { json_object_put(o); }
 
 void jforeach_obj(void* obj, JsonIterFn fn, void* userData) {
