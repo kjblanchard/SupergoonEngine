@@ -37,7 +37,7 @@ int TextSetFont(const char* fontName, unsigned int size);
 void TextLoad(Text* text);
 void TextOnDirty(Text* text);
 void TextRedrawText(Text* text);
-void TextDraw(Text* text, float offsetX, float offsetY);
+void TextDraw(Text* text, float parentX, float parentY, Color* color);
 void TextDestroy(Text* text);
 
 #ifdef __cplusplus
