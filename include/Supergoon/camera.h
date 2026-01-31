@@ -7,6 +7,7 @@ void SetCameraZoom(float zoom);
 void SetCameraBounds(float x, float y);
 double CameraGetX(void);
 double CameraGetY(void);
+void ResetCameraFollow(void);
 float CameraGetWidth(void);
 float CameraGetHeight(void);
 /**

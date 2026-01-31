@@ -1,8 +1,6 @@
 #include <SDL3/SDL_scancode.h>
 #include <Supergoon/Input/keyboard.h>
 #include <Supergoon/camera.h>
-#include <cglm/vec2.h>
-#include <cglm/vec3.h>
 double cameraPos[3] = {0, 0, 0};
 double cameraSize[3] = {0, 0, 0};
 double BoundsX = 0;
@@ -34,8 +32,10 @@ void UpdateCameraSystem(void) {
 		camY = 0;
 	else if (camY > BoundsY - viewHeight)
 		camY = BoundsY - viewHeight;
-	cameraPos[0] = floor(camX);
-	cameraPos[1] = floor(camY);
+	/* cameraPos[0] = floorf(camX); */
+	/* cameraPos[1] = floor(camY); */
+	cameraPos[0] = (camX);
+	cameraPos[1] = (camY);
 }
 
 void SetCameraFollowTarget(float* x, float* y) {
@@ -63,6 +63,15 @@ double CameraGetX(void) {
 }
 double CameraGetY(void) {
 	return cameraPos[1];
+}
+
+void ResetCameraFollow(void){
+	followY = NULL;
+	followX = NULL;
+	cameraPos[0] = 0;
+	cameraPos[1] = 0;
+
+
 }
 
 float CameraGetWidth(void) { return cameraSize[0]; }
