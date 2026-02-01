@@ -30,7 +30,9 @@ static void setNewAnim(Animator* anim) {
 static Animator* getFreeAnimator(void) {
 	if (_firstAnimatorHole == NO_HOLE) {
 		RESIZE_ARRAY_PTR_ALLOC(_animators.Animators, _animators.Count, _animators.Size, Animator);
-		return _animators.Animators[_animators.Count++];
+		Animator* anim = _animators.Animators[_animators.Count++];
+		setNewAnim(anim);
+		return anim;
 	}
 	Animator* returnSprite = _animators.Animators[_firstAnimatorHole];
 	setNewAnim(returnSprite);
@@ -55,7 +57,7 @@ Animator* CreateAnimator(const char* filename, AnimationData* data) {
 }
 
 static void updateAnimatorRect(Animator* animator) {
-	if (!animator || animator->Sprite) {
+	if (!animator || !animator->Sprite) {
 		sgLogWarn("bad animator and or sprite for assert");
 	}
 	animator->Sprite->TextureSourceRect.x = animator->Data->frames[animator->CurrentFrame].frame.x;
@@ -77,7 +79,7 @@ static void playAnimation(Animator* anim, int animNum, int loops) {
 static int findAnimationNumberByName(Animator* anim, const char* animName) {
 	if (!anim || !anim->Data) {
 		sgLogWarn("Trying to find anim to play on bad anim");
-		return -1;
+		return NO_NEXT_ANIM;
 	}
 	for (size_t i = 0; i < anim->Data->meta.frameTagCount; i++) {
 		if (strcmp(anim->Data->meta.frameTags[i].name, animName) == 0) {
@@ -85,7 +87,7 @@ static int findAnimationNumberByName(Animator* anim, const char* animName) {
 		}
 	}
 	sgLogWarn("Could not find animation with name %s", animName);
-	return -1;
+	return NO_NEXT_ANIM;
 }
 
 void PlayAnimation(Animator* animator, const char* anim, int loops) {
@@ -93,7 +95,7 @@ void PlayAnimation(Animator* animator, const char* anim, int loops) {
 		sgLogWarn("Could not play animation, bad animator");
 	}
 	int animToPlay = findAnimationNumberByName(animator, anim);
-	if (animToPlay == -1) {
+	if (animToPlay == NO_NEXT_ANIM) {
 		return;
 	}
 	playAnimation(animator, animToPlay, loops);
