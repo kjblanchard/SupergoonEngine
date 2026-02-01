@@ -279,6 +279,7 @@ void TextRedrawText(Text* text) {
 		TextureDestroy(text->Texture);
 	}
 	text->Texture = TextureCreateRenderTarget(text->Location.w, text->Location.h);
+	TextureClearRenderTarget(text->Texture, 0,0,0,0);
 	text->PenX = 0;
 	text->CurrentDrawnLetters = 0;
 	text->NumWordWrapCharacters = 0;
@@ -366,16 +367,14 @@ Text* TextCreate(RectangleF* location, const char* textText) {
 	return text;
 }
 
-void TextDraw(Text* text, float parentX, float parentY) {
+void TextDraw(Text* text, float parentX, float parentY, Color* color) {
 	if (!text->Texture) return;
 	RectangleF src = {0, 0, text->Location.w, text->Location.h};
 	RectangleF dst = {text->Location.x + parentX, text->Location.y + parentY, text->Location.w, text->Location.h};
-	Color color = {255, 255, 255, 255};
-	DrawTexture(text->Texture, GetDefaultShader(), &dst, &src, false, 1.0, false, &color);
+	DrawTexture(text->Texture, GetDefaultShader(), &dst, &src, false, 1.0, false, color);
 }
 
 void TextDestroy(Text* text) {
-	sgLogWarn("Destroying the text!");
 	TextureDestroy(text->Texture);
 	if (text->WordWrapCharacters) free(text->WordWrapCharacters);
 	free(text->Text);

@@ -22,14 +22,14 @@
 
 extern void ShaderSystemShutdown(void);
 SDL_GLContext _context;
-static Texture *_screenFrameBufferTexture = NULL;
+static Texture* _screenFrameBufferTexture = NULL;
 static int _logicalX = 0;
 static GLuint vao = 0, vbo = 0;
 static int _logicalY = 0;
 // TODO for now, only use the refresh rate set here.. we should set it eventually.
 static unsigned int _refreshRate = 999;
 #ifndef __EMSCRIPTEN__
-static bool _vsync = true;
+static bool _vsync = 0;
 #endif
 
 mat4 projectionMatrix;
@@ -39,13 +39,14 @@ void GraphicsWindowResizeEventImpl(int width, int height) {
 	}
 	glViewport(0, 0, width, height);
 	glm_ortho(0.0f, width, height, 0.0f, -1.0f, 1.0f, projectionMatrix);
-	int texWidth = width;
-	int texHeight = height;
-	if (_logicalX && _logicalY) {
-		texWidth = _logicalX;
-		texHeight = _logicalY;
-	}
-	SetCameraSize(texWidth, texHeight);
+	// Don't need to set camera width, that should be the size of the currently loaded map.
+	/* int texWidth = width; */
+	/* int texHeight = height; */
+	/* if (_logicalX && _logicalY) { */
+	/* 	texWidth = _logicalX; */
+	/* 	texHeight = _logicalY; */
+	/* } */
+	/* SetCameraSize(texWidth, texHeight); */
 }
 
 void InitializeGraphicsSystemImpl(void) {
@@ -69,7 +70,7 @@ void InitializeGraphicsSystemImpl(void) {
 		return;
 	}
 #endif
-	sgLogWarn("OpenGL version: %s", glGetString(GL_VERSION));
+	sgLogDebug("OpenGL version: %s", glGetString(GL_VERSION));
 	int width = WindowWidthImpl();
 	int height = WindowHeightImpl();
 	glViewport(0, 0, width, height);
@@ -93,7 +94,7 @@ void InitializeGraphicsSystemImpl(void) {
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void *)0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
 	glBindVertexArray(0);
 }
 
@@ -112,39 +113,37 @@ void DrawStartImpl(void) {
 
 void DrawEndImpl(void) {
 	SetRenderTarget(NULL);
-
+	if (!_screenFrameBufferTexture) {
+		SDL_GL_SwapWindow(WindowGetImpl()->Handle);
+		return;
+	}
 	int fbWidth = TextureGetWidth(_screenFrameBufferTexture);
 	int fbHeight = TextureGetHeight(_screenFrameBufferTexture);
 	int winWidth = WindowWidth();
 	int winHeight = WindowHeight();
-
 	// Compute integer scaling factor
 	int scaleX = winWidth / fbWidth;
 	int scaleY = winHeight / fbHeight;
 	int scale = scaleX < scaleY ? scaleX : scaleY;
 	if (scale < 1) scale = 1;  // don't shrink below 1x
-
 	// Compute destination rectangle to center the framebuffer
 	int drawWidth = fbWidth * scale;
 	int drawHeight = fbHeight * scale;
 	int offsetX = (winWidth - drawWidth) / 2;
 	int offsetY = (winHeight - drawHeight) / 2;
-
 	RectangleF dstRect = {
 		(float)offsetX,
 		(float)offsetY,
 		(float)drawWidth,
 		(float)drawHeight};
-
 	RectangleF srcRect = {0, 0, (float)fbWidth, (float)fbHeight};
 	Color color = {255, 255, 255, 255};
 	DrawTexture(_screenFrameBufferTexture, GetDefaultShader(), &dstRect, &srcRect, false, 1.0f, true, &color);
-
 	SDL_GL_SwapWindow(WindowGetImpl()->Handle);
 }
 
-void DrawRectImpl(RectangleF *rect, Color *color, int filled, int useCamera) {
-	Shader *shader = GetDefaultRectShader();
+void DrawRectImpl(RectangleF* rect, Color* color, int filled, int useCamera) {
+	Shader* shader = GetDefaultRectShader();
 	ShaderUse(shader);
 	// model = translation + scale
 	mat4 model;

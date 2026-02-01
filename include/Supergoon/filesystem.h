@@ -13,6 +13,10 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Fills buffer with the full bath of the binary ran.
  *
@@ -25,3 +29,7 @@ void GetFilenameWithPrefPathFilepath(char* buffer, size_t bufferSize, const char
 const char* GetBasePath(void);
 char* GetContentOfFileString(const char* fullFilePath);
 void ShutdownEngineSilesystem(void);
+
+#ifdef __cplusplus
+}
+#endif

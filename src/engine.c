@@ -10,8 +10,6 @@
 #include <Supergoon/Input/joystick.h>
 #include <Supergoon/Input/keyboard.h>
 #include <Supergoon/Input/mouse.h>
-#include <Supergoon/Lua/engine.h>
-#include <Supergoon/Lua/scripting.h>
 #include <Supergoon/Platform/sdl/sdl.h>
 #include <Supergoon/camera.h>
 #include <Supergoon/engine.h>
@@ -19,7 +17,6 @@
 #include <Supergoon/filesystem.h>
 #include <Supergoon/gameobject.h>
 #include <Supergoon/log.h>
-#include <Supergoon/lua.h>
 #include <Supergoon/map.h>
 #include <Supergoon/sprite.h>
 #include <Supergoon/state.h>
@@ -30,30 +27,23 @@
 static Uint64 _previousMS;
 static float _deltaTimeSeconds;
 // This needs to be defined in the program that will be utilizing the engine.
-extern void(StartImpl)(void);
-static void (*_updateFunc)(void) = NULL;
-static void (*_drawFunc)(void) = NULL;
-static void (*_quitFunc)(void) = NULL;
-static void (*_inputFunc)(void) = NULL;
-static int (*_handleEventFunc)(void *) = NULL;
+/* extern void(StartImpl)(void); */
 
 static void start(void) {
 	InitializeSdl();
 	InitializeLogSystem();
 	InitializeKeyboardSystem();
 	InitializeJoystickSystem();
-	InitializeLuaSystem();
 	InitializeEventSystem();
 	CreateWindow();
 	InitializeGraphicsSystem();
 	InitializeTextSystem();
 	InitializeAudioSystem();
-	RegisterAllLuaFunctions();
 	_previousMS = getCurrentMSTicks();
 	_deltaTimeSeconds = 0;
 }
 
-static void handleFramerate(Uint64 *now) {
+static void handleFramerate(Uint64* now) {
 #ifdef __EMSCRIPTEN__
 	return;
 #endif
@@ -73,8 +63,6 @@ static void draw(void) {
 	DrawCurrentMap();
 	DrawSpriteSystem();
 	if (_drawFunc) _drawFunc();
-	// DrawUISystem();
-	// DrawEnd();
 	DrawEnd();
 }
 
@@ -83,19 +71,16 @@ static void update(void) {
 	DeltaTimeMilliseconds = now - _previousMS;
 	_previousMS = now;
 	DeltaTimeSeconds = DeltaTimeMilliseconds / 1000;
+	UpdateCameraSystem();
 	UpdateAudioSystem();
 	UpdateKeyboardSystem();
+	UpdateCurrentMap();
 	if (_inputFunc) _inputFunc();
-	// UpdateUIInputSystem();
 	Ticks += 1;
 	UpdateAnimators();
-	PushGamestateToLua();
 	if (_updateFunc) _updateFunc();
-	// UpdateUISystem();
 	UpdateControllerSystem();
 	UpdateMouseSystem();
-	// UpdateTouchSystem();
-	UpdateCameraSystem();
 	draw();
 	handleFramerate(&now);
 }
@@ -106,37 +91,37 @@ static void Quit(void) {
 	ShutdownSpriteSystem();
 	ShutdownJoystickSystem();
 	ShutdownGraphicsSystem();
-	ShutdownLuaSystem();
 	ShutdownAudioSystem();
 	CloseWindow();
 	ShutdownEngineSilesystem();
 	ShutdownLogSystem();
 }
 
-void SetHandleEventFunction(int (*eventFunc)(void *)) { _handleEventFunc = eventFunc; }
+void SetHandleEventFunction(int (*eventFunc)(void*)) { _handleEventFunc = eventFunc; }
 void SetUpdateFunction(void (*updateFunc)(void)) { _updateFunc = updateFunc; }
 void SetDrawFunction(void (*drawFunc)(void)) { _drawFunc = drawFunc; }
 void SetInputFunction(void (*updateFunc)(void)) { _inputFunc = updateFunc; }
 void SetQuitFunction(void (*quitFunc)(void)) { _quitFunc = quitFunc; }
 
-SDL_AppResult SDL_AppInit(void **appState, int argc, char *argv[]) {
+SDL_AppResult SDL_AppInit(void** appState, int argc, char* argv[]) {
+	if (_initializeFunc) _initializeFunc();
 	start();
-	LuaRunFile("assets/lua/main.lua");
+	if (_startFunc) _startFunc();
 	return SDL_APP_CONTINUE;
 }
 
 // Event handlers return if the game should quit
-SDL_AppResult SDL_AppEvent(void *appState, SDL_Event *event) {
+SDL_AppResult SDL_AppEvent(void* appState, SDL_Event* event) {
 	if (HandleEvents(event)) return SDL_APP_SUCCESS;
 	if (_handleEventFunc && _handleEventFunc(event)) return SDL_APP_SUCCESS;
 	return SDL_APP_CONTINUE;
 }
 
-SDL_AppResult SDL_AppIterate(void *appState) {
+SDL_AppResult SDL_AppIterate(void* appState) {
 	update();
 	return SDL_APP_CONTINUE;
 }
 
-void SDL_AppQuit(void *appState, SDL_AppResult result) {
+void SDL_AppQuit(void* appState, SDL_AppResult result) {
 	Quit();
 }

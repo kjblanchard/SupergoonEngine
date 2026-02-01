@@ -9,7 +9,7 @@ typedef struct GamePad {
 	bool thisFrameButtons[SDL_GAMEPAD_BUTTON_COUNT];
 	int lastFrameAxis[SDL_GAMEPAD_AXIS_COUNT];
 	int thisFrameAxis[SDL_GAMEPAD_AXIS_COUNT];
-	SDL_Gamepad *Gamepad;
+	SDL_Gamepad* Gamepad;
 } GamePad;
 
 #define MAX_GAMEPADS 4
@@ -21,8 +21,8 @@ GamePad _connectedGamepads[MAX_GAMEPADS];
 static void InitializeEngineGamepad(int padId, int playerNum) {
 	if (_connectedGamepads[padId].Gamepad)
 		return;
-	GamePad *gamepad = &_connectedGamepads[playerNum];
-	SDL_Gamepad *pad = SDL_OpenGamepad(padId);
+	GamePad* gamepad = &_connectedGamepads[playerNum];
+	SDL_Gamepad* pad = SDL_OpenGamepad(padId);
 	if (!pad) {
 		sgLogError("Could not open gamecontroller");
 	}
@@ -42,7 +42,7 @@ void InitializeJoystickSystem(void) {
 	CountPluggedInControllers();
 }
 
-void geHandleJoystickEvent(const SDL_Event *event) {
+void geHandleJoystickEvent(const SDL_Event* event) {
 	switch (event->type) {
 		case SDL_EVENT_GAMEPAD_ADDED:
 			sgLogDebug("Controller added %s", event->cdevice.which);
@@ -83,7 +83,7 @@ void geHandleJoystickEvent(const SDL_Event *event) {
 
 static void CountPluggedInControllers(void) {
 	int numJoysticks;
-	SDL_JoystickID *joysticks = SDL_GetJoysticks(&numJoysticks);
+	SDL_JoystickID* joysticks = SDL_GetJoysticks(&numJoysticks);
 	sgLogDebug("There is a total of %d controllers initializing", numJoysticks);
 	_numGamePads = 0;
 	for (int i = 0; i < numJoysticks; i++)
@@ -105,7 +105,7 @@ bool geGamepadButtonJustReleased(const int padNum, const int button) {
 	return _numGamePads > padNum && (!_connectedGamepads[padNum].thisFrameButtons[button] && _connectedGamepads[padNum].lastFrameButtons[button]);
 }
 
-bool geGamepadButtonJustPressedAnyPad(int button, int *pad) {
+bool geGamepadButtonJustPressedAnyPad(int button, int* pad) {
 	for (size_t i = 0; i < (size_t)_numGamePads; i++) {
 		if (geGamepadButtonJustPressed(i, button)) {
 			*pad = i;
@@ -126,7 +126,7 @@ int geGamepadLeftAxisXThisFrameMovement(const int padNum) {
 	if (_numGamePads < padNum) {
 		return 0;
 	}
-	GamePad *pad = &_connectedGamepads[padNum];
+	GamePad* pad = &_connectedGamepads[padNum];
 	// TODO this should be changed and inside joystick?
 	int xInt = SDL_GAMEPAD_AXIS_LEFTX;
 	return pad->thisFrameAxis[xInt] - pad->lastFrameAxis[xInt];
@@ -136,7 +136,7 @@ int geGamepadLeftAxisYThisFrameMovement(const int padNum) {
 	if (_numGamePads < padNum) {
 		return 0;
 	}
-	GamePad *pad = &_connectedGamepads[padNum];
+	GamePad* pad = &_connectedGamepads[padNum];
 	// TODO this should be changed and inside joystick?
 	int yInt = SDL_GAMEPAD_AXIS_LEFTY;
 	return pad->thisFrameAxis[yInt] - pad->lastFrameAxis[yInt];
@@ -146,11 +146,11 @@ float geGamepadLeftAxisXFloat(const int padNum) {
 	if (_numGamePads < padNum) {
 		return 0;
 	}
-	GamePad *pad = &_connectedGamepads[padNum];
+	GamePad* pad = &_connectedGamepads[padNum];
 	Sint16 xRaw = SDL_GetGamepadAxis(pad->Gamepad, SDL_GAMEPAD_AXIS_LEFTX);
 	// Normalize to -1 to 1
 	float x = xRaw / 32767.0f;
-	if (fabs(x) < DEADZONE)
+	if (fabsf(x) < DEADZONE)
 		x = 0;
 	return x;
 }
@@ -158,10 +158,10 @@ float geGamepadLeftAxisYFloat(const int padNum) {
 	if (_numGamePads < padNum) {
 		return 0;
 	}
-	GamePad *pad = &_connectedGamepads[padNum];
+	GamePad* pad = &_connectedGamepads[padNum];
 	Sint16 yRaw = SDL_GetGamepadAxis(pad->Gamepad, SDL_GAMEPAD_AXIS_LEFTY);
 	float y = yRaw / 32767.0f;
-	if (fabs(y) < DEADZONE)
+	if (fabsf(y) < DEADZONE)
 		y = 0;
 	return y;
 }

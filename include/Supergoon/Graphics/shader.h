@@ -4,6 +4,10 @@
 #include <cglm/vec3.h>
 #include <cglm/vec4.h>
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 typedef struct Shader Shader;
 
 // Creates a shader, not usable until it is compiled with some kind of a shader
@@ -35,3 +39,6 @@ void ShaderSetUniformVector4fV(Shader *shader, const char *name, vec4 value,
 							   int useShader);
 void ShaderSetUniformMatrix4(Shader *shader, const char *name, mat4 value,
 							 int useShader);
+#ifdef __cplusplus
+}
+#endif

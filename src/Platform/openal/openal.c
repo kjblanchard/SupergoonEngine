@@ -127,6 +127,7 @@ void PauseBgmImpl(void) {
 }
 
 void StopBgmImpl(void) {
+	if(!_streams[_currentStreamID]) return;
 	StreamStop(_streams[_currentStreamID]);
 }
 

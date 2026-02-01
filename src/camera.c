@@ -1,14 +1,11 @@
 #include <SDL3/SDL_scancode.h>
 #include <Supergoon/Input/keyboard.h>
 #include <Supergoon/camera.h>
-#include <cglm/vec2.h>
-#include <cglm/vec3.h>
-#include <math.h>
-vec3 cameraPos = {0, 0, 0};
-vec2 cameraSize = {0, 0};
-float BoundsX = 0;
-float BoundsY = 0;
-float CameraZoom = 1.0f;
+double cameraPos[3] = {0, 0, 0};
+double cameraSize[3] = {0, 0, 0};
+double BoundsX = 0;
+double BoundsY = 0;
+double CameraZoom = 1.0;
 float* followX;
 float* followY;
 
@@ -18,8 +15,8 @@ void UpdateCameraSystem(void) {
 	double camX = 0;
 	double camY = 0;
 	if (followX && followY) {
-		camX = round(*followX) - viewWidth / 2.0f;
-		camY = round(*followY) - viewHeight / 2.0f;
+		camX = (*followX) - viewWidth / 2.0f;
+		camY = (*followY) - viewHeight / 2.0f;
 	}
 	// If map is smaller than screen, camera should be pinned to top-left
 	if (BoundsX <= viewWidth)
@@ -35,8 +32,10 @@ void UpdateCameraSystem(void) {
 		camY = 0;
 	else if (camY > BoundsY - viewHeight)
 		camY = BoundsY - viewHeight;
-	cameraPos[0] = roundf(camX);
-	cameraPos[1] = roundf(camY);
+	/* cameraPos[0] = floorf(camX); */
+	/* cameraPos[1] = floor(camY); */
+	cameraPos[0] = (camX);
+	cameraPos[1] = (camY);
 }
 
 void SetCameraFollowTarget(float* x, float* y) {
@@ -59,11 +58,20 @@ void SetCameraSize(float x, float y) {
 void SetCameraZoom(float zoom) {
 	CameraZoom = zoom;
 }
-float CameraGetX(void) {
+double CameraGetX(void) {
 	return cameraPos[0];
 }
-float CameraGetY(void) {
+double CameraGetY(void) {
 	return cameraPos[1];
+}
+
+void ResetCameraFollow(void){
+	followY = NULL;
+	followX = NULL;
+	cameraPos[0] = 0;
+	cameraPos[1] = 0;
+
+
 }
 
 float CameraGetWidth(void) { return cameraSize[0]; }

@@ -1,4 +1,5 @@
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_hints.h>
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_video.h>
 #include <Supergoon/Graphics/graphics.h>
@@ -61,7 +62,7 @@ void CreateWindowImpl(void) {
 	_windowHeight = (_windowHeight != 0) ? _windowHeight : 480;
 	const char* name = (_windowName != NULL) ? _windowName : "Game";
 
-	int flags = SDL_WINDOW_MOUSE_FOCUS | SDL_WINDOW_INPUT_FOCUS | SDL_WINDOW_RESIZABLE;
+	int flags = SDL_WINDOW_RESIZABLE;
 #ifdef sdlglbackend
 	flags |= SDL_WINDOW_OPENGL;
 #endif
@@ -69,9 +70,10 @@ void CreateWindowImpl(void) {
 	if (!_window.Handle) {
 		sgLogCritical("Could not create window, error, %s", SDL_GetError());
 	}
-	SDL_RaiseWindow(_window.Handle);
+	/* SDL_RaiseWindow(_window.Handle); */
 	onWindowResize();
-	SDL_SetWindowPosition(_window.Handle, 0, 0);
+	/* SDL_SetWindowPosition(_window.Handle, 0, 0); */
+
 }
 
 int WindowHeightImpl(void) {

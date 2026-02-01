@@ -24,17 +24,12 @@
 #include <stdlib.h>
 #define MAX_CACHED_TEXTURES 64
 
-static Texture *_currentRenderingTarget = NULL;
+static Texture* _currentRenderingTarget = NULL;
 static int _currentRenderingTargetWidth = 0;
 static int _currentRenderingTargetHeight = 0;
-static Texture *_previousRenderingTarget = NULL;
+static Texture* _previousRenderingTarget = NULL;
 static int _currentCachedTextures = 0;
-Texture *_cachedTextures[MAX_CACHED_TEXTURES];
-#ifdef __EMSCRIPTEN__
-	static int _clamp = GL_CLAMP_TO_EDGE;
-#else
-	static int _clamp = GL_CLAMP_TO_BORDER;
-#endif
+Texture* _cachedTextures[MAX_CACHED_TEXTURES];
 
 typedef struct Texture {
 	unsigned int ID;
@@ -43,15 +38,15 @@ typedef struct Texture {
 	unsigned int VAO;
 	unsigned int FBO;
 	int RefCount;
-	char *Name;
+	char* Name;
 } Texture;
 
-void TextureBindImpl(Texture *texture) {
+void TextureBindImpl(Texture* texture) {
 	glBindTexture(GL_TEXTURE_2D, texture->ID);
 }
 
-static Texture *getTextureFromCache(const char *filename) {
-	Texture *returnTexture = NULL;
+static Texture* getTextureFromCache(const char* filename) {
+	Texture* returnTexture = NULL;
 	for (int i = 0; i < _currentCachedTextures; ++i) {
 		if (strcmp(filename, _cachedTextures[i]->Name) == 0) {
 			returnTexture = _cachedTextures[i];
@@ -61,7 +56,7 @@ static Texture *getTextureFromCache(const char *filename) {
 	return returnTexture;
 }
 
-static void cacheTexture(Texture *texture) {
+static void cacheTexture(Texture* texture) {
 	for (int i = 0; i < _currentCachedTextures; ++i) {
 		if (!_cachedTextures[i]) {
 			_cachedTextures[i] = texture;
@@ -70,15 +65,15 @@ static void cacheTexture(Texture *texture) {
 	}
 }
 
-void TextureClearRenderTargetImpl(Texture *texture, float r, float g, float b,
+void TextureClearRenderTargetImpl(Texture* texture, float r, float g, float b,
 								  float a) {
 	SetRenderTarget(texture);
 	glClearColor(r, g, b, a);
 	glClear(GL_COLOR_BUFFER_BIT);
 	SetPreviousRenderTarget();
 }
-Texture *TextureCreateNoCacheImpl(void) {
-	Texture *texture = malloc(sizeof(Texture));
+Texture* TextureCreateNoCacheImpl(void) {
+	Texture* texture = malloc(sizeof(Texture));
 	texture->ID = 0;
 	texture->Width = 0;
 	texture->Height = 0;
@@ -97,7 +92,7 @@ Texture *TextureCreateNoCacheImpl(void) {
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 	glBindVertexArray(texture->VAO);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 	glGenTextures(1, &texture->ID);
@@ -106,13 +101,13 @@ Texture *TextureCreateNoCacheImpl(void) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, _clamp);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, _clamp);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	return texture;
 }
 
-Texture *TextureCreateImpl(const char *name) {
-	Texture *texture = getTextureFromCache(name);
+Texture* TextureCreateImpl(const char* name) {
+	Texture* texture = getTextureFromCache(name);
 	if (texture) {
 		++texture->RefCount;
 		return texture;
@@ -121,8 +116,8 @@ Texture *TextureCreateImpl(const char *name) {
 	cacheTexture(texture);
 	return texture;
 }
-Texture *TextureCreateRenderTargetImpl(int width, int height) {
-	Texture *texture = malloc(sizeof(Texture));
+Texture* TextureCreateRenderTargetImpl(int width, int height) {
+	Texture* texture = malloc(sizeof(Texture));
 	if (!texture)
 		return NULL;
 	texture->ID = 0;
@@ -146,8 +141,8 @@ Texture *TextureCreateRenderTargetImpl(int width, int height) {
 	// sensible defaults for render target texture
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, _clamp);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, _clamp);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 	// Create framebuffer and attach texture as color attachment 0
 	glGenFramebuffers(1, &texture->FBO);
@@ -185,7 +180,7 @@ Texture *TextureCreateRenderTargetImpl(int width, int height) {
 
 	glEnableVertexAttribArray(0);
 	// attribute 0 is vec4 (pos.xy, tex.xy) like your current code
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
 
 	// unbind
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -194,33 +189,18 @@ Texture *TextureCreateRenderTargetImpl(int width, int height) {
 	return texture;
 }
 
-int TextureGetWidthImpl(Texture *texture) { return texture->Width; }
-int TextureGetHeightImpl(Texture *texture) { return texture->Height; }
+int TextureGetWidthImpl(Texture* texture) { return texture->Width; }
+int TextureGetHeightImpl(Texture* texture) { return texture->Height; }
 
-void TextureLoadFromBmpImpl(Texture *texture, const char *filepath) {
-	char *fullFilepath;
-	asprintf(&fullFilepath, "%sassets/img/%s.bmp", GetBasePath(), filepath);
-	SDL_Surface *surface = SDL_LoadBMP(fullFilepath);
+void TextureLoadFromPngImpl(Texture* texture, const char* filepath) {
+	char* fullFilepath;
+	asprintf(&fullFilepath, "%sassets/img/%s.png", GetBasePath(), filepath);
+	SDL_Surface* surface = SDL_LoadPNG(fullFilepath);
 	if (!surface) {
-		sgLogError("Could not load bmp into surface, %s %s", fullFilepath,
+		sgLogError("Could not load png into surface, %s %s", fullFilepath,
 				   SDL_GetError());
 		goto cleanup;
 	}
-	SDL_Color transparentColor = {255, 0, 255, 255};
-	if (!SDL_SetSurfaceColorKey(surface, true,
-								SDL_MapSurfaceRGB(surface, transparentColor.r,
-												  transparentColor.g,
-												  transparentColor.b))) {
-		sgLogWarn("Failed to set color key: %s", SDL_GetError());
-		goto cleanup;
-	}
-	SDL_Surface *converted = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32);
-	if (!converted) {
-		sgLogWarn("Failed to convert, %s", SDL_GetError());
-		goto cleanup;
-	}
-	SDL_DestroySurface(surface);
-	surface = converted;
 	texture->Name = strdup(filepath);
 	texture->Width = surface->w;
 	texture->Height = surface->h;
@@ -242,9 +222,8 @@ cleanup:
 	SDL_DestroySurface(surface);
 }
 
-void DrawTextureImpl(Texture *texture, Shader *shader, RectangleF *dstRect,
-					 RectangleF *srcRect, bool useCamera, float scale, bool flipY, Color *color) {
-	// prepare transformations
+void DrawTextureImpl(Texture* texture, Shader* shader, RectangleF* dstRect,
+					 RectangleF* srcRect, bool useCamera, float scale, bool flipY, Color* color) {
 	if (flipY) {
 		dstRect->y += dstRect->h * scale;  // move origin to top
 		dstRect->h *= -1;				   // negative height flips it
@@ -252,30 +231,26 @@ void DrawTextureImpl(Texture *texture, Shader *shader, RectangleF *dstRect,
 	ShaderUse(shader);
 	mat4 model;
 	glm_mat4_identity(model);
-	vec3 pos = {round(dstRect->x), round(dstRect->y), 0};
+	vec3 pos = {floorf(dstRect->x), floorf(dstRect->y), 0};
 	glm_translate(model, pos);
 	vec3 size = {dstRect->w * scale, dstRect->h * scale, 1.0f};
 	glm_scale(model, size);
-	/* static vec3 cameraPos = {0.0f, 0.0f, 0.0f}; */
 	mat4 view;
 	glm_mat4_identity(view);
 	if (useCamera) {
-		vec3 negCameraPos = {-CameraGetX(), -CameraGetY(), 0.0f};
+		double cx = CameraGetX();
+		double cy = CameraGetY();
+		vec3 negCameraPos = {
+			-floorf(cx),
+			-floorf(cy),
+			0.0f};
+
 		glm_translate(view, negCameraPos);
 	}
-
-	vec4 srcRectV = {round(srcRect->x), srcRect->y, srcRect->w, srcRect->h};
+	vec4 srcRectV = {floorf(srcRect->x), floorf(srcRect->y), srcRect->w, srcRect->h};
 	vec2 texSize = {(float)texture->Width, (float)texture->Height};
 	ShaderSetUniformVector4fV(shader, "srcRect", srcRectV, false);
 	ShaderSetUniformVector2fV(shader, "textureSize", texSize, false);
-
-	// compute UVs on CPU test
-	// float u0 = srcRect->x / texture->Width;
-	// float v0 = srcRect->y / texture->Height;
-	// float u1 = (srcRect->x + srcRect->w) / texture->Width;
-	// float v1 = (srcRect->y + srcRect->h) / texture->Height;
-	// ShaderSetUniformVector4f(shader, "uvRect", u0, v0, u1, v1, false);
-
 	ShaderSetUniformMatrix4(shader, "model", model, false);
 	ShaderSetUniformMatrix4(shader, "view", view, false);
 	ShaderSetUniformMatrix4(shader, "projection", projectionMatrix, false);
@@ -289,16 +264,16 @@ void DrawTextureImpl(Texture *texture, Shader *shader, RectangleF *dstRect,
 	glBindVertexArray(0);
 }
 
-void DrawTextureToTextureImpl(Texture *dstTarget, Texture *srcTexture,
-							  Shader *shader, RectangleF *dstRect,
-							  RectangleF *srcRect, float scale) {
+void DrawTextureToTextureImpl(Texture* dstTarget, Texture* srcTexture,
+							  Shader* shader, RectangleF* dstRect,
+							  RectangleF* srcRect, float scale) {
 	SetRenderTarget(dstTarget);
 	Color color = {255, 255, 255, 255};
 	DrawTexture(srcTexture, shader, dstRect, srcRect, false, scale, false, &color);
 	SetPreviousRenderTarget();
 }
 
-void TextureDestroyImpl(Texture *texture) {
+void TextureDestroyImpl(Texture* texture) {
 	if (!texture) return;
 	--texture->RefCount;
 	if (texture->RefCount > 0) return;
@@ -337,7 +312,7 @@ void SetPreviousRenderTargetImpl(void) {
 	SetRenderTarget(_previousRenderingTarget);
 }
 
-void SetRenderTargetImpl(Texture *target) {
+void SetRenderTargetImpl(Texture* target) {
 	_previousRenderingTarget = _currentRenderingTarget;
 	if (target) {
 		_currentRenderingTargetWidth = target->Width;
@@ -354,7 +329,7 @@ void SetRenderTargetImpl(Texture *target) {
 	glViewport(0, 0, _currentRenderingTargetWidth, _currentRenderingTargetHeight);
 }
 
-void TextureLoadFromDataImpl(Texture *texture, const char *name, int width, int height, void *data) {
+void TextureLoadFromDataImpl(Texture* texture, const char* name, int width, int height, void* data) {
 	texture->Name = strdup(name);
 	texture->Width = width;
 	texture->Height = height;
