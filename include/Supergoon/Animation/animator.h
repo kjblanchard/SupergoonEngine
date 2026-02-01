@@ -65,6 +65,7 @@ void PlayAnimation(AnimatorHandle animator, const char* anim, int loops);
 void SetAnimatorAnimationSpeed(AnimatorHandle animator, float speed);
 void AddAnimationToAnimatorQueue(AnimatorHandle animator, const char* animName, int loops);
 void DestroyAnimator(AnimatorHandle animator);
+void ShutdownAnimationSystem(void);
 
 #ifdef __cplusplus
 }

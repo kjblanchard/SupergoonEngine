@@ -1,6 +1,6 @@
 #include <Supergoon/Animation/animator.h>
-#include <Supergoon/log.h>
 #include <Supergoon/json.h>
+#include <Supergoon/log.h>
 #include <Supergoon/state.h>
 #include <Supergoon/tools.h>
 #include <assert.h>
@@ -72,7 +72,8 @@ static void removeAnimationDataRef(AnimationData* data) {
 	}
 	sgLogWarn("Trying to remove ref to something not found");
 }
-// Finds a animation data based on name
+
+// Finds a animation data based on name, from the cached to try not to load from file.
 static AnimationData* findAnimationData(const char* name) {
 	for (size_t i = 0; i < _animationData.Size; i++) {
 		AnimationDataRef* currentPtr = &_animationData.AnimationArray[i];
@@ -87,28 +88,20 @@ static AnimationData* findAnimationData(const char* name) {
 	return NULL;
 }
 
-// Aseprite table must be on stack prior to calling this, then it
 static void loadAsepriteData(const char* name, AnimationData* animationData) {
-	/* json_object* frameObject = jobj(object, "frames"); */
 	json_object* root = jGetObjectFromFile(name);
-	if(!root){
+	if (!root) {
 		sgLogError("Could not load animation data for %s", name);
 		return;
 	}
 	json_object* frameObject = jobj(root, "frames");
-	/* LuaGetTable(_luaState, "frames"); */
-	/* animationData->frameCount = LuaGetTableLength(_luaState); */
 	animationData->frameCount = jGetObjectArrayLength(frameObject);
 	animationData->frames = calloc(animationData->frameCount, sizeof(Frame));
 	for (size_t i = 0; i < animationData->frameCount; i++) {
 		Frame* frame = &animationData->frames[i];
 		json_object* currentObj = jGetObjectInObjectWithIndex(frameObject, i);
-		/* LuaPushTableObjectToStacki(_luaState, i); */
-		/* frame->duration = LuaGetInt(_luaState, "duration"); */
 		frame->duration = jint(currentObj, "duration");
 		json_object* rectObj = jobj(currentObj, "frame");
-		/* LuaGetTable(_luaState, "frame"); */
-
 		frame->frame.x = jint(rectObj, "x");
 		frame->frame.y = jint(rectObj, "y");
 		frame->frame.w = jint(rectObj, "w");
@@ -131,7 +124,6 @@ static void loadAsepriteData(const char* name, AnimationData* animationData) {
 		const char* direction = jstr(currentObj, "direction");
 		if (strcmp(direction, "pingpong") == 0) {
 			animationData->meta.frameTags[i].direction = AnimationDataDirectionsPingPong;
-
 		} else if (strcmp(direction, "forward") == 0) {
 			animationData->meta.frameTags[i].direction = AnimationDataDirectionsForward;
 		} else {
@@ -340,4 +332,7 @@ void AddAnimationToAnimatorQueue(AnimatorHandle animator, const char* animName, 
 		return;
 	}
 	sgLogWarn("Could not add animation %s to animator queue of %s, because it is full!", animName, anim->Name);
+}
+
+void ShutdownAnimationSystem(void) {
 }
