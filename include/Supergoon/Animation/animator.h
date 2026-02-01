@@ -8,6 +8,7 @@
  * @copyright Copyright (c) 2025
  *
  */
+#pragma once
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -31,40 +32,18 @@ typedef struct Animator {
 	AnimationData* Data;
 	Sprite* Sprite;
 	float AnimationSpeed;
+	int IsDestroyed;
 
 } Animator;
 
-typedef struct AnimatorArray {
-	Animator* Animators;
-	size_t Count;
-	size_t Size;
-
-} AnimatorArray;
-
-typedef struct AnimationDataRef {
-	AnimationData Data;
-	size_t RefCount;
-} AnimationDataRef;
-
-// If refcount is 0, it can be reused.
-typedef struct AnimationDataArray {
-	AnimationDataRef* AnimationArray;
-	size_t Count;
-	size_t Size;
-} AnimationDataArray;
-
-extern AnimationDataArray _animationData;
-extern AnimatorArray _animators;
 void UpdateAnimators(void);
 
-typedef unsigned int AnimatorHandle;
-
-AnimatorHandle CreateAnimator(const char* filename);
-void PlayAnimation(AnimatorHandle animator, const char* anim, int loops);
+Animator* CreateAnimator(const char* filename, AnimationData* data);
+void PlayAnimation(Animator* animator, const char* anim, int loops);
 // 1.0 is regular, 0.0 is none, etc
-void SetAnimatorAnimationSpeed(AnimatorHandle animator, float speed);
-void AddAnimationToAnimatorQueue(AnimatorHandle animator, const char* animName, int loops);
-void DestroyAnimator(AnimatorHandle animator);
+// void SetAnimatorAnimationSpeed(Animator* animator, float speed);
+void AddAnimationToAnimatorQueue(Animator* animator, const char* animName, int loops);
+void DestroyAnimator(Animator* animator);
 void ShutdownAnimationSystem(void);
 
 #ifdef __cplusplus

@@ -83,7 +83,6 @@ endif(UNIX OR APPLE)
 
 set(SRC_FILES
     src/camera.c
-    # src/lua.c
     src/json.c
     src/log.c
     src/state.c
@@ -96,16 +95,8 @@ set(SRC_FILES
     src/Primitives/rectangle.c
     src/Audio/Audio.c
     src/Tweening/easing.c
-    # src/Tweening/tween.c
-    # src/Lua/llog.c
-    # src/Lua/laudio.c
-    # src/Lua/lengine.c
-    # src/Lua/linput.c
-    # src/Lua/lcamera.c
-    # src/Lua/scripting.c
-    # src/effects.c
     src/Animation/Animator.c
-    # src/gameobject.c
+    src/Animation/AnimationData.c
     src/sprite.c
     src/Input/mouse.c
     # src/Input/touch.c
@@ -113,13 +104,6 @@ set(SRC_FILES
     src/Platform/sdl/sdlInput.c
     src/Platform/sdl/sdlWindow.c
     src/map.c
-    # src/Lua/lanimation.c
-    # src/Lua/lsprite.c
-    # src/Lua/lgameobject.c
-    # src/Lua/lscene.c
-    # src/Lua/leffects.c
-    # src/Lua/lgraphics.c
-    # src/Lua/ltext.c
     # sound
     src/Platform/openal/openal.c
     src/Platform/openal/openalSfx.c

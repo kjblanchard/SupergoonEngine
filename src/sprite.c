@@ -5,9 +5,7 @@
 #include <Supergoon/camera.h>
 #include <Supergoon/sprite.h>
 #include <Supergoon/tools.h>
-#include <limits.h>
 #include <stdlib.h>
-#include <string.h>
 
 static size_t _firstSpriteHole = NO_HOLE;
 static size_t _numSprites = 0;
