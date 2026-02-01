@@ -53,7 +53,7 @@ void DestroySprite(Sprite* sprite) {
 		if (sprite != _sprites[i]) {
 			continue;
 		}
-		// If we are using the default shader, this breaks.
+		// If we are using the default shader, this breaks, so prevent it from destroying shader if so.
 		if (GetDefaultShader() != sprite->Shader) ShaderDestroy(sprite->Shader);
 		TextureDestroy(sprite->Texture);
 		sprite->Texture = NULL;
@@ -83,7 +83,7 @@ void DrawSpriteSystem(void) {
 
 void ShutdownSpriteSystem(void) {
 	for (size_t i = 0; i < _sizeSprites; i++) {
-		TextureDestroy(_sprites[i]->Texture);
+		DestroySprite(_sprites[i]);
 		free(_sprites[i]);
 	}
 	free(_sprites);
