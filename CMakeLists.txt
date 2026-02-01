@@ -60,6 +60,9 @@ endif(SDL_BACKEND)
 if(SDL_GL)
     add_definitions(-Dsdlglbackend)
 endif(SDL_GL)
+if(SDL_RENDERER)
+    add_definitions(-Dsdlrendererbackend)
+endif(SDL_RENDERER)
 
 if(UNIX OR APPLE)
     list(APPEND COMPILE_OPTIONS 
@@ -102,7 +105,7 @@ set(SRC_FILES
     # src/Lua/scripting.c
     # src/effects.c
     src/Animation/Animator.c
-    src/gameobject.c
+    # src/gameobject.c
     src/sprite.c
     src/Input/mouse.c
     # src/Input/touch.c
@@ -133,6 +136,10 @@ set(SRC_FILES
 if(SDL_GL)
     list(APPEND SRC_FILES src/Platform/opengl/glad.c src/Platform/opengl/openglGraphics.c src/Platform/opengl/openglShader.c src/Platform/opengl/openglTexture.c)
 endif(SDL_GL)
+
+if(SDL_RENDERER)
+    list(APPEND SRC_FILES src/Platform/opengl/sdlGraphics.c src/Platform/opengl/sdlShader.c src/Platform/opengl/sdlTexture.c)
+endif(SDL_RENDERER)
 
 # add_executable(${LIBRARY_TARGET_NAME } MACOSX_BUNDLE WIN32 ${SRC_FILES} ${DEBUG_FILES} ${ICON_PATH})
 add_library(${LIBRARY_TARGET_NAME} ${SRC_FILES} ${DEBUG_FILES})

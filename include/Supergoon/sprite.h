@@ -3,7 +3,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-typedef struct sgGameObject GameObject;
 typedef struct Texture Texture;
 typedef struct Shader Shader;
 struct sgGameObject;
@@ -12,7 +11,8 @@ typedef enum SpriteFlags {
 	SpriteFlagDestroyed = 1 << 1,
 } SpriteFlags;
 typedef struct Sprite {
-	GameObject* Parent;
+	float* parentX;
+	float* parentY;
 	Texture* Texture;
 	RectangleF TextureSourceRect;
 	RectangleF OffsetAndSizeRectF;

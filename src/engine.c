@@ -15,7 +15,6 @@
 #include <Supergoon/engine.h>
 #include <Supergoon/events.h>
 #include <Supergoon/filesystem.h>
-#include <Supergoon/gameobject.h>
 #include <Supergoon/log.h>
 #include <Supergoon/map.h>
 #include <Supergoon/sprite.h>

@@ -3,7 +3,6 @@
 #include <Supergoon/Graphics/texture.h>
 #include <Supergoon/Primitives/Color.h>
 #include <Supergoon/camera.h>
-#include <Supergoon/gameobject.h>
 #include <Supergoon/sprite.h>
 #include <Supergoon/tools.h>
 #include <limits.h>
@@ -34,7 +33,8 @@ static Sprite* getFreeSprite(void) {
 
 Sprite* NewSprite(void) {
 	Sprite* sprite = getFreeSprite();
-	sprite->Parent = NULL;
+	sprite->parentX = NULL;
+	sprite->parentY = NULL;
 	sprite->Texture = NULL;
 	sprite->Shader = NULL;
 	sprite->Scale = 1.0f;
@@ -73,8 +73,8 @@ void DrawSpriteSystem(void) {
 		if (!sprite || !sprite->Texture || NO_FLAGS(sprite->Flags, SpriteFlagVisible)) {
 			continue;
 		}
-		dst.x = sprite->Parent ? sprite->Parent->X + sprite->OffsetAndSizeRectF.x : sprite->OffsetAndSizeRectF.x;
-		dst.y = sprite->Parent ? sprite->Parent->Y + sprite->OffsetAndSizeRectF.y : sprite->OffsetAndSizeRectF.y;
+		dst.x = sprite->parentX ? *sprite->parentX + sprite->OffsetAndSizeRectF.x : sprite->OffsetAndSizeRectF.x;
+		dst.y = sprite->parentY ? *sprite->parentY + sprite->OffsetAndSizeRectF.y : sprite->OffsetAndSizeRectF.y;
 		dst.w = sprite->OffsetAndSizeRectF.w;
 		dst.h = sprite->OffsetAndSizeRectF.h;
 		DrawTexture(sprite->Texture, sprite->Shader, &dst, &sprite->TextureSourceRect, true, sprite->Scale, false, &color);
