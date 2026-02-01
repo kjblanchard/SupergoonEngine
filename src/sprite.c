@@ -14,7 +14,7 @@ static Sprite** _sprites;
 
 static Sprite* getFreeSprite(void) {
 	if (_firstSpriteHole == NO_HOLE) {
-		RESIZE_ARRAY_PTR_ALLOC(_sprites, _numSprites, _sizeSprites, Sprite);
+		RESIZE_ARRAY_PTR_ALLOC(_sprites, _numSprites, _sizeSprites, Sprite, 0);
 		return _sprites[_numSprites++];
 	}
 	Sprite* returnSprite = _sprites[_firstSpriteHole];
@@ -68,7 +68,7 @@ void DrawSpriteSystem(void) {
 	Color color = {255, 255, 255, 255};
 	for (size_t i = 0; i < _numSprites; i++) {
 		Sprite* sprite = _sprites[i];
-		if (!sprite || !sprite->Texture || NO_FLAGS(sprite->Flags, SpriteFlagVisible)) {
+		if (!sprite || !sprite->Texture || !(sprite->Flags & SpriteFlagVisible)) {
 			continue;
 		}
 		dst.x = sprite->parentX ? *sprite->parentX + sprite->OffsetAndSizeRectF.x : sprite->OffsetAndSizeRectF.x;

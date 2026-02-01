@@ -19,7 +19,7 @@ typedef struct AnimatorArray {
 AnimatorArray _animators;
 
 // Used when reusing a old animator to reset anim queue
-static void setNewAnim(Animator* anim) {
+static void onAnimatorCreate(Animator* anim) {
 	CLEAR_STRUCT(anim);
 	for (size_t j = 0; j < MAX_NUM_ANIM_QUEUE; j++) {
 		anim->NextAnimNum[j] = NO_NEXT_ANIM;
@@ -29,13 +29,12 @@ static void setNewAnim(Animator* anim) {
 
 static Animator* getFreeAnimator(void) {
 	if (_firstAnimatorHole == NO_HOLE) {
-		RESIZE_ARRAY_PTR_ALLOC(_animators.Animators, _animators.Count, _animators.Size, Animator);
+		RESIZE_ARRAY_PTR_ALLOC(_animators.Animators, _animators.Count, _animators.Size, Animator, onAnimatorCreate);
 		Animator* anim = _animators.Animators[_animators.Count++];
-		setNewAnim(anim);
 		return anim;
 	}
 	Animator* returnSprite = _animators.Animators[_firstAnimatorHole];
-	setNewAnim(returnSprite);
+	onAnimatorCreate(returnSprite);
 	size_t nextHole = NO_HOLE;
 	for (size_t i = _firstAnimatorHole + 1; i < _animators.Count; i++) {
 		if (_animators.Animators[i]->IsDestroyed) {
