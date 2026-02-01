@@ -475,10 +475,6 @@ void ShutdownMapSystem(void) {
 			freeTiledTilemap(_previousMaps[i]);
 		_previousMaps[i] = NULL;
 	}
-	if(_currentMap){
-		freeTiledTilemap(_currentMap);
-		_currentMap = NULL;
-	}
 }
 
 void CheckRectForCollisionWithSolids(RectangleF* rect) {
