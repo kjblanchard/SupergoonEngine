@@ -7,9 +7,10 @@ extern void DrawStartImpl(void);
 extern void GraphicsWindowResizeEventImpl(int width, int height);
 extern void GraphicsSetLogicalWorldSizeImpl(int width, int height);
 extern int GraphicsGetTargetRefreshRateImpl(void);
-extern void DrawRectImpl(RectangleF *rect, Color *color, int filled, int cameraOffset);
+extern void DrawRectImpl(RectangleF* rect, Color* color, int filled, int cameraOffset);
+extern void GraphicsUpdateFBOColorImpl(Color* color);
 
-void DrawRect(RectangleF *rect, Color *color, int filled, int cameraOffset) { DrawRectImpl(rect, color, filled, cameraOffset); }
+void DrawRect(RectangleF* rect, Color* color, int filled, int cameraOffset) { DrawRectImpl(rect, color, filled, cameraOffset); }
 void InitializeGraphicsSystem(void) { InitializeGraphicsSystemImpl(); }
 void ShutdownGraphicsSystem(void) { ShutdownGraphicsSystemImpl(); }
 void DrawStart(void) { DrawStartImpl(); }
@@ -17,3 +18,4 @@ void DrawEnd(void) { DrawEndImpl(); }
 void GraphicsWindowResizeEvent(int width, int height) { GraphicsWindowResizeEventImpl(width, height); }
 void GraphicsSetLogicalWorldSize(int width, int height) { GraphicsSetLogicalWorldSizeImpl(width, height); }
 int GraphicsGetTargetRefreshRate(void) { return GraphicsGetTargetRefreshRateImpl(); }
+void GraphicsUpdateFBOColor(Color* color) { GraphicsUpdateFBOColorImpl(color); }

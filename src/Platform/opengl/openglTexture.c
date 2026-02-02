@@ -255,8 +255,10 @@ void DrawTextureImpl(Texture* texture, Shader* shader, RectangleF* dstRect,
 	ShaderSetUniformMatrix4(shader, "view", view, false);
 	ShaderSetUniformMatrix4(shader, "projection", projectionMatrix, false);
 	ShaderSetUniformInteger(shader, "image", 0, false);
-	vec3 colorVec = {color->R / (float)255, color->G / (float)255, color->B / (float)255};
-	ShaderSetUniformVector3fV(shader, "spriteColor", colorVec, false);
+	/* vec3 colorVec = {color->R / (float)255, color->G / (float)255, color->B / (float)255}; */
+	vec4 colorVec = {color->R / (float)255, color->G / (float)255, color->B / (float)255, color->A / (float)255};
+	/* ShaderSetUniformVector3fV(shader, "spriteColor", colorVec, false); */
+	ShaderSetUniformVector4fV(shader, "spriteColor", colorVec, false);
 	glActiveTexture(GL_TEXTURE0);
 	TextureBindImpl(texture);
 	glBindVertexArray(texture->VAO);
