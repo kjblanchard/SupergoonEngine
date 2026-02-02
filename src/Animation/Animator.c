@@ -70,8 +70,6 @@ static void playAnimation(Animator* anim, int animNum, int loops) {
 	anim->CurrentFrame = anim->Data->meta.frameTags[animNum].from;
 	anim->CurrentFrameTime = 0;
 	anim->Loops = loops;
-	// TODO speed is always 1.0 right now, not implemented
-	anim->AnimationSpeed = 1.0f;
 	updateAnimatorRect(anim);
 }
 
@@ -115,7 +113,9 @@ void DestroyAnimator(Animator* animator) {
 }
 
 void updateAnimator(Animator* animator) {
-	if (animator->Loops == 0 || animator->AnimationSpeed == 0.0f) {
+	if(!animator || animator->IsDestroyed) return;
+	if ( animator->Loops == 0 || animator->AnimationSpeed == 0.0f) {
+		sgLogDebug("no loops or speed .. loops: %d, speed %f", animator->Loops, animator->AnimationSpeed);
 		return;
 	}
 	animator->CurrentFrameTime += DeltaTimeMilliseconds * animator->AnimationSpeed;

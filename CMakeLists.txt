@@ -319,36 +319,6 @@ elseif(EMSCRIPTEN)
         list(APPEND EXTERNAL_LIBS vorbisenc vorbisfile vorbis)
     endif(NOT EMSCRIPTEN AND NOT LIB_VORBIS)
 
-    # if(NOT LIB_LUA)
-    #     message(STATUS "Lua not found. Fetching Lua...")
-    #     set(LUA_ENABLE_TESTING
-    #         OFF
-    #         CACHE BOOL "Build SDL as a shared library")
-    #     set(LUA_ENABLE_SHARED
-    #         OFF
-    #         CACHE BOOL "Build SDL as a shared library")
-    #     set(LUA_BUILD_COMPILER
-    #         OFF
-    #         CACHE BOOL "Build SDL as a shared library")
-    #     set(LUA_BUILD_BINARY
-    #         OFF
-    #         CACHE BOOL "Build SDL as a shared library")
-    #     if(IOS) # Test for ios sim with lua, as this fails with system and needs this define.. TODO not sure if needed
-    #         add_definitions(-DTARGET_OS_IOS=1)
-    #         add_definitions(-DLUA_USE_IOS=1)
-    #     endif(IOS)
-
-    #     FetchContent_Declare(
-    #         LIB_LUA
-    #         GIT_REPOSITORY https://github.com/walterschell/Lua.git
-    #         GIT_TAG v5.4.5
-    #         EXCLUDE_FROM_ALL)
-    #     FetchContent_MakeAvailable(LIB_LUA)
-
-    #     # list(APPEND EXTERNAL_LIBS lua_static)
-    #     list(APPEND EXTERNAL_LIBS lua_static)
-    # endif(NOT LIB_LUA)
-
     if(NOT SDL3_FOUND)
         message(STATUS "SDL3 not found. Fetching SDL3...")
         set(SDL_SHARED
