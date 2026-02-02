@@ -178,6 +178,9 @@ void GraphicsSetLogicalWorldSizeImpl(int width, int height) {
 void GraphicsUpdateFBOColorImpl(Color* color) {
 	_fboColor = *color;
 }
+Color GraphicsGetFBOColorImpl(void){
+	return _fboColor;
+}
 
 int GraphicsGetTargetRefreshRateImpl(void) {
 	return _refreshRate;

@@ -9,6 +9,7 @@ extern void GraphicsSetLogicalWorldSizeImpl(int width, int height);
 extern int GraphicsGetTargetRefreshRateImpl(void);
 extern void DrawRectImpl(RectangleF* rect, Color* color, int filled, int cameraOffset);
 extern void GraphicsUpdateFBOColorImpl(Color* color);
+extern Color GraphicsGetFBOColorImpl(void);
 
 void DrawRect(RectangleF* rect, Color* color, int filled, int cameraOffset) { DrawRectImpl(rect, color, filled, cameraOffset); }
 void InitializeGraphicsSystem(void) { InitializeGraphicsSystemImpl(); }
@@ -19,3 +20,4 @@ void GraphicsWindowResizeEvent(int width, int height) { GraphicsWindowResizeEven
 void GraphicsSetLogicalWorldSize(int width, int height) { GraphicsSetLogicalWorldSizeImpl(width, height); }
 int GraphicsGetTargetRefreshRate(void) { return GraphicsGetTargetRefreshRateImpl(); }
 void GraphicsUpdateFBOColor(Color* color) { GraphicsUpdateFBOColorImpl(color); }
+Color GraphicsGetFBOColor(void) { return GraphicsGetFBOColorImpl(); }

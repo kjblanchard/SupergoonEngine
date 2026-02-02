@@ -25,6 +25,7 @@ void GraphicsSetLogicalWorldSize(int width, int height);
 int GraphicsGetTargetRefreshRate(void);
 void GraphicsWindowResizeEvent(int width, int height);
 void GraphicsUpdateFBOColor(Color* color);
+Color GraphicsGetFBOColor(void);
 #ifdef __cplusplus
 }
 #endif
