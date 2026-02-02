@@ -113,9 +113,7 @@ void DestroyAnimator(Animator* animator) {
 }
 
 void updateAnimator(Animator* animator) {
-	if(!animator || animator->IsDestroyed) return;
-	if ( animator->Loops == 0 || animator->AnimationSpeed == 0.0f) {
-		sgLogDebug("no loops or speed .. loops: %d, speed %f", animator->Loops, animator->AnimationSpeed);
+	if (!animator || animator->IsDestroyed || animator->Loops == 0 || animator->AnimationSpeed == 0.0f) {
 		return;
 	}
 	animator->CurrentFrameTime += DeltaTimeMilliseconds * animator->AnimationSpeed;
