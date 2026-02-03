@@ -1,19 +1,19 @@
 #include <SDL3/SDL_scancode.h>
 #include <Supergoon/Input/keyboard.h>
 #include <Supergoon/camera.h>
-double cameraPos[3] = {0, 0, 0};
-double cameraSize[3] = {0, 0, 0};
-double BoundsX = 0;
-double BoundsY = 0;
-double CameraZoom = 1.0;
+float cameraPos[3] = {0, 0, 0};
+float cameraSize[3] = {0, 0, 0};
+float BoundsX = 0;
+float BoundsY = 0;
+float CameraZoom = 1.0;
 float* followX;
 float* followY;
 
 void UpdateCameraSystem(void) {
-	double viewWidth = 480;
-	double viewHeight = 270;
-	double camX = 0;
-	double camY = 0;
+	float viewWidth = 480;
+	float viewHeight = 270;
+	float camX = 0;
+	float camY = 0;
 	if (followX && followY) {
 		camX = (*followX) - viewWidth / 2.0f;
 		camY = (*followY) - viewHeight / 2.0f;
@@ -58,10 +58,12 @@ void SetCameraSize(float x, float y) {
 void SetCameraZoom(float zoom) {
 	CameraZoom = zoom;
 }
-double CameraGetX(void) {
+
+float CameraGetX(void) {
 	return cameraPos[0];
 }
-double CameraGetY(void) {
+
+float CameraGetY(void) {
 	return cameraPos[1];
 }
 

@@ -340,7 +340,7 @@ elseif(EMSCRIPTEN)
             EXCLUDE_FROM_ALL)
         FetchContent_MakeAvailable(SDL3)
         list(APPEND EXTERNAL_LIBS SDL3::SDL3-static)
-    endif(NOT EMSCRIPTEN AND NOT SDL3_FOUND)
+    endif(NOT SDL3_FOUND)
 
     if(NOT FREETYPE_FOUND)
         message(STATUS "freetype not found. Fetching freetype...")
