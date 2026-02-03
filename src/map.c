@@ -167,8 +167,7 @@ static void handleTiledObjectEntities(Tilemap* map, json_object* layer) {
 		if (object->NumProperties == 0)
 			continue;
 
-		object->Properties =
-			calloc(object->NumProperties, sizeof(TiledProperty));
+		object->Properties = calloc(object->NumProperties, sizeof(TiledProperty));
 
 		for (size_t j = 0; j < (size_t)object->NumProperties; j++) {
 			json_object* prop = jGetObjectInObjectWithIndex(props, j);
@@ -191,8 +190,7 @@ static void handleTiledObjectEntities(Tilemap* map, json_object* layer) {
 
 				case TiledPropertyTypeString:
 				default:
-					property->Data.StringData =
-						strdup(jstr(prop, "value"));
+					property->Data.StringData = strdup(jstr(prop, "value"));
 					break;
 			}
 		}
@@ -412,6 +410,17 @@ static void freeTiledTilemap(Tilemap* map) {
 
 	SDL_free(map->Tilesets);
 	SDL_free(map->Solids);
+	for (int i = 0; i < map->NumObjects; ++i) {
+		TiledObject* object = &map->Objects[i];
+		for (int j = 0; j < object->NumProperties; ++j) {
+			if (object->Properties[j].PropertyType == TiledPropertyTypeString) {
+				SDL_free(object->Properties[j].Data.StringData);
+			}
+			SDL_free(object->Properties[j].Name);
+		}
+		SDL_free(object->Properties);
+	}
+	SDL_free(map->Objects);
 	TextureDestroy(map->BackgroundTexture);
 	SDL_free(map->BaseFilename);
 	SDL_free(map);

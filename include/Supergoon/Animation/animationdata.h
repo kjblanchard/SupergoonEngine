@@ -64,6 +64,7 @@ typedef struct {
 } AnimationData;
 AnimationData* CreateAnimationData();
 void CreateAnimationDataFromAsepriteFile(AnimationData* animationData, const char* filename);
+void DestroyAnimationData(AnimationData* data);
 #ifdef __cplusplus
 }
 #endif

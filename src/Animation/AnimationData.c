@@ -53,3 +53,25 @@ void CreateAnimationDataFromAsepriteFile(AnimationData* animationData, const cha
 	}
 	jReleaseObjectFromFile(root);
 }
+
+void DestroyAnimationData(AnimationData* data) {
+    if (!data) return;
+
+    // Free frames array
+    free(data->frames);
+
+    // Free meta.image string
+    free(data->meta.image);
+
+    // Free frameTags array and each tag name
+    if (data->meta.frameTags) {
+        for (size_t i = 0; i < data->meta.frameTagCount; i++) {
+            free(data->meta.frameTags[i].name);
+        }
+        free(data->meta.frameTags);
+    }
+
+    // Finally free the struct itself
+    free(data);
+}
+
