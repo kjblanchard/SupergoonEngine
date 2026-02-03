@@ -190,14 +190,21 @@ void AddAnimationToAnimatorQueue(Animator* animator, const char* animName, int l
 		return;
 	}
 	for (size_t i = 0; i < MAX_NUM_ANIM_QUEUE; i++) {
-		if (animator->NextAnimNum[i] != -1) {
+		if (animator->NextAnimNum[i] != NO_NEXT_ANIM) {
 			continue;
 		}
+		sgLogWarn("Adding in anim %s to queue at pos %d", animName, i);
 		animator->NextAnimNum[i] = animNum;
 		animator->NextAnimLoops[i] = loops;
 		return;
 	}
 	sgLogWarn("Could not add animation %s to animator queue of %s, because it is full!", animName, animator->Name);
+}
+
+void ClearAnimationQueue(Animator* animator) {
+	for (size_t i = 0; i < MAX_NUM_ANIM_QUEUE; i++) {
+		animator->NextAnimNum[i] = NO_NEXT_ANIM;
+	}
 }
 
 void ShutdownAnimationSystem(void) {

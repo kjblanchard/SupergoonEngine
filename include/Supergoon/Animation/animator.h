@@ -43,6 +43,7 @@ void PlayAnimation(Animator* animator, const char* anim, int loops);
 // 1.0 is regular, 0.0 is none, etc
 // void SetAnimatorAnimationSpeed(Animator* animator, float speed);
 void AddAnimationToAnimatorQueue(Animator* animator, const char* animName, int loops);
+void ClearAnimationQueue(Animator* animator);
 void DestroyAnimator(Animator* animator);
 void ShutdownAnimationSystem(void);
 
