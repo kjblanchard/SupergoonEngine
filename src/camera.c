@@ -34,8 +34,8 @@ void UpdateCameraSystem(void) {
 		camY = BoundsY - viewHeight;
 	/* cameraPos[0] = floorf(camX); */
 	/* cameraPos[1] = floor(camY); */
-	cameraPos[0] = (camX);
-	cameraPos[1] = (camY);
+	cameraPos[0] = SDL_floorf(camX);
+	cameraPos[1] = SDL_floorf(camY);
 }
 
 void SetCameraFollowTarget(float* x, float* y) {
@@ -60,20 +60,18 @@ void SetCameraZoom(float zoom) {
 }
 
 float CameraGetX(void) {
-	return cameraPos[0];
+	return SDL_roundf(cameraPos[0]);
 }
 
 float CameraGetY(void) {
-	return cameraPos[1];
+	return SDL_roundf(cameraPos[1]);
 }
 
-void ResetCameraFollow(void){
+void ResetCameraFollow(void) {
 	followY = NULL;
 	followX = NULL;
 	cameraPos[0] = 0;
 	cameraPos[1] = 0;
-
-
 }
 
 float CameraGetWidth(void) { return cameraSize[0]; }
