@@ -27,9 +27,9 @@ static Color _fboColor = {255, 255, 255, 255};
 static int _logicalY = 0;
 // TODO for now, only use the refresh rate set here.. we should set it eventually.
 static unsigned int _refreshRate = 999;
-#ifndef __EMSCRIPTEN__
+/* #ifndef __EMSCRIPTEN__ */
 static bool _vsync = 0;
-#endif
+/* #endif */
 
 mat4 projectionMatrix;
 void GraphicsWindowResizeEventImpl(int width, int height) {
@@ -69,9 +69,9 @@ void InitializeGraphicsSystemImpl(void) {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glm_ortho(0.0f, WindowWidthImpl(), WindowHeightImpl(), 0.0f, -1.0f, 1.0f,
 			  projectionMatrix);
-#ifndef __EMSCRIPTEN__
+/* #ifndef __EMSCRIPTEN__ */
 	SDL_GL_SetSwapInterval(_vsync);	 // vsync
-#endif
+/* #endif */
 	// Try to use the thing
 	float verts[] = {
 		0.0f, 0.0f,
