@@ -75,6 +75,7 @@ void StreamLoad(Stream* stream) {
 
 static void RestartStream(Stream* stream) {
 	Bgm* bgm = stream->BgmData;
+	if(!bgm || !bgm->VorbisInfo) return;
 	ov_pcm_seek_lap(bgm->VorbisFile, bgm->LoopStart);
 	stream->TotalBytesReadThisLoop = ov_pcm_tell(bgm->VorbisFile) * bgm->VorbisInfo->channels * sizeof(short);
 	return;
