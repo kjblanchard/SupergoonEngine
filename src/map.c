@@ -167,8 +167,7 @@ static void handleTiledObjectEntities(Tilemap* map, json_object* layer) {
 		if (object->NumProperties == 0)
 			continue;
 
-		object->Properties =
-			calloc(object->NumProperties, sizeof(TiledProperty));
+		object->Properties = calloc(object->NumProperties, sizeof(TiledProperty));
 
 		for (size_t j = 0; j < (size_t)object->NumProperties; j++) {
 			json_object* prop = jGetObjectInObjectWithIndex(props, j);
@@ -191,8 +190,7 @@ static void handleTiledObjectEntities(Tilemap* map, json_object* layer) {
 
 				case TiledPropertyTypeString:
 				default:
-					property->Data.StringData =
-						strdup(jstr(prop, "value"));
+					property->Data.StringData = strdup(jstr(prop, "value"));
 					break;
 			}
 		}
@@ -371,20 +369,26 @@ void UpdateCurrentMap(void) {
 void DrawCurrentMap(void) {
 	if (!_currentMap) return;
 
-	int w = TextureGetWidth(_currentMap->BackgroundTexture);
-	int h = TextureGetHeight(_currentMap->BackgroundTexture);
-
-	RectangleF src = {0, 0, w, h};
+	/* int w = TextureGetWidth(_currentMap->BackgroundTexture); */
+	/* int h = TextureGetHeight(_currentMap->BackgroundTexture); */
+	/* RectangleF src = {0, 0, w, h}; */
+	float w = (CameraGetWidth());
+	float h = (CameraGetHeight());
+	RectangleF src = {SDL_roundf(CameraGetX()), SDL_roundf(CameraGetY()), CameraGetWidth(), CameraGetHeight()};
 
 	RectangleF dst = {0, 0, w, h};
-	dst.x = floor(dst.x);
-	dst.y = floor(dst.y);
-	dst.w = floor(dst.w);
-	dst.h = floor(dst.h);
+	/* dst.x = floor(dst.x); */
+	/* dst.y = floor(dst.y); */
+	/* dst.w = floor(dst.w); */
+	/* dst.h = floor(dst.h); */
 
+	/* DrawTexture(_currentMap->BackgroundTexture, */
+	/* 			GetDefaultShader(), &dst, &src, */
+	/* 			true, 1.0f, false, */
+	/* 			&(Color){255, 255, 255, 255}); */
 	DrawTexture(_currentMap->BackgroundTexture,
 				GetDefaultShader(), &dst, &src,
-				true, 1.0f, false,
+				false, 1.0f, false,
 				&(Color){255, 255, 255, 255});
 
 	drawAnimatedTiles();
@@ -412,6 +416,17 @@ static void freeTiledTilemap(Tilemap* map) {
 
 	SDL_free(map->Tilesets);
 	SDL_free(map->Solids);
+	for (int i = 0; i < map->NumObjects; ++i) {
+		TiledObject* object = &map->Objects[i];
+		for (int j = 0; j < object->NumProperties; ++j) {
+			if (object->Properties[j].PropertyType == TiledPropertyTypeString) {
+				SDL_free(object->Properties[j].Data.StringData);
+			}
+			SDL_free(object->Properties[j].Name);
+		}
+		SDL_free(object->Properties);
+	}
+	SDL_free(map->Objects);
 	TextureDestroy(map->BackgroundTexture);
 	SDL_free(map->BaseFilename);
 	SDL_free(map);
@@ -474,10 +489,6 @@ void ShutdownMapSystem(void) {
 		if (_previousMaps[i])
 			freeTiledTilemap(_previousMaps[i]);
 		_previousMaps[i] = NULL;
-	}
-	if(_currentMap){
-		freeTiledTilemap(_currentMap);
-		_currentMap = NULL;
 	}
 }
 

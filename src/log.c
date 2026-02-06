@@ -29,7 +29,7 @@ static const char* logFileName = "errors.log";
 int InitializeLogSystem(void) {
 	sgLogDebug("Opening log file at %s", logFileName);
 	char buf[1000];
-	GetFilenameWithPrefPathFilepath(buf, sizeof(buf), logFileName);
+	GetFilenameWithPrefFilepath(buf, sizeof(buf), logFileName);
 	openDebugFile = fopen(buf, "a");
 	if (openDebugFile)
 		return 1;

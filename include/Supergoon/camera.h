@@ -5,8 +5,8 @@ extern "C" {
 void SetCameraFollowTarget(float* x, float* y);
 void SetCameraZoom(float zoom);
 void SetCameraBounds(float x, float y);
-double CameraGetX(void);
-double CameraGetY(void);
+float CameraGetX(void);
+float CameraGetY(void);
 void ResetCameraFollow(void);
 float CameraGetWidth(void);
 float CameraGetHeight(void);

@@ -6,8 +6,6 @@
 #include <Supergoon/camera.h>
 #include <Supergoon/window.h>
 #include <cglm/cglm.h>
-#include <stdlib.h>
-#include <string.h>
 #ifndef __EMSCRIPTEN__
 #include <glad/glad.h>
 // Need to do glad first
@@ -25,12 +23,13 @@ SDL_GLContext _context;
 static Texture* _screenFrameBufferTexture = NULL;
 static int _logicalX = 0;
 static GLuint vao = 0, vbo = 0;
+static Color _fboColor = {255, 255, 255, 255};
 static int _logicalY = 0;
 // TODO for now, only use the refresh rate set here.. we should set it eventually.
 static unsigned int _refreshRate = 999;
-#ifndef __EMSCRIPTEN__
+/* #ifndef __EMSCRIPTEN__ */
 static bool _vsync = 0;
-#endif
+/* #endif */
 
 mat4 projectionMatrix;
 void GraphicsWindowResizeEventImpl(int width, int height) {
@@ -39,14 +38,6 @@ void GraphicsWindowResizeEventImpl(int width, int height) {
 	}
 	glViewport(0, 0, width, height);
 	glm_ortho(0.0f, width, height, 0.0f, -1.0f, 1.0f, projectionMatrix);
-	// Don't need to set camera width, that should be the size of the currently loaded map.
-	/* int texWidth = width; */
-	/* int texHeight = height; */
-	/* if (_logicalX && _logicalY) { */
-	/* 	texWidth = _logicalX; */
-	/* 	texHeight = _logicalY; */
-	/* } */
-	/* SetCameraSize(texWidth, texHeight); */
 }
 
 void InitializeGraphicsSystemImpl(void) {
@@ -78,9 +69,9 @@ void InitializeGraphicsSystemImpl(void) {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glm_ortho(0.0f, WindowWidthImpl(), WindowHeightImpl(), 0.0f, -1.0f, 1.0f,
 			  projectionMatrix);
-#ifndef __EMSCRIPTEN__
+/* #ifndef __EMSCRIPTEN__ */
 	SDL_GL_SetSwapInterval(_vsync);	 // vsync
-#endif
+/* #endif */
 	// Try to use the thing
 	float verts[] = {
 		0.0f, 0.0f,
@@ -137,8 +128,8 @@ void DrawEndImpl(void) {
 		(float)drawWidth,
 		(float)drawHeight};
 	RectangleF srcRect = {0, 0, (float)fbWidth, (float)fbHeight};
-	Color color = {255, 255, 255, 255};
-	DrawTexture(_screenFrameBufferTexture, GetDefaultShader(), &dstRect, &srcRect, false, 1.0f, true, &color);
+	// Set the color properly of the FBO when fading.
+	DrawTexture(_screenFrameBufferTexture, GetDefaultShader(), &dstRect, &srcRect, false, 1.0f, true, &_fboColor);
 	SDL_GL_SwapWindow(WindowGetImpl()->Handle);
 }
 
@@ -182,6 +173,13 @@ void GraphicsSetLogicalWorldSizeImpl(int width, int height) {
 	}
 	_screenFrameBufferTexture = TextureCreateRenderTarget(width, height);
 	TextureClearRenderTarget(_screenFrameBufferTexture, 0, 0, 0, 1.0);
+}
+
+void GraphicsUpdateFBOColorImpl(Color* color) {
+	_fboColor = *color;
+}
+Color GraphicsGetFBOColorImpl(void){
+	return _fboColor;
 }
 
 int GraphicsGetTargetRefreshRateImpl(void) {

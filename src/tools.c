@@ -1,4 +1,4 @@
-#include <SDL3/SDL.h>
+#include <SDL3/SDL_timer.h>
 #include <Supergoon/log.h>
 #include <Supergoon/tools.h>
 #include <ctype.h>
@@ -10,22 +10,19 @@
 #include <time.h>
 
 void sgSleepMS(int ms) {
-#ifdef tui
-	usleep(ms * 1000);
-#else
 	SDL_Delay(ms);
-#endif
+}
+
+
+uint64_t getCurrentNSTicks(){
+	return SDL_GetTicksNS();
 }
 
 uint64_t getCurrentMSTicks(void) {
-#ifdef tui
-	return clock() / (CLOCKS_PER_SEC / 1000);
-#else
 	return SDL_GetTicks();
-#endif
 }
 
-int sgasprintf(char **strp, const char *fmt, ...) {
+int sgasprintf(char** strp, const char* fmt, ...) {
 	va_list args;
 	va_start(args, fmt);
 
@@ -43,7 +40,7 @@ int sgasprintf(char **strp, const char *fmt, ...) {
 	}
 
 	// Allocate space (+1 for null terminator)
-	char *buf = (char *)malloc(len + 1);
+	char* buf = (char*)malloc(len + 1);
 	if (!buf) {
 		va_end(args);
 		return -1;
@@ -57,7 +54,7 @@ int sgasprintf(char **strp, const char *fmt, ...) {
 	return len;
 }
 
-int sgstrncasecmp(const char *s1, const char *s2, size_t n) {
+int sgstrncasecmp(const char* s1, const char* s2, size_t n) {
 	if (n == 0) return 0;
 
 	while (n-- != 0 && tolower(*s1) == tolower(*s2)) {
@@ -67,28 +64,28 @@ int sgstrncasecmp(const char *s1, const char *s2, size_t n) {
 		s2++;
 	}
 
-	return tolower(*(const unsigned char *)s1) - tolower(*(const unsigned char *)s2);
+	return tolower(*(const unsigned char*)s1) - tolower(*(const unsigned char*)s2);
 }
 
-int strcmpWithSuffix(const char *lhs, const char *rhs, const char *suffix) {
-    if (!lhs || !rhs || !suffix) return 0;
+int strcmpWithSuffix(const char* lhs, const char* rhs, const char* suffix) {
+	if (!lhs || !rhs || !suffix) return 0;
 
-    size_t rhsLen = strlen(rhs);
-    size_t suffixLen = strlen(suffix);
+	size_t rhsLen = strlen(rhs);
+	size_t suffixLen = strlen(suffix);
 
-    // rhs must end with suffix
-    if (rhsLen < suffixLen) return 0;
-    if (strcmp(rhs + rhsLen - suffixLen, suffix) != 0) return 0;
+	// rhs must end with suffix
+	if (rhsLen < suffixLen) return 0;
+	if (strcmp(rhs + rhsLen - suffixLen, suffix) != 0) return 0;
 
-    // find last '/'
-    const char *base = strrchr(rhs, '/');
-    base = base ? base + 1 : rhs;  // if no slash, whole string is basename
+	// find last '/'
+	const char* base = strrchr(rhs, '/');
+	base = base ? base + 1 : rhs;  // if no slash, whole string is basename
 
-    // compute basename length without suffix
-    size_t baseLen = strlen(base) - suffixLen;
+	// compute basename length without suffix
+	size_t baseLen = strlen(base) - suffixLen;
 
-    // lhs must match the basename (minus suffix)
-    if (strlen(lhs) != baseLen) return 0;
+	// lhs must match the basename (minus suffix)
+	if (strlen(lhs) != baseLen) return 0;
 
-    return strncmp(lhs, base, baseLen) == 0;
+	return strncmp(lhs, base, baseLen) == 0;
 }

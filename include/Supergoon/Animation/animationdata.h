@@ -1,3 +1,4 @@
+#pragma once
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -61,6 +62,9 @@ typedef struct {
 	int frameCount;
 	Meta meta;
 } AnimationData;
+AnimationData* CreateAnimationData();
+void CreateAnimationDataFromAsepriteFile(AnimationData* animationData, const char* filename);
+void DestroyAnimationData(AnimationData* data);
 #ifdef __cplusplus
 }
 #endif

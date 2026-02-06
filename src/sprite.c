@@ -3,12 +3,9 @@
 #include <Supergoon/Graphics/texture.h>
 #include <Supergoon/Primitives/Color.h>
 #include <Supergoon/camera.h>
-#include <Supergoon/gameobject.h>
 #include <Supergoon/sprite.h>
 #include <Supergoon/tools.h>
-#include <limits.h>
 #include <stdlib.h>
-#include <string.h>
 
 static size_t _firstSpriteHole = NO_HOLE;
 static size_t _numSprites = 0;
@@ -17,7 +14,7 @@ static Sprite** _sprites;
 
 static Sprite* getFreeSprite(void) {
 	if (_firstSpriteHole == NO_HOLE) {
-		RESIZE_ARRAY_PTR_ALLOC(_sprites, _numSprites, _sizeSprites, Sprite);
+		RESIZE_ARRAY_PTR_ALLOC(_sprites, _numSprites, _sizeSprites, Sprite, 0);
 		return _sprites[_numSprites++];
 	}
 	Sprite* returnSprite = _sprites[_firstSpriteHole];
@@ -32,16 +29,38 @@ static Sprite* getFreeSprite(void) {
 	return returnSprite;
 }
 
-Sprite* NewSprite(void) {
-	Sprite* sprite = getFreeSprite();
-	sprite->Parent = NULL;
+void initSprite(Sprite* sprite) {
+	sprite->parentX = NULL;
+	sprite->parentY = NULL;
 	sprite->Texture = NULL;
 	sprite->Shader = NULL;
 	sprite->Scale = 1.0f;
 	sprite->Flags = 0;
 	sprite->TextureSourceRect = (RectangleF){0, 0, 0, 0};
 	sprite->OffsetAndSizeRectF = (RectangleF){0, 0, 0, 0};
+}
+
+Sprite* NewSprite(void) {
+	Sprite* sprite = getFreeSprite();
+	initSprite(sprite);
 	return sprite;
+}
+Sprite* NewSpriteManual(void) {
+	Sprite* sprite = malloc(sizeof(*sprite));
+	initSprite(sprite);
+	return sprite;
+}
+
+void destroySprite(Sprite* sprite) {
+	// If we are using the default shader, this breaks, so prevent it from destroying shader if so.
+	if (GetDefaultShader() != sprite->Shader) ShaderDestroy(sprite->Shader);
+	TextureDestroy(sprite->Texture);
+	sprite->Texture = NULL;
+}
+
+void DestroySpriteManual(Sprite* sprite) {
+	destroySprite(sprite);
+	free(sprite);
 }
 
 void DestroySprite(Sprite* sprite) {
@@ -53,10 +72,7 @@ void DestroySprite(Sprite* sprite) {
 		if (sprite != _sprites[i]) {
 			continue;
 		}
-		// If we are using the default shader, this breaks.
-		if (GetDefaultShader() != sprite->Shader) ShaderDestroy(sprite->Shader);
-		TextureDestroy(sprite->Texture);
-		sprite->Texture = NULL;
+		destroySprite(sprite);
 		sprite->Flags = SpriteFlagDestroyed;
 		if (_firstSpriteHole == NO_HOLE || i < _firstSpriteHole) {
 			_firstSpriteHole = i;
@@ -65,25 +81,29 @@ void DestroySprite(Sprite* sprite) {
 	}
 }
 
+void DrawSpriteManual(Sprite* sprite, RectangleF* dstRect, Color* color) {
+	if (!sprite || !sprite->Texture || !(sprite->Flags & SpriteFlagVisible)) {
+		return;
+	}
+	dstRect->x = sprite->parentX ? *sprite->parentX + sprite->OffsetAndSizeRectF.x : sprite->OffsetAndSizeRectF.x;
+	dstRect->y = sprite->parentY ? *sprite->parentY + sprite->OffsetAndSizeRectF.y : sprite->OffsetAndSizeRectF.y;
+	DrawTexture(sprite->Texture, sprite->Shader, dstRect, &sprite->TextureSourceRect, true, sprite->Scale, false, color);
+}
+
 void DrawSpriteSystem(void) {
 	RectangleF dst = (RectangleF){0, 0, 0, 0};
 	Color color = {255, 255, 255, 255};
 	for (size_t i = 0; i < _numSprites; i++) {
 		Sprite* sprite = _sprites[i];
-		if (!sprite || !sprite->Texture || NO_FLAGS(sprite->Flags, SpriteFlagVisible)) {
-			continue;
-		}
-		dst.x = sprite->Parent ? sprite->Parent->X + sprite->OffsetAndSizeRectF.x : sprite->OffsetAndSizeRectF.x;
-		dst.y = sprite->Parent ? sprite->Parent->Y + sprite->OffsetAndSizeRectF.y : sprite->OffsetAndSizeRectF.y;
 		dst.w = sprite->OffsetAndSizeRectF.w;
 		dst.h = sprite->OffsetAndSizeRectF.h;
-		DrawTexture(sprite->Texture, sprite->Shader, &dst, &sprite->TextureSourceRect, true, sprite->Scale, false, &color);
+		DrawSpriteManual(sprite, &dst, &color);
 	}
 }
 
 void ShutdownSpriteSystem(void) {
 	for (size_t i = 0; i < _sizeSprites; i++) {
-		TextureDestroy(_sprites[i]->Texture);
+		DestroySprite(_sprites[i]);
 		free(_sprites[i]);
 	}
 	free(_sprites);

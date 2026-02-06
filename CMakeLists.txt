@@ -60,6 +60,9 @@ endif(SDL_BACKEND)
 if(SDL_GL)
     add_definitions(-Dsdlglbackend)
 endif(SDL_GL)
+if(SDL_RENDERER)
+    add_definitions(-Dsdlrendererbackend)
+endif(SDL_RENDERER)
 
 if(UNIX OR APPLE)
     list(APPEND COMPILE_OPTIONS 
@@ -80,7 +83,6 @@ endif(UNIX OR APPLE)
 
 set(SRC_FILES
     src/camera.c
-    # src/lua.c
     src/json.c
     src/log.c
     src/state.c
@@ -93,16 +95,8 @@ set(SRC_FILES
     src/Primitives/rectangle.c
     src/Audio/Audio.c
     src/Tweening/easing.c
-    # src/Tweening/tween.c
-    # src/Lua/llog.c
-    # src/Lua/laudio.c
-    # src/Lua/lengine.c
-    # src/Lua/linput.c
-    # src/Lua/lcamera.c
-    # src/Lua/scripting.c
-    # src/effects.c
     src/Animation/Animator.c
-    src/gameobject.c
+    src/Animation/AnimationData.c
     src/sprite.c
     src/Input/mouse.c
     # src/Input/touch.c
@@ -110,13 +104,6 @@ set(SRC_FILES
     src/Platform/sdl/sdlInput.c
     src/Platform/sdl/sdlWindow.c
     src/map.c
-    # src/Lua/lanimation.c
-    # src/Lua/lsprite.c
-    # src/Lua/lgameobject.c
-    # src/Lua/lscene.c
-    # src/Lua/leffects.c
-    # src/Lua/lgraphics.c
-    # src/Lua/ltext.c
     # sound
     src/Platform/openal/openal.c
     src/Platform/openal/openalSfx.c
@@ -133,6 +120,10 @@ set(SRC_FILES
 if(SDL_GL)
     list(APPEND SRC_FILES src/Platform/opengl/glad.c src/Platform/opengl/openglGraphics.c src/Platform/opengl/openglShader.c src/Platform/opengl/openglTexture.c)
 endif(SDL_GL)
+
+if(SDL_RENDERER)
+    list(APPEND SRC_FILES src/Platform/opengl/sdlGraphics.c src/Platform/opengl/sdlShader.c src/Platform/opengl/sdlTexture.c)
+endif(SDL_RENDERER)
 
 # add_executable(${LIBRARY_TARGET_NAME } MACOSX_BUNDLE WIN32 ${SRC_FILES} ${DEBUG_FILES} ${ICON_PATH})
 add_library(${LIBRARY_TARGET_NAME} ${SRC_FILES} ${DEBUG_FILES})
@@ -328,36 +319,6 @@ elseif(EMSCRIPTEN)
         list(APPEND EXTERNAL_LIBS vorbisenc vorbisfile vorbis)
     endif(NOT EMSCRIPTEN AND NOT LIB_VORBIS)
 
-    # if(NOT LIB_LUA)
-    #     message(STATUS "Lua not found. Fetching Lua...")
-    #     set(LUA_ENABLE_TESTING
-    #         OFF
-    #         CACHE BOOL "Build SDL as a shared library")
-    #     set(LUA_ENABLE_SHARED
-    #         OFF
-    #         CACHE BOOL "Build SDL as a shared library")
-    #     set(LUA_BUILD_COMPILER
-    #         OFF
-    #         CACHE BOOL "Build SDL as a shared library")
-    #     set(LUA_BUILD_BINARY
-    #         OFF
-    #         CACHE BOOL "Build SDL as a shared library")
-    #     if(IOS) # Test for ios sim with lua, as this fails with system and needs this define.. TODO not sure if needed
-    #         add_definitions(-DTARGET_OS_IOS=1)
-    #         add_definitions(-DLUA_USE_IOS=1)
-    #     endif(IOS)
-
-    #     FetchContent_Declare(
-    #         LIB_LUA
-    #         GIT_REPOSITORY https://github.com/walterschell/Lua.git
-    #         GIT_TAG v5.4.5
-    #         EXCLUDE_FROM_ALL)
-    #     FetchContent_MakeAvailable(LIB_LUA)
-
-    #     # list(APPEND EXTERNAL_LIBS lua_static)
-    #     list(APPEND EXTERNAL_LIBS lua_static)
-    # endif(NOT LIB_LUA)
-
     if(NOT SDL3_FOUND)
         message(STATUS "SDL3 not found. Fetching SDL3...")
         set(SDL_SHARED
@@ -379,7 +340,7 @@ elseif(EMSCRIPTEN)
             EXCLUDE_FROM_ALL)
         FetchContent_MakeAvailable(SDL3)
         list(APPEND EXTERNAL_LIBS SDL3::SDL3-static)
-    endif(NOT EMSCRIPTEN AND NOT SDL3_FOUND)
+    endif(NOT SDL3_FOUND)
 
     if(NOT FREETYPE_FOUND)
         message(STATUS "freetype not found. Fetching freetype...")

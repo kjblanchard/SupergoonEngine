@@ -1,4 +1,3 @@
-
 #include <SDL3/SDL_init.h>
 #include <ogg/ogg.h>
 #define SDL_MAIN_USE_CALLBACKS
@@ -15,7 +14,6 @@
 #include <Supergoon/engine.h>
 #include <Supergoon/events.h>
 #include <Supergoon/filesystem.h>
-#include <Supergoon/gameobject.h>
 #include <Supergoon/log.h>
 #include <Supergoon/map.h>
 #include <Supergoon/sprite.h>
@@ -24,10 +22,10 @@
 #include <Supergoon/tools.h>
 #include <Supergoon/window.h>
 
-static Uint64 _previousMS;
-static float _deltaTimeSeconds;
-// This needs to be defined in the program that will be utilizing the engine.
-/* extern void(StartImpl)(void); */
+static Uint64 _previousNS = 0;
+static Uint64 _accumulatorNS = 0;
+/* static float _deltaTimeSeconds = 0; */
+#define FIXED_TIMESTEP_NS 16666666ULL  // 60 FPS
 
 static void start(void) {
 	InitializeSdl();
@@ -39,23 +37,22 @@ static void start(void) {
 	InitializeGraphicsSystem();
 	InitializeTextSystem();
 	InitializeAudioSystem();
-	_previousMS = getCurrentMSTicks();
-	_deltaTimeSeconds = 0;
+	_previousNS = getCurrentNSTicks();
 }
 
 static void handleFramerate(Uint64* now) {
-#ifdef __EMSCRIPTEN__
-	return;
-#endif
-	int refreshRate = GraphicsGetTargetRefreshRate();
-	if (refreshRate != 999) {  // If we are doing a capped frame rate, we should also wait between frames.
-		uint64_t current = getCurrentMSTicks();
-		Uint64 elapsedMS = current - _previousMS;
-		const Uint64 FRAME_DURATION_MS = 1000 / refreshRate;
-		if (elapsedMS < FRAME_DURATION_MS) {
-			sgSleepMS(FRAME_DURATION_MS - elapsedMS);
-		}
-	}
+	/* #ifdef __EMSCRIPTEN__ */
+	/* 	return; */
+	/* #endif */
+	/* 	int refreshRate = GraphicsGetTargetRefreshRate(); */
+	/* 	if (refreshRate != 999) {  // If we are doing a capped frame rate, we should also wait between frames. */
+	/* 		uint64_t current = getCurrentMSTicks(); */
+	/* 		Uint64 elapsedMS = current - _previousNS; */
+	/* 		const Uint64 FRAME_DURATION_MS = 1000 / refreshRate; */
+	/* 		if (elapsedMS < FRAME_DURATION_MS) { */
+	/* 			sgSleepMS(FRAME_DURATION_MS - elapsedMS); */
+	/* 		} */
+	/* 	} */
 }
 
 static void draw(void) {
@@ -65,23 +62,26 @@ static void draw(void) {
 	if (_drawFunc) _drawFunc();
 	DrawEnd();
 }
-
 static void update(void) {
-	Uint64 now = getCurrentMSTicks();
-	DeltaTimeMilliseconds = now - _previousMS;
-	_previousMS = now;
-	DeltaTimeSeconds = DeltaTimeMilliseconds / 1000;
-	UpdateCameraSystem();
-	UpdateAudioSystem();
-	UpdateKeyboardSystem();
-	UpdateCurrentMap();
-	if (_inputFunc) _inputFunc();
-	Ticks += 1;
-	UpdateAnimators();
-	if (_updateFunc) _updateFunc();
-	UpdateControllerSystem();
-	UpdateMouseSystem();
+	Uint64 now = getCurrentNSTicks();
+	_accumulatorNS += now - _previousNS;
+
+	while (_accumulatorNS >= FIXED_TIMESTEP_NS) {
+		DeltaTimeSeconds = (float)FIXED_TIMESTEP_NS / (float)SDL_NS_PER_SECOND;
+		DeltaTimeMilliseconds = (float)FIXED_TIMESTEP_NS / 1000000.0f;
+		UpdateCameraSystem();
+		UpdateAudioSystem();
+		UpdateKeyboardSystem();
+		UpdateCurrentMap();
+		if (_inputFunc) _inputFunc();
+		UpdateAnimators();
+		if (_updateFunc) _updateFunc();
+		UpdateControllerSystem();
+		UpdateMouseSystem();
+		_accumulatorNS -= FIXED_TIMESTEP_NS;
+	}
 	draw();
+	_previousNS = now;
 	handleFramerate(&now);
 }
 
