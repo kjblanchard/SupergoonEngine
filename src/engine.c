@@ -65,7 +65,8 @@ static void draw(void) {
 static void update(void) {
 	Uint64 now = getCurrentNSTicks();
 	_accumulatorNS += now - _previousNS;
-
+	/* sgLogDebug("Adding accumulator %d", now - _previousNS); */
+	int ticks = 0;
 	while (_accumulatorNS >= FIXED_TIMESTEP_NS) {
 		DeltaTimeSeconds = (float)FIXED_TIMESTEP_NS / (float)SDL_NS_PER_SECOND;
 		DeltaTimeMilliseconds = (float)FIXED_TIMESTEP_NS / 1000000.0f;
@@ -79,10 +80,11 @@ static void update(void) {
 		UpdateControllerSystem();
 		UpdateMouseSystem();
 		_accumulatorNS -= FIXED_TIMESTEP_NS;
+		if(ticks++ > 2) break;
 	}
 	draw();
 	_previousNS = now;
-	handleFramerate(&now);
+	/* handleFramerate(&now); */
 }
 
 static void Quit(void) {

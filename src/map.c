@@ -16,7 +16,7 @@
 #include <string.h>
 
 #define NUM_WALLS 4
-#define MAX_PREVIOUS_MAPS_CACHE 3
+#define MAX_PREVIOUS_MAPS_CACHE 20
 
 Tilemap* _currentMap = NULL;
 static Tilemap* _previousMaps[MAX_PREVIOUS_MAPS_CACHE] = {NULL};

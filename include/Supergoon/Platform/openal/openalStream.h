@@ -1,6 +1,6 @@
 #pragma once
 #include <stdint.h>
-#define BGM_NUM_BUFFERS 4
+#define BGM_NUM_BUFFERS 16
 #define MAX_SFX_SOUNDS 10
 #define BGM_BUFFER_SAMPLES 8192	  // 8kb
 #define VORBIS_REQUEST_SIZE 4096  // Max size to request from vorbis to load.
