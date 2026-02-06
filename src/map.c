@@ -472,6 +472,10 @@ void LoadMap(const char* name) {
 
 		jReleaseObjectFromFile(root);
 
+		//If cache is full, destroy last and then reorder them.
+		if (_previousMaps[MAX_PREVIOUS_MAPS_CACHE - 1]) {
+			freeTiledTilemap(_previousMaps[MAX_PREVIOUS_MAPS_CACHE - 1]);
+		}
 		for (int i = MAX_PREVIOUS_MAPS_CACHE - 1; i > 0; i--)
 			_previousMaps[i] = _previousMaps[i - 1];
 		_previousMaps[0] = map;
