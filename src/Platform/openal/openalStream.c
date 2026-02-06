@@ -47,6 +47,10 @@ Stream* StreamNew(void) {
 static void preloadStreamWithData(Stream* stream) {
 	ALsizei i;
 	BufferFillFlags buf_flags;
+	if (!stream->BgmData->VorbisInfo) {
+		sgLogWarn("Trying to play a stream with no vorbis info");
+		return;
+	}
 	for (i = 0; i < BGM_NUM_BUFFERS; i++) {
 		long bytes_read = loadBufferData(stream, &buf_flags);
 		alBufferData(stream->ALBuffers[i], stream->BgmData->Format, stream->Buffer, (ALsizei)bytes_read,

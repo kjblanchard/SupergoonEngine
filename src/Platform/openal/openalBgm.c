@@ -11,6 +11,8 @@
 Bgm* BgmNew(void) {
 	Bgm* bgm = malloc(sizeof(*bgm));
 	bgm->VorbisFile = malloc(sizeof(*bgm->VorbisFile));
+	// Maybe we set it to null?
+	bgm->VorbisInfo = NULL;
 	bgm->Filename = NULL;
 	bgm->LoopStart = bgm->LoopEnd = bgm->Loops = 0;
 	bgm->IsPlaying = false;
@@ -84,7 +86,9 @@ void BgmLoad(Bgm* bgm) {
 
 void BgmDelete(Bgm* bgm) {
 	if (!bgm) return;
-	ov_clear(bgm->VorbisFile);
+	if (bgm->VorbisInfo) {
+		ov_clear(bgm->VorbisFile);
+	}
 	free(bgm->VorbisFile);
 	free(bgm->Filename);
 	free(bgm);
