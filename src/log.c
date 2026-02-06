@@ -27,9 +27,9 @@ static sgLogLevel logLevel = Log_LDebug;
 static const char* logFileName = "errors.log";
 
 int InitializeLogSystem(void) {
-	sgLogDebug("Opening log file at %s", logFileName);
 	char buf[1000];
 	GetFilenameWithPrefFilepath(buf, sizeof(buf), logFileName);
+	sgLogDebug("Opening log file at %s", buf);
 	openDebugFile = fopen(buf, "a");
 	if (openDebugFile)
 		return 1;

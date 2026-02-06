@@ -18,9 +18,9 @@ static char* getPrefPath() {
 #ifdef sdlbackend
 	if (_systemPrefPath) return _systemPrefPath;
 	_systemPrefPath = SDL_GetPrefPath("SupergoonGames", "EscapeTheFate");
-
+	return _systemPrefPath;
 #else
-	snprintf(buffer, bufferSize, "./%s", filename);
+	/* snprintf(buffer, bufferSize, "./%s", filename); */
 #endif
 	return NULL;
 }
