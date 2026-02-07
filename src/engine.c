@@ -74,12 +74,6 @@ static void update(void) {
 	DeltaTimeMilliseconds = (float)FIXED_TIMESTEP_NS / 1000000.0f;
 	int ticks = 0;
 	int maxTicksThisFrame = MAX_TICKS_PER_FRAME;
-	// Use fixed timestep on everything but emscripten?
-	/* #ifdef __EMSCRIPTEN__ */
-	/* DeltaTimeSeconds = (float)frameTime / (float)SDL_NS_PER_SECOND; */
-	/* DeltaTimeMilliseconds = (float)frameTime / 1000000.0f; */
-	/* maxTicksThisFrame = 1; */
-	/* #endif */
 	while (_accumulatorNS >= FIXED_TIMESTEP_NS && ticks < maxTicksThisFrame) {
 		UpdateAudioSystem();
 		UpdateCameraSystem();

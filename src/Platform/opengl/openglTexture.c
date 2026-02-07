@@ -22,14 +22,16 @@
 #include <cglm/cglm.h>
 #include <stdio.h>
 #include <stdlib.h>
-#define MAX_CACHED_TEXTURES 64
+#define MAX_CACHED_TEXTURES 124
 
 static Texture* _currentRenderingTarget = NULL;
 static int _currentRenderingTargetWidth = 0;
 static int _currentRenderingTargetHeight = 0;
 static Texture* _previousRenderingTarget = NULL;
+/* Texture* _cachedTextures[MAX_CACHED_TEXTURES]; */
+
+static Texture* _cachedTextures[MAX_CACHED_TEXTURES] = {0};
 static int _currentCachedTextures = 0;
-Texture* _cachedTextures[MAX_CACHED_TEXTURES];
 
 typedef struct Texture {
 	unsigned int ID;
@@ -46,23 +48,41 @@ void TextureBindImpl(Texture* texture) {
 }
 
 static Texture* getTextureFromCache(const char* filename) {
-	Texture* returnTexture = NULL;
+	/* Texture* returnTexture = NULL; */
+	/* for (int i = 0; i < _currentCachedTextures; ++i) { */
+	/* 	if (strcmp(filename, _cachedTextures[i]->Name) == 0) { */
+	/* 		returnTexture = _cachedTextures[i]; */
+	/* 		break; */
+	/* 	} */
+	/* } */
+	/* return returnTexture; */
+
 	for (int i = 0; i < _currentCachedTextures; ++i) {
-		if (strcmp(filename, _cachedTextures[i]->Name) == 0) {
-			returnTexture = _cachedTextures[i];
-			break;
+		if (_cachedTextures[i] &&
+			_cachedTextures[i]->Name &&
+			strcmp(filename, _cachedTextures[i]->Name) == 0) {
+			return _cachedTextures[i];
 		}
 	}
-	return returnTexture;
+
+	/* static void cacheTexture(Texture* texture) { */
+	/* 	for (int i = 0; i < _currentCachedTextures; ++i) { */
+	/* 		if (!_cachedTextures[i]) { */
+	/* 			_cachedTextures[i] = texture; */
+	/* 			++_currentCachedTextures; */
+	/* 			return; */
+	/* 		} */
+	/* 	} */
+	/* } */
+	return NULL;
 }
 
 static void cacheTexture(Texture* texture) {
-	for (int i = 0; i < _currentCachedTextures; ++i) {
-		if (!_cachedTextures[i]) {
-			_cachedTextures[i] = texture;
-			return;
-		}
+	if (_currentCachedTextures >= MAX_CACHED_TEXTURES) {
+		sgLogError("Texture cache full");
+		return;
 	}
+	_cachedTextures[_currentCachedTextures++] = texture;
 }
 
 void TextureClearRenderTargetImpl(Texture* texture, float r, float g, float b,
@@ -106,16 +126,30 @@ Texture* TextureCreateNoCacheImpl(void) {
 	return texture;
 }
 
+/* Texture* TextureCreateImpl(const char* name) { */
+/* 	Texture* texture = getTextureFromCache(name); */
+/* 	if (texture) { */
+/* 		++texture->RefCount; */
+/* 		return texture; */
+/* 	} */
+/* 	texture = TextureCreateNoCacheImpl(); */
+/* 	cacheTexture(texture); */
+/* 	return texture; */
+/* } */
+
 Texture* TextureCreateImpl(const char* name) {
 	Texture* texture = getTextureFromCache(name);
 	if (texture) {
 		++texture->RefCount;
 		return texture;
 	}
+
 	texture = TextureCreateNoCacheImpl();
+	texture->Name = strdup(name);  // 🔑 identity set here
 	cacheTexture(texture);
 	return texture;
 }
+
 Texture* TextureCreateRenderTargetImpl(int width, int height) {
 	Texture* texture = malloc(sizeof(Texture));
 	if (!texture)
@@ -193,6 +227,8 @@ int TextureGetWidthImpl(Texture* texture) { return texture->Width; }
 int TextureGetHeightImpl(Texture* texture) { return texture->Height; }
 
 void TextureLoadFromPngImpl(Texture* texture, const char* filepath) {
+	if(texture->Width || texture->Height) return;
+	sgLogWarn("Loading from png %s", filepath);
 	char* fullFilepath;
 	asprintf(&fullFilepath, "%sassets/img/%s.png", GetBasePath(), filepath);
 	SDL_Surface* surface = SDL_LoadPNG(fullFilepath);
@@ -201,7 +237,6 @@ void TextureLoadFromPngImpl(Texture* texture, const char* filepath) {
 				   SDL_GetError());
 		goto cleanup;
 	}
-	texture->Name = strdup(filepath);
 	texture->Width = surface->w;
 	texture->Height = surface->h;
 	glBindTexture(GL_TEXTURE_2D, texture->ID);
