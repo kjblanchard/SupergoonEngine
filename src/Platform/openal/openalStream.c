@@ -40,8 +40,8 @@ Stream* StreamNew(void) {
 	player->Buffer = malloc(dataReadSize);
 	player->BgmData = NULL;
 	player->IsPlaying = false;
-	return player;
 	player->TotalBytesReadThisLoop = 0;
+	return player;
 }
 
 static void preloadStreamWithData(Stream* stream) {
@@ -53,6 +53,10 @@ static void preloadStreamWithData(Stream* stream) {
 	}
 	for (i = 0; i < BGM_NUM_BUFFERS; i++) {
 		long bytes_read = loadBufferData(stream, &buf_flags);
+		if (bytes_read <= 0) {
+			// Do NOT queue an empty buffer
+			return;
+		}
 		alBufferData(stream->ALBuffers[i], stream->BgmData->Format, stream->Buffer, (ALsizei)bytes_read,
 					 stream->BgmData->VorbisInfo->rate);
 	}
@@ -75,7 +79,7 @@ void StreamLoad(Stream* stream) {
 
 static void RestartStream(Stream* stream) {
 	Bgm* bgm = stream->BgmData;
-	if(!bgm || !bgm->VorbisInfo) return;
+	if (!bgm || !bgm->VorbisInfo) return;
 	ov_pcm_seek_lap(bgm->VorbisFile, bgm->LoopStart);
 	stream->TotalBytesReadThisLoop = ov_pcm_tell(bgm->VorbisFile) * bgm->VorbisInfo->channels * sizeof(short);
 	return;
@@ -126,6 +130,10 @@ static void handleProcessedBuffer(Stream* stream) {
 	alSourceUnqueueBuffers(stream->Source, 1, &bufid);
 	BufferFillFlags buf_flags = 0;
 	long bytes_read = loadBufferData(stream, &buf_flags);
+	if (bytes_read <= 0) {
+		// Do NOT queue an empty buffer
+		return;
+	}
 	alBufferData(bufid, stream->BgmData->Format, stream->Buffer, (ALsizei)bytes_read,
 				 stream->BgmData->VorbisInfo->rate);
 	alSourceQueueBuffers(stream->Source, 1, &bufid);
@@ -166,7 +174,6 @@ void StreamUpdate(Stream* stream) {
 	}
 	if (state != AL_PLAYING && state != AL_PAUSED) {
 		printf("We are not playing OR paused, we are %d\n", state);
-
 		alSourcePlay(stream->Source);
 		if (alGetError() != AL_NO_ERROR) {
 			fprintf(stderr, "Error restarting playback\n");

@@ -66,12 +66,12 @@ static void update(void) {
 	Uint64 now = getCurrentNSTicks();
 	_accumulatorNS += now - _previousNS;
 	/* sgLogDebug("Adding accumulator %d", now - _previousNS); */
-	int ticks = 0;
+	/* int ticks = 0; */
+	UpdateAudioSystem();
+	DeltaTimeSeconds = (float)FIXED_TIMESTEP_NS / (float)SDL_NS_PER_SECOND;
+	DeltaTimeMilliseconds = (float)FIXED_TIMESTEP_NS / 1000000.0f;
 	while (_accumulatorNS >= FIXED_TIMESTEP_NS) {
-		DeltaTimeSeconds = (float)FIXED_TIMESTEP_NS / (float)SDL_NS_PER_SECOND;
-		DeltaTimeMilliseconds = (float)FIXED_TIMESTEP_NS / 1000000.0f;
 		UpdateCameraSystem();
-		UpdateAudioSystem();
 		UpdateKeyboardSystem();
 		UpdateCurrentMap();
 		if (_inputFunc) _inputFunc();
@@ -80,7 +80,7 @@ static void update(void) {
 		UpdateControllerSystem();
 		UpdateMouseSystem();
 		_accumulatorNS -= FIXED_TIMESTEP_NS;
-		if(ticks++ > 2) break;
+		/* if (ticks++ > 2) break; */
 	}
 	draw();
 	_previousNS = now;
