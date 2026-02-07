@@ -28,7 +28,7 @@ static int _logicalY = 0;
 // TODO for now, only use the refresh rate set here.. we should set it eventually.
 static unsigned int _refreshRate = 999;
 /* #ifndef __EMSCRIPTEN__ */
-static bool _vsync = 0;
+static bool _vsync = 1;
 /* #endif */
 
 mat4 projectionMatrix;

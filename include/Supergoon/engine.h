@@ -46,6 +46,8 @@ void SetUpdateFunction(void (*updateFunc)(void));
  */
 void SetDrawFunction(void (*drawFunc)(void));
 void SetQuitFunction(void (*quitFunc)(void));
+//If this is set this frame, only allow one update if you need to catch up .. useful when loading to not accumulate on a regular basis.
+extern int IsGameLoading;
 
 void Run(void);
 

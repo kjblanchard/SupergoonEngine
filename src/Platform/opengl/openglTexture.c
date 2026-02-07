@@ -280,6 +280,7 @@ void TextureDestroyImpl(Texture* texture) {
 	if (!texture) return;
 	--texture->RefCount;
 	if (texture->RefCount > 0) return;
+	return;
 
 	// Delete texture object
 	if (texture->ID != 0) {

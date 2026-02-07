@@ -24,6 +24,7 @@
 
 static Uint64 _previousNS = 0;
 static Uint64 _accumulatorNS = 0;
+int IsGameLoading = false;
 /* static float _deltaTimeSeconds = 0; */
 #define FIXED_TIMESTEP_NS 16666666ULL  // 60 FPS
 
@@ -62,15 +63,25 @@ static void draw(void) {
 	if (_drawFunc) _drawFunc();
 	DrawEnd();
 }
+
 static void update(void) {
+	const int MAX_TICKS_PER_FRAME = 5;
 	Uint64 now = getCurrentNSTicks();
-	_accumulatorNS += now - _previousNS;
-	/* sgLogDebug("Adding accumulator %d", now - _previousNS); */
-	/* int ticks = 0; */
-	UpdateAudioSystem();
+	Uint64 frameTime = now - _previousNS;
+	_previousNS = now;
+	_accumulatorNS += frameTime;
 	DeltaTimeSeconds = (float)FIXED_TIMESTEP_NS / (float)SDL_NS_PER_SECOND;
 	DeltaTimeMilliseconds = (float)FIXED_TIMESTEP_NS / 1000000.0f;
-	while (_accumulatorNS >= FIXED_TIMESTEP_NS) {
+	int ticks = 0;
+	int maxTicksThisFrame = MAX_TICKS_PER_FRAME;
+	// Use fixed timestep on everything but emscripten?
+	/* #ifdef __EMSCRIPTEN__ */
+	/* DeltaTimeSeconds = (float)frameTime / (float)SDL_NS_PER_SECOND; */
+	/* DeltaTimeMilliseconds = (float)frameTime / 1000000.0f; */
+	/* maxTicksThisFrame = 1; */
+	/* #endif */
+	while (_accumulatorNS >= FIXED_TIMESTEP_NS && ticks < maxTicksThisFrame) {
+		UpdateAudioSystem();
 		UpdateCameraSystem();
 		UpdateKeyboardSystem();
 		UpdateCurrentMap();
@@ -80,12 +91,45 @@ static void update(void) {
 		UpdateControllerSystem();
 		UpdateMouseSystem();
 		_accumulatorNS -= FIXED_TIMESTEP_NS;
-		/* if (ticks++ > 2) break; */
+		++ticks;
+		now = getCurrentNSTicks();
 	}
+	// Spiral of death
+	if (ticks == MAX_TICKS_PER_FRAME && _accumulatorNS >= FIXED_TIMESTEP_NS) {
+		_accumulatorNS = 0;
+		sgLogDebug("Warning: too many ticks this frame, capping updates to avoid spiral of death");
+	}
+	/* sgLogDebug("Ticks this frame is %d, and last frametime was %f ms", ticks, SDL_NS_TO_MS((float)frameTime)); */
 	draw();
-	_previousNS = now;
-	/* handleFramerate(&now); */
 }
+
+/* static void update(void) { */
+/* 	Uint64 now = getCurrentNSTicks(); */
+/* 	Uint64 frameTime = now - _previousNS; */
+/* 	_accumulatorNS += frameTime; */
+/* 	_accumulatorNS = _accumulatorNS >= FIXED_TIMESTEP_NS ? FIXED_TIMESTEP_NS : _accumulatorNS; */
+/* 	_previousNS = now; */
+/* 	int ticks = 0; */
+/* 	UpdateAudioSystem(); */
+/* 	DeltaTimeSeconds = (float)FIXED_TIMESTEP_NS / (float)SDL_NS_PER_SECOND; */
+/* 	DeltaTimeMilliseconds = (float)FIXED_TIMESTEP_NS / 1000000.0f; */
+/* 	while (_accumulatorNS >= FIXED_TIMESTEP_NS) { */
+/* 		UpdateCameraSystem(); */
+/* 		UpdateKeyboardSystem(); */
+/* 		UpdateCurrentMap(); */
+/* 		if (_inputFunc) _inputFunc(); */
+/* 		UpdateAnimators(); */
+/* 		if (_updateFunc) _updateFunc(); */
+/* 		UpdateControllerSystem(); */
+/* 		UpdateMouseSystem(); */
+/* 		_accumulatorNS -= FIXED_TIMESTEP_NS; */
+/* 		now = getCurrentNSTicks(); */
+/* 		++ticks; */
+/* 	} */
+/* 	sgLogDebug("Ticks this frame is %d, and last frametime was %f", ticks,  SDL_NS_TO_MS((float)frameTime)); */
+/* 	draw(); */
+/* 	/1* handleFramerate(&now); *1/ */
+/* } */
 
 static void Quit(void) {
 	if (_quitFunc) _quitFunc();
