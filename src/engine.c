@@ -41,20 +41,20 @@ static void start(void) {
 	_previousNS = getCurrentNSTicks();
 }
 
-static void handleFramerate(Uint64* now) {
-	/* #ifdef __EMSCRIPTEN__ */
-	/* 	return; */
-	/* #endif */
-	/* 	int refreshRate = GraphicsGetTargetRefreshRate(); */
-	/* 	if (refreshRate != 999) {  // If we are doing a capped frame rate, we should also wait between frames. */
-	/* 		uint64_t current = getCurrentMSTicks(); */
-	/* 		Uint64 elapsedMS = current - _previousNS; */
-	/* 		const Uint64 FRAME_DURATION_MS = 1000 / refreshRate; */
-	/* 		if (elapsedMS < FRAME_DURATION_MS) { */
-	/* 			sgSleepMS(FRAME_DURATION_MS - elapsedMS); */
-	/* 		} */
-	/* 	} */
-}
+/* static void handleFramerate(Uint64* now) { */
+/* 	#ifdef __EMSCRIPTEN__ */
+/* 		return; */
+/* 	#endif */
+/* 		int refreshRate = GraphicsGetTargetRefreshRate(); */
+/* 		if (refreshRate != 999) {  // If we are doing a capped frame rate, we should also wait between frames. */
+/* 			uint64_t current = getCurrentMSTicks(); */
+/* 			Uint64 elapsedMS = current - _previousNS; */
+/* 			const Uint64 FRAME_DURATION_MS = 1000 / refreshRate; */
+/* 			if (elapsedMS < FRAME_DURATION_MS) { */
+/* 				sgSleepMS(FRAME_DURATION_MS - elapsedMS); */
+/* 			} */
+/* 		} */
+/* } */
 
 static void draw(void) {
 	DrawStart();
@@ -96,34 +96,6 @@ static void update(void) {
 	/* sgLogDebug("Ticks this frame is %d, and last frametime was %f ms", ticks, SDL_NS_TO_MS((float)frameTime)); */
 	draw();
 }
-
-/* static void update(void) { */
-/* 	Uint64 now = getCurrentNSTicks(); */
-/* 	Uint64 frameTime = now - _previousNS; */
-/* 	_accumulatorNS += frameTime; */
-/* 	_accumulatorNS = _accumulatorNS >= FIXED_TIMESTEP_NS ? FIXED_TIMESTEP_NS : _accumulatorNS; */
-/* 	_previousNS = now; */
-/* 	int ticks = 0; */
-/* 	UpdateAudioSystem(); */
-/* 	DeltaTimeSeconds = (float)FIXED_TIMESTEP_NS / (float)SDL_NS_PER_SECOND; */
-/* 	DeltaTimeMilliseconds = (float)FIXED_TIMESTEP_NS / 1000000.0f; */
-/* 	while (_accumulatorNS >= FIXED_TIMESTEP_NS) { */
-/* 		UpdateCameraSystem(); */
-/* 		UpdateKeyboardSystem(); */
-/* 		UpdateCurrentMap(); */
-/* 		if (_inputFunc) _inputFunc(); */
-/* 		UpdateAnimators(); */
-/* 		if (_updateFunc) _updateFunc(); */
-/* 		UpdateControllerSystem(); */
-/* 		UpdateMouseSystem(); */
-/* 		_accumulatorNS -= FIXED_TIMESTEP_NS; */
-/* 		now = getCurrentNSTicks(); */
-/* 		++ticks; */
-/* 	} */
-/* 	sgLogDebug("Ticks this frame is %d, and last frametime was %f", ticks,  SDL_NS_TO_MS((float)frameTime)); */
-/* 	draw(); */
-/* 	/1* handleFramerate(&now); *1/ */
-/* } */
 
 static void Quit(void) {
 	if (_quitFunc) _quitFunc();

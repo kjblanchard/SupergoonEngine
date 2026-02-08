@@ -10,6 +10,7 @@ extern int GraphicsGetTargetRefreshRateImpl(void);
 extern void DrawRectImpl(RectangleF* rect, Color* color, int filled, int cameraOffset);
 extern void GraphicsUpdateFBOColorImpl(Color* color);
 extern Color GraphicsGetFBOColorImpl(void);
+extern void* GraphicsGetContextPtrImpl(void);
 
 void DrawRect(RectangleF* rect, Color* color, int filled, int cameraOffset) { DrawRectImpl(rect, color, filled, cameraOffset); }
 void InitializeGraphicsSystem(void) { InitializeGraphicsSystemImpl(); }
@@ -21,3 +22,4 @@ void GraphicsSetLogicalWorldSize(int width, int height) { GraphicsSetLogicalWorl
 int GraphicsGetTargetRefreshRate(void) { return GraphicsGetTargetRefreshRateImpl(); }
 void GraphicsUpdateFBOColor(Color* color) { GraphicsUpdateFBOColorImpl(color); }
 Color GraphicsGetFBOColor(void) { return GraphicsGetFBOColorImpl(); }
+void* GraphicsGetContextPtr(void) { return GraphicsGetContextPtrImpl(); }

@@ -1,4 +1,5 @@
 #include <SDL3/SDL_video.h>
+#include <Supergoon/Graphics/graphics.h>
 #include <Supergoon/Graphics/shader.h>
 #include <Supergoon/Graphics/texture.h>
 #include <Supergoon/Primitives/Color.h>
@@ -130,6 +131,8 @@ void DrawEndImpl(void) {
 	RectangleF srcRect = {0, 0, (float)fbWidth, (float)fbHeight};
 	// Set the color properly of the FBO when fading.
 	DrawTexture(_screenFrameBufferTexture, GetDefaultShader(), &dstRect, &srcRect, false, 1.0f, true, &_fboColor);
+	if(GraphicsPostFBODrawDebugFunc) GraphicsPostFBODrawDebugFunc();
+
 	SDL_GL_SwapWindow(WindowGetImpl()->Handle);
 }
 
@@ -185,3 +188,8 @@ Color GraphicsGetFBOColorImpl(void){
 int GraphicsGetTargetRefreshRateImpl(void) {
 	return _refreshRate;
 }
+
+void* GraphicsGetContextPtrImpl(void){
+	return _context;
+}
+
