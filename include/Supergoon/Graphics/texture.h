@@ -29,6 +29,8 @@ void TextureClearRenderTarget(Texture *texture, float r, float g, float b,
 void DrawTextureToTexture(Texture *dstTarget, Texture *srcTexture,
 						  Shader *shader, RectangleF *dstRect,
 						  RectangleF *srcRect, float scale);
+Texture** GetCachedTextures(void);
+int GetNumCachedTextures(void);
 #ifdef __cplusplus
 }
 #endif

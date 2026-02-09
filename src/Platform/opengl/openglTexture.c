@@ -4,6 +4,7 @@
 #include <Supergoon/tools.h>
 #include <stdbool.h>
 #include <string.h>
+#include <Supergoon/Platform/opengl/openglTexture.h>
 #ifndef __EMSCRIPTEN__
 #include <glad/glad.h>
 // must be forst<SDL3/SDL_opengl.h>
@@ -28,34 +29,16 @@ static Texture* _currentRenderingTarget = NULL;
 static int _currentRenderingTargetWidth = 0;
 static int _currentRenderingTargetHeight = 0;
 static Texture* _previousRenderingTarget = NULL;
-/* Texture* _cachedTextures[MAX_CACHED_TEXTURES]; */
 
 static Texture* _cachedTextures[MAX_CACHED_TEXTURES] = {0};
 static int _currentCachedTextures = 0;
 
-typedef struct Texture {
-	unsigned int ID;
-	unsigned int Width;
-	unsigned int Height;
-	unsigned int VAO;
-	unsigned int FBO;
-	int RefCount;
-	char* Name;
-} Texture;
 
 void TextureBindImpl(Texture* texture) {
 	glBindTexture(GL_TEXTURE_2D, texture->ID);
 }
 
 static Texture* getTextureFromCache(const char* filename) {
-	/* Texture* returnTexture = NULL; */
-	/* for (int i = 0; i < _currentCachedTextures; ++i) { */
-	/* 	if (strcmp(filename, _cachedTextures[i]->Name) == 0) { */
-	/* 		returnTexture = _cachedTextures[i]; */
-	/* 		break; */
-	/* 	} */
-	/* } */
-	/* return returnTexture; */
 
 	for (int i = 0; i < _currentCachedTextures; ++i) {
 		if (_cachedTextures[i] &&
@@ -227,7 +210,7 @@ int TextureGetWidthImpl(Texture* texture) { return texture->Width; }
 int TextureGetHeightImpl(Texture* texture) { return texture->Height; }
 
 void TextureLoadFromPngImpl(Texture* texture, const char* filepath) {
-	if(texture->Width || texture->Height) return;
+	if (texture->Width || texture->Height) return;
 	sgLogWarn("Loading from png %s", filepath);
 	char* fullFilepath;
 	asprintf(&fullFilepath, "%sassets/img/%s.png", GetBasePath(), filepath);
@@ -383,4 +366,10 @@ void TextureLoadFromDataImpl(Texture* texture, const char* name, int width, int 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glBindTexture(GL_TEXTURE_2D, 0);
+}
+Texture** GetCachedTexturesImpl(void) {
+	return _cachedTextures;
+}
+int GetNumCachedTexturesImpl(void) {
+	return _currentCachedTextures;
 }

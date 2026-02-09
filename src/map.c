@@ -274,13 +274,22 @@ static void loadTilesetTextures(Tilemap* map) {
 		}
 
 		int len = strlen(map->Tilesets[i].Image);
-		if (len > 4 &&
-			strcmp(map->Tilesets[i].Image + len - 4, ".png") == 0)
+		// Remove PNG from the filename if it exists
+		if (len > 4 && strcmp(map->Tilesets[i].Image + len - 4, ".png") == 0) {
 			map->Tilesets[i].Image[len - 4] = '\0';
+		}
+		// Remove from the last trailing slash
+		// Get the position of the last, and then increment it by one
+		char* lastSlash = strrchr(map->Tilesets[i].Image, '/');
+		if (lastSlash) {
+			++lastSlash;
+		}
+		char* findName = lastSlash ? lastSlash : map->Tilesets[i].Image;
 
-		map->Tilesets[i].TilesetTexture = TextureCreate(map->Tilesets[i].Image);
+		/* map->Tilesets[i].TilesetTexture = TextureCreate(map->Tilesets[i].Image); */
+		map->Tilesets[i].TilesetTexture = TextureCreate(findName);
 		TextureLoadFromPng(map->Tilesets[i].TilesetTexture,
-						   map->Tilesets[i].Image);
+						   findName);
 	}
 }
 
@@ -472,7 +481,7 @@ void LoadMap(const char* name) {
 
 		jReleaseObjectFromFile(root);
 
-		//If cache is full, destroy last and then reorder them.
+		// If cache is full, destroy last and then reorder them.
 		if (_previousMaps[MAX_PREVIOUS_MAPS_CACHE - 1]) {
 			freeTiledTilemap(_previousMaps[MAX_PREVIOUS_MAPS_CACHE - 1]);
 		}
