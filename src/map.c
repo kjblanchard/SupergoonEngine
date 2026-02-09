@@ -296,13 +296,10 @@ static void loadTilesetTextures(Tilemap* map) {
 static void createBackgroundsFromTilemap(Tilemap* map) {
 	int w = map->Width * map->TileWidth;
 	int h = map->Height * map->TileHeight;
-
-	map->BackgroundTexture =
-		TextureCreateRenderTarget(w, h);
-
+	map->BackgroundTexture = TextureCreateRenderTarget(w, h);
 	SetRenderTarget(map->BackgroundTexture);
+	TextureClearRenderTarget(map->BackgroundTexture, 0.1f, 0.1f, 0.1f, 255);
 	loadTilesetTextures(map);
-
 	LayerGroup* bg = &map->LayerGroups[0];
 	RectangleF dst = {0, 0, map->TileWidth, map->TileHeight};
 	RectangleF src = {0, 0, 0, 0};

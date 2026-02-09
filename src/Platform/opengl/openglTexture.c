@@ -1,10 +1,10 @@
 #include <Supergoon/Graphics/texture.h>
+#include <Supergoon/Platform/opengl/openglTexture.h>
 #include <Supergoon/Primitives/Color.h>
 #include <Supergoon/camera.h>
 #include <Supergoon/tools.h>
 #include <stdbool.h>
 #include <string.h>
-#include <Supergoon/Platform/opengl/openglTexture.h>
 #ifndef __EMSCRIPTEN__
 #include <glad/glad.h>
 // must be forst<SDL3/SDL_opengl.h>
@@ -33,13 +33,11 @@ static Texture* _previousRenderingTarget = NULL;
 static Texture* _cachedTextures[MAX_CACHED_TEXTURES] = {0};
 static int _currentCachedTextures = 0;
 
-
 void TextureBindImpl(Texture* texture) {
 	glBindTexture(GL_TEXTURE_2D, texture->ID);
 }
 
 static Texture* getTextureFromCache(const char* filename) {
-
 	for (int i = 0; i < _currentCachedTextures; ++i) {
 		if (_cachedTextures[i] &&
 			_cachedTextures[i]->Name &&
@@ -109,24 +107,14 @@ Texture* TextureCreateNoCacheImpl(void) {
 	return texture;
 }
 
-/* Texture* TextureCreateImpl(const char* name) { */
-/* 	Texture* texture = getTextureFromCache(name); */
-/* 	if (texture) { */
-/* 		++texture->RefCount; */
-/* 		return texture; */
-/* 	} */
-/* 	texture = TextureCreateNoCacheImpl(); */
-/* 	cacheTexture(texture); */
-/* 	return texture; */
-/* } */
-
 Texture* TextureCreateImpl(const char* name) {
 	Texture* texture = getTextureFromCache(name);
 	if (texture) {
+		sgLogDebug("Found texture in cache, increasing ref count and returning: %s", name);
 		++texture->RefCount;
 		return texture;
 	}
-
+	sgLogDebug("Loading new texture, cache miss: %s", name);
 	texture = TextureCreateNoCacheImpl();
 	texture->Name = strdup(name);  // 🔑 identity set here
 	cacheTexture(texture);
@@ -152,57 +140,37 @@ Texture* TextureCreateRenderTargetImpl(int width, int height) {
 #endif
 	glGenTextures(1, &texture->ID);
 	glBindTexture(GL_TEXTURE_2D, texture->ID);
-	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, GL_RGBA,
-				 GL_UNSIGNED_BYTE, NULL);
-
-	// sensible defaults for render target texture
+	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
 	// Create framebuffer and attach texture as color attachment 0
 	glGenFramebuffers(1, &texture->FBO);
 	glBindFramebuffer(GL_FRAMEBUFFER, texture->FBO);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-						   texture->ID, 0);
-
-	// (Optional) If you need depth/stencil, create a renderbuffer here.
-	// For now we assume color-only render target.
-
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture->ID, 0);
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if (status != GL_FRAMEBUFFER_COMPLETE) {
 		sgLogError("Framebuffer not complete for render target %s (status 0x%X)",
 				   texture->Name, status);
-		// continue — but you may want to fail/cleanup here
+		// TODO continue — but you may want to fail/cleanup here
 	}
-
-	// unbind
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	// Setup a simple quad VAO (positions + texcoords packed in vec4 like your
-	// other code)
 	unsigned int VBO = 0;
 	float vertices[] = {// pos(x,y)   // tex(u,v)
 						0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
 						0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
 						1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f};
-
 	glGenVertexArrays(1, &texture->VAO);
 	glGenBuffers(1, &VBO);
 	glBindVertexArray(texture->VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
 	glEnableVertexAttribArray(0);
-	// attribute 0 is vec4 (pos.xy, tex.xy) like your current code
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-
-	// unbind
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
-
 	return texture;
 }
 
@@ -263,7 +231,6 @@ void DrawTextureImpl(Texture* texture, Shader* shader, RectangleF* dstRect,
 			-(cx),
 			-(cy),
 			0.0f};
-
 		glm_translate(view, negCameraPos);
 	}
 	vec4 srcRectV = {floorf(srcRect->x), floorf(srcRect->y), srcRect->w, srcRect->h};
