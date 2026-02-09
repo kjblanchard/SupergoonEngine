@@ -45,16 +45,6 @@ static Texture* getTextureFromCache(const char* filename) {
 			return _cachedTextures[i];
 		}
 	}
-
-	/* static void cacheTexture(Texture* texture) { */
-	/* 	for (int i = 0; i < _currentCachedTextures; ++i) { */
-	/* 		if (!_cachedTextures[i]) { */
-	/* 			_cachedTextures[i] = texture; */
-	/* 			++_currentCachedTextures; */
-	/* 			return; */
-	/* 		} */
-	/* 	} */
-	/* } */
 	return NULL;
 }
 
@@ -179,7 +169,7 @@ int TextureGetHeightImpl(Texture* texture) { return texture->Height; }
 
 void TextureLoadFromPngImpl(Texture* texture, const char* filepath) {
 	if (texture->Width || texture->Height) return;
-	sgLogWarn("Loading from png %s", filepath);
+	sgLogDebug("Loading from png %s", filepath);
 	char* fullFilepath;
 	asprintf(&fullFilepath, "%sassets/img/%s.png", GetBasePath(), filepath);
 	SDL_Surface* surface = SDL_LoadPNG(fullFilepath);
