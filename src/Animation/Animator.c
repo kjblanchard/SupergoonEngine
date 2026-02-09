@@ -193,7 +193,7 @@ void AddAnimationToAnimatorQueue(Animator* animator, const char* animName, int l
 		if (animator->NextAnimNum[i] != NO_NEXT_ANIM) {
 			continue;
 		}
-		sgLogWarn("Adding in anim %s to queue at pos %d", animName, i);
+		sgLogDebug("Adding in anim %s to queue at pos %d", animName, i);
 		animator->NextAnimNum[i] = animNum;
 		animator->NextAnimLoops[i] = loops;
 		return;
