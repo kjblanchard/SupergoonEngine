@@ -1,5 +1,6 @@
 #include <Supergoon/Audio/Audio.h>
 #include <Supergoon/events.h>
+#include <Supergoon/Input/joystick.h>
 #include <stdbool.h>
 #include <stdlib.h>
 
@@ -40,6 +41,7 @@ void PushEvent(uint32_t eventType, int eventCode, void *data, void *data2) {
 
 int HandleEvents(void *event) {
 	if (HandleSDLEvents(event)) return true;
+
 	AudioEventHandler(event);
 	// handleTweenEvents(event);
 	handleMouseEvent(event);

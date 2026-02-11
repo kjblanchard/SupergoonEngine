@@ -125,6 +125,7 @@ SDL_AppResult SDL_AppInit(void** appState, int argc, char* argv[]) {
 // Event handlers return if the game should quit
 SDL_AppResult SDL_AppEvent(void* appState, SDL_Event* event) {
 	if (HandleEvents(event)) return SDL_APP_SUCCESS;
+	geHandleJoystickEvent(event);
 	if (_handleEventFunc && _handleEventFunc(event)) return SDL_APP_SUCCESS;
 	return SDL_APP_CONTINUE;
 }

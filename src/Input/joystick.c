@@ -45,7 +45,7 @@ void InitializeJoystickSystem(void) {
 void geHandleJoystickEvent(const SDL_Event* event) {
 	switch (event->type) {
 		case SDL_EVENT_GAMEPAD_ADDED:
-			sgLogDebug("Controller added %s", event->cdevice.which);
+			sgLogDebug("Controller added %d", event->cdevice.which);
 			CountPluggedInControllers();
 			break;
 
