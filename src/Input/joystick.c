@@ -84,7 +84,11 @@ void geHandleJoystickEvent(const SDL_Event* event) {
 static void CountPluggedInControllers(void) {
 	int numJoysticks;
 	SDL_JoystickID* joysticks = SDL_GetJoysticks(&numJoysticks);
-	sgLogDebug("There is a total of %d controllers initializing", numJoysticks);
+	if (!joysticks) {
+		sgLogError("No joysticks returned, returning");
+		return;
+	}
+	sgLogDebug("There is a total of %d controllers that are going to be initialized", numJoysticks);
 	_numGamePads = 0;
 	for (int i = 0; i < numJoysticks; i++)
 		if (SDL_IsGamepad(joysticks[i])) {
