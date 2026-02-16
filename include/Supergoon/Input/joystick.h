@@ -9,6 +9,8 @@ extern "C" {
 void geHandleJoystickEvent(const SDL_Event* event);
 void InitializeJoystickSystem(void);
 int geGamepadMaxPads(void);
+int SG_GetCurrentNumControllers(void);
+
 void UpdateControllerSystem(void);
 int geGamepadLeftAxisXThisFrameMovement(const int padNum);
 int geGamepadLeftAxisYThisFrameMovement(const int padNum);

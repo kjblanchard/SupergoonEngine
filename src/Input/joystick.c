@@ -18,6 +18,10 @@ static int _numGamePads;
 static void CountPluggedInControllers(void);
 GamePad _connectedGamepads[MAX_GAMEPADS];
 
+int SG_GetCurrentNumControllers(void) {
+	return _numGamePads;
+}
+
 static void InitializeEngineGamepad(int padId, int playerNum) {
 	if (_connectedGamepads[padId].Gamepad)
 		return;
