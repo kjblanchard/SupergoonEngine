@@ -179,3 +179,5 @@ void ShutdownJoystickSystem(void) {
 		SDL_CloseGamepad(_connectedGamepads[i].Gamepad);
 	}
 }
+
+int geGamepadMaxPads(void) { return MAX_GAMEPADS; }
