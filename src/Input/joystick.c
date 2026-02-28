@@ -59,7 +59,7 @@ void geHandleJoystickEvent(const SDL_Event* event) {
 				quit.type = SDL_EVENT_QUIT;
 				SDL_PushEvent(&quit);
 			}
-			sgLogDebug("Button pressed! %d", event->gbutton.button);
+			/* sgLogDebug("Button pressed! %d", event->gbutton.button); */
 			for (int i = 0; i < _numGamePads; i++) {
 				if (event->gbutton.which == SDL_GetJoystickID(SDL_GetGamepadJoystick(_connectedGamepads[i].Gamepad))) {
 					_connectedGamepads[i].thisFrameButtons[event->gbutton.button] = true;
