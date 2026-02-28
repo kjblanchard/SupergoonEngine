@@ -375,28 +375,19 @@ void UpdateCurrentMap(void) {
 void DrawCurrentMap(void) {
 	if (!_currentMap) return;
 
-	/* int w = TextureGetWidth(_currentMap->BackgroundTexture); */
-	/* int h = TextureGetHeight(_currentMap->BackgroundTexture); */
-	/* RectangleF src = {0, 0, w, h}; */
 	float w = (CameraGetWidth());
 	float h = (CameraGetHeight());
-	RectangleF src = {SDL_roundf(CameraGetX()), SDL_roundf(CameraGetY()), CameraGetWidth(), CameraGetHeight()};
-
+	RectangleF src = {0, 0, w, h};
+	/* RectangleF src = {SDL_roundf(CameraGetX()), SDL_roundf(CameraGetY()), CameraGetWidth(), CameraGetHeight()}; */
 	RectangleF dst = {0, 0, w, h};
-	/* dst.x = floor(dst.x); */
-	/* dst.y = floor(dst.y); */
-	/* dst.w = floor(dst.w); */
-	/* dst.h = floor(dst.h); */
-
-	/* DrawTexture(_currentMap->BackgroundTexture, */
-	/* 			GetDefaultShader(), &dst, &src, */
-	/* 			true, 1.0f, false, */
-	/* 			&(Color){255, 255, 255, 255}); */
 	DrawTexture(_currentMap->BackgroundTexture,
 				GetDefaultShader(), &dst, &src,
-				false, 1.0f, false,
+				true, 1.0f, false,
 				&(Color){255, 255, 255, 255});
-
+	/* DrawTexture(_currentMap->BackgroundTexture, */
+	/* 			GetDefaultShader(), &dst, &src, */
+	/* 			false, 1.0f, false, */
+	/* 			&(Color){255, 255, 255, 255}); */
 	drawAnimatedTiles();
 }
 

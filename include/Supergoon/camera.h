@@ -2,6 +2,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+void CameraGetPositionHandle(float** x, float** y);
+void CameraGetFollow(float** x, float** y);
 void SetCameraFollowTarget(float* x, float* y);
 void SetCameraZoom(float zoom);
 void SetCameraBounds(float x, float y);

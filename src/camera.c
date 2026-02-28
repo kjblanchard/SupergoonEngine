@@ -77,5 +77,15 @@ void ResetCameraFollow(void) {
 	cameraPos[1] = 0;
 }
 
+void CameraGetPositionHandle(float** x, float** y) {
+	*x = &cameraPos[0];
+	*y = &cameraPos[1];
+}
+
+void CameraGetFollow(float** x, float** y) {
+	*x = followX;
+	*y = followY;
+}
+
 float CameraGetWidth(void) { return cameraSize[0]; }
 float CameraGetHeight(void) { return cameraSize[1]; }
