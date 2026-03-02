@@ -70,9 +70,9 @@ void InitializeGraphicsSystemImpl(void) {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glm_ortho(0.0f, WindowWidthImpl(), WindowHeightImpl(), 0.0f, -1.0f, 1.0f,
 			  projectionMatrix);
-/* #ifndef __EMSCRIPTEN__ */
+	/* #ifndef __EMSCRIPTEN__ */
 	SDL_GL_SetSwapInterval(_vsync);	 // vsync
-/* #endif */
+									 /* #endif */
 	// Try to use the thing
 	float verts[] = {
 		0.0f, 0.0f,
@@ -131,15 +131,66 @@ void DrawEndImpl(void) {
 	RectangleF srcRect = {0, 0, (float)fbWidth, (float)fbHeight};
 	// Set the color properly of the FBO when fading.
 	DrawTexture(_screenFrameBufferTexture, GetDefaultShader(), &dstRect, &srcRect, false, 1.0f, true, &_fboColor);
-	if(GraphicsPostFBODrawDebugFunc) GraphicsPostFBODrawDebugFunc();
+	if (GraphicsPostFBODrawDebugFunc) GraphicsPostFBODrawDebugFunc();
 
 	SDL_GL_SwapWindow(WindowGetImpl()->Handle);
+}
+
+void DrawLineImpl(float x1, float y1, float x2, float y2, float thickness, Color* color, int useCamera) {
+	Shader* shader = GetDefaultRectShader();
+	ShaderUse(shader);
+
+	// Compute direction and length
+	float dx = x2 - x1;
+	float dy = y2 - y1;
+	float length = sqrtf(dx * dx + dy * dy);
+	float angle = atan2f(dy, dx);
+
+	// Build model matrix
+	mat4 model;
+	glm_mat4_identity(model);
+
+	// Translate to starting point
+	glm_translate(model, (vec3){x1, y1, 0.0f});
+
+	// Rotate to match direction
+	glm_rotate(model, angle, (vec3){0.0f, 0.0f, 1.0f});
+
+	// Scale to line length and thickness
+	glm_scale(model, (vec3){length, thickness, 1.0f});
+
+	// Color
+	vec4 colorV = {
+		color->R / 255.0f,
+		color->G / 255.0f,
+		color->B / 255.0f,
+		color->A / 255.0f};
+
+	// View matrix
+	mat4 view;
+	glm_mat4_identity(view);
+	if (useCamera) {
+		vec3 negCameraPos = {-CameraGetX(), -CameraGetY(), 0.0f};
+		glm_translate(view, negCameraPos);
+	}
+
+	ShaderSetUniformMatrix4(shader, "projection", projectionMatrix, false);
+	ShaderSetUniformMatrix4(shader, "model", model, false);
+	ShaderSetUniformMatrix4(shader, "view", view, false);
+	ShaderSetUniformVector4fV(shader, "color", colorV, false);
+
+	glBindVertexArray(vao);
+
+	// Draw as filled quad (same VAO as your rectangle)
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+	glBindVertexArray(0);
+	glUseProgram(0);
 }
 
 void DrawRectImpl(RectangleF* rect, Color* color, int filled, int useCamera) {
 	Shader* shader = GetDefaultRectShader();
 	ShaderUse(shader);
-	// model = translation + scale
 	mat4 model;
 	glm_mat4_identity(model);
 	glm_translate(model, (vec3){rect->x, rect->y, 0.0f});
@@ -181,7 +232,7 @@ void GraphicsSetLogicalWorldSizeImpl(int width, int height) {
 void GraphicsUpdateFBOColorImpl(Color* color) {
 	_fboColor = *color;
 }
-Color GraphicsGetFBOColorImpl(void){
+Color GraphicsGetFBOColorImpl(void) {
 	return _fboColor;
 }
 
@@ -189,7 +240,6 @@ int GraphicsGetTargetRefreshRateImpl(void) {
 	return _refreshRate;
 }
 
-void* GraphicsGetContextPtrImpl(void){
+void* GraphicsGetContextPtrImpl(void) {
 	return _context;
 }
-

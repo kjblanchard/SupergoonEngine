@@ -16,6 +16,7 @@
 extern "C" {
 #endif
 
+void DrawLine(float x1, float y1, float x2, float y2, float thickness, Color* color, int useCamera);
 void DrawRect(RectangleF* rect, Color* color, int filled, int cameraOffset);
 void InitializeGraphicsSystem(void);
 void ShutdownGraphicsSystem(void);
