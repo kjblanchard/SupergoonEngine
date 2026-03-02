@@ -28,7 +28,7 @@ Sprite* NewSprite(void);
 Sprite* NewSpriteManual(void);
 void DestroySprite(Sprite* sprite);
 void DestroySpriteManual(Sprite* sprite);
-void DrawSpriteManual(Sprite* sprite, RectangleF* dstRect, Color* color);
+void DrawSpriteManual(Sprite* sprite, RectangleF* dstRect, Color* color, int camera);
 void DrawSpriteSystem();
 void ShutdownSpriteSystem(void);
 #ifdef __cplusplus

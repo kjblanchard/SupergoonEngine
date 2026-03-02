@@ -81,13 +81,13 @@ void DestroySprite(Sprite* sprite) {
 	}
 }
 
-void DrawSpriteManual(Sprite* sprite, RectangleF* dstRect, Color* color) {
+void DrawSpriteManual(Sprite* sprite, RectangleF* dstRect, Color* color, int camera) {
 	if (!sprite || !sprite->Texture || !(sprite->Flags & SpriteFlagVisible)) {
 		return;
 	}
 	dstRect->x = sprite->parentX ? *sprite->parentX + sprite->OffsetAndSizeRectF.x : sprite->OffsetAndSizeRectF.x;
 	dstRect->y = sprite->parentY ? *sprite->parentY + sprite->OffsetAndSizeRectF.y : sprite->OffsetAndSizeRectF.y;
-	DrawTexture(sprite->Texture, sprite->Shader, dstRect, &sprite->TextureSourceRect, true, sprite->Scale, false, color);
+	DrawTexture(sprite->Texture, sprite->Shader, dstRect, &sprite->TextureSourceRect, camera, sprite->Scale, false, color);
 }
 
 void DrawSpriteSystem(void) {
@@ -97,7 +97,7 @@ void DrawSpriteSystem(void) {
 		Sprite* sprite = _sprites[i];
 		dst.w = sprite->OffsetAndSizeRectF.w;
 		dst.h = sprite->OffsetAndSizeRectF.h;
-		DrawSpriteManual(sprite, &dst, &color);
+		DrawSpriteManual(sprite, &dst, &color, true);
 	}
 }
 
