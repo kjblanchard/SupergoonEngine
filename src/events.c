@@ -42,7 +42,7 @@ void PushEvent(uint32_t eventType, int eventCode, void *data, void *data2) {
 int HandleEvents(void *event) {
 	if (HandleSDLEvents(event)) return true;
 
-	AudioEventHandler(event);
+	/* AudioEventHandler(event); */
 	// handleTweenEvents(event);
 	handleMouseEvent(event);
 	// handleTouchEvent(event);

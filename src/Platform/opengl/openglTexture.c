@@ -2,7 +2,7 @@
 #include <Supergoon/Platform/opengl/openglTexture.h>
 #include <Supergoon/Primitives/Color.h>
 #include <Supergoon/camera.h>
-#include <Supergoon/tools.h>
+#include <sgtools/tools.h>
 #include <stdbool.h>
 #include <string.h>
 #ifndef __EMSCRIPTEN__
@@ -18,7 +18,7 @@
 #include <Supergoon/Graphics/shader.h>
 #include <Supergoon/Platform/opengl/openglGraphics.h>
 #include <Supergoon/filesystem.h>
-#include <Supergoon/log.h>
+#include <sgtools/log.h>
 #include <Supergoon/window.h>
 #include <cglm/cglm.h>
 #include <stdio.h>

@@ -1,6 +1,6 @@
 #include <SDL3/SDL.h>
 #include <Supergoon/Graphics/graphics.h>
-#include <Supergoon/log.h>
+#include <sgtools/log.h>
 #include <Supergoon/window.h>
 
 extern void SetWindowOptionsImpl(int width, int height, const char* name);

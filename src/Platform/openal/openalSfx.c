@@ -1,8 +1,8 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <Supergoon/filesystem.h>
-#include <Supergoon/log.h>
-#include <Supergoon/tools.h>
+#include <sgtools/log.h>
+#include <sgtools/tools.h>
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>

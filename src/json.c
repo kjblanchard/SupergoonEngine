@@ -1,5 +1,5 @@
 #include <Supergoon/json.h>
-#include <Supergoon/log.h>
+#include <sgtools/log.h>
 #include <json.h>
 #include <json_object.h>
 #include <json_types.h>
@@ -71,6 +71,28 @@ json_object* jGetObjectFromFile(const char* file) {
 	}
 	return obj;
 }
+
+json_object* jGetObjectFromBuffer(const char* data, size_t size)
+{
+    struct json_tokener *tok = json_tokener_new();
+    if (!tok) {
+        sgLogError("Failed to create json tokener");
+        return NULL;
+    }
+    json_object *obj = json_tokener_parse_ex(tok, data, (int)size);
+    enum json_tokener_error err = json_tokener_get_error(tok);
+    if (err != json_tokener_success) {
+        sgLogError("Failure parsing JSON from buffer: %s",
+                   json_tokener_error_desc(err));
+        json_tokener_free(tok);
+        // obj may be partially created on error; discard it safely
+        if (obj) json_object_put(obj);
+        return NULL;
+    }
+    json_tokener_free(tok);
+    return obj;
+}
+
 void jReleaseObjectFromFile(json_object* o) { json_object_put(o); }
 
 void jforeach_obj(void* obj, JsonIterFn fn, void* userData) {

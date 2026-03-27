@@ -17,7 +17,7 @@
 #endif
 #include <Supergoon/Platform/opengl/openglGraphics.h>
 #include <Supergoon/Platform/sdl/sdlWindow.h>
-#include <Supergoon/log.h>
+#include <sgtools/log.h>
 
 extern void ShaderSystemShutdown(void);
 SDL_GLContext _context;

@@ -2,7 +2,7 @@
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_oldnames.h>
 #include <Supergoon/Platform/sdl/sdl.h>
-#include <Supergoon/log.h>
+#include <sgtools/log.h>
 int InitializeSdl(void) {
 	int options = 0;
 	SDL_SetHint(SDL_HINT_MAC_BACKGROUND_APP, "0");

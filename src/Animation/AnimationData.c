@@ -1,6 +1,6 @@
 #include <Supergoon/Animation/animationdata.h>
 #include <Supergoon/json.h>
-#include <Supergoon/log.h>
+#include <sgtools/log.h>
 #include <stdlib.h>
 #include <string.h>
 

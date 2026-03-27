@@ -84,12 +84,12 @@ endif(UNIX OR APPLE)
 set(SRC_FILES
     src/camera.c
     src/json.c
-    src/log.c
+    # src/log.c
     src/state.c
     src/Input/keyboard.c
     src/window.c
     src/filesystem.c
-    src/tools.c
+    # src/tools.c
     src/events.c
     src/engine.c
     src/Primitives/rectangle.c
@@ -105,10 +105,10 @@ set(SRC_FILES
     src/Platform/sdl/sdlWindow.c
     src/map.c
     # sound
-    src/Platform/openal/openal.c
-    src/Platform/openal/openalSfx.c
-    src/Platform/openal/openalStream.c
-    src/Platform/openal/openalBgm.c
+    # src/Platform/openal/openal.c
+    # src/Platform/openal/openalSfx.c
+    # src/Platform/openal/openalStream.c
+    # src/Platform/openal/openalBgm.c
     # 2d engine
     src/Graphics/graphics.c
     src/Graphics/texture.c
@@ -227,15 +227,35 @@ elseif(EMSCRIPTEN)
             list(APPEND EXTERNAL_LIBS ${LIB_OGG})
         endif(LIB_OGG)
 
-        # find_library(
-        #     LIB_LUA
-        #     NAMES lua lua_static lua5.4
-        #     HINTS /opt/homebrew/bin/ /usr/local/bin /usr/local/lib /usr/bin/)
+        find_library(
+            LIB_LUA
+            NAMES lua lua_static lua5.4
+            HINTS /opt/homebrew/bin/ /usr/local/bin /usr/local/lib /usr/bin/)
 
-        # if(LIB_LUA)
-        #     list(APPEND EXTERNAL_LIBS ${LIB_LUA})
-        #     target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC /usr/include/lua5.4) #local debian install
-        # endif(LIB_LUA)
+        find_library(
+            LIB_SGSOUND
+            NAMES sgsound 
+            HINTS /opt/homebrew/bin/ /usr/local/bin /usr/local/lib /usr/bin/)
+        if(LIB_SGSOUND)
+            list(APPEND EXTERNAL_LIBS ${LIB_SGSOUND})
+        endif(LIB_SGSOUND)
+
+        find_library(
+            LIB_SGTOOLS
+            NAMES sgtools
+            HINTS /opt/homebrew/bin/ /usr/local/bin /usr/local/lib /usr/bin/)
+        if(LIB_SGTOOLS)
+            list(APPEND EXTERNAL_LIBS ${LIB_SGTOOLS})
+        endif(LIB_SGTOOLS)
+
+        find_library(
+            LIB_SGFORGE
+            NAMES sgforge
+            HINTS /opt/homebrew/bin/ /usr/local/bin /usr/local/lib /usr/bin/)
+        if(LIB_SGFORGE)
+            list(APPEND EXTERNAL_LIBS ${LIB_SGFORGE})
+        endif(LIB_SGTOOLS)
+
         find_package(SDL3 CONFIG COMPONENTS SDL3-shared)
         if(SDL3_FOUND)
             list(APPEND EXTERNAL_LIBS SDL3::SDL3)

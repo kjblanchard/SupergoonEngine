@@ -1,6 +1,6 @@
 #include <SDL3/SDL.h>
 #include <Supergoon/Input/joystick.h>
-#include <Supergoon/log.h>
+#include <sgtools/log.h>
 #include <math.h>
 #include <string.h>
 

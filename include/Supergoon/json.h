@@ -1,5 +1,6 @@
 #pragma once
 #include <stdbool.h>
+#include <stdlib.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -30,7 +31,7 @@ JsonObjectTypes jGetObjectType(json_object* o);
 json_object* jGetObjectInObjectWithIndex(json_object* o, int index);
 int jGetObjectArrayLength(json_object* o);
 json_object* jGetObjectFromFile(const char* file);
-
+json_object* jGetObjectFromBuffer(const char* data, size_t size);
 void jReleaseObjectFromFile(json_object* o);
 
 typedef void (*JsonIterFn)(const char* key, void* value, void* userData);

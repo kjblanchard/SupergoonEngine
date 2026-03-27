@@ -8,6 +8,7 @@
  * @copyright Copyright (c) 2025
  *
  */
+#include <stdlib.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -15,7 +16,8 @@ extern "C" {
 #pragma once
 // Game functions
 void SetBgmTrack(int track);
-void LoadBgm(const char *filename, float volume, int loops);
+void LoadBgm(const char* filename, float volume, int loops);
+void LoadBgmBuffer(const char* filename, float volume, int loops, char* data, size_t dataSize);
 /**
  * @brief Plays a BGM, additionally unpauses it if it is paused.
  */
@@ -33,8 +35,8 @@ void UpdatePlayingBgmVolume(void);
 void SetGlobalBgmVolume(float volume);
 void SetGlobalSfxVolume(float volume);
 // void PlaySfx(Sfx *sfx, float volume = 1.0);
-void PlaySfxOneShot(const char *name, float volume);
-void AudioEventHandler(void *event);
+void PlaySfxOneShot(const char* name, float volume);
+void AudioEventHandler(void* event);
 void ShutdownAudioSystem(void);
 void UpdateAudioSystem(void);
 void InitializeAudioSystem(void);

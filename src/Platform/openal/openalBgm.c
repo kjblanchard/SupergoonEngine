@@ -1,7 +1,7 @@
 #include <AL/al.h>
 #include <Supergoon/Platform/openal/openalBgm.h>
-#include <Supergoon/log.h>
-#include <Supergoon/tools.h>
+#include <sgtools/log.h>
+#include <sgtools/tools.h>
 #include <assert.h>
 #include <ogg/ogg.h>
 #include <stdbool.h>

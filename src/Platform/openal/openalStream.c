@@ -2,7 +2,7 @@
 #include <AL/alc.h>
 #include <Supergoon/Platform/openal/openalBgm.h>
 #include <Supergoon/Platform/openal/openalStream.h>
-#include <Supergoon/log.h>
+#include <sgtools/log.h>
 #include <assert.h>
 #include <stdbool.h>
 #include <stdlib.h>

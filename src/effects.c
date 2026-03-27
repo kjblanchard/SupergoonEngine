@@ -1,7 +1,7 @@
 #include <Supergoon/Tweening/tween.h>
 #include <Supergoon/effects.h>
 // #include <Supergoon/graphics.h>
-#include <Supergoon/log.h>
+#include <sgtools/log.h>
 #include <Supergoon/window.h>
 #include <stdbool.h>
 #include <stdint.h>

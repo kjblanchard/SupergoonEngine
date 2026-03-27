@@ -4,7 +4,8 @@
 #include <Supergoon/Primitives/Color.h>
 #include <Supergoon/camera.h>
 #include <Supergoon/sprite.h>
-#include <Supergoon/tools.h>
+#include <sgtools/tools.h>
+#include <string.h>
 #include <stdlib.h>
 
 static size_t _firstSpriteHole = NO_HOLE;

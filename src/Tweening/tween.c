@@ -2,7 +2,7 @@
 #include <Supergoon/Tweening/easing.h>
 #include <Supergoon/Tweening/tween.h>
 #include <Supergoon/events.h>
-#include <Supergoon/log.h>
+#include <sgtools/log.h>
 #include <Supergoon/state.h>
 #include <Supergoon/tween.h>
 #include <stdbool.h>

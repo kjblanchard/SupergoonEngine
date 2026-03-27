@@ -1,6 +1,6 @@
 #include <SDL3/SDL_timer.h>
-#include <Supergoon/log.h>
-#include <Supergoon/tools.h>
+#include <sgtools/log.h>
+#include <sgtools/tools.h>
 #include <ctype.h>
 #include <stdarg.h>
 #include <stdbool.h>

@@ -5,8 +5,8 @@
 #include <Supergoon/Platform/openal/openalSfx.h>
 #include <Supergoon/Platform/openal/openalStream.h>
 #include <Supergoon/filesystem.h>
-#include <Supergoon/log.h>
-#include <Supergoon/tools.h>
+#include <sgtools/log.h>
+#include <sgtools/tools.h>
 #include <assert.h>
 #include <stdbool.h>
 #include <stdlib.h>

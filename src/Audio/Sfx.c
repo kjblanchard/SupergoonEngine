@@ -2,7 +2,7 @@
 #include <SDL3/SDL_misc.h>
 #include <Supergoon/Audio/Sfx.h>
 #include <Supergoon/Audio/Stream.h>
-#include <Supergoon/log.h>
+#include <sgtools/log.h>
 #include <vorbis/vorbisfile.h>
 #define VORBIS_REQUEST_SIZE 4096  // Size of vorbis requests, usually recommend to be 4096
 

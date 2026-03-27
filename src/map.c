@@ -6,10 +6,10 @@
 #include <Supergoon/camera.h>
 #include <Supergoon/filesystem.h>
 #include <Supergoon/json.h>
-#include <Supergoon/log.h>
+#include <sgtools/log.h>
 #include <Supergoon/map.h>
 #include <Supergoon/state.h>
-#include <Supergoon/tools.h>
+#include <sgtools/log.h>
 #include <Supergoon/window.h>
 #include <stdio.h>
 #include <stdlib.h>

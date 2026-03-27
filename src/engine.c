@@ -14,12 +14,11 @@
 #include <Supergoon/engine.h>
 #include <Supergoon/events.h>
 #include <Supergoon/filesystem.h>
-#include <Supergoon/log.h>
+#include <sgtools/log.h>
 #include <Supergoon/map.h>
 #include <Supergoon/sprite.h>
 #include <Supergoon/state.h>
 #include <Supergoon/text.h>
-#include <Supergoon/tools.h>
 #include <Supergoon/window.h>
 
 static Uint64 _previousNS = 0;
@@ -30,7 +29,7 @@ int IsGameLoading = false;
 
 static void start(void) {
 	InitializeSdl();
-	InitializeLogSystem();
+	sgInitializeLogSystem("errors.log");
 	InitializeKeyboardSystem();
 	InitializeJoystickSystem();
 	InitializeEventSystem();
@@ -38,7 +37,7 @@ static void start(void) {
 	InitializeGraphicsSystem();
 	InitializeTextSystem();
 	InitializeAudioSystem();
-	_previousNS = getCurrentNSTicks();
+	_previousNS = SDL_GetTicksNS();
 }
 
 /* static void handleFramerate(Uint64* now) { */
@@ -66,7 +65,7 @@ static void draw(void) {
 
 static void update(void) {
 	const int MAX_TICKS_PER_FRAME = 5;
-	Uint64 now = getCurrentNSTicks();
+	Uint64 now = SDL_GetTicksNS();
 	Uint64 frameTime = now - _previousNS;
 	_previousNS = now;
 	_accumulatorNS += frameTime;
@@ -86,7 +85,7 @@ static void update(void) {
 		UpdateMouseSystem();
 		_accumulatorNS -= FIXED_TIMESTEP_NS;
 		++ticks;
-		now = getCurrentNSTicks();
+		now = SDL_GetTicksNS();
 	}
 	// Spiral of death
 	if (ticks == MAX_TICKS_PER_FRAME && _accumulatorNS >= FIXED_TIMESTEP_NS) {
@@ -106,7 +105,7 @@ static void Quit(void) {
 	ShutdownAudioSystem();
 	CloseWindow();
 	ShutdownEngineSilesystem();
-	ShutdownLogSystem();
+	sgShutdownLogSystem();
 }
 
 void SetHandleEventFunction(int (*eventFunc)(void*)) { _handleEventFunc = eventFunc; }

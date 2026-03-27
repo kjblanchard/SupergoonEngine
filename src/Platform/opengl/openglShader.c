@@ -9,8 +9,8 @@
 #include <Supergoon/Graphics/shader.h>
 #include <Supergoon/Platform/opengl/openglGraphics.h>
 #include <Supergoon/filesystem.h>
-#include <Supergoon/log.h>
-#include <Supergoon/tools.h>
+#include <sgtools/log.h>
+#include <sgtools/tools.h>
 #include <cglm/mat4.h>
 #include <cglm/vec2.h>
 #include <cglm/vec3.h>

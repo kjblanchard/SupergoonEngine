@@ -4,7 +4,7 @@
 #include <SDL3/SDL_video.h>
 #include <Supergoon/Graphics/graphics.h>
 #include <Supergoon/Platform/sdl/sdlWindow.h>
-#include <Supergoon/log.h>
+#include <sgtools/log.h>
 #include <Supergoon/window.h>
 typedef union SDL_Event Event;
 

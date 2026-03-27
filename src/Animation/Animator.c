@@ -1,7 +1,7 @@
 #include <Supergoon/Animation/animator.h>
-#include <Supergoon/log.h>
+#include <sgtools/log.h>
 #include <Supergoon/state.h>
-#include <Supergoon/tools.h>
+#include <sgtools/tools.h>
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>

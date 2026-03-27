@@ -1,6 +1,6 @@
 // #include <SDL3/SDL_filesystem.h>
 #include <Supergoon/filesystem.h>
-#include <Supergoon/log.h>
+#include <sgtools/log.h>
 #include <stdio.h>
 #include <string.h>
 #ifndef sdlbackend

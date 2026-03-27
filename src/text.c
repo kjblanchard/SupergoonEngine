@@ -3,7 +3,7 @@
 #include <Supergoon/Primitives/Color.h>
 #include <Supergoon/Primitives/rectangle.h>
 #include <Supergoon/filesystem.h>
-#include <Supergoon/log.h>
+#include <sgtools/log.h>
 #include <Supergoon/sprite.h>
 #include <Supergoon/text.h>
 #include <assert.h>
