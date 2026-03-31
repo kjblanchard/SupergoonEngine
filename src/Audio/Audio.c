@@ -11,7 +11,8 @@ void PauseBgm(void) { PauseBgmImpl(); }
 void StopBgm(void) { StopBgmImpl(); }
 void SetGlobalBgmVolume(float volume) { SetGlobalBgmVolumeImpl(volume); }
 void SetGlobalSfxVolume(float volume) { SetGlobalSfxVolumeImpl(volume); }
-void PlaySfxOneShot(const char* name, float volume) { PlaySfxOneShotFImpl(name, volume); }
+void PlaySfxOneShotF(const char* name, float volume) { PlaySfxOneShotFImpl(name, volume); }
+void PlaySfxOneShot(const char* name, float volume, char* buf, size_t sz) { PlaySfxOneShotImpl(name, volume, buf, sz); }
 void ShutdownAudioSystem(void) { CloseAudioImpl(); }
 void UpdateAudioSystem(void) { AudioUpdateImpl(); }
 void InitializeAudioSystem(void) { InitializeAudioImpl(); }
