@@ -13,14 +13,15 @@
 #include <GLES3/gl3.h>
 #include <SDL3/SDL_opengles2.h>
 #endif
+#include <SDL3/SDL_iostream.h>
 #include <SDL3/SDL_surface.h>
 #include <Supergoon/Graphics/graphics.h>
 #include <Supergoon/Graphics/shader.h>
 #include <Supergoon/Platform/opengl/openglGraphics.h>
 #include <Supergoon/filesystem.h>
-#include <sgtools/log.h>
 #include <Supergoon/window.h>
 #include <cglm/cglm.h>
+#include <sgtools/log.h>
 #include <stdio.h>
 #include <stdlib.h>
 #define MAX_CACHED_TEXTURES 124
@@ -195,6 +196,39 @@ void TextureLoadFromPngImpl(Texture* texture, const char* filepath) {
 	glBindTexture(GL_TEXTURE_2D, 0);
 cleanup:
 	free(fullFilepath);
+	SDL_DestroySurface(surface);
+}
+
+void TextureLoadFromPngBufferImpl(Texture* texture, const char* filepath, char* buf, size_t sz) {
+	if (texture->Width || texture->Height) return;
+	sgLogDebug("Loading from png buffer %s", filepath);
+	SDL_IOStream* stream = SDL_IOFromMem(buf, sz);
+	if (!stream) {
+		sgLogError("Could not load stream for image, %s %s", filepath, SDL_GetError());
+		return;
+	}
+	SDL_Surface* surface = SDL_LoadPNG_IO(stream, true);
+	if (!surface) {
+		sgLogError("Could not load png into surface, %s %s", filepath, SDL_GetError());
+		SDL_CloseIO(stream);
+		goto cleanup;
+	}
+	texture->Width = surface->w;
+	texture->Height = surface->h;
+	glBindTexture(GL_TEXTURE_2D, texture->ID);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);	// avoid row alignment issues
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->Width, texture->Height, 0,
+				 GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
+	GLenum err = glGetError();
+	if (err != GL_NO_ERROR) {
+		sgLogError("GL error after glTexImage2D: 0x%X", err);
+	}
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glBindTexture(GL_TEXTURE_2D, 0);
+cleanup:
 	SDL_DestroySurface(surface);
 }
 

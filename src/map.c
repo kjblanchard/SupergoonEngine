@@ -6,11 +6,11 @@
 #include <Supergoon/camera.h>
 #include <Supergoon/filesystem.h>
 #include <Supergoon/json.h>
-#include <sgtools/log.h>
 #include <Supergoon/map.h>
 #include <Supergoon/state.h>
-#include <sgtools/log.h>
 #include <Supergoon/window.h>
+#include <sgforge/unpack.h>
+#include <sgtools/log.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -272,12 +272,16 @@ static void loadTilesetTextures(Tilemap* map) {
 			sgLogWarn("No Image to load for tileset");
 			continue;
 		}
-
-		int len = strlen(map->Tilesets[i].Image);
-		// Remove PNG from the filename if it exists
-		if (len > 4 && strcmp(map->Tilesets[i].Image + len - 4, ".png") == 0) {
-			map->Tilesets[i].Image[len - 4] = '\0';
+		if(!AssetDirectory){
+			sgLogCritical("No asset directory to load from, exiting!");
 		}
+
+		/* int len = strlen(map->Tilesets[i].Image); */
+		// Remove PNG from the filename if it exists
+		/* if (len > 4 && strcmp(map->Tilesets[i].Image + len - 4, ".png") == 0) { */
+		/* 	map->Tilesets[i].Image[len - 4] = '\0'; */
+		/* } */
+
 		// Remove from the last trailing slash
 		// Get the position of the last, and then increment it by one
 		char* lastSlash = strrchr(map->Tilesets[i].Image, '/');
@@ -285,11 +289,14 @@ static void loadTilesetTextures(Tilemap* map) {
 			++lastSlash;
 		}
 		char* findName = lastSlash ? lastSlash : map->Tilesets[i].Image;
-
 		/* map->Tilesets[i].TilesetTexture = TextureCreate(map->Tilesets[i].Image); */
 		map->Tilesets[i].TilesetTexture = TextureCreate(findName);
-		TextureLoadFromPng(map->Tilesets[i].TilesetTexture,
-						   findName);
+		char* buf;
+		size_t sz;
+		int result = GetDataFromDirectory(findName, &buf, &sz, AssetDirectory);
+		if(!result) continue;
+		/* TextureLoadFromPng(map->Tilesets[i].TilesetTexture, findName); */
+		TextureLoadFromPngBuffer(map->Tilesets[i].TilesetTexture, findName, buf, sz);
 	}
 }
 
@@ -447,21 +454,17 @@ void LoadMap(const char* name) {
 	if (!map) {
 		char path[256];
 		snprintf(path, sizeof(path), "%sassets/tiled/%s.tmj", GetBasePath(), name);
-
 		json_object* root = jGetObjectFromFile(path);
 		if (!root) return;
-
 		map = calloc(1, sizeof(Tilemap));
 		map->BaseFilename = strdup(name);
 		map->Width = jint(root, "width");
 		map->Height = jint(root, "height");
 		map->TileWidth = jint(root, "tilewidth");
 		map->TileHeight = jint(root, "tileheight");
-
 		createTilesets(map, root);
 		createLayers(map, root);
 		createBackgroundsFromTilemap(map);
-
 		jReleaseObjectFromFile(root);
 
 		// If cache is full, destroy last and then reorder them.
@@ -474,10 +477,8 @@ void LoadMap(const char* name) {
 	}
 
 	_currentMap = map;
-	SetCameraBounds(map->Width * map->TileWidth,
-					map->Height * map->TileHeight);
-	SetCameraSize(map->Width * map->TileWidth,
-				  map->Height * map->TileHeight);
+	SetCameraBounds(map->Width * map->TileWidth, map->Height * map->TileHeight);
+	SetCameraSize(map->Width * map->TileWidth, map->Height * map->TileHeight);
 }
 
 void ShutdownMapSystem(void) {

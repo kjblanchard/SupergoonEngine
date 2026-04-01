@@ -11,12 +11,14 @@
 #include <stdint.h>
 #pragma once
 
+struct Directory;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 extern float DeltaTimeSeconds;
 extern float DeltaTimeMilliseconds;
-extern uint32_t Ticks;
+extern struct Directory* AssetDirectory;
 #ifdef __cplusplus
 }
 #endif

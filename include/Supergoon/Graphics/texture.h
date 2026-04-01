@@ -17,6 +17,7 @@ Texture *TextureCreateRenderTarget(int width, int height);
 void SetRenderTarget(Texture *renderTarget);
 void SetPreviousRenderTarget(void);
 void TextureLoadFromPng(Texture *texture, const char *filepath);
+void TextureLoadFromPngBuffer(Texture *texture, const char *filepath, char* buf, size_t sz);
 void TextureLoadFromData(Texture *texture, const char *name, int width, int height, void *data);
 int TextureGetWidth(Texture *texture);
 int TextureGetHeight(Texture *texture);
