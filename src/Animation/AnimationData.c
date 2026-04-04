@@ -9,17 +9,7 @@ AnimationData* CreateAnimationData() {
 	return data;
 }
 
-void CreateAnimationDataFromAsepriteFile(AnimationData* animationData, const char* filename) {
-	json_object* root = jGetObjectFromFile(filename);
-	if (!root) {
-		sgLogError("Could not load animation data for %s", filename);
-		animationData->frameCount = 0;
-		animationData->frames = NULL;
-		animationData->meta.frameTagCount = 0;
-		animationData->meta.frameTags = NULL;
-		animationData->meta.image = NULL;
-		return;
-	}
+static void loadAnimDataInternal(AnimationData* animationData, json_object* root) {
 	json_object* frameObject = jobj(root, "frames");
 	animationData->frameCount = jGetObjectArrayLength(frameObject);
 	animationData->frames = calloc(animationData->frameCount, sizeof(Frame));
@@ -57,6 +47,34 @@ void CreateAnimationDataFromAsepriteFile(AnimationData* animationData, const cha
 		}
 	}
 	jReleaseObjectFromFile(root);
+}
+
+void CreateAnimationDataFromAsepriteBuffer(AnimationData* animationData, char* buf, size_t sz) {
+	json_object* root = jGetObjectFromBuffer(buf, sz);
+	if (!root) {
+		sgLogError("Could not load animation data from buffer ");
+		animationData->frameCount = 0;
+		animationData->frames = NULL;
+		animationData->meta.frameTagCount = 0;
+		animationData->meta.frameTags = NULL;
+		animationData->meta.image = NULL;
+		return;
+	}
+	loadAnimDataInternal(animationData, root);
+}
+
+void CreateAnimationDataFromAsepriteFile(AnimationData* animationData, const char* filename) {
+	json_object* root = jGetObjectFromFile(filename);
+	if (!root) {
+		sgLogError("Could not load animation data for %s", filename);
+		animationData->frameCount = 0;
+		animationData->frames = NULL;
+		animationData->meta.frameTagCount = 0;
+		animationData->meta.frameTags = NULL;
+		animationData->meta.image = NULL;
+		return;
+	}
+	loadAnimDataInternal(animationData, root);
 }
 
 void DestroyAnimationData(AnimationData* data) {

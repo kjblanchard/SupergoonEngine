@@ -64,6 +64,7 @@ json_object* jGetObjectInObjectWithIndex(json_object* o, int index) {
 	return json_object_array_get_idx(o, index);
 }
 int jGetObjectArrayLength(json_object* o) { return json_object_array_length(o); }
+
 json_object* jGetObjectFromFile(const char* file) {
 	json_object* obj = json_object_from_file(file);
 	if (!obj) {

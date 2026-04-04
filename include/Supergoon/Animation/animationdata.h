@@ -1,4 +1,5 @@
 #pragma once
+#include <stddef.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -64,6 +65,7 @@ typedef struct {
 } AnimationData;
 AnimationData* CreateAnimationData();
 void CreateAnimationDataFromAsepriteFile(AnimationData* animationData, const char* filename);
+void CreateAnimationDataFromAsepriteBuffer(AnimationData* animationData, char* buf, size_t sz);
 void DestroyAnimationData(AnimationData* data);
 #ifdef __cplusplus
 }
