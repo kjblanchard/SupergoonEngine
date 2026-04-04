@@ -9,12 +9,13 @@
 #include <Supergoon/Graphics/shader.h>
 #include <Supergoon/Platform/opengl/openglGraphics.h>
 #include <Supergoon/filesystem.h>
-#include <sgtools/log.h>
-#include <sgtools/tools.h>
 #include <cglm/mat4.h>
 #include <cglm/vec2.h>
 #include <cglm/vec3.h>
 #include <cglm/vec4.h>
+#include <sgforge/unpack.h>
+#include <sgtools/log.h>
+#include <sgtools/tools.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -27,9 +28,15 @@
 #define DEFAULT_RECT_VERTEX_FILENAME "2dRectVertex"
 #define DEFAULT_RECT_FRAGMENT_FILENAME "2dRectFragment"
 
+static struct Directory* sDirectory = NULL;
+
+void ShaderSetDirectoryImpl(struct Directory* d) {
+	sDirectory = d;
+}
+
 typedef struct CachedShaderFile {
-	char *Data;
-	char *Name;
+	char* Data;
+	char* Name;
 } CachedShaderFile;
 
 typedef enum ShaderType {
@@ -37,27 +44,35 @@ typedef enum ShaderType {
 	ShaderTypeFragment,
 	ShaderTypeProgram,
 } ShaderType;
-static Shader *_defaultShader = NULL;
-static Shader *_defaultTextShader = NULL;
-static Shader *_defaultRectShader = NULL;
+static Shader* _defaultShader = NULL;
+static Shader* _defaultTextShader = NULL;
+static Shader* _defaultRectShader = NULL;
 
 CachedShaderFile _cachedShaders[NUM_CACHED_SHADERS];
 
-char *getShaderDataFromFile(const char *filename) {
-	const char *suffix = "";
+char* getShaderDataFromFile(const char* filename) {
+	const char* suffix = "";
 #ifdef __EMSCRIPTEN__
 	suffix = "E";
 #endif
-	char *filepath;
-	asprintf(&filepath, "%sassets/shaders/%s%s%s", GetBasePath(), filename,
-			 suffix, ".glsl");
-	char *data = GetContentOfFileString(filepath);
+	char* filepath;
+	asprintf(&filepath, "%s%s%s", filename, suffix, ".glsl");
+	char* buf;
+	size_t sz;
+	GetDataFromDirectory(filepath, &buf, &sz, sDirectory);
+	if (!buf || !sz) {
+		sgLogWarn("Could not load shader from buffer for %s", filepath);
+	}
+	/* char* data = GetContentOfFileString(filepath); */
+	char* stringBuffer = malloc(sz + 1);
+	memcpy(stringBuffer, buf, sz);
+	stringBuffer[sz] = '\0';
 	free(filepath);
-	return data;
+	return stringBuffer;
 }
 
-static void cacheShader(const char *name, char *data) {
-	CachedShaderFile *cache;
+static void cacheShader(const char* name, char* data) {
+	CachedShaderFile* cache;
 	for (size_t i = 0; i < NUM_CACHED_SHADERS; i++) {
 		cache = &_cachedShaders[i];
 		if (cache->Data) {
@@ -69,9 +84,9 @@ static void cacheShader(const char *name, char *data) {
 	}
 }
 
-static char *getCachedShader(const char *name) {
+static char* getCachedShader(const char* name) {
 	for (size_t i = 0; i < NUM_CACHED_SHADERS; i++) {
-		char *iName = _cachedShaders[i].Name;
+		char* iName = _cachedShaders[i].Name;
 		if (!iName) {
 			continue;
 		}
@@ -79,7 +94,7 @@ static char *getCachedShader(const char *name) {
 			return _cachedShaders[i].Data;
 		}
 	}
-	char *data = getShaderDataFromFile(name);
+	char* data = getShaderDataFromFile(name);
 	if (!data) {
 		return NULL;
 	}
@@ -87,7 +102,7 @@ static char *getCachedShader(const char *name) {
 	return data;
 }
 
-static void freeCachedShader(CachedShaderFile *shader) {
+static void freeCachedShader(CachedShaderFile* shader) {
 	free(shader->Name);
 	shader->Name = NULL;
 	free(shader->Data);
@@ -116,18 +131,18 @@ static void checkCompileErrors(unsigned int object, ShaderType type) {
 	}
 }
 
-Shader *ShaderCreateImpl(void) {
-	Shader *shader = malloc(sizeof(Shader));
+Shader* ShaderCreateImpl(void) {
+	Shader* shader = malloc(sizeof(Shader));
 	shader->ID = 0;
 	return shader;
 }
 
-void ShaderUseImpl(Shader *shader) { glUseProgram(shader->ID); }
+void ShaderUseImpl(Shader* shader) { glUseProgram(shader->ID); }
 
-void ShaderCompileImpl(Shader *shader, const char *vertexSourceFile,
-					   const char *fragmentSourceFile) {
-	const char *vertexData = getCachedShader(vertexSourceFile);
-	const char *fragmentData = getCachedShader(fragmentSourceFile);
+void ShaderCompileImpl(Shader* shader, const char* vertexSourceFile,
+					   const char* fragmentSourceFile) {
+	const char* vertexData = getCachedShader(vertexSourceFile);
+	const char* fragmentData = getCachedShader(fragmentSourceFile);
 	if (!vertexData || !fragmentData) {
 		sgLogWarn("Could not get shader data, compilation failure!");
 	}
@@ -153,59 +168,59 @@ void ShaderCompileImpl(Shader *shader, const char *vertexSourceFile,
 	glDeleteShader(sVertex);
 	glDeleteShader(sFragment);
 }
-void ShaderSetUniformFloatImpl(Shader *shader, const char *name, float value,
+void ShaderSetUniformFloatImpl(Shader* shader, const char* name, float value,
 							   int useShader) {
 	if (useShader)
 		ShaderUseImpl(shader);
 	glUniform1f(glGetUniformLocation(shader->ID, name), value);
 }
 
-void ShaderSetUniformIntegerImpl(Shader *shader, const char *name, int value,
+void ShaderSetUniformIntegerImpl(Shader* shader, const char* name, int value,
 								 int useShader) {
 	if (useShader)
 		ShaderUseImpl(shader);
 	glUniform1i(glGetUniformLocation(shader->ID, name), value);
 }
 
-void ShaderSetUniformVector2fImpl(Shader *shader, const char *name, float x,
+void ShaderSetUniformVector2fImpl(Shader* shader, const char* name, float x,
 								  float y, int useShader) {
 	if (useShader)
 		ShaderUseImpl(shader);
 	glUniform2f(glGetUniformLocation(shader->ID, name), x, y);
 }
-void ShaderSetUniformVector2fVImpl(Shader *shader, const char *name, vec2 value,
+void ShaderSetUniformVector2fVImpl(Shader* shader, const char* name, vec2 value,
 								   int useShader) {
 	if (useShader)
 		ShaderUseImpl(shader);
 	glUniform2f(glGetUniformLocation(shader->ID, name), value[0], value[1]);
 }
-void ShaderSetUniformVector3fImpl(Shader *shader, const char *name, float x,
+void ShaderSetUniformVector3fImpl(Shader* shader, const char* name, float x,
 								  float y, float z, int useShader) {
 	if (useShader)
 		ShaderUseImpl(shader);
 	glUniform3f(glGetUniformLocation(shader->ID, name), x, y, z);
 }
-void ShaderSetUniformVector3fVImpl(Shader *shader, const char *name, vec3 value,
+void ShaderSetUniformVector3fVImpl(Shader* shader, const char* name, vec3 value,
 								   int useShader) {
 	if (useShader)
 		ShaderUseImpl(shader);
 	glUniform3f(glGetUniformLocation(shader->ID, name), value[0], value[1],
 				value[2]);
 }
-void ShaderSetUniformVector4fImpl(Shader *shader, const char *name, float x,
+void ShaderSetUniformVector4fImpl(Shader* shader, const char* name, float x,
 								  float y, float z, float w, int useShader) {
 	if (useShader)
 		ShaderUseImpl(shader);
 	glUniform4f(glGetUniformLocation(shader->ID, name), x, y, z, w);
 }
-void ShaderSetUniformVector4fVImpl(Shader *shader, const char *name, vec4 value,
+void ShaderSetUniformVector4fVImpl(Shader* shader, const char* name, vec4 value,
 								   int useShader) {
 	if (useShader)
 		ShaderUseImpl(shader);
 	glUniform4f(glGetUniformLocation(shader->ID, name), value[0], value[1],
 				value[2], value[3]);
 }
-void ShaderSetUniformMatrix4Impl(Shader *shader, const char *name, mat4 value,
+void ShaderSetUniformMatrix4Impl(Shader* shader, const char* name, mat4 value,
 								 int useShader) {
 	if (useShader)
 		ShaderUseImpl(shader);
@@ -219,7 +234,7 @@ void ShaderSystemShutdown(void) {
 	}
 }
 
-Shader *GetDefaultShaderImpl(void) {
+Shader* GetDefaultShaderImpl(void) {
 	if (_defaultShader) {
 		return _defaultShader;
 	}
@@ -228,7 +243,7 @@ Shader *GetDefaultShaderImpl(void) {
 	return _defaultShader;
 }
 
-Shader *GetDefaultTextShaderImpl(void) {
+Shader* GetDefaultTextShaderImpl(void) {
 	if (_defaultTextShader) {
 		return _defaultTextShader;
 	}
@@ -237,7 +252,7 @@ Shader *GetDefaultTextShaderImpl(void) {
 	return _defaultTextShader;
 }
 
-Shader *GetDefaultRectShaderImpl(void) {
+Shader* GetDefaultRectShaderImpl(void) {
 	if (_defaultRectShader) {
 		return _defaultRectShader;
 	}
@@ -246,4 +261,4 @@ Shader *GetDefaultRectShaderImpl(void) {
 	return _defaultRectShader;
 }
 
-void ShaderDestroyImpl(Shader *shader) { free(shader); }
+void ShaderDestroyImpl(Shader* shader) { free(shader); }
