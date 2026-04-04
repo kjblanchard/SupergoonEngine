@@ -13,6 +13,11 @@ void CreateAnimationDataFromAsepriteFile(AnimationData* animationData, const cha
 	json_object* root = jGetObjectFromFile(filename);
 	if (!root) {
 		sgLogError("Could not load animation data for %s", filename);
+		animationData->frameCount = 0;
+		animationData->frames = NULL;
+		animationData->meta.frameTagCount = 0;
+		animationData->meta.frameTags = NULL;
+		animationData->meta.image = NULL;
 		return;
 	}
 	json_object* frameObject = jobj(root, "frames");
@@ -55,23 +60,22 @@ void CreateAnimationDataFromAsepriteFile(AnimationData* animationData, const cha
 }
 
 void DestroyAnimationData(AnimationData* data) {
-    if (!data) return;
+	if (!data) return;
 
-    // Free frames array
-    free(data->frames);
+	// Free frames array
+	free(data->frames);
 
-    // Free meta.image string
-    free(data->meta.image);
+	// Free meta.image string
+	free(data->meta.image);
 
-    // Free frameTags array and each tag name
-    if (data->meta.frameTags) {
-        for (size_t i = 0; i < data->meta.frameTagCount; i++) {
-            free(data->meta.frameTags[i].name);
-        }
-        free(data->meta.frameTags);
-    }
+	// Free frameTags array and each tag name
+	if (data->meta.frameTags) {
+		for (size_t i = 0; i < data->meta.frameTagCount; i++) {
+			free(data->meta.frameTags[i].name);
+		}
+		free(data->meta.frameTags);
+	}
 
-    // Finally free the struct itself
-    free(data);
+	// Finally free the struct itself
+	free(data);
 }
-
