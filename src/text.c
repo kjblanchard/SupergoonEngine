@@ -3,11 +3,12 @@
 #include <Supergoon/Primitives/Color.h>
 #include <Supergoon/Primitives/rectangle.h>
 #include <Supergoon/filesystem.h>
-#include <sgtools/log.h>
 #include <Supergoon/sprite.h>
 #include <Supergoon/text.h>
 #include <assert.h>
 #include <ft2build.h>
+#include <sgforge/unpack.h>
+#include <sgtools/log.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -145,7 +146,7 @@ static void drawLetter(Text* text) {
 	text->PenX += getLetterAdvance(text, text->CurrentDrawnLetters);
 }
 
-static LoadedFont* getLoadedFont(const char* fontName, unsigned int size) {
+static LoadedFont* getLoadedFont(const char* fontName, unsigned int size, struct Directory* directory) {
 	char fontAndSize[255];
 	snprintf(fontAndSize, sizeof(fontAndSize), "%s%d", fontName, size);
 	for (size_t i = 0; i < MAX_LOADED_FONTS; i++) {
@@ -165,14 +166,33 @@ static LoadedFont* getLoadedFont(const char* fontName, unsigned int size) {
 		return NULL;
 	}
 	fontToLoadInto->FontName = strdup(fontAndSize);
-	snprintf(fontAndSize, sizeof(fontAndSize), "assets/fonts/%s.ttf", fontName);
-	char fullFilepath[1000];
-	GetFilenameWithExeFilepath(fullFilepath, sizeof(fullFilepath), fontAndSize);
-	int result = FT_New_Face(_loadedLibrary, fullFilepath, 0, &fontToLoadInto->FontFace);
-	if (result) {
-		sgLogCritical("Could not open font %s with error %d\n", fullFilepath, result);
+	/* snprintf(fontAndSize, sizeof(fontAndSize), "assets/fonts/%s.ttf", fontName); */
+	snprintf(fontAndSize, sizeof(fontAndSize), "%s.ttf", fontName);
+	char* buf;
+	size_t sz;
+	GetDataFromDirectory(fontAndSize, &buf, &sz, directory);
+	if (!buf || !sz) {
+		sgLogCritical("Could not load font for %s", fontAndSize);
 		return NULL;
 	}
+	FT_Error result = FT_New_Memory_Face(
+		_loadedLibrary,
+		(const FT_Byte*)buf,
+		(FT_Long)sz,
+		0,
+		&fontToLoadInto->FontFace);
+
+	if (result) {
+		sgLogCritical("Could not open font from memory with error %d\n", result);
+		return NULL;
+	}
+	/* GetFilenameWithExeFilepath(fullFilepath, sizeof(fullFilepath), fontAndSize); */
+	/* int result = FT_New_Face(_loadedLibrary, fullFilepath, 0, &fontToLoadInto->FontFace); */
+	/* if (result) { */
+	/* 	sgLogCritical("Could not open font %s with error %d\n", fullFilepath, result); */
+	/* 	return NULL; */
+	/* } */
+
 	fontToLoadInto->FontSize = size;
 	loadTexturesForFont(fontToLoadInto);
 	return fontToLoadInto;
@@ -278,7 +298,7 @@ void TextRedrawText(Text* text) {
 		TextureDestroy(text->Texture);
 	}
 	text->Texture = TextureCreateRenderTarget(text->Location.w, text->Location.h);
-	TextureClearRenderTarget(text->Texture, 0,0,0,0);
+	TextureClearRenderTarget(text->Texture, 0, 0, 0, 0);
 	text->PenX = 0;
 	text->CurrentDrawnLetters = 0;
 	text->NumWordWrapCharacters = 0;
@@ -316,7 +336,7 @@ void ShutdownTextSystem(void) {
 	if (_loadedLibrary) FT_Done_FreeType(_loadedLibrary);
 }
 
-int TextSetFont(const char* fontName, unsigned int size) {
+int TextSetFont(const char* fontName, unsigned int size, struct Directory* directory) {
 	if (!fontName) {
 		sgLogWarn("No font name, not setting");
 		return false;
@@ -325,7 +345,7 @@ int TextSetFont(const char* fontName, unsigned int size) {
 		sgLogWarn("Improper size passed into font, must be between 1 and 1000, setting to 32.");
 		size = 32;
 	}
-	_currentFont = getLoadedFont(fontName, size);
+	_currentFont = getLoadedFont(fontName, size, directory);
 	return _currentFont != NULL;
 }
 

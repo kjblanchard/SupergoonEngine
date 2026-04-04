@@ -6,6 +6,8 @@
 extern "C" {
 #endif
 
+struct Directory;
+
 typedef struct Text {
 	RectangleF Location;
 	char* Text;
@@ -33,7 +35,7 @@ typedef struct Text {
 void InitializeTextSystem(void);
 void ShutdownTextSystem(void);
 Text* TextCreate(RectangleF* location, const char* text);
-int TextSetFont(const char* fontName, unsigned int size);
+int TextSetFont(const char* fontName, unsigned int size, struct Directory* directory);
 void TextLoad(Text* text);
 void TextOnDirty(Text* text);
 void TextRedrawText(Text* text);
