@@ -48,9 +48,8 @@ typedef struct TiledObject {
 	TiledProperty* Properties;
 } TiledObject;
 
-// Loads a tiled map and prepares it to be drawn. You can set a before and after
-// load function to be called.
 void LoadMap(const char* map);
+void LoadMapFromBuffer(const char* map, char* buf, size_t sz);
 void CheckRectForCollisionWithSolids(RectangleF* rect);
 //  Frame data for tile animation
 typedef struct TileAnimationFrame {

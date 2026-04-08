@@ -272,7 +272,7 @@ static void loadTilesetTextures(Tilemap* map) {
 			sgLogWarn("No Image to load for tileset");
 			continue;
 		}
-		if(!AssetDirectory){
+		if (!AssetDirectory) {
 			sgLogCritical("No asset directory to load from, exiting!");
 		}
 
@@ -294,7 +294,7 @@ static void loadTilesetTextures(Tilemap* map) {
 		char* buf;
 		size_t sz;
 		int result = GetDataFromDirectory(findName, &buf, &sz, AssetDirectory);
-		if(!result) continue;
+		if (!result) continue;
 		/* TextureLoadFromPng(map->Tilesets[i].TilesetTexture, findName); */
 		TextureLoadFromPngBuffer(map->Tilesets[i].TilesetTexture, findName, buf, sz);
 	}
@@ -449,33 +449,49 @@ static Tilemap* checkCache(const char* name) {
 	return NULL;
 }
 
+static void loadMapInternal(const char* name, Tilemap* map, json_object* root) {
+	map->BaseFilename = strdup(name);
+	map->Width = jint(root, "width");
+	map->Height = jint(root, "height");
+	map->TileWidth = jint(root, "tilewidth");
+	map->TileHeight = jint(root, "tileheight");
+	createTilesets(map, root);
+	createLayers(map, root);
+	createBackgroundsFromTilemap(map);
+	jReleaseObjectFromFile(root);
+
+	// If cache is full, destroy last and then reorder them.
+	if (_previousMaps[MAX_PREVIOUS_MAPS_CACHE - 1]) {
+		freeTiledTilemap(_previousMaps[MAX_PREVIOUS_MAPS_CACHE - 1]);
+	}
+	for (int i = MAX_PREVIOUS_MAPS_CACHE - 1; i > 0; i--)
+		_previousMaps[i] = _previousMaps[i - 1];
+	_previousMaps[0] = map;
+}
+
+void LoadMapFromBuffer(const char* name, char* buf, size_t sz) {
+	Tilemap* map = checkCache(name);
+	if (!map) {
+		map = calloc(1, sizeof(Tilemap));
+		json_object* root = jGetObjectFromBuffer(buf, sz);
+		if (!root) return;
+		loadMapInternal(name, map, root);
+	}
+	_currentMap = map;
+	SetCameraBounds(map->Width * map->TileWidth, map->Height * map->TileHeight);
+	SetCameraSize(map->Width * map->TileWidth, map->Height * map->TileHeight);
+}
+
 void LoadMap(const char* name) {
 	Tilemap* map = checkCache(name);
 	if (!map) {
+		map = calloc(1, sizeof(Tilemap));
 		char path[256];
 		snprintf(path, sizeof(path), "%sassets/tiled/%s.tmj", GetBasePath(), name);
 		json_object* root = jGetObjectFromFile(path);
 		if (!root) return;
-		map = calloc(1, sizeof(Tilemap));
-		map->BaseFilename = strdup(name);
-		map->Width = jint(root, "width");
-		map->Height = jint(root, "height");
-		map->TileWidth = jint(root, "tilewidth");
-		map->TileHeight = jint(root, "tileheight");
-		createTilesets(map, root);
-		createLayers(map, root);
-		createBackgroundsFromTilemap(map);
-		jReleaseObjectFromFile(root);
-
-		// If cache is full, destroy last and then reorder them.
-		if (_previousMaps[MAX_PREVIOUS_MAPS_CACHE - 1]) {
-			freeTiledTilemap(_previousMaps[MAX_PREVIOUS_MAPS_CACHE - 1]);
-		}
-		for (int i = MAX_PREVIOUS_MAPS_CACHE - 1; i > 0; i--)
-			_previousMaps[i] = _previousMaps[i - 1];
-		_previousMaps[0] = map;
+		loadMapInternal(path, map, root);
 	}
-
 	_currentMap = map;
 	SetCameraBounds(map->Width * map->TileWidth, map->Height * map->TileHeight);
 	SetCameraSize(map->Width * map->TileWidth, map->Height * map->TileHeight);
