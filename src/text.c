@@ -296,6 +296,7 @@ static void measureText(Text* text) {
 void TextRedrawText(Text* text) {
 	if (text->Texture) {
 		TextureDestroy(text->Texture);
+		
 	}
 	text->Texture = TextureCreateRenderTarget(text->Location.w, text->Location.h);
 	TextureClearRenderTarget(text->Texture, 0, 0, 0, 0);

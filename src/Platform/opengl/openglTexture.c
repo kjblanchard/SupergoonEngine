@@ -50,12 +50,47 @@ static Texture* getTextureFromCache(const char* filename) {
 }
 
 static void cacheTexture(Texture* texture) {
-	if (_currentCachedTextures >= MAX_CACHED_TEXTURES) {
-		sgLogError("Texture cache full");
-		return;
+	for (int i = 0; i < MAX_CACHED_TEXTURES; ++i) {
+		if (_cachedTextures[i] == NULL) {
+			_cachedTextures[i] = texture;
+			return;
+		}
 	}
-	_cachedTextures[_currentCachedTextures++] = texture;
+	sgLogError("Texture cache full");
 }
+
+static void removeTextureFromCache(Texture* t) {
+	for (int i = 0; i < MAX_CACHED_TEXTURES; ++i) {
+		if (_cachedTextures[i] == t) {
+			_cachedTextures[i] = NULL;
+			return;
+		}
+	}
+}
+
+/* static void cacheTexture(Texture* texture) { */
+/* 	if (_currentCachedTextures >= MAX_CACHED_TEXTURES) { */
+/* 		sgLogError("Texture cache full"); */
+/* 		return; */
+/* 	} */
+/* 	_cachedTextures[sNextCachedTexture] = texture; */
+/* 	for (int i = sNextCachedTexture; i < MAX_CACHED_TEXTURES; ++i) { */
+/* 		if(_cachedTextures[i] == NULL) { */
+/* 			sNextCachedTexture = i; */
+/* 			_currentCachedTextures = i >= sNextCachedTexture ? i : _currentCachedTextures; */
+/* 			break; */
+/* 		} */
+/* 	} */
+/* } */
+
+/* static void removeTextureFromCache(Texture* t) { */
+/* 	for (int i = 0; i < _currentCachedTextures; ++i) { */
+/* 		if (_cachedTextures[i] == t) { */
+/* 			_cachedTextures[i] = NULL; */
+/* 			return; */
+/* 		} */
+/* 	} */
+/* } */
 
 void TextureClearRenderTargetImpl(Texture* texture, float r, float g, float b,
 								  float a) {
@@ -289,33 +324,25 @@ void TextureDestroyImpl(Texture* texture) {
 	if (!texture) return;
 	--texture->RefCount;
 	if (texture->RefCount > 0) return;
-	return;
-
+	removeTextureFromCache(texture);
 	// Delete texture object
 	if (texture->ID != 0) {
 		glDeleteTextures(1, &texture->ID);
 		texture->ID = 0;
 	}
-
 	// Delete framebuffer if it exists
 	if (texture->FBO != 0) {
 		glDeleteFramebuffers(1, &texture->FBO);
 		texture->FBO = 0;
 	}
-
 	// Delete VAO if it exists
 	if (texture->VAO != 0) {
 		glDeleteVertexArrays(1, &texture->VAO);
 		texture->VAO = 0;
 	}
-
-	// Free the name string if allocated dynamically
 	if (texture->Name) {
 		free(texture->Name);
-		texture->Name = NULL;
 	}
-
-	// Optional: clear other metadata
 	texture->Width = 0;
 	texture->Height = 0;
 	free(texture);

@@ -411,6 +411,7 @@ static void freeTiledTilemap(Tilemap* map) {
 		SDL_free(ts->Name);
 		SDL_free(ts->Image);
 		TextureDestroy(ts->TilesetTexture);
+	
 	}
 
 	SDL_free(map->Tilesets);
