@@ -2,6 +2,8 @@
 #include <Supergoon/Input/keyboard.h>
 #include <Supergoon/camera.h>
 float cameraPos[3] = {0, 0, 0};
+float cameraSubPixelX = 0;
+float cameraSubPixelY = 0;
 float cameraSize[3] = {0, 0, 0};
 float BoundsX = 0;
 float BoundsY = 0;
@@ -32,10 +34,10 @@ void UpdateCameraSystem(void) {
 		camY = 0;
 	else if (camY > BoundsY - viewHeight)
 		camY = BoundsY - viewHeight;
-	/* cameraPos[0] = SDL_floorf(camX); */
-	/* cameraPos[1] = SDL_floorf(camY); */
-	cameraPos[0] = (camX);
-	cameraPos[1] = (camY);
+	cameraPos[0] = SDL_floorf(camX);
+	cameraPos[1] = SDL_floorf(camY);
+	cameraSubPixelX = camX - cameraPos[0];
+	cameraSubPixelY = camY - cameraPos[1];
 }
 
 void SetCameraFollowTarget(float* x, float* y) {
@@ -43,6 +45,8 @@ void SetCameraFollowTarget(float* x, float* y) {
 	followY = y;
 	cameraPos[0] = 0;
 	cameraPos[1] = 0;
+	cameraSubPixelX = 0;
+	cameraSubPixelY = 0;
 }
 
 void SetCameraBounds(float x, float y) {
@@ -72,6 +76,8 @@ void ResetCameraFollow(void) {
 	followX = NULL;
 	cameraPos[0] = 0;
 	cameraPos[1] = 0;
+	cameraSubPixelX = 0;
+	cameraSubPixelY = 0;
 }
 
 void CameraGetPositionHandle(float** x, float** y) {
@@ -84,5 +90,7 @@ void CameraGetFollow(float** x, float** y) {
 	*y = followY;
 }
 
+float CameraGetSubPixelX(void) { return cameraSubPixelX; }
+float CameraGetSubPixelY(void) { return cameraSubPixelY; }
 float CameraGetWidth(void) { return cameraSize[0]; }
 float CameraGetHeight(void) { return cameraSize[1]; }
