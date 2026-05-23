@@ -75,12 +75,12 @@ static void update(void) {
 	int maxTicksThisFrame = MAX_TICKS_PER_FRAME;
 	while (_accumulatorNS >= FIXED_TIMESTEP_NS && ticks < maxTicksThisFrame) {
 		UpdateAudioSystem();
-		UpdateCameraSystem();
 		UpdateKeyboardSystem();
 		UpdateCurrentMap();
 		if (_inputFunc) _inputFunc();
 		UpdateAnimators();
 		if (_updateFunc) _updateFunc();
+		UpdateCameraSystem();
 		UpdateControllerSystem();
 		UpdateMouseSystem();
 		_accumulatorNS -= FIXED_TIMESTEP_NS;
