@@ -60,14 +60,11 @@ void SetCameraZoom(float zoom) {
 }
 
 float CameraGetX(void) {
-	/* return SDL_roundf(cameraPos[0]); */
-	return (cameraPos[0]);
-	/* return SDL_roundf(cameraPos[0]); */
+	return SDL_floorf(cameraPos[0]);
 }
 
 float CameraGetY(void) {
-	/* return SDL_roundf(cameraPos[1]); */
-	return (cameraPos[1]);
+	return SDL_floorf(cameraPos[1]);
 }
 
 void ResetCameraFollow(void) {

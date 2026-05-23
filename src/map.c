@@ -384,7 +384,7 @@ void DrawCurrentMap(void) {
 
 	float w = (CameraGetWidth());
 	float h = (CameraGetHeight());
-	RectangleF src = {SDL_roundf(CameraGetX()), SDL_roundf(CameraGetY()), CameraGetWidth(), CameraGetHeight()};
+	RectangleF src = {CameraGetX(), CameraGetY(), CameraGetWidth(), CameraGetHeight()};
 	RectangleF dst = {0, 0, w, h};
 	DrawTexture(_currentMap->BackgroundTexture,
 				GetDefaultShader(), &dst, &src,
