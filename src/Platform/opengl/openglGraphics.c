@@ -2,6 +2,7 @@
 #include <Supergoon/Graphics/graphics.h>
 #include <Supergoon/Graphics/shader.h>
 #include <Supergoon/Graphics/texture.h>
+#include <Supergoon/Platform/opengl/openglTexture.h>
 #include <Supergoon/Primitives/Color.h>
 #include <Supergoon/Primitives/rectangle.h>
 #include <Supergoon/camera.h>
@@ -121,16 +122,41 @@ void DrawEndImpl(void) {
 	// Compute destination rectangle to center the framebuffer
 	int drawWidth = fbWidth * scale;
 	int drawHeight = fbHeight * scale;
-	int offsetX = (winWidth - drawWidth) / 2;
-	int offsetY = (winHeight - drawHeight) / 2;
-	RectangleF dstRect = {
-		(float)offsetX,
-		(float)offsetY,
-		(float)drawWidth,
-		(float)drawHeight};
-	RectangleF srcRect = {0, 0, (float)fbWidth, (float)fbHeight};
-	// Set the color properly of the FBO when fading.
-	DrawTexture(_screenFrameBufferTexture, GetDefaultShader(), &dstRect, &srcRect, false, 1.0f, true, &_fboColor);
+	float offsetX = (winWidth - drawWidth) / 2.0f;
+	float offsetY = (winHeight - drawHeight) / 2.0f;
+	float subX = CameraGetSubPixelX() * scale;
+	float subY = CameraGetSubPixelY() * scale;
+	float dstX = offsetX - subX;
+	float dstY = offsetY - subY;
+	float dstW = (float)drawWidth;
+	float dstH = (float)drawHeight;
+
+	Shader* shader = GetDefaultShader();
+	ShaderUse(shader);
+	mat4 model;
+	glm_mat4_identity(model);
+	vec3 pos = {dstX, dstY + dstH, 0};
+	glm_translate(model, pos);
+	vec3 size = {dstW, -dstH, 1.0f};
+	glm_scale(model, size);
+	mat4 view;
+	glm_mat4_identity(view);
+	vec4 srcRectV = {0, 0, (float)fbWidth, (float)fbHeight};
+	vec2 texSize = {(float)fbWidth, (float)fbHeight};
+	ShaderSetUniformVector4fV(shader, "srcRect", srcRectV, false);
+	ShaderSetUniformVector2fV(shader, "textureSize", texSize, false);
+	ShaderSetUniformMatrix4(shader, "model", model, false);
+	ShaderSetUniformMatrix4(shader, "view", view, false);
+	ShaderSetUniformMatrix4(shader, "projection", projectionMatrix, false);
+	ShaderSetUniformInteger(shader, "image", 0, false);
+	vec4 colorVec = {_fboColor.R / 255.0f, _fboColor.G / 255.0f, _fboColor.B / 255.0f, _fboColor.A / 255.0f};
+	ShaderSetUniformVector4fV(shader, "spriteColor", colorVec, false);
+	glActiveTexture(GL_TEXTURE0);
+	TextureBind(_screenFrameBufferTexture);
+	glBindVertexArray(_screenFrameBufferTexture->VAO);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
+
 	if (GraphicsPostFBODrawDebugFunc) GraphicsPostFBODrawDebugFunc();
 
 	SDL_GL_SwapWindow(WindowGetImpl()->Handle);

@@ -382,10 +382,10 @@ void UpdateCurrentMap(void) {
 void DrawCurrentMap(void) {
 	if (!_currentMap) return;
 
-	float w = (CameraGetWidth());
-	float h = (CameraGetHeight());
-	RectangleF src = {CameraGetX(), CameraGetY(), CameraGetWidth(), CameraGetHeight()};
-	RectangleF dst = {0, 0, w, h};
+	float viewW = 480;
+	float viewH = 270;
+	RectangleF src = {CameraGetX(), CameraGetY(), viewW, viewH};
+	RectangleF dst = {0, 0, viewW, viewH};
 	DrawTexture(_currentMap->BackgroundTexture,
 				GetDefaultShader(), &dst, &src,
 				false, 1.0f, false,
