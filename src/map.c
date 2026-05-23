@@ -304,7 +304,6 @@ static void createBackgroundsFromTilemap(Tilemap* map) {
 	int w = map->Width * map->TileWidth;
 	int h = map->Height * map->TileHeight;
 	map->BackgroundTexture = TextureCreateRenderTarget(w, h);
-	TextureSetFilterLinear(map->BackgroundTexture);
 	SetRenderTarget(map->BackgroundTexture);
 	TextureClearRenderTarget(map->BackgroundTexture, 0.1f, 0.1f, 0.1f, 255);
 	loadTilesetTextures(map);
@@ -385,7 +384,7 @@ void DrawCurrentMap(void) {
 
 	float viewW = 480;
 	float viewH = 270;
-	RectangleF src = {CameraGetRawX(), CameraGetRawY(), viewW, viewH};
+	RectangleF src = {CameraGetX(), CameraGetY(), viewW, viewH};
 	RectangleF dst = {0, 0, viewW, viewH};
 	DrawTexture(_currentMap->BackgroundTexture,
 				GetDefaultShader(), &dst, &src,

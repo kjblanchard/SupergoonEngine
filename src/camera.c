@@ -82,8 +82,6 @@ void CameraGetFollow(float** x, float** y) {
 	*y = followY;
 }
 
-float CameraGetRawX(void) { return cameraPos[0]; }
-float CameraGetRawY(void) { return cameraPos[1]; }
 float CameraGetSubPixelX(void) { return cameraPos[0] - SDL_floorf(cameraPos[0]); }
 float CameraGetSubPixelY(void) { return cameraPos[1] - SDL_floorf(cameraPos[1]); }
 float CameraGetWidth(void) { return cameraSize[0]; }
