@@ -123,11 +123,9 @@ void DrawEndImpl(void) {
 	int drawHeight = fbHeight * scale;
 	int offsetX = (winWidth - drawWidth) / 2;
 	int offsetY = (winHeight - drawHeight) / 2;
-	float subX = CameraGetSubPixelX() * scale;
-	float subY = CameraGetSubPixelY() * scale;
 	RectangleF dstRect = {
-		(float)offsetX - subX,
-		(float)offsetY - subY,
+		(float)offsetX,
+		(float)offsetY,
 		(float)drawWidth,
 		(float)drawHeight};
 	RectangleF srcRect = {0, 0, (float)fbWidth, (float)fbHeight};
