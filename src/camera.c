@@ -15,8 +15,8 @@ void UpdateCameraSystem(void) {
 	float camX = 0;
 	float camY = 0;
 	if (followX && followY) {
-		camX = (*followX) - viewWidth / 2.0f;
-		camY = (*followY) - viewHeight / 2.0f;
+		camX = SDL_floorf(*followX) - viewWidth / 2.0f;
+		camY = SDL_floorf(*followY) - viewHeight / 2.0f;
 	}
 	// If map is smaller than screen, camera should be pinned to top-left
 	if (BoundsX <= viewWidth)
@@ -82,7 +82,5 @@ void CameraGetFollow(float** x, float** y) {
 	*y = followY;
 }
 
-float CameraGetSubPixelX(void) { return cameraPos[0] - SDL_floorf(cameraPos[0]); }
-float CameraGetSubPixelY(void) { return cameraPos[1] - SDL_floorf(cameraPos[1]); }
 float CameraGetWidth(void) { return cameraSize[0]; }
 float CameraGetHeight(void) { return cameraSize[1]; }

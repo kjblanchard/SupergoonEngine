@@ -124,10 +124,8 @@ void DrawEndImpl(void) {
 	int drawHeight = fbHeight * scale;
 	float offsetX = (winWidth - drawWidth) / 2.0f;
 	float offsetY = (winHeight - drawHeight) / 2.0f;
-	float subX = CameraGetSubPixelX() * scale;
-	float subY = CameraGetSubPixelY() * scale;
-	float dstX = offsetX - subX;
-	float dstY = offsetY - subY;
+	float dstX = offsetX;
+	float dstY = offsetY;
 	float dstW = (float)drawWidth;
 	float dstH = (float)drawHeight;
 
