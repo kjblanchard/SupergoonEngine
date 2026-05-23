@@ -68,29 +68,6 @@ static void removeTextureFromCache(Texture* t) {
 	}
 }
 
-/* static void cacheTexture(Texture* texture) { */
-/* 	if (_currentCachedTextures >= MAX_CACHED_TEXTURES) { */
-/* 		sgLogError("Texture cache full"); */
-/* 		return; */
-/* 	} */
-/* 	_cachedTextures[sNextCachedTexture] = texture; */
-/* 	for (int i = sNextCachedTexture; i < MAX_CACHED_TEXTURES; ++i) { */
-/* 		if(_cachedTextures[i] == NULL) { */
-/* 			sNextCachedTexture = i; */
-/* 			_currentCachedTextures = i >= sNextCachedTexture ? i : _currentCachedTextures; */
-/* 			break; */
-/* 		} */
-/* 	} */
-/* } */
-
-/* static void removeTextureFromCache(Texture* t) { */
-/* 	for (int i = 0; i < _currentCachedTextures; ++i) { */
-/* 		if (_cachedTextures[i] == t) { */
-/* 			_cachedTextures[i] = NULL; */
-/* 			return; */
-/* 		} */
-/* 	} */
-/* } */
 
 void TextureSetFilterLinearImpl(Texture* texture) {
 	glBindTexture(GL_TEXTURE_2D, texture->ID);
@@ -283,8 +260,7 @@ void DrawTextureImpl(Texture* texture, Shader* shader, RectangleF* dstRect,
 	ShaderUse(shader);
 	mat4 model;
 	glm_mat4_identity(model);
-	vec3 pos = {useCamera ? dstRect->x : floorf(dstRect->x),
-			   useCamera ? dstRect->y : floorf(dstRect->y), 0};
+	vec3 pos = {floorf(dstRect->x), floorf(dstRect->y), 0};
 	glm_translate(model, pos);
 	vec3 size = {dstRect->w * scale, dstRect->h * scale, 1.0f};
 	glm_scale(model, size);
@@ -307,9 +283,7 @@ void DrawTextureImpl(Texture* texture, Shader* shader, RectangleF* dstRect,
 	ShaderSetUniformMatrix4(shader, "view", view, false);
 	ShaderSetUniformMatrix4(shader, "projection", projectionMatrix, false);
 	ShaderSetUniformInteger(shader, "image", 0, false);
-	/* vec3 colorVec = {color->R / (float)255, color->G / (float)255, color->B / (float)255}; */
 	vec4 colorVec = {color->R / (float)255, color->G / (float)255, color->B / (float)255, color->A / (float)255};
-	/* ShaderSetUniformVector3fV(shader, "spriteColor", colorVec, false); */
 	ShaderSetUniformVector4fV(shader, "spriteColor", colorVec, false);
 	glActiveTexture(GL_TEXTURE0);
 	TextureBindImpl(texture);

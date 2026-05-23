@@ -33,7 +33,6 @@ void DrawTexture(Texture* texture, Shader* shader, RectangleF* dst, RectangleF* 
 void TextureDestroy(Texture* texture) { TextureDestroyImpl(texture); }
 void TextureBind(Texture* texture) { TextureBindImpl(texture); }
 void TextureSetFilterLinear(Texture* texture) { TextureSetFilterLinearImpl(texture); }
-Texture* TmeextureCreate(void);
 Texture* TextureCreateRenderTarget(int width, int height) { return TextureCreateRenderTargetImpl(width, height); }
 void SetRenderTarget(Texture* renderTarget) { SetRenderTargetImpl(renderTarget); }
 void TextureClearRenderTarget(Texture* texture, float r, float g, float b, float a) {
