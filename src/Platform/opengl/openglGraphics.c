@@ -127,7 +127,7 @@ void DrawEndImpl(void) {
 	float subX = CameraGetSubPixelX() * scale;
 	float subY = CameraGetSubPixelY() * scale;
 	float dstX = offsetX - subX;
-	float dstY = offsetY - subY;
+	float dstY = offsetY + subY;
 	float dstW = (float)drawWidth;
 	float dstH = (float)drawHeight;
 
