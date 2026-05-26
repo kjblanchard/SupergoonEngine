@@ -10,6 +10,8 @@ void SetCameraBounds(float x, float y);
 float CameraGetX(void);
 float CameraGetY(void);
 void ResetCameraFollow(void);
+float CameraGetRawX(void);
+float CameraGetRawY(void);
 float CameraGetSubPixelX(void);
 float CameraGetSubPixelY(void);
 float CameraGetWidth(void);
