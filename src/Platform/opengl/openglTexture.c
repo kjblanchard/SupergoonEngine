@@ -260,15 +260,16 @@ void DrawTextureImpl(Texture* texture, Shader* shader, RectangleF* dstRect,
 	ShaderUse(shader);
 	mat4 model;
 	glm_mat4_identity(model);
-	vec3 pos = {floorf(dstRect->x), floorf(dstRect->y), 0};
+	vec3 pos = {useCamera ? dstRect->x : floorf(dstRect->x),
+				useCamera ? dstRect->y : floorf(dstRect->y), 0};
 	glm_translate(model, pos);
 	vec3 size = {dstRect->w * scale, dstRect->h * scale, 1.0f};
 	glm_scale(model, size);
 	mat4 view;
 	glm_mat4_identity(view);
 	if (useCamera) {
-		float cx = CameraGetRawX();
-		float cy = CameraGetRawY();
+		float cx = CameraGetX();
+		float cy = CameraGetY();
 		vec3 negCameraPos = {-cx, -cy, 0.0f};
 		glm_translate(view, negCameraPos);
 	}
