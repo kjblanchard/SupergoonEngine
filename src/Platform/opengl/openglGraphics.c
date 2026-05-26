@@ -18,6 +18,7 @@
 #endif
 #include <Supergoon/Platform/opengl/openglGraphics.h>
 #include <Supergoon/Platform/sdl/sdlWindow.h>
+#include <Supergoon/sprite.h>
 #include <sgtools/log.h>
 
 extern void ShaderSystemShutdown(void);
@@ -157,9 +158,11 @@ void DrawEndImpl(void) {
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
 
+	glViewport((int)offsetX, (int)offsetY, drawWidth, drawHeight);
+	glm_ortho(0.0f, (float)fbWidth, 0.0f, (float)fbHeight, -1.0f, 1.0f, projectionMatrix);
+	DrawSpriteSystemPostFBO();
 	if (GraphicsPostFBODrawUIFunc) {
-		glViewport((int)offsetX, (int)offsetY, drawWidth, drawHeight);
-		glm_ortho(0.0f, (float)fbWidth, 0.0f, (float)fbHeight, -1.0f, 1.0f, projectionMatrix);
+		glm_ortho(0.0f, (float)fbWidth, (float)fbHeight, 0.0f, -1.0f, 1.0f, projectionMatrix);
 		GraphicsPostFBODrawUIFunc();
 	}
 
