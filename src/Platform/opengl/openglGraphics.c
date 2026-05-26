@@ -125,7 +125,7 @@ void DrawEndImpl(void) {
 	float subX = CameraGetSubPixelX() * scale;
 	float subY = CameraGetSubPixelY() * scale;
 	float dstX = offsetX - subX;
-	float dstY = offsetY - subY;
+	float dstY = offsetY + subY;
 
 	Shader* shader = GetDefaultShader();
 	ShaderUse(shader);
@@ -152,6 +152,14 @@ void DrawEndImpl(void) {
 	glBindVertexArray(_screenFrameBufferTexture->VAO);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
+
+	if (GraphicsPostFBODrawUIFunc) {
+		glViewport((int)offsetX, (int)offsetY, drawWidth, drawHeight);
+		glm_ortho(0.0f, (float)fbWidth, (float)fbHeight, 0.0f, -1.0f, 1.0f, projectionMatrix);
+		GraphicsPostFBODrawUIFunc();
+		glViewport(0, 0, winWidth, winHeight);
+		glm_ortho(0.0f, (float)winWidth, 0.0f, (float)winHeight, -1.0f, 1.0f, projectionMatrix);
+	}
 
 	if (GraphicsPostFBODrawDebugFunc) GraphicsPostFBODrawDebugFunc();
 
@@ -194,9 +202,6 @@ void DrawLineImpl(float x1, float y1, float x2, float y2, float thickness, Color
 	if (useCamera) {
 		vec3 negCameraPos = {-CameraGetX(), -CameraGetY(), 0.0f};
 		glm_translate(view, negCameraPos);
-	} else {
-		vec3 subPixelCompensation = {CameraGetSubPixelX(), CameraGetSubPixelY(), 0.0f};
-		glm_translate(view, subPixelCompensation);
 	}
 
 	ShaderSetUniformMatrix4(shader, "projection", projectionMatrix, false);
@@ -226,9 +231,6 @@ void DrawRectImpl(RectangleF* rect, Color* color, int filled, int useCamera) {
 	if (useCamera) {
 		vec3 negCameraPos = {-CameraGetX(), -CameraGetY(), 0.0f};
 		glm_translate(view, negCameraPos);
-	} else {
-		vec3 subPixelCompensation = {CameraGetSubPixelX(), CameraGetSubPixelY(), 0.0f};
-		glm_translate(view, subPixelCompensation);
 	}
 
 	ShaderSetUniformMatrix4(shader, "projection", projectionMatrix, false);
