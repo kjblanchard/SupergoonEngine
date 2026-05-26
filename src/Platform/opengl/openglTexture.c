@@ -267,8 +267,8 @@ void DrawTextureImpl(Texture* texture, Shader* shader, RectangleF* dstRect,
 	mat4 view;
 	glm_mat4_identity(view);
 	if (useCamera) {
-		float cx = CameraGetX();
-		float cy = CameraGetY();
+		float cx = CameraGetRawX();
+		float cy = CameraGetRawY();
 		vec3 negCameraPos = {-cx, -cy, 0.0f};
 		glm_translate(view, negCameraPos);
 	}
