@@ -157,7 +157,17 @@ void DrawEndImpl(void) {
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
 
-	if (GraphicsPostFBODrawDebugFunc) GraphicsPostFBODrawDebugFunc();
+	if (GraphicsPostFBODrawUIFunc) {
+		glViewport((int)offsetX, (int)offsetY, drawWidth, drawHeight);
+		glm_ortho(0.0f, (float)fbWidth, 0.0f, (float)fbHeight, -1.0f, 1.0f, projectionMatrix);
+		GraphicsPostFBODrawUIFunc();
+	}
+
+	if (GraphicsPostFBODrawDebugFunc) {
+		glViewport(0, 0, winWidth, winHeight);
+		glm_ortho(0.0f, (float)winWidth, 0.0f, (float)winHeight, -1.0f, 1.0f, projectionMatrix);
+		GraphicsPostFBODrawDebugFunc();
+	}
 
 	SDL_GL_SwapWindow(WindowGetImpl()->Handle);
 }
