@@ -122,8 +122,10 @@ void DrawEndImpl(void) {
 	int drawHeight = fbHeight * scale;
 	float offsetX = (winWidth - drawWidth) / 2.0f;
 	float offsetY = (winHeight - drawHeight) / 2.0f;
-	float dstX = offsetX;
-	float dstY = offsetY;
+	float subX = CameraGetSubPixelX() * scale;
+	float subY = CameraGetSubPixelY() * scale;
+	float dstX = offsetX - subX;
+	float dstY = offsetY - subY;
 
 	Shader* shader = GetDefaultShader();
 	ShaderUse(shader);
@@ -192,6 +194,9 @@ void DrawLineImpl(float x1, float y1, float x2, float y2, float thickness, Color
 	if (useCamera) {
 		vec3 negCameraPos = {-CameraGetX(), -CameraGetY(), 0.0f};
 		glm_translate(view, negCameraPos);
+	} else {
+		vec3 subPixelCompensation = {CameraGetSubPixelX(), CameraGetSubPixelY(), 0.0f};
+		glm_translate(view, subPixelCompensation);
 	}
 
 	ShaderSetUniformMatrix4(shader, "projection", projectionMatrix, false);
@@ -221,6 +226,9 @@ void DrawRectImpl(RectangleF* rect, Color* color, int filled, int useCamera) {
 	if (useCamera) {
 		vec3 negCameraPos = {-CameraGetX(), -CameraGetY(), 0.0f};
 		glm_translate(view, negCameraPos);
+	} else {
+		vec3 subPixelCompensation = {CameraGetSubPixelX(), CameraGetSubPixelY(), 0.0f};
+		glm_translate(view, subPixelCompensation);
 	}
 
 	ShaderSetUniformMatrix4(shader, "projection", projectionMatrix, false);

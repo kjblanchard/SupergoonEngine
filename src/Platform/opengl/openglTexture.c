@@ -271,6 +271,11 @@ void DrawTextureImpl(Texture* texture, Shader* shader, RectangleF* dstRect,
 		float cy = CameraGetY();
 		vec3 negCameraPos = {-cx, -cy, 0.0f};
 		glm_translate(view, negCameraPos);
+	} else {
+		float subX = CameraGetSubPixelX();
+		float subY = CameraGetSubPixelY();
+		vec3 subPixelCompensation = {subX, subY, 0.0f};
+		glm_translate(view, subPixelCompensation);
 	}
 	vec4 srcRectV = {floorf(srcRect->x), floorf(srcRect->y), srcRect->w, srcRect->h};
 	vec2 texSize = {(float)texture->Width, (float)texture->Height};
