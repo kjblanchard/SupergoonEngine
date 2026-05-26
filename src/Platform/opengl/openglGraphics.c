@@ -159,10 +159,9 @@ void DrawEndImpl(void) {
 	glBindVertexArray(0);
 
 	glViewport((int)offsetX, (int)offsetY, drawWidth, drawHeight);
-	glm_ortho(0.0f, (float)fbWidth, 0.0f, (float)fbHeight, -1.0f, 1.0f, projectionMatrix);
+	glm_ortho(0.0f, (float)fbWidth, (float)fbHeight, 0.0f, -1.0f, 1.0f, projectionMatrix);
 	DrawSpriteSystemPostFBO();
 	if (GraphicsPostFBODrawUIFunc) {
-		glm_ortho(0.0f, (float)fbWidth, (float)fbHeight, 0.0f, -1.0f, 1.0f, projectionMatrix);
 		GraphicsPostFBODrawUIFunc();
 	}
 
