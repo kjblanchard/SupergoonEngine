@@ -96,19 +96,6 @@ void DrawSpriteSystem(void) {
 	Color color = {255, 255, 255, 255};
 	for (size_t i = 0; i < _numSprites; i++) {
 		Sprite* sprite = _sprites[i];
-		if (sprite->Flags & SpriteFlagPostFBO) continue;
-		dst.w = sprite->OffsetAndSizeRectF.w;
-		dst.h = sprite->OffsetAndSizeRectF.h;
-		DrawSpriteManual(sprite, &dst, &color, true);
-	}
-}
-
-void DrawSpriteSystemPostFBO(void) {
-	RectangleF dst = (RectangleF){0, 0, 0, 0};
-	Color color = {255, 255, 255, 255};
-	for (size_t i = 0; i < _numSprites; i++) {
-		Sprite* sprite = _sprites[i];
-		if (!(sprite->Flags & SpriteFlagPostFBO)) continue;
 		dst.w = sprite->OffsetAndSizeRectF.w;
 		dst.h = sprite->OffsetAndSizeRectF.h;
 		DrawSpriteManual(sprite, &dst, &color, true);

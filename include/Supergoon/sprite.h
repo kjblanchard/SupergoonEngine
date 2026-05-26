@@ -10,7 +10,6 @@ struct sgGameObject;
 typedef enum SpriteFlags {
 	SpriteFlagVisible = 1 << 0,
 	SpriteFlagDestroyed = 1 << 1,
-	SpriteFlagPostFBO = 1 << 2,
 } SpriteFlags;
 
 typedef struct Sprite {
@@ -31,7 +30,6 @@ void DestroySprite(Sprite* sprite);
 void DestroySpriteManual(Sprite* sprite);
 void DrawSpriteManual(Sprite* sprite, RectangleF* dstRect, Color* color, int camera);
 void DrawSpriteSystem(void);
-void DrawSpriteSystemPostFBO(void);
 void ShutdownSpriteSystem(void);
 #ifdef __cplusplus
 }

@@ -18,7 +18,6 @@
 #endif
 #include <Supergoon/Platform/opengl/openglGraphics.h>
 #include <Supergoon/Platform/sdl/sdlWindow.h>
-#include <Supergoon/sprite.h>
 #include <sgtools/log.h>
 
 extern void ShaderSystemShutdown(void);
@@ -115,30 +114,22 @@ void DrawEndImpl(void) {
 	int fbHeight = TextureGetHeight(_screenFrameBufferTexture);
 	int winWidth = WindowWidth();
 	int winHeight = WindowHeight();
-	// Compute integer scaling factor
 	int scaleX = winWidth / fbWidth;
 	int scaleY = winHeight / fbHeight;
 	int scale = scaleX < scaleY ? scaleX : scaleY;
-	if (scale < 1) scale = 1;  // don't shrink below 1x
-	// Compute destination rectangle to center the framebuffer
+	if (scale < 1) scale = 1;
 	int drawWidth = fbWidth * scale;
 	int drawHeight = fbHeight * scale;
 	float offsetX = (winWidth - drawWidth) / 2.0f;
 	float offsetY = (winHeight - drawHeight) / 2.0f;
-	float subX = CameraGetSubPixelX() * scale;
-	float subY = CameraGetSubPixelY() * scale;
-	float dstX = offsetX - subX;
-	float dstY = offsetY + subY;
-	float dstW = (float)drawWidth;
-	float dstH = (float)drawHeight;
 
 	Shader* shader = GetDefaultShader();
 	ShaderUse(shader);
 	mat4 model;
 	glm_mat4_identity(model);
-	vec3 pos = {dstX, dstY + dstH, 0};
+	vec3 pos = {offsetX, offsetY + drawHeight, 0};
 	glm_translate(model, pos);
-	vec3 size = {dstW, -dstH, 1.0f};
+	vec3 size = {(float)drawWidth, -(float)drawHeight, 1.0f};
 	glm_scale(model, size);
 	mat4 view;
 	glm_mat4_identity(view);
@@ -158,18 +149,7 @@ void DrawEndImpl(void) {
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
 
-	glViewport((int)offsetX, (int)offsetY, drawWidth, drawHeight);
-	glm_ortho(0.0f, (float)fbWidth, (float)fbHeight, 0.0f, -1.0f, 1.0f, projectionMatrix);
-	DrawSpriteSystemPostFBO();
-	if (GraphicsPostFBODrawUIFunc) {
-		GraphicsPostFBODrawUIFunc();
-	}
-
-	if (GraphicsPostFBODrawDebugFunc) {
-		glViewport(0, 0, winWidth, winHeight);
-		glm_ortho(0.0f, (float)winWidth, 0.0f, (float)winHeight, -1.0f, 1.0f, projectionMatrix);
-		GraphicsPostFBODrawDebugFunc();
-	}
+	if (GraphicsPostFBODrawDebugFunc) GraphicsPostFBODrawDebugFunc();
 
 	SDL_GL_SwapWindow(WindowGetImpl()->Handle);
 }
