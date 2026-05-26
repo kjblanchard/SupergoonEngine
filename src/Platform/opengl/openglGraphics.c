@@ -122,12 +122,16 @@ void DrawEndImpl(void) {
 	int drawHeight = fbHeight * scale;
 	float offsetX = (winWidth - drawWidth) / 2.0f;
 	float offsetY = (winHeight - drawHeight) / 2.0f;
+	float subX = CameraGetSubPixelX() * scale;
+	float subY = CameraGetSubPixelY() * scale;
+	float dstX = offsetX - subX;
+	float dstY = offsetY + subY;
 
 	Shader* shader = GetDefaultShader();
 	ShaderUse(shader);
 	mat4 model;
 	glm_mat4_identity(model);
-	vec3 pos = {offsetX, offsetY + drawHeight, 0};
+	vec3 pos = {dstX, dstY + drawHeight, 0};
 	glm_translate(model, pos);
 	vec3 size = {(float)drawWidth, -(float)drawHeight, 1.0f};
 	glm_scale(model, size);
