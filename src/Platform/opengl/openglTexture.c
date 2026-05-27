@@ -271,7 +271,7 @@ void DrawTextureImpl(Texture* texture, Shader* shader, RectangleF* dstRect,
 		float cy = CameraGetY();
 		float subX = CameraGetSubPixelX();
 		float subY = CameraGetSubPixelY();
-		vec3 cameraOffset = {-cx + subX, -cy + subY, 0.0f};
+		vec3 cameraOffset = {-cx + subX, -cy - subY, 0.0f};
 		glm_translate(view, cameraOffset);
 	}
 	vec4 srcRectV = {floorf(srcRect->x), floorf(srcRect->y), srcRect->w, srcRect->h};
