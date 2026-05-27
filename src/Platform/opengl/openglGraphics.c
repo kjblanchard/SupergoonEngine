@@ -179,7 +179,7 @@ void DrawLineImpl(float x1, float y1, float x2, float y2, float thickness, Color
 	glm_mat4_identity(model);
 
 	// Translate to starting point
-	glm_translate(model, (vec3){x1, y1, 0.0f});
+	glm_translate(model, (vec3){floorf(x1), floorf(y1), 0.0f});
 
 	// Rotate to match direction
 	glm_rotate(model, angle, (vec3){0.0f, 0.0f, 1.0f});
@@ -221,7 +221,7 @@ void DrawRectImpl(RectangleF* rect, Color* color, int filled, int useCamera) {
 	ShaderUse(shader);
 	mat4 model;
 	glm_mat4_identity(model);
-	glm_translate(model, (vec3){rect->x, rect->y, 0.0f});
+	glm_translate(model, (vec3){floorf(rect->x), floorf(rect->y), 0.0f});
 	glm_scale(model, (vec3){rect->w, rect->h, 1.0f});
 	vec4 colorV = {color->R / (float)255, color->G / (float)255, color->B / (float)255, color->A / (float)255};
 	mat4 view;

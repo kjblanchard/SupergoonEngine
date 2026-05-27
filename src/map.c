@@ -304,6 +304,7 @@ static void createBackgroundsFromTilemap(Tilemap* map) {
 	int w = map->Width * map->TileWidth;
 	int h = map->Height * map->TileHeight;
 	map->BackgroundTexture = TextureCreateRenderTarget(w, h);
+	TextureSetFilterLinear(map->BackgroundTexture);
 	SetRenderTarget(map->BackgroundTexture);
 	TextureClearRenderTarget(map->BackgroundTexture, 0.1f, 0.1f, 0.1f, 255);
 	loadTilesetTextures(map);
