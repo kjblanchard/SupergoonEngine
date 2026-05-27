@@ -344,16 +344,21 @@ static void createBackgroundsFromTilemap(Tilemap* map) {
 }
 
 static void drawAnimatedTiles(void) {
+	float camX = CameraGetX();
+	float camY = CameraGetY();
 	for (size_t i = 0; i < _currentMap->NumTilesets; i++) {
 		Tileset* ts = &_currentMap->Tilesets[i];
 		for (size_t j = 0; j < ts->NumAnimatedTiles; j++) {
 			AnimatedTile* a = &ts->AnimatedTiles[j];
 			for (size_t k = 0; k < a->NumDrawRectangles; k++) {
+				RectangleF dst = a->DrawRectangles[k];
+				dst.x -= camX;
+				dst.y -= camY;
 				DrawTexture(ts->TilesetTexture,
 							GetDefaultShader(),
-							&a->DrawRectangles[k],
+							&dst,
 							&a->TileFrames[a->CurrentFrame].SrcRect,
-							true, 1.0f, false,
+							false, 1.0f, false,
 							&(Color){255, 255, 255, 255});
 			}
 		}
