@@ -391,8 +391,8 @@ void DrawCurrentMap(void) {
 	float viewH = 270;
 	float texW = (float)TextureGetWidth(_currentMap->BackgroundTexture);
 	float texH = (float)TextureGetHeight(_currentMap->BackgroundTexture);
-	float camX = CameraGetX();
-	float camY = CameraGetY();
+	float camX = CameraGetRawX();
+	float camY = CameraGetRawY();
 	float srcW = viewW;
 	float srcH = viewH;
 	if (camX + srcW > texW) srcW = texW - camX;
