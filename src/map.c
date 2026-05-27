@@ -304,7 +304,6 @@ static void createBackgroundsFromTilemap(Tilemap* map) {
 	int w = map->Width * map->TileWidth;
 	int h = map->Height * map->TileHeight;
 	map->BackgroundTexture = TextureCreateRenderTarget(w, h);
-	TextureSetFilterLinear(map->BackgroundTexture);
 	SetRenderTarget(map->BackgroundTexture);
 	TextureClearRenderTarget(map->BackgroundTexture, 0.1f, 0.1f, 0.1f, 255);
 	loadTilesetTextures(map);
@@ -344,26 +343,23 @@ static void createBackgroundsFromTilemap(Tilemap* map) {
 	SetRenderTarget(NULL);
 }
 
-static void drawAnimatedTiles(void) {
-	float camX = CameraGetRawX();
-	float camY = CameraGetRawY();
+static void drawAnimatedTilesToBackground(void) {
+	SetRenderTarget(_currentMap->BackgroundTexture);
 	for (size_t i = 0; i < _currentMap->NumTilesets; i++) {
 		Tileset* ts = &_currentMap->Tilesets[i];
 		for (size_t j = 0; j < ts->NumAnimatedTiles; j++) {
 			AnimatedTile* a = &ts->AnimatedTiles[j];
 			for (size_t k = 0; k < a->NumDrawRectangles; k++) {
-				RectangleF dst = a->DrawRectangles[k];
-				dst.x -= camX;
-				dst.y -= camY;
-				DrawTexture(ts->TilesetTexture,
-							GetDefaultShader(),
-							&dst,
-							&a->TileFrames[a->CurrentFrame].SrcRect,
-							false, 1.0f, false,
-							&(Color){255, 255, 255, 255});
+				DrawTextureToTexture(_currentMap->BackgroundTexture,
+									ts->TilesetTexture,
+									GetDefaultShader(),
+									&a->DrawRectangles[k],
+									&a->TileFrames[a->CurrentFrame].SrcRect,
+									1.0f);
 			}
 		}
 	}
+	SetPreviousRenderTarget();
 }
 
 void UpdateCurrentMap(void) {
@@ -388,6 +384,8 @@ void UpdateCurrentMap(void) {
 void DrawCurrentMap(void) {
 	if (!_currentMap) return;
 
+	drawAnimatedTilesToBackground();
+
 	float viewW = 480;
 	float viewH = 270;
 	float texW = (float)TextureGetWidth(_currentMap->BackgroundTexture);
@@ -405,7 +403,6 @@ void DrawCurrentMap(void) {
 				GetDefaultShader(), &dst, &src,
 				false, 1.0f, false,
 				&(Color){255, 255, 255, 255});
-	drawAnimatedTiles();
 }
 
 static void freeTiledTilemap(Tilemap* map) {
