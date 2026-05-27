@@ -344,7 +344,6 @@ static void createBackgroundsFromTilemap(Tilemap* map) {
 }
 
 static void drawAnimatedTilesToBackground(void) {
-	SetRenderTarget(_currentMap->BackgroundTexture);
 	for (size_t i = 0; i < _currentMap->NumTilesets; i++) {
 		Tileset* ts = &_currentMap->Tilesets[i];
 		for (size_t j = 0; j < ts->NumAnimatedTiles; j++) {
@@ -359,7 +358,6 @@ static void drawAnimatedTilesToBackground(void) {
 			}
 		}
 	}
-	SetPreviousRenderTarget();
 }
 
 void UpdateCurrentMap(void) {
@@ -390,8 +388,8 @@ void DrawCurrentMap(void) {
 	float viewH = 270;
 	float texW = (float)TextureGetWidth(_currentMap->BackgroundTexture);
 	float texH = (float)TextureGetHeight(_currentMap->BackgroundTexture);
-	float camX = CameraGetRawX();
-	float camY = CameraGetRawY();
+	float camX = CameraGetX();
+	float camY = CameraGetY();
 	float srcW = viewW;
 	float srcH = viewH;
 	if (camX + srcW > texW) srcW = texW - camX;

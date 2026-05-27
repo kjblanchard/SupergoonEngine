@@ -122,8 +122,10 @@ void DrawEndImpl(void) {
 	int drawHeight = fbHeight * scale;
 	float offsetX = (winWidth - drawWidth) / 2.0f;
 	float offsetY = (winHeight - drawHeight) / 2.0f;
-	float dstX = offsetX;
-	float dstY = offsetY;
+	float subX = CameraGetSubPixelX();
+	float subY = CameraGetSubPixelY();
+	float dstX = offsetX - subX * scale;
+	float dstY = offsetY - subY * scale;
 
 	Shader* shader = GetDefaultShader();
 	ShaderUse(shader);
