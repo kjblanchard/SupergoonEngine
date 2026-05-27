@@ -345,8 +345,8 @@ static void createBackgroundsFromTilemap(Tilemap* map) {
 }
 
 static void drawAnimatedTiles(void) {
-	float camX = CameraGetX();
-	float camY = CameraGetY();
+	float camX = CameraGetRawX();
+	float camY = CameraGetRawY();
 	for (size_t i = 0; i < _currentMap->NumTilesets; i++) {
 		Tileset* ts = &_currentMap->Tilesets[i];
 		for (size_t j = 0; j < ts->NumAnimatedTiles; j++) {
