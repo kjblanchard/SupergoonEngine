@@ -395,8 +395,10 @@ void DrawCurrentMap(void) {
 	if (camX + srcW > texW) srcW = texW - camX;
 	if (camY + srcH > texH) srcH = texH - camY;
 	if (srcW <= 0 || srcH <= 0) return;
+	float subX = CameraGetSubPixelX();
+	float subY = CameraGetSubPixelY();
 	RectangleF src = {camX, camY, srcW, srcH};
-	RectangleF dst = {0, 0, srcW, srcH};
+	RectangleF dst = {-subX, -subY, srcW, srcH};
 	DrawTexture(_currentMap->BackgroundTexture,
 				GetDefaultShader(), &dst, &src,
 				false, 1.0f, false,
