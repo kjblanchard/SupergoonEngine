@@ -122,10 +122,10 @@ void DrawEndImpl(void) {
 	int drawHeight = fbHeight * scale;
 	float offsetX = (winWidth - drawWidth) / 2.0f;
 	float offsetY = (winHeight - drawHeight) / 2.0f;
-	float subX = CameraGetSubPixelX();
-	float subY = CameraGetSubPixelY();
-	float dstX = offsetX - subX * scale;
-	float dstY = offsetY - subY * scale;
+	float subX = CameraGetSubPixelX() * scale;
+	float subY = CameraGetSubPixelY() * scale;
+	float dstX = offsetX - subX;
+	float dstY = offsetY + subY;
 
 	Shader* shader = GetDefaultShader();
 	ShaderUse(shader);
@@ -153,14 +153,6 @@ void DrawEndImpl(void) {
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
 
-	if (GraphicsPostFBODrawUIFunc) {
-		glViewport((int)offsetX, (int)offsetY, drawWidth, drawHeight);
-		glm_ortho(0.0f, (float)fbWidth, (float)fbHeight, 0.0f, -1.0f, 1.0f, projectionMatrix);
-		GraphicsPostFBODrawUIFunc();
-		glViewport(0, 0, winWidth, winHeight);
-		glm_ortho(0.0f, (float)winWidth, 0.0f, (float)winHeight, -1.0f, 1.0f, projectionMatrix);
-	}
-
 	if (GraphicsPostFBODrawDebugFunc) GraphicsPostFBODrawDebugFunc();
 
 	SDL_GL_SwapWindow(WindowGetImpl()->Handle);
@@ -181,7 +173,7 @@ void DrawLineImpl(float x1, float y1, float x2, float y2, float thickness, Color
 	glm_mat4_identity(model);
 
 	// Translate to starting point
-	glm_translate(model, (vec3){floorf(x1), floorf(y1), 0.0f});
+	glm_translate(model, (vec3){x1, y1, 0.0f});
 
 	// Rotate to match direction
 	glm_rotate(model, angle, (vec3){0.0f, 0.0f, 1.0f});
@@ -200,17 +192,8 @@ void DrawLineImpl(float x1, float y1, float x2, float y2, float thickness, Color
 	mat4 view;
 	glm_mat4_identity(view);
 	if (useCamera) {
-		float cx = CameraGetX();
-		float cy = CameraGetY();
-		float subX = CameraGetSubPixelX();
-		float subY = CameraGetSubPixelY();
-		vec3 negCameraPos = {-cx + subX, -cy + subY, 0.0f};
+		vec3 negCameraPos = {-CameraGetX(), -CameraGetY(), 0.0f};
 		glm_translate(view, negCameraPos);
-	} else {
-		float subX = CameraGetSubPixelX();
-		float subY = CameraGetSubPixelY();
-		vec3 subPixelCompensation = {subX, subY, 0.0f};
-		glm_translate(view, subPixelCompensation);
 	}
 
 	ShaderSetUniformMatrix4(shader, "projection", projectionMatrix, false);
@@ -232,23 +215,14 @@ void DrawRectImpl(RectangleF* rect, Color* color, int filled, int useCamera) {
 	ShaderUse(shader);
 	mat4 model;
 	glm_mat4_identity(model);
-	glm_translate(model, (vec3){floorf(rect->x), floorf(rect->y), 0.0f});
+	glm_translate(model, (vec3){rect->x, rect->y, 0.0f});
 	glm_scale(model, (vec3){rect->w, rect->h, 1.0f});
 	vec4 colorV = {color->R / (float)255, color->G / (float)255, color->B / (float)255, color->A / (float)255};
 	mat4 view;
 	glm_mat4_identity(view);
 	if (useCamera) {
-		float cx = CameraGetX();
-		float cy = CameraGetY();
-		float subX = CameraGetSubPixelX();
-		float subY = CameraGetSubPixelY();
-		vec3 negCameraPos = {-cx + subX, -cy + subY, 0.0f};
+		vec3 negCameraPos = {-CameraGetX(), -CameraGetY(), 0.0f};
 		glm_translate(view, negCameraPos);
-	} else {
-		float subX = CameraGetSubPixelX();
-		float subY = CameraGetSubPixelY();
-		vec3 subPixelCompensation = {subX, subY, 0.0f};
-		glm_translate(view, subPixelCompensation);
 	}
 
 	ShaderSetUniformMatrix4(shader, "projection", projectionMatrix, false);
