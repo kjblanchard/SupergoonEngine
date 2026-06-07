@@ -386,8 +386,10 @@ void DrawCurrentMap(void) {
 	float viewH = 270;
 	float texW = (float)TextureGetWidth(_currentMap->BackgroundTexture);
 	float texH = (float)TextureGetHeight(_currentMap->BackgroundTexture);
-	float camX = CameraGetX();
-	float camY = CameraGetY();
+	/* float camX = CameraGetX(); */
+	/* float camY = CameraGetY(); */
+	float camX = CameraGetX() - CameraGetSubPixelX();
+	float camY = CameraGetY() - CameraGetSubPixelY();
 	float srcW = viewW;
 	float srcH = viewH;
 	if (camX + srcW > texW) srcW = texW - camX;
@@ -420,7 +422,6 @@ static void freeTiledTilemap(Tilemap* map) {
 		SDL_free(ts->Name);
 		SDL_free(ts->Image);
 		TextureDestroy(ts->TilesetTexture);
-	
 	}
 
 	SDL_free(map->Tilesets);
