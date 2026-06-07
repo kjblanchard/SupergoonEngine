@@ -23,6 +23,7 @@
 extern void ShaderSystemShutdown(void);
 SDL_GLContext _context;
 static Texture* _screenFrameBufferTexture = NULL;
+static Texture* _bgFrameBufferTexture = NULL;
 static int _logicalX = 0;
 static GLuint vao = 0, vbo = 0;
 static Color _fboColor = {255, 255, 255, 255};
@@ -104,6 +105,16 @@ void DrawStartImpl(void) {
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
+void DrawMapStartImpl(void) {
+	SetRenderTarget(_bgFrameBufferTexture);
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
+}
+
+void DrawMapEndImpl(void) {
+	SetRenderTarget(_screenFrameBufferTexture);
+}
+
 void DrawEndImpl(void) {
 	SetRenderTarget(NULL);
 	if (!_screenFrameBufferTexture) {
@@ -122,38 +133,55 @@ void DrawEndImpl(void) {
 	int drawHeight = fbHeight * scale;
 	float offsetX = (winWidth - drawWidth) / 2.0f;
 	float offsetY = (winHeight - drawHeight) / 2.0f;
-	/* float subX = CameraGetSubPixelX() * scale; */
-	/* float subY = CameraGetSubPixelY() * scale; */
-	/* float dstX = offsetX - subX; */
-	/* float dstY = offsetY + subY; */
-	float dstX = offsetX;
-	float dstY = offsetY;
-
 	Shader* shader = GetDefaultShader();
 	ShaderUse(shader);
-	mat4 model;
-	glm_mat4_identity(model);
-	vec3 pos = {dstX, dstY + drawHeight, 0};
-	glm_translate(model, pos);
-	vec3 size = {(float)drawWidth, -(float)drawHeight, 1.0f};
-	glm_scale(model, size);
 	mat4 view;
 	glm_mat4_identity(view);
 	vec4 srcRectV = {0, 0, (float)fbWidth, (float)fbHeight};
 	vec2 texSize = {(float)fbWidth, (float)fbHeight};
-	ShaderSetUniformVector4fV(shader, "srcRect", srcRectV, false);
-	ShaderSetUniformVector2fV(shader, "textureSize", texSize, false);
-	ShaderSetUniformMatrix4(shader, "model", model, false);
-	ShaderSetUniformMatrix4(shader, "view", view, false);
-	ShaderSetUniformMatrix4(shader, "projection", projectionMatrix, false);
-	ShaderSetUniformInteger(shader, "image", 0, false);
 	vec4 colorVec = {_fboColor.R / 255.0f, _fboColor.G / 255.0f, _fboColor.B / 255.0f, _fboColor.A / 255.0f};
-	ShaderSetUniformVector4fV(shader, "spriteColor", colorVec, false);
-	glActiveTexture(GL_TEXTURE0);
-	TextureBind(_screenFrameBufferTexture);
-	glBindVertexArray(_screenFrameBufferTexture->VAO);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-	glBindVertexArray(0);
+
+	// Pass 1: blit background FBO with subpixel shift
+	float subX = CameraGetSubPixelX() * scale;
+	float subY = CameraGetSubPixelY() * scale;
+	float bgDstX = offsetX - subX;
+	float bgDstY = offsetY + subY;
+	{
+		mat4 model;
+		glm_mat4_identity(model);
+		vec3 pos = {bgDstX, bgDstY + drawHeight, 0};
+		glm_translate(model, pos);
+		vec3 size = {(float)drawWidth, -(float)drawHeight, 1.0f};
+		glm_scale(model, size);
+		ShaderSetUniformVector4fV(shader, "srcRect", srcRectV, false);
+		ShaderSetUniformVector2fV(shader, "textureSize", texSize, false);
+		ShaderSetUniformMatrix4(shader, "model", model, false);
+		ShaderSetUniformMatrix4(shader, "view", view, false);
+		ShaderSetUniformMatrix4(shader, "projection", projectionMatrix, false);
+		ShaderSetUniformInteger(shader, "image", 0, false);
+		ShaderSetUniformVector4fV(shader, "spriteColor", colorVec, false);
+		glActiveTexture(GL_TEXTURE0);
+		TextureBind(_bgFrameBufferTexture);
+		glBindVertexArray(_bgFrameBufferTexture->VAO);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glBindVertexArray(0);
+	}
+
+	// Pass 2: blit sprites/UI FBO without shift
+	{
+		mat4 model;
+		glm_mat4_identity(model);
+		vec3 pos = {offsetX, offsetY + drawHeight, 0};
+		glm_translate(model, pos);
+		vec3 size = {(float)drawWidth, -(float)drawHeight, 1.0f};
+		glm_scale(model, size);
+		ShaderSetUniformMatrix4(shader, "model", model, false);
+		glActiveTexture(GL_TEXTURE0);
+		TextureBind(_screenFrameBufferTexture);
+		glBindVertexArray(_screenFrameBufferTexture->VAO);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glBindVertexArray(0);
+	}
 
 	if (GraphicsPostFBODrawDebugFunc) GraphicsPostFBODrawDebugFunc();
 
@@ -251,6 +279,11 @@ void GraphicsSetLogicalWorldSizeImpl(int width, int height) {
 	}
 	_screenFrameBufferTexture = TextureCreateRenderTarget(width, height);
 	TextureClearRenderTarget(_screenFrameBufferTexture, 0, 0, 0, 1.0);
+	if (_bgFrameBufferTexture) {
+		TextureDestroy(_bgFrameBufferTexture);
+	}
+	_bgFrameBufferTexture = TextureCreateRenderTarget(width, height);
+	TextureClearRenderTarget(_bgFrameBufferTexture, 0, 0, 0, 0);
 }
 
 void GraphicsUpdateFBOColorImpl(Color* color) {

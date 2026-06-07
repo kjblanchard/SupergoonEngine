@@ -4,6 +4,8 @@ extern void InitializeGraphicsSystemImpl(void);
 extern void ShutdownGraphicsSystemImpl(void);
 extern void DrawEndImpl(void);
 extern void DrawStartImpl(void);
+extern void DrawMapStartImpl(void);
+extern void DrawMapEndImpl(void);
 extern void GraphicsWindowResizeEventImpl(int width, int height);
 extern void GraphicsSetLogicalWorldSizeImpl(int width, int height);
 extern int GraphicsGetTargetRefreshRateImpl(void);
@@ -18,6 +20,8 @@ void InitializeGraphicsSystem(void) { InitializeGraphicsSystemImpl(); }
 void ShutdownGraphicsSystem(void) { ShutdownGraphicsSystemImpl(); }
 void DrawStart(void) { DrawStartImpl(); }
 void DrawEnd(void) { DrawEndImpl(); }
+void DrawMapStart(void) { DrawMapStartImpl(); }
+void DrawMapEnd(void) { DrawMapEndImpl(); }
 void GraphicsWindowResizeEvent(int width, int height) { GraphicsWindowResizeEventImpl(width, height); }
 void GraphicsSetLogicalWorldSize(int width, int height) { GraphicsSetLogicalWorldSizeImpl(width, height); }
 int GraphicsGetTargetRefreshRate(void) { return GraphicsGetTargetRefreshRateImpl(); }

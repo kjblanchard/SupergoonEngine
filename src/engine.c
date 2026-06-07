@@ -57,7 +57,9 @@ static void start(void) {
 
 static void draw(void) {
 	DrawStart();
+	DrawMapStart();
 	DrawCurrentMap();
+	DrawMapEnd();
 	DrawSpriteSystem();
 	if (_drawFunc) _drawFunc();
 	DrawEnd();

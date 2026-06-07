@@ -22,6 +22,8 @@ void InitializeGraphicsSystem(void);
 void ShutdownGraphicsSystem(void);
 void DrawStart(void);
 void DrawEnd(void);
+void DrawMapStart(void);
+void DrawMapEnd(void);
 void GraphicsSetLogicalWorldSize(int width, int height);
 int GraphicsGetTargetRefreshRate(void);
 void GraphicsWindowResizeEvent(int width, int height);
