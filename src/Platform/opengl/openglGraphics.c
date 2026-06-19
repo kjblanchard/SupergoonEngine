@@ -126,11 +126,10 @@ void DrawEndImpl(void) {
 	int offsetY = (winHeight - drawHeight) / 2;
 	float subX = CameraGetSubPixelX() * scale;
 	float subY = CameraGetSubPixelY() * scale;
-	//try these
+	//This fixes the background jitter, but causes other problems outside of the background
+	//
 	float dstX = offsetX - subX;
 	float dstY = offsetY + subY;
-
-
 	Shader* shader = GetDefaultShader();
 	ShaderUse(shader);
 	mat4 model;
@@ -158,10 +157,11 @@ void DrawEndImpl(void) {
 	glBindVertexArray(0);
 	if (GraphicsPostFBODrawDebugFunc) GraphicsPostFBODrawDebugFunc();
 	SDL_GL_SwapWindow(WindowGetImpl()->Handle);
+	//end jitter fix
 
 
 
-
+	//This is what is was before, where all the other things work well besides the background jitter
 	/* RectangleF dstRect = { */
 	/* 	(float)offsetX, */
 	/* 	(float)offsetY, */
@@ -172,6 +172,7 @@ void DrawEndImpl(void) {
 	/* DrawTexture(_screenFrameBufferTexture, GetDefaultShader(), &dstRect, &srcRect, false, 1.0f, true, &_fboColor); */
 	/* if (GraphicsPostFBODrawDebugFunc) GraphicsPostFBODrawDebugFunc(); */
 	/* SDL_GL_SwapWindow(WindowGetImpl()->Handle); */
+	//End Old
 }
 
 void DrawLineImpl(float x1, float y1, float x2, float y2, float thickness, Color* color, int useCamera) {

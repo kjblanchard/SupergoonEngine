@@ -382,15 +382,41 @@ void UpdateCurrentMap(void) {
 void DrawCurrentMap(void) {
 	if (!_currentMap) return;
 
-	float w = (CameraGetWidth());
-	float h = (CameraGetHeight());
-	RectangleF src = {SDL_roundf(CameraGetX()), SDL_roundf(CameraGetY()), CameraGetWidth(), CameraGetHeight()};
-	RectangleF dst = {0, 0, w, h};
+	//This fixes the background jitter, but breaks a lot of other things
+	float viewW = 480;
+	float viewH = 270;
+	float texW = (float)TextureGetWidth(_currentMap->BackgroundTexture);
+	float texH = (float)TextureGetHeight(_currentMap->BackgroundTexture);
+	float camX = CameraGetX();
+	float camY = CameraGetY();
+	float srcW = viewW;
+	float srcH = viewH;
+	if (camX + srcW > texW) srcW = texW - camX;
+	if (camY + srcH > texH) srcH = texH - camY;
+	if (srcW <= 0 || srcH <= 0) return;
+	RectangleF src = {camX, camY, srcW, srcH};
+	RectangleF dst = {0, 0, srcW, srcH};
 	DrawTexture(_currentMap->BackgroundTexture,
 				GetDefaultShader(), &dst, &src,
 				false, 1.0f, false,
 				&(Color){255, 255, 255, 255});
 	drawAnimatedTiles();
+	//End fix background jitter
+
+
+	//This is what it was before, with background jitter.
+	/* if (!_currentMap) return; */
+
+	/* float w = (CameraGetWidth()); */
+	/* float h = (CameraGetHeight()); */
+	/* RectangleF src = {SDL_roundf(CameraGetX()), SDL_roundf(CameraGetY()), CameraGetWidth(), CameraGetHeight()}; */
+	/* RectangleF dst = {0, 0, w, h}; */
+	/* DrawTexture(_currentMap->BackgroundTexture, */
+	/* 			GetDefaultShader(), &dst, &src, */
+	/* 			false, 1.0f, false, */
+	/* 			&(Color){255, 255, 255, 255}); */
+	/* drawAnimatedTiles(); */
+	//end what it was before.
 }
 
 static void freeTiledTilemap(Tilemap* map) {
@@ -411,7 +437,6 @@ static void freeTiledTilemap(Tilemap* map) {
 		SDL_free(ts->Name);
 		SDL_free(ts->Image);
 		TextureDestroy(ts->TilesetTexture);
-	
 	}
 
 	SDL_free(map->Tilesets);
