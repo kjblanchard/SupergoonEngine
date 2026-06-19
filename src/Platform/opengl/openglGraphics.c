@@ -2,6 +2,7 @@
 #include <Supergoon/Graphics/graphics.h>
 #include <Supergoon/Graphics/shader.h>
 #include <Supergoon/Graphics/texture.h>
+#include <Supergoon/Platform/opengl/openglTexture.h>
 #include <Supergoon/Primitives/Color.h>
 #include <Supergoon/Primitives/rectangle.h>
 #include <Supergoon/camera.h>
@@ -113,59 +114,85 @@ void DrawEndImpl(void) {
 	int fbHeight = TextureGetHeight(_screenFrameBufferTexture);
 	int winWidth = WindowWidth();
 	int winHeight = WindowHeight();
-	// Compute integer scaling factor
+	// integer scaling
 	int scaleX = winWidth / fbWidth;
 	int scaleY = winHeight / fbHeight;
 	int scale = scaleX < scaleY ? scaleX : scaleY;
 	if (scale < 1) scale = 1;  // don't shrink below 1x
-	// Compute destination rectangle to center the framebuffer
+	// Compute destination rectangle to center the framebuffer, for black bars
 	int drawWidth = fbWidth * scale;
 	int drawHeight = fbHeight * scale;
 	int offsetX = (winWidth - drawWidth) / 2;
 	int offsetY = (winHeight - drawHeight) / 2;
-	RectangleF dstRect = {
-		(float)offsetX,
-		(float)offsetY,
-		(float)drawWidth,
-		(float)drawHeight};
-	RectangleF srcRect = {0, 0, (float)fbWidth, (float)fbHeight};
-	// Set the color properly of the FBO when fading.
-	DrawTexture(_screenFrameBufferTexture, GetDefaultShader(), &dstRect, &srcRect, false, 1.0f, true, &_fboColor);
-	if (GraphicsPostFBODrawDebugFunc) GraphicsPostFBODrawDebugFunc();
+	float subX = CameraGetSubPixelX() * scale;
+	float subY = CameraGetSubPixelY() * scale;
+	//try these
+	float dstX = offsetX - subX;
+	float dstY = offsetY + subY;
 
+
+	Shader* shader = GetDefaultShader();
+	ShaderUse(shader);
+	mat4 model;
+	glm_mat4_identity(model);
+	vec3 pos = {dstX, dstY + drawHeight, 0};
+	glm_translate(model, pos);
+	vec3 size = {(float)drawWidth, -(float)drawHeight, 1.0f};
+	glm_scale(model, size);
+	mat4 view;
+	glm_mat4_identity(view);
+	vec4 srcRectV = {0, 0, (float)fbWidth, (float)fbHeight};
+	vec2 texSize = {(float)fbWidth, (float)fbHeight};
+	ShaderSetUniformVector4fV(shader, "srcRect", srcRectV, false);
+	ShaderSetUniformVector2fV(shader, "textureSize", texSize, false);
+	ShaderSetUniformMatrix4(shader, "model", model, false);
+	ShaderSetUniformMatrix4(shader, "view", view, false);
+	ShaderSetUniformMatrix4(shader, "projection", projectionMatrix, false);
+	ShaderSetUniformInteger(shader, "image", 0, false);
+	vec4 colorVec = {_fboColor.R / 255.0f, _fboColor.G / 255.0f, _fboColor.B / 255.0f, _fboColor.A / 255.0f};
+	ShaderSetUniformVector4fV(shader, "spriteColor", colorVec, false);
+	glActiveTexture(GL_TEXTURE0);
+	TextureBind(_screenFrameBufferTexture);
+	glBindVertexArray(_screenFrameBufferTexture->VAO);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
+	if (GraphicsPostFBODrawDebugFunc) GraphicsPostFBODrawDebugFunc();
 	SDL_GL_SwapWindow(WindowGetImpl()->Handle);
+
+
+
+
+	/* RectangleF dstRect = { */
+	/* 	(float)offsetX, */
+	/* 	(float)offsetY, */
+	/* 	(float)drawWidth, */
+	/* 	(float)drawHeight}; */
+	/* RectangleF srcRect = {0, 0, (float)fbWidth, (float)fbHeight}; */
+	/* // Set the color properly of the FBO when fading. */
+	/* DrawTexture(_screenFrameBufferTexture, GetDefaultShader(), &dstRect, &srcRect, false, 1.0f, true, &_fboColor); */
+	/* if (GraphicsPostFBODrawDebugFunc) GraphicsPostFBODrawDebugFunc(); */
+	/* SDL_GL_SwapWindow(WindowGetImpl()->Handle); */
 }
 
 void DrawLineImpl(float x1, float y1, float x2, float y2, float thickness, Color* color, int useCamera) {
 	Shader* shader = GetDefaultRectShader();
 	ShaderUse(shader);
-
 	// Compute direction and length
 	float dx = x2 - x1;
 	float dy = y2 - y1;
 	float length = sqrtf(dx * dx + dy * dy);
 	float angle = atan2f(dy, dx);
-
 	// Build model matrix
 	mat4 model;
 	glm_mat4_identity(model);
-
 	// Translate to starting point
 	glm_translate(model, (vec3){x1, y1, 0.0f});
-
 	// Rotate to match direction
 	glm_rotate(model, angle, (vec3){0.0f, 0.0f, 1.0f});
-
 	// Scale to line length and thickness
 	glm_scale(model, (vec3){length, thickness, 1.0f});
-
 	// Color
-	vec4 colorV = {
-		color->R / 255.0f,
-		color->G / 255.0f,
-		color->B / 255.0f,
-		color->A / 255.0f};
-
+	vec4 colorV = {color->R / 255.0f, color->G / 255.0f, color->B / 255.0f, color->A / 255.0f};
 	// View matrix
 	mat4 view;
 	glm_mat4_identity(view);
@@ -173,17 +200,13 @@ void DrawLineImpl(float x1, float y1, float x2, float y2, float thickness, Color
 		vec3 negCameraPos = {-CameraGetX(), -CameraGetY(), 0.0f};
 		glm_translate(view, negCameraPos);
 	}
-
 	ShaderSetUniformMatrix4(shader, "projection", projectionMatrix, false);
 	ShaderSetUniformMatrix4(shader, "model", model, false);
 	ShaderSetUniformMatrix4(shader, "view", view, false);
 	ShaderSetUniformVector4fV(shader, "color", colorV, false);
-
 	glBindVertexArray(vao);
-
 	// Draw as filled quad (same VAO as your rectangle)
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
 	glBindVertexArray(0);
 	glUseProgram(0);
 }
