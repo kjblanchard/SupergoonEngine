@@ -43,7 +43,7 @@ static Tileset* GetTilesetForGID(int gid, Tilemap* map) {
 
 	for (int i = 0; i < map->NumTilesets; i++) {
 		if (gid >= map->Tilesets[i].FirstGid &&
-			map->Tilesets[i].FirstGid >= highest) {
+				map->Tilesets[i].FirstGid >= highest) {
 			highest = map->Tilesets[i].FirstGid;
 			best = &map->Tilesets[i];
 		}
@@ -327,16 +327,16 @@ static void createBackgroundsFromTilemap(Tilemap* map) {
 					at->DrawRectangles =
 						realloc(at->DrawRectangles,
 								sizeof(RectangleF) *
-									(++at->NumDrawRectangles));
+								(++at->NumDrawRectangles));
 					at->DrawRectangles[at->NumDrawRectangles - 1] = dst;
 					continue;
 				}
 
 				GetRectForGid(gid, ts, &src);
 				DrawTextureToTexture(map->BackgroundTexture,
-									 ts->TilesetTexture,
-									 GetDefaultShader(),
-									 &dst, &src, 1.0f);
+						ts->TilesetTexture,
+						GetDefaultShader(),
+						&dst, &src, 1.0f);
 			}
 		}
 	}
@@ -350,11 +350,11 @@ static void drawAnimatedTiles(void) {
 			AnimatedTile* a = &ts->AnimatedTiles[j];
 			for (size_t k = 0; k < a->NumDrawRectangles; k++) {
 				DrawTexture(ts->TilesetTexture,
-							GetDefaultShader(),
-							&a->DrawRectangles[k],
-							&a->TileFrames[a->CurrentFrame].SrcRect,
-							true, 1.0f, false,
-							&(Color){255, 255, 255, 255});
+						GetDefaultShader(),
+						&a->DrawRectangles[k],
+						&a->TileFrames[a->CurrentFrame].SrcRect,
+						true, 1.0f, false,
+						&(Color){255, 255, 255, 255});
 			}
 		}
 	}
@@ -369,7 +369,7 @@ void UpdateCurrentMap(void) {
 			a->CurrentMSOnFrame += DeltaTimeMilliseconds;
 
 			while (a->CurrentMSOnFrame >=
-				   a->TileFrames[a->CurrentFrame].MsTime) {
+					a->TileFrames[a->CurrentFrame].MsTime) {
 				a->CurrentMSOnFrame -=
 					a->TileFrames[a->CurrentFrame].MsTime;
 				a->CurrentFrame =
@@ -378,6 +378,42 @@ void UpdateCurrentMap(void) {
 		}
 	}
 }
+
+
+void DrawCurrentMap(void) {
+	if (!_currentMap) return;
+
+	float camX = CameraGetX();
+	float camY = CameraGetY();
+	float floorX = SDL_floorf(camX);
+	float floorY = SDL_floorf(camY);
+	float fracX = camX - floorX;
+	float fracY = camY - floorY;
+
+	float viewW = 480.0f;
+	float viewH = 270.0f;
+	float texW = (float)TextureGetWidth(_currentMap->BackgroundTexture);
+	float texH = (float)TextureGetHeight(_currentMap->BackgroundTexture);
+
+	// Sample one extra texel to fill gap from the fractional dst offset
+	float srcW = viewW + 1.0f;
+	float srcH = viewH + 1.0f;
+	if (floorX + srcW > texW) srcW = texW - floorX;
+	if (floorY + srcH > texH) srcH = texH - floorY;
+	if (srcW <= 0.0f || srcH <= 0.0f) return;
+
+	RectangleF src = {floorX, floorY, srcW, srcH};
+	RectangleF dst = {-fracX, -fracY, srcW, srcH};
+	DrawTexture(_currentMap->BackgroundTexture,
+			GetDefaultShader(), &dst, &src,
+			false, 1.0f, false,
+			&(Color){255, 255, 255, 255});
+	drawAnimatedTiles();
+}
+
+
+
+
 
 void DrawCurrentMap(void) {
 	if (!_currentMap) return;
@@ -397,9 +433,9 @@ void DrawCurrentMap(void) {
 	RectangleF src = {camX, camY, srcW, srcH};
 	RectangleF dst = {0, 0, srcW, srcH};
 	DrawTexture(_currentMap->BackgroundTexture,
-				GetDefaultShader(), &dst, &src,
-				false, 1.0f, false,
-				&(Color){255, 255, 255, 255});
+			GetDefaultShader(), &dst, &src,
+			false, 1.0f, false,
+			&(Color){255, 255, 255, 255});
 	drawAnimatedTiles();
 	//End fix background jitter
 
