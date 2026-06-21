@@ -68,14 +68,6 @@ static void removeTextureFromCache(Texture* t) {
 	}
 }
 
-
-void TextureSetFilterLinearImpl(Texture* texture) {
-	glBindTexture(GL_TEXTURE_2D, texture->ID);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glBindTexture(GL_TEXTURE_2D, 0);
-}
-
 void TextureClearRenderTargetImpl(Texture* texture, float r, float g, float b,
 								  float a) {
 	SetRenderTarget(texture);
@@ -83,6 +75,7 @@ void TextureClearRenderTargetImpl(Texture* texture, float r, float g, float b,
 	glClear(GL_COLOR_BUFFER_BIT);
 	SetPreviousRenderTarget();
 }
+
 Texture* TextureCreateNoCacheImpl(void) {
 	Texture* texture = malloc(sizeof(Texture));
 	texture->ID = 0;

@@ -17,7 +17,6 @@ extern void TextureLoadFromDataImpl(Texture* texture, const char* name, int widt
 extern Texture** GetCachedTexturesImpl(void);
 extern int GetNumCachedTexturesImpl(void);
 extern void TextureLoadFromPngBufferImpl(Texture* texture, const char* filepath, char* buf, size_t sz);
-extern void TextureSetFilterLinearImpl(Texture* texture);
 
 Texture* TextureCreateNoCache(void) { return TextureCreateNoCacheImpl(); }
 Texture* TextureCreate(const char* name) { return TextureCreateImpl(name); }
@@ -32,7 +31,6 @@ void DrawTexture(Texture* texture, Shader* shader, RectangleF* dst, RectangleF* 
 }
 void TextureDestroy(Texture* texture) { TextureDestroyImpl(texture); }
 void TextureBind(Texture* texture) { TextureBindImpl(texture); }
-void TextureSetFilterLinear(Texture* texture) { TextureSetFilterLinearImpl(texture); }
 Texture* TextureCreateRenderTarget(int width, int height) { return TextureCreateRenderTargetImpl(width, height); }
 void SetRenderTarget(Texture* renderTarget) { SetRenderTargetImpl(renderTarget); }
 void TextureClearRenderTarget(Texture* texture, float r, float g, float b, float a) {

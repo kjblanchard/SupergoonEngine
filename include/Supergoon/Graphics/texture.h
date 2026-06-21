@@ -25,7 +25,6 @@ void DrawTexture(Texture *texture, Shader *shader, RectangleF *dst,
 				 RectangleF *src, int camera, float scale, int flipY, Color *color);
 void TextureDestroy(Texture *texture);
 void TextureBind(Texture *texture);
-void TextureSetFilterLinear(Texture *texture);
 void TextureClearRenderTarget(Texture *texture, float r, float g, float b,
 							  float a);
 void DrawTextureToTexture(Texture *dstTarget, Texture *srcTexture,
