@@ -4,6 +4,7 @@ extern void InitializeGraphicsSystemImpl(void);
 extern void ShutdownGraphicsSystemImpl(void);
 extern void DrawEndImpl(void);
 extern void DrawStartImpl(void);
+extern void DrawUIStartImpl(void);
 extern void GraphicsWindowResizeEventImpl(int width, int height);
 extern void GraphicsSetLogicalWorldSizeImpl(int width, int height);
 extern int GraphicsGetTargetRefreshRateImpl(void);
@@ -17,6 +18,7 @@ void DrawRect(RectangleF* rect, Color* color, int filled, int cameraOffset) { Dr
 void InitializeGraphicsSystem(void) { InitializeGraphicsSystemImpl(); }
 void ShutdownGraphicsSystem(void) { ShutdownGraphicsSystemImpl(); }
 void DrawStart(void) { DrawStartImpl(); }
+void DrawUIStart(void) { DrawUIStartImpl(); }
 void DrawEnd(void) { DrawEndImpl(); }
 void GraphicsWindowResizeEvent(int width, int height) { GraphicsWindowResizeEventImpl(width, height); }
 void GraphicsSetLogicalWorldSize(int width, int height) { GraphicsSetLogicalWorldSizeImpl(width, height); }

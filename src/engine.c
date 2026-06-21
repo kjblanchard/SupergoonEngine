@@ -60,6 +60,8 @@ static void draw(void) {
 	DrawCurrentMap();
 	DrawSpriteSystem();
 	if (_drawFunc) _drawFunc();
+	DrawUIStart();
+	if (GraphicsPostFBODrawUIFunc) GraphicsPostFBODrawUIFunc();
 	DrawEnd();
 }
 

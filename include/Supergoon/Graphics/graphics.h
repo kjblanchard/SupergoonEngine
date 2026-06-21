@@ -21,6 +21,7 @@ void DrawRect(RectangleF* rect, Color* color, int filled, int cameraOffset);
 void InitializeGraphicsSystem(void);
 void ShutdownGraphicsSystem(void);
 void DrawStart(void);
+void DrawUIStart(void);
 void DrawEnd(void);
 void GraphicsSetLogicalWorldSize(int width, int height);
 int GraphicsGetTargetRefreshRate(void);
