@@ -21,6 +21,9 @@
 #include <sgtools/log.h>
 
 extern void ShaderSystemShutdown(void);
+extern void DrawTextureRaw(Texture* texture, Shader* shader, RectangleF* dstRect,
+						   RectangleF* srcRect, bool useCamera, float scale, bool flipY,
+						   Color* color, bool snapToPixel);
 SDL_GLContext _context;
 static Texture* _screenFrameBufferTexture = NULL;
 static Texture* _uiFrameBufferTexture = NULL;
@@ -97,15 +100,9 @@ void ShutdownGraphicsSystemImpl(void) {
 	SDL_GL_DestroyContext(_context);
 }
 void DrawStartImpl(void) {
-	SetRenderTarget(NULL);
-	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
-	SetRenderTarget(_screenFrameBufferTexture);
-	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
-	SetRenderTarget(_uiFrameBufferTexture);
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
+	TextureClearRenderTarget(NULL, 0.1f, 0.1f, 0.1f, 1.0f);
+	TextureClearRenderTarget(_screenFrameBufferTexture, 0.1f, 0.1f, 0.1f, 1.0f);
+	TextureClearRenderTarget(_uiFrameBufferTexture, 0.0f, 0.0f, 0.0f, 0.0f);
 	SetRenderTarget(_screenFrameBufferTexture);
 }
 
@@ -133,49 +130,17 @@ void DrawEndImpl(void) {
 	float offsetY = (winHeight - drawHeight) / 2.0f;
 	float subX = CameraGetSubPixelX() * scale;
 	float subY = CameraGetSubPixelY() * scale;
+	Color fboColor = _fboColor;
+	RectangleF fbSrc = {0, 0, (float)fbWidth, (float)fbHeight};
 
-	Shader* shader = GetDefaultShader();
-	ShaderUse(shader);
-	mat4 model;
-	mat4 view;
-	glm_mat4_identity(view);
-	vec4 srcRectV = {0, 0, (float)fbWidth, (float)fbHeight};
-	vec2 texSize = {(float)fbWidth, (float)fbHeight};
-	vec4 colorVec = {_fboColor.R / 255.0f, _fboColor.G / 255.0f, _fboColor.B / 255.0f, _fboColor.A / 255.0f};
-
-	// Blit world FBO with sub-pixel offset
-	glm_mat4_identity(model);
 	float worldX = offsetX - subX;
 	float worldY = offsetY + subY;
-	glm_translate(model, (vec3){worldX, worldY + drawHeight, 0});
-	glm_scale(model, (vec3){(float)drawWidth, -(float)drawHeight, 1.0f});
-	ShaderSetUniformVector4fV(shader, "srcRect", srcRectV, false);
-	ShaderSetUniformVector2fV(shader, "textureSize", texSize, false);
-	ShaderSetUniformMatrix4(shader, "model", model, false);
-	ShaderSetUniformMatrix4(shader, "view", view, false);
-	ShaderSetUniformMatrix4(shader, "projection", projectionMatrix, false);
-	ShaderSetUniformInteger(shader, "image", 0, false);
-	ShaderSetUniformVector4fV(shader, "spriteColor", colorVec, false);
-	glActiveTexture(GL_TEXTURE0);
-	TextureBind(_screenFrameBufferTexture);
-	glBindVertexArray(_screenFrameBufferTexture->VAO);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-	glBindVertexArray(0);
+	RectangleF worldDst = {worldX, worldY, (float)drawWidth, (float)drawHeight};
+	DrawTextureRaw(_screenFrameBufferTexture, GetDefaultShader(), &worldDst, &fbSrc, false, 1.0f, true, &fboColor, false);
 
-	// Blit UI FBO without sub-pixel offset
 	if (_uiFrameBufferTexture) {
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glm_mat4_identity(model);
-		glm_translate(model, (vec3){offsetX, offsetY + drawHeight, 0});
-		glm_scale(model, (vec3){(float)drawWidth, -(float)drawHeight, 1.0f});
-		ShaderSetUniformMatrix4(shader, "model", model, false);
-		ShaderSetUniformVector4fV(shader, "spriteColor", colorVec, false);
-		glActiveTexture(GL_TEXTURE0);
-		TextureBind(_uiFrameBufferTexture);
-		glBindVertexArray(_uiFrameBufferTexture->VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-		glBindVertexArray(0);
+		RectangleF uiDst = {offsetX, offsetY, (float)drawWidth, (float)drawHeight};
+		DrawTextureRaw(_uiFrameBufferTexture, GetDefaultShader(), &uiDst, &fbSrc, false, 1.0f, true, &fboColor, false);
 	}
 
 	if (GraphicsPostFBODrawDebugFunc) GraphicsPostFBODrawDebugFunc();

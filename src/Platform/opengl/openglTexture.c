@@ -244,16 +244,19 @@ cleanup:
 	SDL_DestroySurface(surface);
 }
 
-void DrawTextureImpl(Texture* texture, Shader* shader, RectangleF* dstRect,
-					 RectangleF* srcRect, bool useCamera, float scale, bool flipY, Color* color) {
+void DrawTextureRaw(Texture* texture, Shader* shader, RectangleF* dstRect,
+					RectangleF* srcRect, bool useCamera, float scale, bool flipY,
+					Color* color, bool snapToPixel) {
 	if (flipY) {
-		dstRect->y += dstRect->h * scale;  // move origin to top
-		dstRect->h *= -1;				   // negative height flips it
+		dstRect->y += dstRect->h * scale;
+		dstRect->h *= -1;
 	}
 	ShaderUse(shader);
 	mat4 model;
 	glm_mat4_identity(model);
-	vec3 pos = {floorf(dstRect->x), floorf(dstRect->y), 0};
+	float px = snapToPixel ? floorf(dstRect->x) : dstRect->x;
+	float py = snapToPixel ? floorf(dstRect->y) : dstRect->y;
+	vec3 pos = {px, py, 0};
 	glm_translate(model, pos);
 	vec3 size = {dstRect->w * scale, dstRect->h * scale, 1.0f};
 	glm_scale(model, size);
@@ -265,7 +268,9 @@ void DrawTextureImpl(Texture* texture, Shader* shader, RectangleF* dstRect,
 		vec3 negCameraPos = {-cx, -cy, 0.0f};
 		glm_translate(view, negCameraPos);
 	}
-	vec4 srcRectV = {floorf(srcRect->x), floorf(srcRect->y), srcRect->w, srcRect->h};
+	float sx = snapToPixel ? floorf(srcRect->x) : srcRect->x;
+	float sy = snapToPixel ? floorf(srcRect->y) : srcRect->y;
+	vec4 srcRectV = {sx, sy, srcRect->w, srcRect->h};
 	vec2 texSize = {(float)texture->Width, (float)texture->Height};
 	ShaderSetUniformVector4fV(shader, "srcRect", srcRectV, false);
 	ShaderSetUniformVector2fV(shader, "textureSize", texSize, false);
@@ -280,6 +285,11 @@ void DrawTextureImpl(Texture* texture, Shader* shader, RectangleF* dstRect,
 	glBindVertexArray(texture->VAO);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
+}
+
+void DrawTextureImpl(Texture* texture, Shader* shader, RectangleF* dstRect,
+					 RectangleF* srcRect, bool useCamera, float scale, bool flipY, Color* color) {
+	DrawTextureRaw(texture, shader, dstRect, srcRect, useCamera, scale, flipY, color, true);
 }
 
 void DrawTextureToTextureImpl(Texture* dstTarget, Texture* srcTexture,
