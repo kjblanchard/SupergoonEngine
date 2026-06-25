@@ -21,6 +21,7 @@ void DrawRect(RectangleF* rect, Color* color, int filled, int cameraOffset);
 void InitializeGraphicsSystem(void);
 void ShutdownGraphicsSystem(void);
 void DrawStart(void);
+void DrawUIStart(void);
 void DrawEnd(void);
 void GraphicsSetLogicalWorldSize(int width, int height);
 int GraphicsGetTargetRefreshRate(void);
@@ -28,6 +29,7 @@ void GraphicsWindowResizeEvent(int width, int height);
 void GraphicsUpdateFBOColor(Color* color);
 Color GraphicsGetFBOColor(void);
 void* GraphicsGetContextPtr(void);
+extern void (*GraphicsPostFBODrawUIFunc)(void);
 extern void (*GraphicsPostFBODrawDebugFunc)(void);
 
 #ifdef __cplusplus

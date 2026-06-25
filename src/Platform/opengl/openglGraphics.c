@@ -2,6 +2,7 @@
 #include <Supergoon/Graphics/graphics.h>
 #include <Supergoon/Graphics/shader.h>
 #include <Supergoon/Graphics/texture.h>
+#include <Supergoon/Platform/opengl/openglTexture.h>
 #include <Supergoon/Primitives/Color.h>
 #include <Supergoon/Primitives/rectangle.h>
 #include <Supergoon/camera.h>
@@ -20,8 +21,12 @@
 #include <sgtools/log.h>
 
 extern void ShaderSystemShutdown(void);
+extern void DrawTextureRaw(Texture* texture, Shader* shader, RectangleF* dstRect,
+						   RectangleF* srcRect, bool useCamera, float scale, bool flipY,
+						   Color* color, bool snapToPixel);
 SDL_GLContext _context;
 static Texture* _screenFrameBufferTexture = NULL;
+static Texture* _uiFrameBufferTexture = NULL;
 static int _logicalX = 0;
 static GLuint vao = 0, vbo = 0;
 static Color _fboColor = {255, 255, 255, 255};
@@ -95,12 +100,14 @@ void ShutdownGraphicsSystemImpl(void) {
 	SDL_GL_DestroyContext(_context);
 }
 void DrawStartImpl(void) {
-	SetRenderTarget(NULL);
-	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
+	TextureClearRenderTarget(NULL, 0.1f, 0.1f, 0.1f, 1.0f);
+	TextureClearRenderTarget(_screenFrameBufferTexture, 0.1f, 0.1f, 0.1f, 1.0f);
+	TextureClearRenderTarget(_uiFrameBufferTexture, 0.0f, 0.0f, 0.0f, 0.0f);
 	SetRenderTarget(_screenFrameBufferTexture);
-	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
+}
+
+void DrawUIStartImpl(void) {
+	SetRenderTarget(_uiFrameBufferTexture);
 }
 
 void DrawEndImpl(void) {
@@ -113,24 +120,29 @@ void DrawEndImpl(void) {
 	int fbHeight = TextureGetHeight(_screenFrameBufferTexture);
 	int winWidth = WindowWidth();
 	int winHeight = WindowHeight();
-	// Compute integer scaling factor
 	int scaleX = winWidth / fbWidth;
 	int scaleY = winHeight / fbHeight;
 	int scale = scaleX < scaleY ? scaleX : scaleY;
-	if (scale < 1) scale = 1;  // don't shrink below 1x
-	// Compute destination rectangle to center the framebuffer
+	if (scale < 1) scale = 1;
 	int drawWidth = fbWidth * scale;
 	int drawHeight = fbHeight * scale;
-	int offsetX = (winWidth - drawWidth) / 2;
-	int offsetY = (winHeight - drawHeight) / 2;
-	RectangleF dstRect = {
-		(float)offsetX,
-		(float)offsetY,
-		(float)drawWidth,
-		(float)drawHeight};
-	RectangleF srcRect = {0, 0, (float)fbWidth, (float)fbHeight};
-	// Set the color properly of the FBO when fading.
-	DrawTexture(_screenFrameBufferTexture, GetDefaultShader(), &dstRect, &srcRect, false, 1.0f, true, &_fboColor);
+	float offsetX = (winWidth - drawWidth) / 2.0f;
+	float offsetY = (winHeight - drawHeight) / 2.0f;
+	float subX = CameraGetSubPixelX() * scale;
+	float subY = CameraGetSubPixelY() * scale;
+	Color fboColor = _fboColor;
+	RectangleF fbSrc = {0, 0, (float)fbWidth, (float)fbHeight};
+
+	float worldX = offsetX - subX;
+	float worldY = offsetY + subY;
+	RectangleF worldDst = {worldX, worldY, (float)drawWidth, (float)drawHeight};
+	DrawTextureRaw(_screenFrameBufferTexture, GetDefaultShader(), &worldDst, &fbSrc, false, 1.0f, true, &fboColor, false);
+
+	if (_uiFrameBufferTexture) {
+		RectangleF uiDst = {offsetX, offsetY, (float)drawWidth, (float)drawHeight};
+		DrawTextureRaw(_uiFrameBufferTexture, GetDefaultShader(), &uiDst, &fbSrc, false, 1.0f, true, &fboColor, false);
+	}
+
 	if (GraphicsPostFBODrawDebugFunc) GraphicsPostFBODrawDebugFunc();
 
 	SDL_GL_SwapWindow(WindowGetImpl()->Handle);
@@ -227,6 +239,11 @@ void GraphicsSetLogicalWorldSizeImpl(int width, int height) {
 	}
 	_screenFrameBufferTexture = TextureCreateRenderTarget(width, height);
 	TextureClearRenderTarget(_screenFrameBufferTexture, 0, 0, 0, 1.0);
+	if (_uiFrameBufferTexture) {
+		TextureDestroy(_uiFrameBufferTexture);
+	}
+	_uiFrameBufferTexture = TextureCreateRenderTarget(width, height);
+	TextureClearRenderTarget(_uiFrameBufferTexture, 0, 0, 0, 0.0);
 }
 
 void GraphicsUpdateFBOColorImpl(Color* color) {
