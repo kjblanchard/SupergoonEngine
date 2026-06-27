@@ -327,6 +327,9 @@ elseif(EMSCRIPTEN)
         set(INSTALL_CMAKE_PACKAGE_MODULE
             OFF
             CACHE BOOL "Dont do it" FORCE)
+        set(BUILD_TEST
+            OFF
+            CACHE BOOL "Dont do it" FORCE)
         FetchContent_Declare(
             LIB_SGSOUND
             GIT_REPOSITORY https://github.com/kjblanchard/sgsound
