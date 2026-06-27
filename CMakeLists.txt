@@ -240,13 +240,13 @@ elseif(EMSCRIPTEN)
             list(APPEND EXTERNAL_LIBS ${LIB_SGSOUND})
         endif(LIB_SGSOUND)
 
-        find_library(
-            LIB_SGTOOLS
-            NAMES sgtools
-            HINTS /opt/homebrew/bin/ /usr/local/bin /usr/local/lib /usr/bin/)
-        if(LIB_SGTOOLS)
-            list(APPEND EXTERNAL_LIBS ${LIB_SGTOOLS})
-        endif(LIB_SGTOOLS)
+        # find_library(
+        #     LIB_SGTOOLS
+        #     NAMES sgtools
+        #     HINTS /opt/homebrew/bin/ /usr/local/bin /usr/local/lib /usr/bin/)
+        # if(LIB_SGTOOLS)
+        #     list(APPEND EXTERNAL_LIBS ${LIB_SGTOOLS})
+        # endif(LIB_SGTOOLS)
 
         find_library(
             LIB_SGFORGE
@@ -254,7 +254,7 @@ elseif(EMSCRIPTEN)
             HINTS /opt/homebrew/bin/ /usr/local/bin /usr/local/lib /usr/bin/)
         if(LIB_SGFORGE)
             list(APPEND EXTERNAL_LIBS ${LIB_SGFORGE})
-        endif(LIB_SGTOOLS)
+        endif(LIB_SGFORGE)
 
         find_package(SDL3 CONFIG COMPONENTS SDL3-shared)
         if(SDL3_FOUND)
@@ -293,19 +293,19 @@ elseif(EMSCRIPTEN)
         target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC cglm)
     endif(NOT LIB_CGLM)
 
-    if(NOT LIB_SGTOOLS)
-        message(STATUS "sgtools not found. Fetching sgtools...")
-        set(INSTALL_CMAKE_PACKAGE_MODULE
-            OFF
-            CACHE BOOL "Dont do it" FORCE)
-        FetchContent_Declare(
-            LIB_SGTOOLS
-            GIT_REPOSITORY https://github.com/kjblanchard/sgtools
-            GIT_TAG master
-            EXCLUDE_FROM_ALL)
-        FetchContent_MakeAvailable(LIB_SGTOOLS)
-        target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC sgtools)
-    endif(NOT LIB_SGTOOLS)
+    # if(NOT LIB_SGTOOLS)
+    #     message(STATUS "sgtools not found. Fetching sgtools...")
+    #     set(INSTALL_CMAKE_PACKAGE_MODULE
+    #         OFF
+    #         CACHE BOOL "Dont do it" FORCE)
+    #     FetchContent_Declare(
+    #         LIB_SGTOOLS
+    #         GIT_REPOSITORY https://github.com/kjblanchard/sgtools
+    #         GIT_TAG master
+    #         EXCLUDE_FROM_ALL)
+    #     FetchContent_MakeAvailable(LIB_SGTOOLS)
+    #     target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC sgtools)
+    # endif(NOT LIB_SGTOOLS)
 
     if(NOT LIB_SGFORGE)
         message(STATUS "sgforge not found. Fetching sgforge...")
@@ -320,6 +320,20 @@ elseif(EMSCRIPTEN)
         FetchContent_MakeAvailable(LIB_SGFORGE)
         target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC sgforge)
     endif(NOT LIB_SGFORGE)
+
+    if(NOT LIB_SGSOUND)
+        message(STATUS "sgsound not found. Fetching sgsound...")
+        set(INSTALL_CMAKE_PACKAGE_MODULE
+            OFF
+            CACHE BOOL "Dont do it" FORCE)
+        FetchContent_Declare(
+            LIB_SGSOUND
+            GIT_REPOSITORY https://github.com/kjblanchard/sgsound
+            GIT_TAG master
+            EXCLUDE_FROM_ALL)
+        FetchContent_MakeAvailable(LIB_SGSOUND)
+        target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC sgsound)
+    endif(NOT LIB_SGSOUND)
 
     if(NOT JSON-C_FOUND)
         message(STATUS "jsonc not found. Fetching...")
