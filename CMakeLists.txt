@@ -293,6 +293,34 @@ elseif(EMSCRIPTEN)
         target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC cglm)
     endif(NOT LIB_CGLM)
 
+    if(NOT LIB_SGTOOLS)
+        message(STATUS "sgtools not found. Fetching sgtools...")
+        set(INSTALL_CMAKE_PACKAGE_MODULE
+            OFF
+            CACHE BOOL "Dont do it" FORCE)
+        FetchContent_Declare(
+            LIB_SGTOOLS
+            GIT_REPOSITORY https://github.com/kjblanchard/sgtools
+            GIT_TAG master
+            EXCLUDE_FROM_ALL)
+        FetchContent_MakeAvailable(LIB_SGTOOLS)
+        target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC sgtools)
+    endif(NOT LIB_SGTOOLS)
+
+    if(NOT LIB_SGFORGE)
+        message(STATUS "sgforge not found. Fetching sgforge...")
+        set(INSTALL_CMAKE_PACKAGE_MODULE
+            OFF
+            CACHE BOOL "Dont do it" FORCE)
+        FetchContent_Declare(
+            LIB_SGFORGE
+            GIT_REPOSITORY https://github.com/kjblanchard/sgforge
+            GIT_TAG master
+            EXCLUDE_FROM_ALL)
+        FetchContent_MakeAvailable(LIB_SGFORGE)
+        target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC sgforge)
+    endif(NOT LIB_SGFORGE)
+
     if(NOT JSON-C_FOUND)
         message(STATUS "jsonc not found. Fetching...")
         FetchContent_Declare(
