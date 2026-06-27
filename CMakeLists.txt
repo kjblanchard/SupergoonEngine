@@ -31,17 +31,18 @@ if(DEBUG_ASAN AND CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif()
 
 # Platform specific executable flags
-if(EMSCRIPTEN)
-    message(STATUS "Enabling Emscripten flags for supergoon engine ")
-    set(CMAKE_EXECUTABLE_SUFFIX
-        ".html"
-        CACHE STRING "Use html" FORCE)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -s USE_SDL=3 -s USE_ZLIB=1  -s USE_VORBIS=1 -s USE_OGG=1 ")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s USE_SDL=3 -s USE_ZLIB=1  -s USE_VORBIS=1 -s USE_OGG=1 ")
-    set(LINK_FLAGS
-        "${LINK_FLAGS} -s ALLOW_MEMORY_GROWTH=1 -s USE_SDL=3 -s USE_VORBIS=1 -s USE_OGG=1 -s FULL_ES3=1 -s USE_WEBGL2=1 -s STACK_SIZE=1mb -s EXPORTED_RUNTIME_METHODS=cwrap -sMAX_WEBGL_VERSION=2 -sMIN_WEBGL_VERSION=2 -s 'DEFAULT_LIBRARY_FUNCS_TO_INCLUDE=[\"$autoResumeAudioContext\",\"$dynCall\"]'"
-    )
-elseif(APPLE)
+# if(EMSCRIPTEN)
+    # message(STATUS "Enabling Emscripten flags for supergoon engine ")
+    # set(CMAKE_EXECUTABLE_SUFFIX
+    #     ".html"
+    #     CACHE STRING "Use html" FORCE)
+    # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -s USE_SDL=3 -s USE_ZLIB=1  -s USE_VORBIS=1 -s USE_OGG=1 ")
+    # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s USE_SDL=3 -s USE_ZLIB=1  -s USE_VORBIS=1 -s USE_OGG=1 ")
+    # set(LINK_FLAGS
+    #     "${LINK_FLAGS} -s ALLOW_MEMORY_GROWTH=1 -s USE_SDL=3 -s USE_VORBIS=1 -s USE_OGG=1 -s FULL_ES3=1 -s USE_WEBGL2=1 -s STACK_SIZE=1mb -s EXPORTED_RUNTIME_METHODS=cwrap -sMAX_WEBGL_VERSION=2 -sMIN_WEBGL_VERSION=2 -s 'DEFAULT_LIBRARY_FUNCS_TO_INCLUDE=[\"$autoResumeAudioContext\",\"$dynCall\"]'"
+    # )
+# endif(EMSCRIPTEN)
+if(APPLE)
     set(CMAKE_OSX_DEPLOYMENT_TARGET
         "10.14"
         CACHE STRING "Minimum OS X deployment version")
@@ -51,7 +52,7 @@ elseif(APPLE)
     set(ICON_PATH
         ${CMAKE_SOURCE_DIR}/cmake/AppIcon.icns
         CACHE STRING "Icon path")
-endif(EMSCRIPTEN)
+endif(APPLE)
 
 # Compile definitions based on backend
 if(SDL_BACKEND)
@@ -72,8 +73,6 @@ if(UNIX OR APPLE)
         -Wno-unused-parameter 
         -Wno-sign-compare 
         -Wshadow
-        # -Wconversion
-        # -Wsign-conversion
         -Wnull-dereference
         -Wdouble-promotion
         -Wformat=2
@@ -84,12 +83,10 @@ endif(UNIX OR APPLE)
 set(SRC_FILES
     src/camera.c
     src/json.c
-    # src/log.c
     src/state.c
     src/Input/keyboard.c
     src/window.c
     src/filesystem.c
-    # src/tools.c
     src/events.c
     src/engine.c
     src/Primitives/rectangle.c
@@ -99,16 +96,10 @@ set(SRC_FILES
     src/Animation/AnimationData.c
     src/sprite.c
     src/Input/mouse.c
-    # src/Input/touch.c
     src/Platform/sdl/sdl.c
     src/Platform/sdl/sdlInput.c
     src/Platform/sdl/sdlWindow.c
     src/map.c
-    # sound
-    # src/Platform/openal/openal.c
-    # src/Platform/openal/openalSfx.c
-    # src/Platform/openal/openalStream.c
-    # src/Platform/openal/openalBgm.c
     # 2d engine
     src/Graphics/graphics.c
     src/Graphics/texture.c
@@ -128,53 +119,47 @@ endif(SDL_RENDERER)
 # add_executable(${LIBRARY_TARGET_NAME } MACOSX_BUNDLE WIN32 ${SRC_FILES} ${DEBUG_FILES} ${ICON_PATH})
 add_library(${LIBRARY_TARGET_NAME} ${SRC_FILES} ${DEBUG_FILES})
 
-set(SKIP_INSTALL_ALL
-    ON
-    CACHE BOOL "We don't want any of these external packages to install anything")
-set(CMAKE_DEBUG_POSTFIX
-    ""
-    CACHE STRING " Don't use the d for debug packages" FORCE)
-set(CMAKE_DEBUG_TARGET_PROPERTIES
-    "DEBUG_OUTPUT" ""
-    CACHE STRING "Don't use the d for debug packages" FORCE)
+set(SKIP_INSTALL_ALL ON CACHE BOOL "We don't want any of these external packages to install anything")
+set(CMAKE_DEBUG_POSTFIX "" CACHE STRING " Don't use the d for debug packages" FORCE)
+set(CMAKE_DEBUG_TARGET_PROPERTIES "DEBUG_OUTPUT" "" CACHE STRING "Don't use the d for debug packages" FORCE)
 
-if(APPLE)
-    set_target_properties(${LIBRARY_TARGET_NAME} PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/cmake/Info.plist)
-    set_source_files_properties(${ICON_PATH} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
-    set_source_files_properties(${CMAKE_SOURCE_DIR}/cmake/Info.plist PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
-    set_target_properties(
-        ${LIBRARY_TARGET_NAME}
-        PROPERTIES XCODE_ATTRIBUTE_CODE_SIGN_ENTITLEMENTS "${CMAKE_SOURCE_DIR}/cmake/EscapeTheFate.entitlements"
-        # XCODE_ATTRIBUTE_CODE_SIGN_STYLE "Automatic"
-        XCODE_ATTRIBUTE_CODE_SIGN_STYLE "Manual"
-        XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET "13.0"
-        XCODE_ATTRIBUTE_DEVELOPMENT_TEAM "H34NGW287W"
-        # when building on github, we don't want to sign anything cause there is no cert
-        XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED "NO"
-        XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED "NO"
-        # XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "Apple Development"
-    )
+# if(APPLE)
+#     set_target_properties(${LIBRARY_TARGET_NAME} PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/cmake/Info.plist)
+#     set_source_files_properties(${ICON_PATH} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+#     set_source_files_properties(${CMAKE_SOURCE_DIR}/cmake/Info.plist PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+#     set_target_properties(
+#         ${LIBRARY_TARGET_NAME}
+#         PROPERTIES XCODE_ATTRIBUTE_CODE_SIGN_ENTITLEMENTS "${CMAKE_SOURCE_DIR}/cmake/EscapeTheFate.entitlements"
+#         # XCODE_ATTRIBUTE_CODE_SIGN_STYLE "Automatic"
+#         XCODE_ATTRIBUTE_CODE_SIGN_STYLE "Manual"
+#         XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET "13.0"
+#         XCODE_ATTRIBUTE_DEVELOPMENT_TEAM "H34NGW287W"
+#         # when building on github, we don't want to sign anything cause there is no cert
+#         XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED "NO"
+#         XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED "NO"
+#         # XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "Apple Development"
+#     )
 
-elseif(EMSCRIPTEN)
-    if(EXISTS "${CMAKE_SOURCE_DIR}/SupergoonEngine/scripting")
-        set(ENGINE_SCRIPT_PATH "${CMAKE_SOURCE_DIR}/SupergoonEngine/scripting")
-    elseif(EXISTS "${CMAKE_BINARY_DIR}/_deps/supergoonengine-src/scripting")
-        set(ENGINE_SCRIPT_PATH "${CMAKE_BINARY_DIR}/_deps/supergoonengine-src/scripting")
-    else()
-        message(WARNING "SupergoonEngine scripting folder not found, skipping preload.")
-        set(ENGINE_SCRIPT_PATH "")
-    endif()
+# elseif(EMSCRIPTEN)
+#     if(EXISTS "${CMAKE_SOURCE_DIR}/SupergoonEngine/scripting")
+#         set(ENGINE_SCRIPT_PATH "${CMAKE_SOURCE_DIR}/SupergoonEngine/scripting")
+#     elseif(EXISTS "${CMAKE_BINARY_DIR}/_deps/supergoonengine-src/scripting")
+#         set(ENGINE_SCRIPT_PATH "${CMAKE_BINARY_DIR}/_deps/supergoonengine-src/scripting")
+#     else()
+#         message(WARNING "SupergoonEngine scripting folder not found, skipping preload.")
+#         set(ENGINE_SCRIPT_PATH "")
+#     endif()
 
-    set_target_properties(
-        ${LIBRARY_TARGET_NAME}
-        PROPERTIES
-        LINK_FLAGS
-        "${LINK_FLAGS} -O0 -s SAFE_HEAP=2 -s STACK_OVERFLOW_CHECK=1 \
-        --preload-file ${CMAKE_SOURCE_DIR}/assets@/assets \
-        # --preload-file ${CMAKE_SOURCE_DIR}/src@/assets/lua/ \
-        # --preload-file ${ENGINE_SCRIPT_PATH}@/assets/lua/"
-    )
-    endif()
+#     set_target_properties(
+#         ${LIBRARY_TARGET_NAME}
+#         PROPERTIES
+#         LINK_FLAGS
+#         "${LINK_FLAGS} -O0 -s SAFE_HEAP=2 -s STACK_OVERFLOW_CHECK=1 \
+#         --preload-file ${CMAKE_SOURCE_DIR}/assets@/assets \
+#         # --preload-file ${CMAKE_SOURCE_DIR}/src@/assets/lua/ \
+#         # --preload-file ${ENGINE_SCRIPT_PATH}@/assets/lua/"
+#     )
+#     endif()
 
     if(SYSTEM_PACKAGES) # If we are using system packages, then we should try to find them.
         find_library(
@@ -487,16 +472,10 @@ elseif(EMSCRIPTEN)
         ${LIBRARY_TARGET_NAME} SYSTEM
         PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include /usr/local/include
         PRIVATE # linux builds
-        # ${sdl3_SOURCE_DIR}/include ${freetype_SOURCE_DIR}/include ${lib_lua_SOURCE_DIR}/lua-5.4.5/include ${lib_vorbis_SOURCE_DIR}/include
         ${lib_ogg_SOURCE_DIR}/include ${lib_ogg_BINARY_DIR}/include)
 
     target_include_directories(${LIBRARY_TARGET_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
     target_include_directories(
         ${LIBRARY_TARGET_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src/engine/include ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}_
         /emsdk/upstream/emscripten/cache/sysroot/include /usr/local/include/freetype2) # Add the freetype2 specific include
-    # directory
 
-    # install(
-    #     DIRECTORY scripting/
-    #     # DESTINATION ${INSTALL_DIR}/assets/lua
-    #     COMPONENT assets)
