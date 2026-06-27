@@ -232,21 +232,14 @@ elseif(EMSCRIPTEN)
             NAMES lua lua_static lua5.4
             HINTS /opt/homebrew/bin/ /usr/local/bin /usr/local/lib /usr/bin/)
 
-        find_library(
-            LIB_SGSOUND
-            NAMES sgsound 
-            HINTS /opt/homebrew/bin/ /usr/local/bin /usr/local/lib /usr/bin/)
-        if(LIB_SGSOUND)
-            list(APPEND EXTERNAL_LIBS ${LIB_SGSOUND})
-        endif(LIB_SGSOUND)
 
-        # find_library(
-        #     LIB_SGTOOLS
-        #     NAMES sgtools
-        #     HINTS /opt/homebrew/bin/ /usr/local/bin /usr/local/lib /usr/bin/)
-        # if(LIB_SGTOOLS)
-        #     list(APPEND EXTERNAL_LIBS ${LIB_SGTOOLS})
-        # endif(LIB_SGTOOLS)
+        find_library(
+            LIB_SGTOOLS
+            NAMES sgtools
+            HINTS /opt/homebrew/bin/ /usr/local/bin /usr/local/lib /usr/bin/)
+        if(LIB_SGTOOLS)
+            list(APPEND EXTERNAL_LIBS ${LIB_SGTOOLS})
+        endif(LIB_SGTOOLS)
 
         find_library(
             LIB_SGFORGE
@@ -255,6 +248,14 @@ elseif(EMSCRIPTEN)
         if(LIB_SGFORGE)
             list(APPEND EXTERNAL_LIBS ${LIB_SGFORGE})
         endif(LIB_SGFORGE)
+
+        find_library(
+            LIB_SGSOUND
+            NAMES sgsound 
+            HINTS /opt/homebrew/bin/ /usr/local/bin /usr/local/lib /usr/bin/)
+        if(LIB_SGSOUND)
+            list(APPEND EXTERNAL_LIBS ${LIB_SGSOUND})
+        endif(LIB_SGSOUND)
 
         find_package(SDL3 CONFIG COMPONENTS SDL3-shared)
         if(SDL3_FOUND)
