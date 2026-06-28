@@ -230,6 +230,7 @@ set(CMAKE_DEBUG_TARGET_PROPERTIES "DEBUG_OUTPUT" "" CACHE STRING "Don't use the 
             LIB_SGFORGE
             NAMES sgforge
             HINTS /opt/homebrew/bin/ /usr/local/bin /usr/local/lib /usr/bin/)
+        set(SGFORGE_INSTALL_TOOLS OFF CACHE INTERNAL "No binary")
         if(LIB_SGFORGE)
             list(APPEND EXTERNAL_LIBS ${LIB_SGFORGE})
         endif(LIB_SGFORGE)
