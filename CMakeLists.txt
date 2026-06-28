@@ -230,7 +230,6 @@ set(CMAKE_DEBUG_TARGET_PROPERTIES "DEBUG_OUTPUT" "" CACHE STRING "Don't use the 
             LIB_SGFORGE
             NAMES sgforge
             HINTS /opt/homebrew/bin/ /usr/local/bin /usr/local/lib /usr/bin/)
-        set(SGFORGE_INSTALL_TOOLS OFF CACHE INTERNAL "No binary")
         if(LIB_SGFORGE)
             list(APPEND EXTERNAL_LIBS ${LIB_SGFORGE})
         endif(LIB_SGFORGE)
@@ -296,9 +295,8 @@ set(CMAKE_DEBUG_TARGET_PROPERTIES "DEBUG_OUTPUT" "" CACHE STRING "Don't use the 
 
     if(NOT LIB_SGFORGE)
         message(STATUS "sgforge not found. Fetching sgforge...")
-        set(INSTALL_CMAKE_PACKAGE_MODULE
-            OFF
-            CACHE BOOL "Dont do it" FORCE)
+        set(INSTALL_CMAKE_PACKAGE_MODULE OFF CACHE BOOL "Dont do it" FORCE)
+        set(SGFORGE_INSTALL_TOOLS OFF CACHE INTERNAL "No binary")
         FetchContent_Declare(
             LIB_SGFORGE
             GIT_REPOSITORY https://github.com/kjblanchard/sgforge
