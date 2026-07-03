@@ -1,7 +1,6 @@
 set(LIBRARY_TARGET_NAME SupergoonEngine)
 message(STATUS "Starting ${LIBRARY_TARGET_NAME} engine initialization")
 set(COMPILE_OPTIONS)
-set(EXTERNAL_LIBS)
 # Should we show everything, or just a few.
 set(CMAKE_INSTALL_MESSAGE LAZY)
 set(CMAKE_C_STANDARD 99)
@@ -67,7 +66,7 @@ if(UNIX OR APPLE)
     )
 endif(UNIX OR APPLE)
 
-if(CMAKE_BUILD_TYPE STREQUAL "Release")
+if(CMAKE_BUILD_TYPE STREQUAL "Release" AND NOT APPLE)
     set(PREFER_STATIC_DEPS ON)
 else()
     set(PREFER_STATIC_DEPS OFF)
@@ -140,7 +139,8 @@ if(SYSTEM_PACKAGES) # If we are using system packages, then we should try to fin
         NAMES libcglm cglm libcglm.a cglm.dll libcglm.a
         HINTS /usr/local/lib /c/cmake/lib)
     if(LIB_CGLM)
-        list(APPEND EXTERNAL_LIBS ${LIB_CGLM})
+        target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC ${LIB_CGLM})
+        # list(APPEND EXTERNAL_LIBS ${LIB_CGLM})
     endif(LIB_CGLM)
 
     find_library(LIB_VORBIS
@@ -148,7 +148,8 @@ if(SYSTEM_PACKAGES) # If we are using system packages, then we should try to fin
         NAMES libvorbis vorbis vorbis.a vorbis.dll libvorbis.a
         HINTS /usr/local/lib /c/cmake/lib)
     if(LIB_VORBIS)
-        list(APPEND EXTERNAL_LIBS ${LIB_VORBIS})
+        target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC ${LIB_VORBIS})
+        # list(APPEND EXTERNAL_LIBS ${LIB_VORBIS})
     endif(LIB_VORBIS)
 
     find_library( LIB_VORBISFILE
@@ -156,7 +157,7 @@ if(SYSTEM_PACKAGES) # If we are using system packages, then we should try to fin
         NAMES libvorbisfile vorbisfile vorbisfile.a vorbisfile.dll
         HINTS /usr/local/lib)
     if(LIB_VORBISFILE)
-        list(APPEND EXTERNAL_LIBS ${LIB_VORBISFILE})
+        target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC ${LIB_VORBISFILE})
     endif(LIB_VORBISFILE)
 
     find_library(LIB_OGG
@@ -164,54 +165,57 @@ if(SYSTEM_PACKAGES) # If we are using system packages, then we should try to fin
         NAMES ogg Ogg
         HINTS /usr/local/lib)
     if(LIB_OGG)
-        list(APPEND EXTERNAL_LIBS ${LIB_OGG})
+        target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC ${LIB_OGG})
     endif(LIB_OGG)
 
     find_library(LIB_SGTOOLS
         NAMES sgtools
         HINTS /opt/homebrew/bin/ /usr/local/bin /usr/local/lib /usr/bin/)
     if(LIB_SGTOOLS)
-        list(APPEND EXTERNAL_LIBS ${LIB_SGTOOLS})
+        target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC ${LIB_SGTOOLS})
     endif(LIB_SGTOOLS)
 
     find_library(LIB_SGFORGE
         NAMES sgforge
         HINTS /opt/homebrew/bin/ /usr/local/bin /usr/local/lib /usr/bin/)
     if(LIB_SGFORGE)
-        list(APPEND EXTERNAL_LIBS ${LIB_SGFORGE})
+        target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC ${LIB_SGFORGE})
     endif(LIB_SGFORGE)
 
     find_library(LIB_SGSOUND
         NAMES sgsound 
         HINTS /opt/homebrew/bin/ /usr/local/bin /usr/local/lib /usr/bin/)
     if(LIB_SGSOUND)
-        list(APPEND EXTERNAL_LIBS ${LIB_SGSOUND})
+        target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC ${LIB_SGSOUND})
     endif(LIB_SGSOUND)
 
     find_package(SDL3 CONFIG COMPONENTS SDL3-shared)
     if(SDL3_FOUND)
-        list(APPEND EXTERNAL_LIBS SDL3::SDL3)
+        target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC SDL3::SDL3)
     endif(SDL3_FOUND)
 
     find_package(JSON-C CONFIG)
     if(JSON-C_FOUND)
-        list(APPEND EXTERNAL_LIBS json-c::json-c)
+        # list(APPEND EXTERNAL_LIBS json-c::json-c)
+        target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC json-c::json-c)
     endif(JSON-C_FOUND)
 
-    find_package(Freetype)
-    if(FREETYPE_FOUND)
-        get_target_property(
-    FT_LIBS
-    Freetype::Freetype
-    INTERFACE_LINK_LIBRARIES)
+# debugging
+# find_package(Freetype)
+# if(FREETYPE_FOUND)
+#     get_target_property(
+# FT_LIBS
+# Freetype::Freetype
+# INTERFACE_LINK_LIBRARIES)
 
-message(STATUS "FT interface libs = ${FT_LIBS}")
-        message(STATUS "Freetype library: ${FREETYPE_LIBRARY}")
-        message(STATUS "Freetype libs: ${FREETYPE_LIBRARIES}")
-        # target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC /usr/local/include/freetype2 /opt/homebrew/opt/freetype/include/freetype2 /usr/include/freetype2)
-        # list(APPEND EXTERNAL_LIBS ${FREETYPE_LIBRARY})
-        target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC Freetype::Freetype)
-    endif(FREETYPE_FOUND)
+#debugging
+# message(STATUS "FT interface libs = ${FT_LIBS}")
+#         message(STATUS "Freetype library: ${FREETYPE_LIBRARY}")
+#         message(STATUS "Freetype libs: ${FREETYPE_LIBRARIES}")
+#         # target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC /usr/local/include/freetype2 /opt/homebrew/opt/freetype/include/freetype2 /usr/include/freetype2)
+#         # list(APPEND EXTERNAL_LIBS ${FREETYPE_LIBRARY})
+#         target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC Freetype::Freetype)
+#     endif(FREETYPE_FOUND)
 
 endif(SYSTEM_PACKAGES)
 
@@ -323,7 +327,7 @@ if(NOT EMSCRIPTEN AND NOT LIB_VORBIS)
         GIT_TAG v1.3.7
         EXCLUDE_FROM_ALL)
     FetchContent_MakeAvailable(LIB_VORBIS)
-    list(APPEND EXTERNAL_LIBS vorbisenc vorbisfile vorbis)
+    target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC vorbisenc vorbisfile vorbis)
 endif(NOT EMSCRIPTEN AND NOT LIB_VORBIS)
 
 if(NOT SDL3_FOUND)
@@ -343,10 +347,10 @@ if(NOT SDL3_FOUND)
     FetchContent_Declare(
         SDL3
         GIT_REPOSITORY https://github.com/libsdl-org/SDL
-        GIT_TAG release-3.4.0
+        GIT_TAG release-3.4.12
         EXCLUDE_FROM_ALL)
     FetchContent_MakeAvailable(SDL3)
-    list(APPEND EXTERNAL_LIBS SDL3::SDL3-static)
+    target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC SDL3::SDL3-static)
 endif(NOT SDL3_FOUND)
 
 if(NOT FREETYPE_FOUND)
@@ -375,7 +379,7 @@ if(NOT FREETYPE_FOUND)
         GIT_TAG VER-2-13-3
         EXCLUDE_FROM_ALL)
     FetchContent_MakeAvailable(LIB_FREETYPE)
-    list(APPEND EXTERNAL_LIBS freetype)
+    target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC freetype)
 endif(NOT FREETYPE_FOUND)
 
 if(NOT EMSCRIPTEN AND NOT LIB_OPENAL)
@@ -417,21 +421,21 @@ endif(DEBUG_CMAKE_VARIABLES)
 
 target_compile_options(${LIBRARY_TARGET_NAME} PUBLIC ${COMPILE_OPTIONS})
 target_link_directories(${LIBRARY_TARGET_NAME} PUBLIC /usr/local/lib) # should always include from usr/local/lib
-target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC ${EXTERNAL_LIBS})
+# target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC ${EXTERNAL_LIBS})
 
 if(LINK_M)
     target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC m)
 endif(LINK_M)
 
     # System is for blocking out the warnings, these are mostly external libs
-    target_include_directories(
-        ${LIBRARY_TARGET_NAME} SYSTEM
-        PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include /usr/local/include
-        PRIVATE # linux builds
-        ${lib_ogg_SOURCE_DIR}/include ${lib_ogg_BINARY_DIR}/include)
+target_include_directories(
+    ${LIBRARY_TARGET_NAME} SYSTEM
+    PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include /usr/local/include
+    PRIVATE # linux builds
+    ${lib_ogg_SOURCE_DIR}/include ${lib_ogg_BINARY_DIR}/include)
 
-    target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-    target_include_directories(
-        ${LIBRARY_TARGET_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src/engine/include ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}_
-        /emsdk/upstream/emscripten/cache/sysroot/include /usr/local/include/freetype2) # Add the freetype2 specific include
+target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(
+    ${LIBRARY_TARGET_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src/engine/include ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}_
+    /emsdk/upstream/emscripten/cache/sysroot/include /usr/local/include/freetype2) # Add the freetype2 specific include
 
