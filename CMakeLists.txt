@@ -107,7 +107,6 @@ set(SRC_FILES
     # input
     src/Input/joystick.c
     src/text.c
-    src/bindings/engine.cpp
 
 )
 
