@@ -25,21 +25,9 @@ if(DEBUG_ASAN AND CMAKE_BUILD_TYPE STREQUAL "Debug")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ASAN_FLAGS}")
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${ASAN_FLAGS}")
         set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${ASAN_FLAGS}")
-
     endif()
 endif()
 
-if(APPLE)
-    set(CMAKE_OSX_DEPLOYMENT_TARGET
-        "10.14"
-        CACHE STRING "Minimum OS X deployment version")
-    set(IS_BUNDLE
-        "MACOSX_BUNDLE"
-        CACHE STRING "Is this a bundle")
-    set(ICON_PATH
-        ${CMAKE_SOURCE_DIR}/cmake/AppIcon.icns
-        CACHE STRING "Icon path")
-endif(APPLE)
 
 # Compile definitions based on backend
 if(SDL_BACKEND)
@@ -200,22 +188,12 @@ if(SYSTEM_PACKAGES) # If we are using system packages, then we should try to fin
         target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC json-c::json-c)
     endif(JSON-C_FOUND)
 
-# debugging
-# find_package(Freetype)
-# if(FREETYPE_FOUND)
-#     get_target_property(
-# FT_LIBS
-# Freetype::Freetype
-# INTERFACE_LINK_LIBRARIES)
+    find_package(Freetype)
+    if(FREETYPE_FOUND)
+        target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC /usr/local/include/freetype2 /opt/homebrew/opt/freetype/include/freetype2 /usr/include/freetype2)
+        target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC Freetype::Freetype)
+    endif(FREETYPE_FOUND)
 
-#debugging
-# message(STATUS "FT interface libs = ${FT_LIBS}")
-#         message(STATUS "Freetype library: ${FREETYPE_LIBRARY}")
-#         message(STATUS "Freetype libs: ${FREETYPE_LIBRARIES}")
-#         # target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC /usr/local/include/freetype2 /opt/homebrew/opt/freetype/include/freetype2 /usr/include/freetype2)
-#         # list(APPEND EXTERNAL_LIBS ${FREETYPE_LIBRARY})
-#         target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC Freetype::Freetype)
-#     endif(FREETYPE_FOUND)
 
 endif(SYSTEM_PACKAGES)
 
@@ -417,6 +395,22 @@ if(DEBUG_CMAKE_VARIABLES)
     foreach(VAR ${ALL_VARIABLES})
         message(STATUS "${VAR} = ${${VAR}}")
     endforeach()
+    # debugging
+    # find_package(Freetype)
+    # if(FREETYPE_FOUND)
+    #     get_target_property(
+    # FT_LIBS
+    # Freetype::Freetype
+    # INTERFACE_LINK_LIBRARIES)
+
+    #debugging
+    # message(STATUS "FT interface libs = ${FT_LIBS}")
+    #         message(STATUS "Freetype library: ${FREETYPE_LIBRARY}")
+    #         message(STATUS "Freetype libs: ${FREETYPE_LIBRARIES}")
+    #         # target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC /usr/local/include/freetype2 /opt/homebrew/opt/freetype/include/freetype2 /usr/include/freetype2)
+    #         # list(APPEND EXTERNAL_LIBS ${FREETYPE_LIBRARY})
+    #         target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC Freetype::Freetype)
+    #     endif(FREETYPE_FOUND)
 endif(DEBUG_CMAKE_VARIABLES)
 
 target_compile_options(${LIBRARY_TARGET_NAME} PUBLIC ${COMPILE_OPTIONS})
