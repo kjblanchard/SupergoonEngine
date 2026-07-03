@@ -30,18 +30,6 @@ if(DEBUG_ASAN AND CMAKE_BUILD_TYPE STREQUAL "Debug")
     endif()
 endif()
 
-# Platform specific executable flags
-# if(EMSCRIPTEN)
-    # message(STATUS "Enabling Emscripten flags for supergoon engine ")
-    # set(CMAKE_EXECUTABLE_SUFFIX
-    #     ".html"
-    #     CACHE STRING "Use html" FORCE)
-    # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -s USE_SDL=3 -s USE_ZLIB=1  -s USE_VORBIS=1 -s USE_OGG=1 ")
-    # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s USE_SDL=3 -s USE_ZLIB=1  -s USE_VORBIS=1 -s USE_OGG=1 ")
-    # set(LINK_FLAGS
-    #     "${LINK_FLAGS} -s ALLOW_MEMORY_GROWTH=1 -s USE_SDL=3 -s USE_VORBIS=1 -s USE_OGG=1 -s FULL_ES3=1 -s USE_WEBGL2=1 -s STACK_SIZE=1mb -s EXPORTED_RUNTIME_METHODS=cwrap -sMAX_WEBGL_VERSION=2 -sMIN_WEBGL_VERSION=2 -s 'DEFAULT_LIBRARY_FUNCS_TO_INCLUDE=[\"$autoResumeAudioContext\",\"$dynCall\"]'"
-    # )
-# endif(EMSCRIPTEN)
 if(APPLE)
     set(CMAKE_OSX_DEPLOYMENT_TARGET
         "10.14"
@@ -77,8 +65,24 @@ if(UNIX OR APPLE)
         -Wdouble-promotion
         -Wformat=2
     )
-
 endif(UNIX OR APPLE)
+
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    set(PREFER_STATIC_DEPS ON)
+else()
+    set(PREFER_STATIC_DEPS OFF)
+endif()
+
+# Prefer static libraries on release builds
+if(PREFER_STATIC_DEPS)
+    if(WIN32)
+        set(CMAKE_FIND_LIBRARY_SUFFIXES .lib .a)
+    elseif(APPLE)
+        set(CMAKE_FIND_LIBRARY_SUFFIXES .a .dylib)
+    else()
+        set(CMAKE_FIND_LIBRARY_SUFFIXES .a .so)
+    endif()
+endif(PREFER_STATIC_DEPS)
 
 set(SRC_FILES
     src/camera.c
@@ -118,355 +122,306 @@ if(SDL_RENDERER)
     list(APPEND SRC_FILES src/Platform/opengl/sdlGraphics.c src/Platform/opengl/sdlShader.c src/Platform/opengl/sdlTexture.c)
 endif(SDL_RENDERER)
 
-# add_executable(${LIBRARY_TARGET_NAME } MACOSX_BUNDLE WIN32 ${SRC_FILES} ${DEBUG_FILES} ${ICON_PATH})
 add_library(${LIBRARY_TARGET_NAME} ${SRC_FILES} ${DEBUG_FILES})
 
 set(SKIP_INSTALL_ALL ON CACHE BOOL "We don't want any of these external packages to install anything")
 set(CMAKE_DEBUG_POSTFIX "" CACHE STRING " Don't use the d for debug packages" FORCE)
 set(CMAKE_DEBUG_TARGET_PROPERTIES "DEBUG_OUTPUT" "" CACHE STRING "Don't use the d for debug packages" FORCE)
 
-# if(APPLE)
-#     set_target_properties(${LIBRARY_TARGET_NAME} PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/cmake/Info.plist)
-#     set_source_files_properties(${ICON_PATH} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
-#     set_source_files_properties(${CMAKE_SOURCE_DIR}/cmake/Info.plist PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
-#     set_target_properties(
-#         ${LIBRARY_TARGET_NAME}
-#         PROPERTIES XCODE_ATTRIBUTE_CODE_SIGN_ENTITLEMENTS "${CMAKE_SOURCE_DIR}/cmake/EscapeTheFate.entitlements"
-#         # XCODE_ATTRIBUTE_CODE_SIGN_STYLE "Automatic"
-#         XCODE_ATTRIBUTE_CODE_SIGN_STYLE "Manual"
-#         XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET "13.0"
-#         XCODE_ATTRIBUTE_DEVELOPMENT_TEAM "H34NGW287W"
-#         # when building on github, we don't want to sign anything cause there is no cert
-#         XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED "NO"
-#         XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED "NO"
-#         # XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "Apple Development"
-#     )
 
-# elseif(EMSCRIPTEN)
-#     if(EXISTS "${CMAKE_SOURCE_DIR}/SupergoonEngine/scripting")
-#         set(ENGINE_SCRIPT_PATH "${CMAKE_SOURCE_DIR}/SupergoonEngine/scripting")
-#     elseif(EXISTS "${CMAKE_BINARY_DIR}/_deps/supergoonengine-src/scripting")
-#         set(ENGINE_SCRIPT_PATH "${CMAKE_BINARY_DIR}/_deps/supergoonengine-src/scripting")
-#     else()
-#         message(WARNING "SupergoonEngine scripting folder not found, skipping preload.")
-#         set(ENGINE_SCRIPT_PATH "")
-#     endif()
+if(SYSTEM_PACKAGES) # If we are using system packages, then we should try to find them.
+    find_library(LIB_OPENAL openal)
+    if(LIB_OPENAL)
+        target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC ${LIB_OPENAL})
+    endif(LIB_OPENAL)
 
-#     set_target_properties(
-#         ${LIBRARY_TARGET_NAME}
-#         PROPERTIES
-#         LINK_FLAGS
-#         "${LINK_FLAGS} -O0 -s SAFE_HEAP=2 -s STACK_OVERFLOW_CHECK=1 \
-#         --preload-file ${CMAKE_SOURCE_DIR}/assets@/assets \
-#         # --preload-file ${CMAKE_SOURCE_DIR}/src@/assets/lua/ \
-#         # --preload-file ${ENGINE_SCRIPT_PATH}@/assets/lua/"
-#     )
-#     endif()
+    find_library(LIB_CGLM
+        PATH_SUFFIXES .a .dll
+        NAMES libcglm cglm libcglm.a cglm.dll libcglm.a
+        HINTS /usr/local/lib /c/cmake/lib)
+    if(LIB_CGLM)
+        list(APPEND EXTERNAL_LIBS ${LIB_CGLM})
+    endif(LIB_CGLM)
 
-    if(SYSTEM_PACKAGES) # If we are using system packages, then we should try to find them.
-        find_library(
-            LIB_OPENAL
-            PATH_SUFFIXES .dylib .a .dll
-            NAMES libopenal.dylib libopenal openal libopenal.a openal.dll libopenal.a
-            HINTS /usr/local/lib /c/cmake/lib)
+    find_library(LIB_VORBIS
+        PATH_SUFFIXES .a .dll
+        NAMES libvorbis vorbis vorbis.a vorbis.dll libvorbis.a
+        HINTS /usr/local/lib /c/cmake/lib)
+    if(LIB_VORBIS)
+        list(APPEND EXTERNAL_LIBS ${LIB_VORBIS})
+    endif(LIB_VORBIS)
 
-        if(LIB_OPENAL)
-            list(APPEND EXTERNAL_LIBS ${LIB_OPENAL})
-        endif(LIB_OPENAL)
+    find_library( LIB_VORBISFILE
+        PATH_SUFFIXES .a .dll
+        NAMES libvorbisfile vorbisfile vorbisfile.a vorbisfile.dll
+        HINTS /usr/local/lib)
+    if(LIB_VORBISFILE)
+        list(APPEND EXTERNAL_LIBS ${LIB_VORBISFILE})
+    endif(LIB_VORBISFILE)
 
-        find_library(
-            LIB_CGLM
-            PATH_SUFFIXES .a .dll
-            NAMES libcglm cglm libcglm.a cglm.dll libcglm.a
-            HINTS /usr/local/lib /c/cmake/lib)
+    find_library(LIB_OGG
+        PATH_SUFFIXES .a .dll
+        NAMES ogg Ogg
+        HINTS /usr/local/lib)
+    if(LIB_OGG)
+        list(APPEND EXTERNAL_LIBS ${LIB_OGG})
+    endif(LIB_OGG)
 
-        if(LIB_CGLM)
-            list(APPEND EXTERNAL_LIBS ${LIB_CGLM})
-        endif(LIB_CGLM)
+    find_library(LIB_SGTOOLS
+        NAMES sgtools
+        HINTS /opt/homebrew/bin/ /usr/local/bin /usr/local/lib /usr/bin/)
+    if(LIB_SGTOOLS)
+        list(APPEND EXTERNAL_LIBS ${LIB_SGTOOLS})
+    endif(LIB_SGTOOLS)
 
-        find_library(
-            LIB_VORBIS
-            PATH_SUFFIXES .a .dll
-            NAMES libvorbis vorbis vorbis.a vorbis.dll libvorbis.a
-            HINTS /usr/local/lib /c/cmake/lib)
+    find_library(LIB_SGFORGE
+        NAMES sgforge
+        HINTS /opt/homebrew/bin/ /usr/local/bin /usr/local/lib /usr/bin/)
+    if(LIB_SGFORGE)
+        list(APPEND EXTERNAL_LIBS ${LIB_SGFORGE})
+    endif(LIB_SGFORGE)
 
-        if(LIB_VORBIS)
-            list(APPEND EXTERNAL_LIBS ${LIB_VORBIS})
-        endif(LIB_VORBIS)
+    find_library(LIB_SGSOUND
+        NAMES sgsound 
+        HINTS /opt/homebrew/bin/ /usr/local/bin /usr/local/lib /usr/bin/)
+    if(LIB_SGSOUND)
+        list(APPEND EXTERNAL_LIBS ${LIB_SGSOUND})
+    endif(LIB_SGSOUND)
 
-        find_library(
-            LIB_VORBISFILE
-            PATH_SUFFIXES .a .dll
-            NAMES libvorbisfile vorbisfile vorbisfile.a vorbisfile.dll
-            HINTS /usr/local/lib)
+    find_package(SDL3 CONFIG COMPONENTS SDL3-shared)
+    if(SDL3_FOUND)
+        list(APPEND EXTERNAL_LIBS SDL3::SDL3)
+    endif(SDL3_FOUND)
 
-        if(LIB_VORBISFILE)
-            list(APPEND EXTERNAL_LIBS ${LIB_VORBISFILE})
-        endif(LIB_VORBISFILE)
+    find_package(JSON-C CONFIG)
+    if(JSON-C_FOUND)
+        list(APPEND EXTERNAL_LIBS json-c::json-c)
+    endif(JSON-C_FOUND)
 
-        find_library(
-            LIB_OGG
-            PATH_SUFFIXES .a .dll
-            NAMES ogg Ogg
-            HINTS /usr/local/lib)
+    find_package(Freetype)
+    if(FREETYPE_FOUND)
+        get_target_property(
+    FT_LIBS
+    Freetype::Freetype
+    INTERFACE_LINK_LIBRARIES)
 
-        if(LIB_OGG)
-            list(APPEND EXTERNAL_LIBS ${LIB_OGG})
-        endif(LIB_OGG)
+message(STATUS "FT interface libs = ${FT_LIBS}")
+        message(STATUS "Freetype library: ${FREETYPE_LIBRARY}")
+        message(STATUS "Freetype libs: ${FREETYPE_LIBRARIES}")
+        # target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC /usr/local/include/freetype2 /opt/homebrew/opt/freetype/include/freetype2 /usr/include/freetype2)
+        # list(APPEND EXTERNAL_LIBS ${FREETYPE_LIBRARY})
+        target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC Freetype::Freetype)
+    endif(FREETYPE_FOUND)
 
-        find_library(
-            LIB_LUA
-            NAMES lua lua_static lua5.4
-            HINTS /opt/homebrew/bin/ /usr/local/bin /usr/local/lib /usr/bin/)
+endif(SYSTEM_PACKAGES)
 
+# Pull packages and build, use if incase we have found it with finds in system packages
+if(NOT LIB_CGLM)
+    message(STATUS "CGLM not found. Fetching CGLM...")
+    set(CGLM_SHARED
+        OFF
+        CACHE INTERNAL "No shared")
+    set(CGLM_STATIC
+        ON
+        CACHE INTERNAL "yes")
+    set(INSTALL_CMAKE_PACKAGE_MODULE
+        OFF
+        CACHE BOOL "Dont do it" FORCE)
+    FetchContent_Declare(
+        LIB_CGLM
+        GIT_REPOSITORY https://github.com/recp/cglm
+        GIT_TAG v0.9.6
+        EXCLUDE_FROM_ALL)
+    FetchContent_MakeAvailable(LIB_CGLM)
+    target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC cglm)
+endif(NOT LIB_CGLM)
 
-        find_library(
-            LIB_SGTOOLS
-            NAMES sgtools
-            HINTS /opt/homebrew/bin/ /usr/local/bin /usr/local/lib /usr/bin/)
-        if(LIB_SGTOOLS)
-            list(APPEND EXTERNAL_LIBS ${LIB_SGTOOLS})
-        endif(LIB_SGTOOLS)
+if(NOT LIB_SGTOOLS)
+    message(STATUS "sgtools not found. Fetching sgtools...")
+    set(INSTALL_CMAKE_PACKAGE_MODULE
+        OFF
+        CACHE BOOL "Dont do it" FORCE)
+    FetchContent_Declare(
+        LIB_SGTOOLS
+        GIT_REPOSITORY https://github.com/kjblanchard/sgtools
+        GIT_TAG master
+        EXCLUDE_FROM_ALL)
+    FetchContent_MakeAvailable(LIB_SGTOOLS)
+    target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC sgtools)
+endif(NOT LIB_SGTOOLS)
 
-        find_library(
-            LIB_SGFORGE
-            NAMES sgforge
-            HINTS /opt/homebrew/bin/ /usr/local/bin /usr/local/lib /usr/bin/)
-        if(LIB_SGFORGE)
-            list(APPEND EXTERNAL_LIBS ${LIB_SGFORGE})
-        endif(LIB_SGFORGE)
+if(NOT LIB_SGFORGE)
+    message(STATUS "sgforge not found. Fetching sgforge...")
+    set(INSTALL_CMAKE_PACKAGE_MODULE OFF CACHE BOOL "Dont do it" FORCE)
+    set(SGFORGE_INSTALL_TOOLS OFF CACHE INTERNAL "No binary")
+    FetchContent_Declare(
+        LIB_SGFORGE
+        GIT_REPOSITORY https://github.com/kjblanchard/sgforge
+        GIT_TAG master
+        EXCLUDE_FROM_ALL)
+    FetchContent_MakeAvailable(LIB_SGFORGE)
+    target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC sgforge)
+endif(NOT LIB_SGFORGE)
 
-        find_library(
-            LIB_SGSOUND
-            NAMES sgsound 
-            HINTS /opt/homebrew/bin/ /usr/local/bin /usr/local/lib /usr/bin/)
-        if(LIB_SGSOUND)
-            list(APPEND EXTERNAL_LIBS ${LIB_SGSOUND})
-        endif(LIB_SGSOUND)
+if(NOT LIB_SGSOUND)
+    message(STATUS "sgsound not found. Fetching sgsound...")
+    set(INSTALL_CMAKE_PACKAGE_MODULE
+        OFF
+        CACHE BOOL "Dont do it" FORCE)
+    set(BUILD_TEST
+        OFF
+        CACHE BOOL "Dont do it" FORCE)
+    FetchContent_Declare(
+        LIB_SGSOUND
+        GIT_REPOSITORY https://github.com/kjblanchard/sgsound
+        GIT_TAG master
+        EXCLUDE_FROM_ALL)
+    FetchContent_MakeAvailable(LIB_SGSOUND)
+    target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC sgsound)
+endif(NOT LIB_SGSOUND)
 
-        find_package(SDL3 CONFIG COMPONENTS SDL3-shared)
-        if(SDL3_FOUND)
-            list(APPEND EXTERNAL_LIBS SDL3::SDL3)
-        endif(SDL3_FOUND)
-        find_package(JSON-C CONFIG)
-        if(JSON-C_FOUND)
-            list(APPEND EXTERNAL_LIBS json-c::json-c)
-        endif(JSON-C_FOUND)
-        find_package(Freetype)
-        if(FREETYPE_FOUND)
-            # list(APPEND EXTERNAL_LIBS ${FREETYPE_LIBRARY})
-            target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC /usr/local/include/freetype2 /opt/homebrew/opt/freetype/include/freetype2 /usr/include/freetype2)
-            list(APPEND EXTERNAL_LIBS ${FREETYPE_LIBRARY})
-        endif(FREETYPE_FOUND)
+if(NOT JSON-C_FOUND)
+    message(STATUS "jsonc not found. Fetching...")
+    FetchContent_Declare(
+        LIB_JSON-C
+        GIT_REPOSITORY https://github.com/json-c/json-c
+        GIT_TAG json-c-0.18-20240915
+        EXCLUDE_FROM_ALL
+        CMAKE_ARGS -DDISABLE_WERROR=YES
 
-    endif(SYSTEM_PACKAGES)
+    )
+    FetchContent_MakeAvailable(LIB_JSON-C)
+    target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC json-c)
+    target_include_directories( ${LIBRARY_TARGET_NAME} PUBLIC ${lib_json-c_SOURCE_DIR} ${lib_json-c_SOURCE_DIR}/include ${json-c_SOURCE_DIR} ${json-c_BINARY_DIR}  )
+endif(NOT JSON-C_FOUND)
 
-    if(NOT LIB_CGLM)
-        message(STATUS "CGLM not found. Fetching CGLM...")
-        set(CGLM_SHARED
-            OFF
-            CACHE INTERNAL "No shared")
-        set(CGLM_STATIC
-            ON
-            CACHE INTERNAL "yes")
-        set(INSTALL_CMAKE_PACKAGE_MODULE
-            OFF
-            CACHE BOOL "Dont do it" FORCE)
-        FetchContent_Declare(
-            LIB_CGLM
-            GIT_REPOSITORY https://github.com/recp/cglm
-            GIT_TAG v0.9.6
-            EXCLUDE_FROM_ALL)
-        FetchContent_MakeAvailable(LIB_CGLM)
-        target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC cglm)
-    endif(NOT LIB_CGLM)
+if(NOT EMSCRIPTEN AND NOT LIB_OGG)
+    message(STATUS "OGG not found. Fetching OGG...")
+    set(BUILD_TESTING
+        OFF
+        CACHE BOOL "do not build tests")
+    FetchContent_Declare(
+        LIB_OGG
+        GIT_REPOSITORY https://github.com/xiph/ogg
+        GIT_TAG v1.3.5
+        EXCLUDE_FROM_ALL)
+    FetchContent_MakeAvailable(LIB_OGG)
+    get_target_property(OGG_INCLUDE_DIR ogg INTERFACE_INCLUDE_DIRECTORIES)
+    set(OGG_LIBRARY ogg)
+    # list(APPEND EXTERNAL_LIBS ogg)
+    target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC ogg)
+endif(NOT EMSCRIPTEN AND NOT LIB_OGG)
 
-    if(NOT LIB_SGTOOLS)
-        message(STATUS "sgtools not found. Fetching sgtools...")
-        set(INSTALL_CMAKE_PACKAGE_MODULE
-            OFF
-            CACHE BOOL "Dont do it" FORCE)
-        FetchContent_Declare(
-            LIB_SGTOOLS
-            GIT_REPOSITORY https://github.com/kjblanchard/sgtools
-            GIT_TAG master
-            EXCLUDE_FROM_ALL)
-        FetchContent_MakeAvailable(LIB_SGTOOLS)
-        target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC sgtools)
-    endif(NOT LIB_SGTOOLS)
+if(NOT EMSCRIPTEN AND NOT LIB_VORBIS)
+    message(STATUS "VORBIS not found. Fetching VORBIS...")
+    set(INSTALL_CMAKE_PACKAGE_MODULE
+        OFF
+        CACHE BOOL "Dont do it" FORCE)
+    FetchContent_Declare(
+        LIB_VORBIS
+        GIT_REPOSITORY https://github.com/xiph/vorbis
+        GIT_TAG v1.3.7
+        EXCLUDE_FROM_ALL)
+    FetchContent_MakeAvailable(LIB_VORBIS)
+    list(APPEND EXTERNAL_LIBS vorbisenc vorbisfile vorbis)
+endif(NOT EMSCRIPTEN AND NOT LIB_VORBIS)
 
-    if(NOT LIB_SGFORGE)
-        message(STATUS "sgforge not found. Fetching sgforge...")
-        set(INSTALL_CMAKE_PACKAGE_MODULE OFF CACHE BOOL "Dont do it" FORCE)
-        set(SGFORGE_INSTALL_TOOLS OFF CACHE INTERNAL "No binary")
-        FetchContent_Declare(
-            LIB_SGFORGE
-            GIT_REPOSITORY https://github.com/kjblanchard/sgforge
-            GIT_TAG master
-            EXCLUDE_FROM_ALL)
-        FetchContent_MakeAvailable(LIB_SGFORGE)
-        target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC sgforge)
-    endif(NOT LIB_SGFORGE)
+if(NOT SDL3_FOUND)
+    message(STATUS "SDL3 not found. Fetching SDL3...")
+    set(SDL_SHARED
+        OFF
+        CACHE BOOL "Build SDL as a shared library")
+    set(SDL_STATIC
+        ON
+        CACHE BOOL "Build SDL as a shared library")
+    set(SDL_TEST
+        OFF
+        CACHE BOOL "Build SDL as a shared library")
+    set(ENABLE_SDL_STATIC
+        OFF
+        CACHE BOOL "Build SDL as a static library")
+    FetchContent_Declare(
+        SDL3
+        GIT_REPOSITORY https://github.com/libsdl-org/SDL
+        GIT_TAG release-3.4.0
+        EXCLUDE_FROM_ALL)
+    FetchContent_MakeAvailable(SDL3)
+    list(APPEND EXTERNAL_LIBS SDL3::SDL3-static)
+endif(NOT SDL3_FOUND)
 
-    if(NOT LIB_SGSOUND)
-        message(STATUS "sgsound not found. Fetching sgsound...")
-        set(INSTALL_CMAKE_PACKAGE_MODULE
-            OFF
-            CACHE BOOL "Dont do it" FORCE)
-        set(BUILD_TEST
-            OFF
-            CACHE BOOL "Dont do it" FORCE)
-        FetchContent_Declare(
-            LIB_SGSOUND
-            GIT_REPOSITORY https://github.com/kjblanchard/sgsound
-            GIT_TAG master
-            EXCLUDE_FROM_ALL)
-        FetchContent_MakeAvailable(LIB_SGSOUND)
-        target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC sgsound)
-    endif(NOT LIB_SGSOUND)
+if(NOT FREETYPE_FOUND)
+    message(STATUS "freetype not found. Fetching freetype...")
+    set(FT_DISABLE_BROTLI
+        ON
+        CACHE BOOL "Do not install when installing" FORCE)
+    set(FT_DISABLE_HARFBUZZ
+        ON
+        CACHE BOOL "Do not install when installing" FORCE)
+    set(FT_DISABLE_ZLIB
+        ON
+        CACHE BOOL "Do not use" FORCE)
+    set(FT_DISABLE_BZIP2
+        ON
+        CACHE BOOL "Do not use" FORCE)
+    set(FT_DISABLE_PNG
+        ON
+        CACHE BOOL "Do not use" FORCE)
+    set(FT_DISABLE_PNG
+        ON
+        CACHE BOOL "Do not use" FORCE)
+    FetchContent_Declare(
+        LIB_FREETYPE
+        GIT_REPOSITORY https://github.com/freetype/freetype
+        GIT_TAG VER-2-13-3
+        EXCLUDE_FROM_ALL)
+    FetchContent_MakeAvailable(LIB_FREETYPE)
+    list(APPEND EXTERNAL_LIBS freetype)
+endif(NOT FREETYPE_FOUND)
 
-    if(NOT JSON-C_FOUND)
-        message(STATUS "jsonc not found. Fetching...")
-        FetchContent_Declare(
-            LIB_JSON-C
-            GIT_REPOSITORY https://github.com/json-c/json-c
-            GIT_TAG json-c-0.18-20240915
-            EXCLUDE_FROM_ALL
-            CMAKE_ARGS -DDISABLE_WERROR=YES
+if(NOT EMSCRIPTEN AND NOT LIB_OPENAL)
+    message(STATUS "openal not found. Fetching openal...")
+    set(BUILD_SHARED_LIBS
+        OFF
+        CACHE INTERNAL "Do not use")
+    set(LIBTYPE
+        "STATIC"
+        CACHE INTERNAL "Do not use")
+    set(ALSOFT_UTILS
+        OFF
+        CACHE INTERNAL "")
+    set(ALSOFT_EXAMPLES
+        OFF
+        CACHE INTERNAL "")
+    set(ALSOFT_BACKEND_WAVE
+        OFF
+        CACHE INTERNAL "")
+    set(ALSOFT_EMBED_HRTF_DATA
+        ON
+        CACHE INTERNAL "")
+    # set(ALSOFT_REQUIRE_COREAUDIO ON CACHE INTERNAL "" )
+    FetchContent_Declare(
+        LIB_OPENAL
+        GIT_REPOSITORY https://github.com/kcat/openal-soft
+        GIT_TAG 1.24.3
+        EXCLUDE_FROM_ALL)
+    FetchContent_MakeAvailable(LIB_OPENAL)
+    target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC OpenAL)
+endif(NOT EMSCRIPTEN AND NOT LIB_OPENAL)
 
-        )
-        FetchContent_MakeAvailable(LIB_JSON-C)
-        target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC json-c)
-        target_include_directories( ${LIBRARY_TARGET_NAME} PUBLIC ${lib_json-c_SOURCE_DIR} ${lib_json-c_SOURCE_DIR}/include ${json-c_SOURCE_DIR} ${json-c_BINARY_DIR}  )
-    endif(NOT JSON-C_FOUND)
+if(DEBUG_CMAKE_VARIABLES)
+    get_cmake_property(ALL_VARIABLES VARIABLES)
+    foreach(VAR ${ALL_VARIABLES})
+        message(STATUS "${VAR} = ${${VAR}}")
+    endforeach()
+endif(DEBUG_CMAKE_VARIABLES)
 
-    if(NOT EMSCRIPTEN AND NOT LIB_OGG)
-        message(STATUS "OGG not found. Fetching OGG...")
-        set(BUILD_TESTING
-            OFF
-            CACHE BOOL "do not build tests")
-        FetchContent_Declare(
-            LIB_OGG
-            GIT_REPOSITORY https://github.com/xiph/ogg
-            GIT_TAG v1.3.5
-            EXCLUDE_FROM_ALL)
-        FetchContent_MakeAvailable(LIB_OGG)
-        get_target_property(OGG_INCLUDE_DIR ogg INTERFACE_INCLUDE_DIRECTORIES)
-        set(OGG_LIBRARY ogg)
-        # list(APPEND EXTERNAL_LIBS ogg)
-        target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC ogg)
-    endif(NOT EMSCRIPTEN AND NOT LIB_OGG)
+target_compile_options(${LIBRARY_TARGET_NAME} PUBLIC ${COMPILE_OPTIONS})
+target_link_directories(${LIBRARY_TARGET_NAME} PUBLIC /usr/local/lib) # should always include from usr/local/lib
+target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC ${EXTERNAL_LIBS})
 
-    if(NOT EMSCRIPTEN AND NOT LIB_VORBIS)
-        message(STATUS "VORBIS not found. Fetching VORBIS...")
-        set(INSTALL_CMAKE_PACKAGE_MODULE
-            OFF
-            CACHE BOOL "Dont do it" FORCE)
-        FetchContent_Declare(
-            LIB_VORBIS
-            GIT_REPOSITORY https://github.com/xiph/vorbis
-            GIT_TAG v1.3.7
-            EXCLUDE_FROM_ALL)
-        FetchContent_MakeAvailable(LIB_VORBIS)
-        list(APPEND EXTERNAL_LIBS vorbisenc vorbisfile vorbis)
-    endif(NOT EMSCRIPTEN AND NOT LIB_VORBIS)
-
-    if(NOT SDL3_FOUND)
-        message(STATUS "SDL3 not found. Fetching SDL3...")
-        set(SDL_SHARED
-            OFF
-            CACHE BOOL "Build SDL as a shared library")
-        set(SDL_STATIC
-            ON
-            CACHE BOOL "Build SDL as a shared library")
-        set(SDL_TEST
-            OFF
-            CACHE BOOL "Build SDL as a shared library")
-        set(ENABLE_SDL_STATIC
-            OFF
-            CACHE BOOL "Build SDL as a static library")
-        FetchContent_Declare(
-            SDL3
-            GIT_REPOSITORY https://github.com/libsdl-org/SDL
-            GIT_TAG release-3.4.0
-            EXCLUDE_FROM_ALL)
-        FetchContent_MakeAvailable(SDL3)
-        list(APPEND EXTERNAL_LIBS SDL3::SDL3-static)
-    endif(NOT SDL3_FOUND)
-
-    if(NOT FREETYPE_FOUND)
-        message(STATUS "freetype not found. Fetching freetype...")
-        set(FT_DISABLE_BROTLI
-            ON
-            CACHE BOOL "Do not install when installing" FORCE)
-        set(FT_DISABLE_HARFBUZZ
-            ON
-            CACHE BOOL "Do not install when installing" FORCE)
-        set(FT_DISABLE_ZLIB
-            ON
-            CACHE BOOL "Do not use" FORCE)
-        set(FT_DISABLE_BZIP2
-            ON
-            CACHE BOOL "Do not use" FORCE)
-        set(FT_DISABLE_PNG
-            ON
-            CACHE BOOL "Do not use" FORCE)
-        set(FT_DISABLE_PNG
-            ON
-            CACHE BOOL "Do not use" FORCE)
-        FetchContent_Declare(
-            LIB_FREETYPE
-            GIT_REPOSITORY https://github.com/freetype/freetype
-            GIT_TAG VER-2-13-3
-            EXCLUDE_FROM_ALL)
-        FetchContent_MakeAvailable(LIB_FREETYPE)
-        list(APPEND EXTERNAL_LIBS freetype)
-    endif(NOT FREETYPE_FOUND)
-
-    if(NOT EMSCRIPTEN AND NOT LIB_OPENAL)
-        message(STATUS "openal not found. Fetching openal...")
-        set(BUILD_SHARED_LIBS
-            OFF
-            CACHE INTERNAL "Do not use")
-        set(LIBTYPE
-            "STATIC"
-            CACHE INTERNAL "Do not use")
-        set(ALSOFT_UTILS
-            OFF
-            CACHE INTERNAL "")
-        set(ALSOFT_EXAMPLES
-            OFF
-            CACHE INTERNAL "")
-        set(ALSOFT_BACKEND_WAVE
-            OFF
-            CACHE INTERNAL "")
-        set(ALSOFT_EMBED_HRTF_DATA
-            ON
-            CACHE INTERNAL "")
-        # set(ALSOFT_REQUIRE_COREAUDIO ON CACHE INTERNAL "" )
-        FetchContent_Declare(
-            LIB_OPENAL
-            GIT_REPOSITORY https://github.com/kcat/openal-soft
-            GIT_TAG 1.24.3
-            EXCLUDE_FROM_ALL)
-        FetchContent_MakeAvailable(LIB_OPENAL)
-        target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC OpenAL)
-    endif(NOT EMSCRIPTEN AND NOT LIB_OPENAL)
-
-    if(DEBUG_CMAKE_VARIABLES)
-        get_cmake_property(ALL_VARIABLES VARIABLES)
-        foreach(VAR ${ALL_VARIABLES})
-            message(STATUS "${VAR} = ${${VAR}}")
-        endforeach()
-    endif(DEBUG_CMAKE_VARIABLES)
-
-    target_compile_options(${LIBRARY_TARGET_NAME} PUBLIC ${COMPILE_OPTIONS})
-    target_link_directories(${LIBRARY_TARGET_NAME} PUBLIC /usr/local/lib) # should always include from usr/local/lib
-    target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC ${EXTERNAL_LIBS})
-
-    if(LINK_M)
-        target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC m)
-    endif(LINK_M)
+if(LINK_M)
+    target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC m)
+endif(LINK_M)
 
     # System is for blocking out the warnings, these are mostly external libs
     target_include_directories(
