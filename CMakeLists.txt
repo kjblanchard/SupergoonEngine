@@ -122,57 +122,62 @@ if(SYSTEM_PACKAGES) # If we are using system packages, then we should try to fin
         target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC ${LIB_OPENAL})
     endif(LIB_OPENAL)
 
-    find_library(LIB_CGLM
-        PATH_SUFFIXES .a .dll
-        NAMES libcglm cglm libcglm.a cglm.dll libcglm.a
-        HINTS /usr/local/lib /c/cmake/lib)
+    find_library(LIB_CGLM cglm
+        # PATH_SUFFIXES .a .dll
+        # NAMES libcglm cglm libcglm.a cglm.dll libcglm.a
+        # HINTS /usr/local/lib /c/cmake/lib
+    )
     if(LIB_CGLM)
         target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC ${LIB_CGLM})
-        # list(APPEND EXTERNAL_LIBS ${LIB_CGLM})
     endif(LIB_CGLM)
 
-    find_library(LIB_VORBIS
-        PATH_SUFFIXES .a .dll
-        NAMES libvorbis vorbis vorbis.a vorbis.dll libvorbis.a
-        HINTS /usr/local/lib /c/cmake/lib)
+    find_library(LIB_VORBIS vorbis
+        # PATH_SUFFIXES .a .dll
+        # NAMES libvorbis vorbis vorbis.a vorbis.dll libvorbis.a
+        # HINTS /usr/local/lib /c/cmake/lib
+    )
     if(LIB_VORBIS)
         target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC ${LIB_VORBIS})
-        # list(APPEND EXTERNAL_LIBS ${LIB_VORBIS})
     endif(LIB_VORBIS)
 
-    find_library( LIB_VORBISFILE
-        PATH_SUFFIXES .a .dll
-        NAMES libvorbisfile vorbisfile vorbisfile.a vorbisfile.dll
-        HINTS /usr/local/lib)
+    find_library( LIB_VORBISFILE vorbisfile
+        # PATH_SUFFIXES .a .dll
+        # NAMES libvorbisfile vorbisfile vorbisfile.a vorbisfile.dll
+        # HINTS /usr/local/lib
+    )
     if(LIB_VORBISFILE)
         target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC ${LIB_VORBISFILE})
     endif(LIB_VORBISFILE)
 
-    find_library(LIB_OGG
-        PATH_SUFFIXES .a .dll
-        NAMES ogg Ogg
-        HINTS /usr/local/lib)
+    find_library(LIB_OGG ogg
+        # PATH_SUFFIXES .a .dll
+        # NAMES ogg Ogg
+        # HINTS /usr/local/lib
+    )
     if(LIB_OGG)
         target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC ${LIB_OGG})
     endif(LIB_OGG)
 
-    find_library(LIB_SGTOOLS
-        NAMES sgtools
-        HINTS /opt/homebrew/bin/ /usr/local/bin /usr/local/lib /usr/bin/)
+    find_library(LIB_SGTOOLS sgtools
+        # NAMES sgtools
+        # HINTS /opt/homebrew/bin/ /usr/local/bin /usr/local/lib /usr/bin/
+    )
     if(LIB_SGTOOLS)
         target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC ${LIB_SGTOOLS})
     endif(LIB_SGTOOLS)
 
-    find_library(LIB_SGFORGE
-        NAMES sgforge
-        HINTS /opt/homebrew/bin/ /usr/local/bin /usr/local/lib /usr/bin/)
+    find_library(LIB_SGFORGE sgforge
+        # NAMES sgforge
+        # HINTS /opt/homebrew/bin/ /usr/local/bin /usr/local/lib /usr/bin/
+    )
     if(LIB_SGFORGE)
         target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC ${LIB_SGFORGE})
     endif(LIB_SGFORGE)
 
-    find_library(LIB_SGSOUND
-        NAMES sgsound 
-        HINTS /opt/homebrew/bin/ /usr/local/bin /usr/local/lib /usr/bin/)
+    find_library(LIB_SGSOUND sgsound
+        # NAMES sgsound 
+        # HINTS /opt/homebrew/bin/ /usr/local/bin /usr/local/lib /usr/bin/
+    )
     if(LIB_SGSOUND)
         target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC ${LIB_SGSOUND})
     endif(LIB_SGSOUND)
@@ -184,13 +189,12 @@ if(SYSTEM_PACKAGES) # If we are using system packages, then we should try to fin
 
     find_package(JSON-C CONFIG)
     if(JSON-C_FOUND)
-        # list(APPEND EXTERNAL_LIBS json-c::json-c)
         target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC json-c::json-c)
     endif(JSON-C_FOUND)
 
     find_package(Freetype)
     if(FREETYPE_FOUND)
-        target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC /usr/local/include/freetype2 /opt/homebrew/opt/freetype/include/freetype2 /usr/include/freetype2)
+        # target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC /usr/local/include/freetype2 /opt/homebrew/opt/freetype/include/freetype2 /usr/include/freetype2)
         target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC Freetype::Freetype)
     endif(FREETYPE_FOUND)
 
@@ -200,15 +204,9 @@ endif(SYSTEM_PACKAGES)
 # Pull packages and build, use if incase we have found it with finds in system packages
 if(NOT LIB_CGLM)
     message(STATUS "CGLM not found. Fetching CGLM...")
-    set(CGLM_SHARED
-        OFF
-        CACHE INTERNAL "No shared")
-    set(CGLM_STATIC
-        ON
-        CACHE INTERNAL "yes")
-    set(INSTALL_CMAKE_PACKAGE_MODULE
-        OFF
-        CACHE BOOL "Dont do it" FORCE)
+    set(CGLM_SHARED OFF CACHE INTERNAL "No shared")
+    set(CGLM_STATIC ON CACHE INTERNAL "yes")
+    set(INSTALL_CMAKE_PACKAGE_MODULE OFF CACHE BOOL "Dont do it" FORCE)
     FetchContent_Declare(
         LIB_CGLM
         GIT_REPOSITORY https://github.com/recp/cglm
@@ -220,9 +218,7 @@ endif(NOT LIB_CGLM)
 
 if(NOT LIB_SGTOOLS)
     message(STATUS "sgtools not found. Fetching sgtools...")
-    set(INSTALL_CMAKE_PACKAGE_MODULE
-        OFF
-        CACHE BOOL "Dont do it" FORCE)
+    set(INSTALL_CMAKE_PACKAGE_MODULE OFF CACHE BOOL "Dont do it" FORCE)
     FetchContent_Declare(
         LIB_SGTOOLS
         GIT_REPOSITORY https://github.com/kjblanchard/sgtools
@@ -247,12 +243,8 @@ endif(NOT LIB_SGFORGE)
 
 if(NOT LIB_SGSOUND)
     message(STATUS "sgsound not found. Fetching sgsound...")
-    set(INSTALL_CMAKE_PACKAGE_MODULE
-        OFF
-        CACHE BOOL "Dont do it" FORCE)
-    set(BUILD_TEST
-        OFF
-        CACHE BOOL "Dont do it" FORCE)
+    set(INSTALL_CMAKE_PACKAGE_MODULE OFF CACHE BOOL "Dont do it" FORCE)
+    set(BUILD_TEST OFF CACHE BOOL "Dont do it" FORCE)
     FetchContent_Declare(
         LIB_SGSOUND
         GIT_REPOSITORY https://github.com/kjblanchard/sgsound
@@ -279,9 +271,7 @@ endif(NOT JSON-C_FOUND)
 
 if(NOT EMSCRIPTEN AND NOT LIB_OGG)
     message(STATUS "OGG not found. Fetching OGG...")
-    set(BUILD_TESTING
-        OFF
-        CACHE BOOL "do not build tests")
+    set(BUILD_TESTING OFF CACHE BOOL "do not build tests")
     FetchContent_Declare(
         LIB_OGG
         GIT_REPOSITORY https://github.com/xiph/ogg
@@ -290,15 +280,12 @@ if(NOT EMSCRIPTEN AND NOT LIB_OGG)
     FetchContent_MakeAvailable(LIB_OGG)
     get_target_property(OGG_INCLUDE_DIR ogg INTERFACE_INCLUDE_DIRECTORIES)
     set(OGG_LIBRARY ogg)
-    # list(APPEND EXTERNAL_LIBS ogg)
     target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC ogg)
 endif(NOT EMSCRIPTEN AND NOT LIB_OGG)
 
 if(NOT EMSCRIPTEN AND NOT LIB_VORBIS)
     message(STATUS "VORBIS not found. Fetching VORBIS...")
-    set(INSTALL_CMAKE_PACKAGE_MODULE
-        OFF
-        CACHE BOOL "Dont do it" FORCE)
+    set(INSTALL_CMAKE_PACKAGE_MODULE OFF CACHE BOOL "Dont do it" FORCE)
     FetchContent_Declare(
         LIB_VORBIS
         GIT_REPOSITORY https://github.com/xiph/vorbis
@@ -310,18 +297,10 @@ endif(NOT EMSCRIPTEN AND NOT LIB_VORBIS)
 
 if(NOT SDL3_FOUND)
     message(STATUS "SDL3 not found. Fetching SDL3...")
-    set(SDL_SHARED
-        OFF
-        CACHE BOOL "Build SDL as a shared library")
-    set(SDL_STATIC
-        ON
-        CACHE BOOL "Build SDL as a shared library")
-    set(SDL_TEST
-        OFF
-        CACHE BOOL "Build SDL as a shared library")
-    set(ENABLE_SDL_STATIC
-        OFF
-        CACHE BOOL "Build SDL as a static library")
+    set(SDL_SHARED OFF CACHE BOOL "Build SDL as a shared library")
+    set(SDL_STATIC ON CACHE BOOL "Build SDL as a shared library")
+    set(SDL_TEST OFF CACHE BOOL "Build SDL as a shared library")
+    set(ENABLE_SDL_STATIC OFF CACHE BOOL "Build SDL as a static library")
     FetchContent_Declare(
         SDL3
         GIT_REPOSITORY https://github.com/libsdl-org/SDL
@@ -333,24 +312,12 @@ endif(NOT SDL3_FOUND)
 
 if(NOT FREETYPE_FOUND)
     message(STATUS "freetype not found. Fetching freetype...")
-    set(FT_DISABLE_BROTLI
-        ON
-        CACHE BOOL "Do not install when installing" FORCE)
-    set(FT_DISABLE_HARFBUZZ
-        ON
-        CACHE BOOL "Do not install when installing" FORCE)
-    set(FT_DISABLE_ZLIB
-        ON
-        CACHE BOOL "Do not use" FORCE)
-    set(FT_DISABLE_BZIP2
-        ON
-        CACHE BOOL "Do not use" FORCE)
-    set(FT_DISABLE_PNG
-        ON
-        CACHE BOOL "Do not use" FORCE)
-    set(FT_DISABLE_PNG
-        ON
-        CACHE BOOL "Do not use" FORCE)
+    set(FT_DISABLE_BROTLI ON CACHE BOOL "Do not install when installing" FORCE)
+    set(FT_DISABLE_HARFBUZZ ON CACHE BOOL "Do not install when installing" FORCE)
+    set(FT_DISABLE_ZLIB ON CACHE BOOL "Do not use" FORCE)
+    set(FT_DISABLE_BZIP2 ON CACHE BOOL "Do not use" FORCE)
+    set(FT_DISABLE_PNG ON CACHE BOOL "Do not use" FORCE)
+    set(FT_DISABLE_PNG ON CACHE BOOL "Do not use" FORCE)
     FetchContent_Declare(
         LIB_FREETYPE
         GIT_REPOSITORY https://github.com/freetype/freetype
@@ -362,25 +329,12 @@ endif(NOT FREETYPE_FOUND)
 
 if(NOT EMSCRIPTEN AND NOT LIB_OPENAL)
     message(STATUS "openal not found. Fetching openal...")
-    set(BUILD_SHARED_LIBS
-        OFF
-        CACHE INTERNAL "Do not use")
-    set(LIBTYPE
-        "STATIC"
-        CACHE INTERNAL "Do not use")
-    set(ALSOFT_UTILS
-        OFF
-        CACHE INTERNAL "")
-    set(ALSOFT_EXAMPLES
-        OFF
-        CACHE INTERNAL "")
-    set(ALSOFT_BACKEND_WAVE
-        OFF
-        CACHE INTERNAL "")
-    set(ALSOFT_EMBED_HRTF_DATA
-        ON
-        CACHE INTERNAL "")
-    # set(ALSOFT_REQUIRE_COREAUDIO ON CACHE INTERNAL "" )
+    set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "Do not use")
+    set(LIBTYPE "STATIC" CACHE INTERNAL "Do not use")
+    set(ALSOFT_UTILS OFF CACHE INTERNAL "")
+    set(ALSOFT_EXAMPLES OFF CACHE INTERNAL "")
+    set(ALSOFT_BACKEND_WAVE OFF CACHE INTERNAL "")
+    set(ALSOFT_EMBED_HRTF_DATA ON CACHE INTERNAL "")
     FetchContent_Declare(
         LIB_OPENAL
         GIT_REPOSITORY https://github.com/kcat/openal-soft
@@ -402,7 +356,6 @@ if(DEBUG_CMAKE_VARIABLES)
     # FT_LIBS
     # Freetype::Freetype
     # INTERFACE_LINK_LIBRARIES)
-
     #debugging
     # message(STATUS "FT interface libs = ${FT_LIBS}")
     #         message(STATUS "Freetype library: ${FREETYPE_LIBRARY}")
@@ -415,7 +368,6 @@ endif(DEBUG_CMAKE_VARIABLES)
 
 target_compile_options(${LIBRARY_TARGET_NAME} PUBLIC ${COMPILE_OPTIONS})
 target_link_directories(${LIBRARY_TARGET_NAME} PUBLIC /usr/local/lib) # should always include from usr/local/lib
-# target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC ${EXTERNAL_LIBS})
 
 if(LINK_M)
     target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC m)
