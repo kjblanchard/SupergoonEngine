@@ -246,7 +246,7 @@ cleanup:
 
 void DrawTextureRaw(Texture* texture, Shader* shader, RectangleF* dstRect,
 					RectangleF* srcRect, bool useCamera, float scale, bool flipY,
-					Color* color, bool snapToPixel) {
+					Color* color) {
 	if (flipY) {
 		dstRect->y += dstRect->h * scale;
 		dstRect->h *= -1;
@@ -254,23 +254,17 @@ void DrawTextureRaw(Texture* texture, Shader* shader, RectangleF* dstRect,
 	ShaderUse(shader);
 	mat4 model;
 	glm_mat4_identity(model);
-	float px = snapToPixel ? floorf(dstRect->x) : dstRect->x;
-	float py = snapToPixel ? floorf(dstRect->y) : dstRect->y;
-	vec3 pos = {px, py, 0};
+	vec3 pos = {floorf(dstRect->x), floorf(dstRect->y), 0};
 	glm_translate(model, pos);
 	vec3 size = {dstRect->w * scale, dstRect->h * scale, 1.0f};
 	glm_scale(model, size);
 	mat4 view;
 	glm_mat4_identity(view);
 	if (useCamera) {
-		float cx = floorf(CameraGetX());
-		float cy = floorf(CameraGetY());
-		vec3 negCameraPos = {-cx, -cy, 0.0f};
+		vec3 negCameraPos = {-CameraGetX(), -CameraGetY(), 0.0f};
 		glm_translate(view, negCameraPos);
 	}
-	float sx = snapToPixel ? floorf(srcRect->x) : srcRect->x;
-	float sy = snapToPixel ? floorf(srcRect->y) : srcRect->y;
-	vec4 srcRectV = {sx, sy, srcRect->w, srcRect->h};
+	vec4 srcRectV = {floorf(srcRect->x), floorf(srcRect->y), srcRect->w, srcRect->h};
 	vec2 texSize = {(float)texture->Width, (float)texture->Height};
 	ShaderSetUniformVector4fV(shader, "srcRect", srcRectV, false);
 	ShaderSetUniformVector2fV(shader, "textureSize", texSize, false);
@@ -287,9 +281,39 @@ void DrawTextureRaw(Texture* texture, Shader* shader, RectangleF* dstRect,
 	glBindVertexArray(0);
 }
 
+void DrawTextureToScreen(Texture* texture, Shader* shader, RectangleF* dstRect,
+						 RectangleF* srcRect, bool flipY, Color* color) {
+	if (flipY) {
+		dstRect->y += dstRect->h;
+		dstRect->h *= -1;
+	}
+	ShaderUse(shader);
+	mat4 model;
+	glm_mat4_identity(model);
+	vec3 pos = {dstRect->x, dstRect->y, 0};
+	glm_translate(model, pos);
+	vec3 size = {dstRect->w, dstRect->h, 1.0f};
+	glm_scale(model, size);
+	mat4 view;
+	glm_mat4_identity(view);
+	vec4 srcRectV = {srcRect->x, srcRect->y, srcRect->w, srcRect->h};
+	ShaderSetUniformVector4fV(shader, "srcRect", srcRectV, false);
+	ShaderSetUniformMatrix4(shader, "model", model, false);
+	ShaderSetUniformMatrix4(shader, "view", view, false);
+	ShaderSetUniformMatrix4(shader, "projection", projectionMatrix, false);
+	ShaderSetUniformInteger(shader, "image", 0, false);
+	vec4 colorVec = {color->R / (float)255, color->G / (float)255, color->B / (float)255, color->A / (float)255};
+	ShaderSetUniformVector4fV(shader, "spriteColor", colorVec, false);
+	glActiveTexture(GL_TEXTURE0);
+	TextureBindImpl(texture);
+	glBindVertexArray(texture->VAO);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
+}
+
 void DrawTextureImpl(Texture* texture, Shader* shader, RectangleF* dstRect,
 					 RectangleF* srcRect, bool useCamera, float scale, bool flipY, Color* color) {
-	DrawTextureRaw(texture, shader, dstRect, srcRect, useCamera, scale, flipY, color, true);
+	DrawTextureRaw(texture, shader, dstRect, srcRect, useCamera, scale, flipY, color);
 }
 
 void DrawTextureToTextureImpl(Texture* dstTarget, Texture* srcTexture,

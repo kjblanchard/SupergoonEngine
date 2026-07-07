@@ -88,9 +88,7 @@ void DrawSpriteManual(Sprite* sprite, RectangleF* dstRect, Color* color, int cam
 	}
 	dstRect->x = sprite->parentX ? *sprite->parentX + sprite->OffsetAndSizeRectF.x : sprite->OffsetAndSizeRectF.x;
 	dstRect->y = sprite->parentY ? *sprite->parentY + sprite->OffsetAndSizeRectF.y : sprite->OffsetAndSizeRectF.y;
-	float *camFollowX, *camFollowY;
-	CameraGetFollow(&camFollowX, &camFollowY);
-	if (camera && sprite->parentX && sprite->parentX == camFollowX) {
+	if (camera && (sprite->Flags & SpriteFlagCameraCompensate)) {
 		dstRect->x += CameraGetSubPixelX();
 		dstRect->y += CameraGetSubPixelY();
 	}

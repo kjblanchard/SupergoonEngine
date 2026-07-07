@@ -248,7 +248,7 @@ Shader* GetDefaultTextShaderImpl(void) {
 		return _defaultTextShader;
 	}
 	_defaultTextShader = ShaderCreateImpl();
-	ShaderCompileImpl(_defaultTextShader, DEFAULT_VERTEX_FILENAME, DEFAULT_TEXT_FRAGMENT_FILENAME);
+	ShaderCompileImpl(_defaultTextShader, DEFAULT_TEXT_VERTEX_FILENAME, DEFAULT_TEXT_FRAGMENT_FILENAME);
 	return _defaultTextShader;
 }
 
