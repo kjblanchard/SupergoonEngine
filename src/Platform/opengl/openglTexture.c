@@ -263,8 +263,8 @@ void DrawTextureRaw(Texture* texture, Shader* shader, RectangleF* dstRect,
 	mat4 view;
 	glm_mat4_identity(view);
 	if (useCamera) {
-		float cx = CameraGetX();
-		float cy = CameraGetY();
+		float cx = floorf(CameraGetX());
+		float cy = floorf(CameraGetY());
 		vec3 negCameraPos = {-cx, -cy, 0.0f};
 		glm_translate(view, negCameraPos);
 	}
