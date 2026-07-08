@@ -133,7 +133,7 @@ void DrawEndImpl(void) {
 	Color fboColor = _fboColor;
 
 	float worldX = offsetX - subX;
-	float worldY = offsetY + subY;
+	float worldY = offsetY - subY;
 	RectangleF worldDst = {worldX, worldY, (float)drawWidth, (float)drawHeight};
 	Shader* screenShader = GetDefaultScreenShaderImpl();
 	DrawTextureToScreen(_screenFrameBufferTexture, screenShader, &worldDst, true, &fboColor);
