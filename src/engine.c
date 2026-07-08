@@ -76,6 +76,7 @@ static void update(void) {
 	int ticks = 0;
 	int maxTicksThisFrame = MAX_TICKS_PER_FRAME;
 	while (_accumulatorNS >= FIXED_TIMESTEP_NS && ticks < maxTicksThisFrame) {
+		SnapshotSpritePositions();
 		UpdateAudioSystem();
 		UpdateKeyboardSystem();
 		UpdateCurrentMap();
