@@ -144,8 +144,8 @@ Texture* TextureCreateRenderTargetImpl(int width, int height) {
 	glGenTextures(1, &texture->ID);
 	glBindTexture(GL_TEXTURE_2D, texture->ID);
 	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	// Create framebuffer and attach texture as color attachment 0
@@ -282,7 +282,7 @@ void DrawTextureRaw(Texture* texture, Shader* shader, RectangleF* dstRect,
 }
 
 void DrawTextureToScreen(Texture* texture, Shader* shader, RectangleF* dstRect,
-						 RectangleF* srcRect, bool flipY, Color* color) {
+						 bool flipY, Color* color) {
 	if (flipY) {
 		dstRect->y += dstRect->h;
 		dstRect->h *= -1;
@@ -294,12 +294,7 @@ void DrawTextureToScreen(Texture* texture, Shader* shader, RectangleF* dstRect,
 	glm_translate(model, pos);
 	vec3 size = {dstRect->w, dstRect->h, 1.0f};
 	glm_scale(model, size);
-	mat4 view;
-	glm_mat4_identity(view);
-	vec4 srcRectV = {srcRect->x, srcRect->y, srcRect->w, srcRect->h};
-	ShaderSetUniformVector4fV(shader, "srcRect", srcRectV, false);
 	ShaderSetUniformMatrix4(shader, "model", model, false);
-	ShaderSetUniformMatrix4(shader, "view", view, false);
 	ShaderSetUniformMatrix4(shader, "projection", projectionMatrix, false);
 	ShaderSetUniformInteger(shader, "image", 0, false);
 	vec4 colorVec = {color->R / (float)255, color->G / (float)255, color->B / (float)255, color->A / (float)255};

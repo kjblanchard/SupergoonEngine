@@ -21,8 +21,9 @@
 #include <sgtools/log.h>
 
 extern void ShaderSystemShutdown(void);
+extern Shader* GetDefaultScreenShaderImpl(void);
 extern void DrawTextureToScreen(Texture* texture, Shader* shader, RectangleF* dstRect,
-								RectangleF* srcRect, bool flipY, Color* color);
+								bool flipY, Color* color);
 SDL_GLContext _context;
 static Texture* _screenFrameBufferTexture = NULL;
 static Texture* _uiFrameBufferTexture = NULL;
@@ -130,16 +131,16 @@ void DrawEndImpl(void) {
 	float subX = CameraGetSubPixelX() * scale;
 	float subY = CameraGetSubPixelY() * scale;
 	Color fboColor = _fboColor;
-	RectangleF fbSrc = {0, 0, (float)fbWidth, (float)fbHeight};
 
 	float worldX = offsetX - subX;
 	float worldY = offsetY + subY;
 	RectangleF worldDst = {worldX, worldY, (float)drawWidth, (float)drawHeight};
-	DrawTextureToScreen(_screenFrameBufferTexture, GetDefaultShader(), &worldDst, &fbSrc, true, &fboColor);
+	Shader* screenShader = GetDefaultScreenShaderImpl();
+	DrawTextureToScreen(_screenFrameBufferTexture, screenShader, &worldDst, true, &fboColor);
 
 	if (_uiFrameBufferTexture) {
 		RectangleF uiDst = {offsetX, offsetY, (float)drawWidth, (float)drawHeight};
-		DrawTextureToScreen(_uiFrameBufferTexture, GetDefaultShader(), &uiDst, &fbSrc, true, &fboColor);
+		DrawTextureToScreen(_uiFrameBufferTexture, screenShader, &uiDst, true, &fboColor);
 	}
 
 	if (GraphicsPostFBODrawDebugFunc) GraphicsPostFBODrawDebugFunc();
