@@ -9,6 +9,12 @@
 #include <string.h>
 #include <stdlib.h>
 
+static bool isCameraFollowTarget(Sprite* sprite) {
+	float *fx, *fy;
+	CameraGetFollow(&fx, &fy);
+	return fx && sprite->parentX == fx;
+}
+
 static size_t _firstSpriteHole = NO_HOLE;
 static size_t _numSprites = 0;
 static size_t _sizeSprites = 0;
@@ -60,6 +66,8 @@ void destroySprite(Sprite* sprite) {
 	if (GetDefaultShader() != sprite->Shader) ShaderDestroy(sprite->Shader);
 	TextureDestroy(sprite->Texture);
 	sprite->Texture = NULL;
+	sprite->parentX = NULL;
+	sprite->parentY = NULL;
 }
 
 void DestroySpriteManual(Sprite* sprite) {
@@ -89,17 +97,18 @@ void DrawSpriteManual(Sprite* sprite, RectangleF* dstRect, Color* color, int cam
 	if (!sprite || !sprite->Texture || !(sprite->Flags & SpriteFlagVisible)) {
 		return;
 	}
-	if (sprite->parentX) {
+	bool shouldInterp = camera && !isCameraFollowTarget(sprite);
+	if (shouldInterp && sprite->parentX) {
 		float interpX = sprite->prevParentX + RenderAlpha * (*sprite->parentX - sprite->prevParentX);
 		dstRect->x = interpX + sprite->OffsetAndSizeRectF.x;
 	} else {
-		dstRect->x = sprite->OffsetAndSizeRectF.x;
+		dstRect->x = sprite->parentX ? *sprite->parentX + sprite->OffsetAndSizeRectF.x : sprite->OffsetAndSizeRectF.x;
 	}
-	if (sprite->parentY) {
+	if (shouldInterp && sprite->parentY) {
 		float interpY = sprite->prevParentY + RenderAlpha * (*sprite->parentY - sprite->prevParentY);
 		dstRect->y = interpY + sprite->OffsetAndSizeRectF.y;
 	} else {
-		dstRect->y = sprite->OffsetAndSizeRectF.y;
+		dstRect->y = sprite->parentY ? *sprite->parentY + sprite->OffsetAndSizeRectF.y : sprite->OffsetAndSizeRectF.y;
 	}
 	DrawTexture(sprite->Texture, sprite->Shader, dstRect, &sprite->TextureSourceRect, camera, sprite->Scale, false, color);
 }
