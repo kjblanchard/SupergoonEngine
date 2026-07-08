@@ -128,8 +128,8 @@ void DrawEndImpl(void) {
 	int drawHeight = fbHeight * scale;
 	float offsetX = (winWidth - drawWidth) / 2.0f;
 	float offsetY = (winHeight - drawHeight) / 2.0f;
-	float subX = CameraGetSubPixelX() * scale;
-	float subY = CameraGetSubPixelY() * scale;
+	float subX = floorf(CameraGetSubPixelX() * scale);
+	float subY = floorf(CameraGetSubPixelY() * scale);
 	Color fboColor = _fboColor;
 
 	float worldX = offsetX - subX;
