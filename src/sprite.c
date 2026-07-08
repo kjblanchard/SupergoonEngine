@@ -9,12 +9,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-static bool isCameraFollowTarget(Sprite* sprite) {
-	float *fx, *fy;
-	CameraGetFollow(&fx, &fy);
-	return fx && sprite->parentX == fx;
-}
-
 static size_t _firstSpriteHole = NO_HOLE;
 static size_t _numSprites = 0;
 static size_t _sizeSprites = 0;
@@ -97,14 +91,13 @@ void DrawSpriteManual(Sprite* sprite, RectangleF* dstRect, Color* color, int cam
 	if (!sprite || !sprite->Texture || !(sprite->Flags & SpriteFlagVisible)) {
 		return;
 	}
-	bool shouldInterp = camera && !isCameraFollowTarget(sprite);
-	if (shouldInterp && sprite->parentX) {
+	if (camera && sprite->parentX) {
 		float interpX = sprite->prevParentX + RenderAlpha * (*sprite->parentX - sprite->prevParentX);
 		dstRect->x = interpX + sprite->OffsetAndSizeRectF.x;
 	} else {
 		dstRect->x = sprite->parentX ? *sprite->parentX + sprite->OffsetAndSizeRectF.x : sprite->OffsetAndSizeRectF.x;
 	}
-	if (shouldInterp && sprite->parentY) {
+	if (camera && sprite->parentY) {
 		float interpY = sprite->prevParentY + RenderAlpha * (*sprite->parentY - sprite->prevParentY);
 		dstRect->y = interpY + sprite->OffsetAndSizeRectF.y;
 	} else {
