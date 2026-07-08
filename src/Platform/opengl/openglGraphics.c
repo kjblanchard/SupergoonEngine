@@ -126,14 +126,14 @@ void DrawEndImpl(void) {
 	if (scale < 1) scale = 1;
 	int drawWidth = fbWidth * scale;
 	int drawHeight = fbHeight * scale;
-	float offsetX = (winWidth - drawWidth) / 2.0f;
-	float offsetY = (winHeight - drawHeight) / 2.0f;
+	float offsetX = floorf((winWidth - drawWidth) / 2.0f);
+	float offsetY = floorf((winHeight - drawHeight) / 2.0f);
 	float subX = floorf(CameraGetSubPixelX() * scale);
 	float subY = floorf(CameraGetSubPixelY() * scale);
 	Color fboColor = _fboColor;
 
 	float worldX = offsetX - subX;
-	float worldY = offsetY - subY;
+	float worldY = offsetY + subY;
 	RectangleF worldDst = {worldX, worldY, (float)drawWidth, (float)drawHeight};
 	Shader* screenShader = GetDefaultScreenShaderImpl();
 	DrawTextureToScreen(_screenFrameBufferTexture, screenShader, &worldDst, true, &fboColor);
