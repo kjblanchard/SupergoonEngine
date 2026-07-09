@@ -39,7 +39,7 @@ void TextureBindImpl(Texture* texture) {
 }
 
 static Texture* getTextureFromCache(const char* filename) {
-	for (int i = 0; i < _currentCachedTextures; ++i) {
+	for (int i = 0; i < MAX_CACHED_TEXTURES; ++i) {
 		if (_cachedTextures[i] &&
 			_cachedTextures[i]->Name &&
 			strcmp(filename, _cachedTextures[i]->Name) == 0) {
@@ -53,6 +53,7 @@ static void cacheTexture(Texture* texture) {
 	for (int i = 0; i < MAX_CACHED_TEXTURES; ++i) {
 		if (_cachedTextures[i] == NULL) {
 			_cachedTextures[i] = texture;
+			++_currentCachedTextures;
 			return;
 		}
 	}
@@ -63,6 +64,7 @@ static void removeTextureFromCache(Texture* t) {
 	for (int i = 0; i < MAX_CACHED_TEXTURES; ++i) {
 		if (_cachedTextures[i] == t) {
 			_cachedTextures[i] = NULL;
+			--_currentCachedTextures;
 			return;
 		}
 	}
@@ -81,18 +83,18 @@ Texture* TextureCreateNoCacheImpl(void) {
 	texture->ID = 0;
 	texture->Width = 0;
 	texture->Height = 0;
+	texture->VBO = 0;
 	texture->FBO = 0;
 	texture->Name = NULL;
 	texture->RefCount = 1;
 	// configure VAO/VBO
-	unsigned int VBO;
 	float vertices[] = {// pos      // tex
 						0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
 						0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
 						1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f};
 	glGenVertexArrays(1, &texture->VAO);
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glGenBuffers(1, &texture->VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, texture->VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 	glBindVertexArray(texture->VAO);
 	glEnableVertexAttribArray(0);
@@ -132,6 +134,7 @@ Texture* TextureCreateRenderTargetImpl(int width, int height) {
 	texture->Width = width;
 	texture->Height = height;
 	texture->VAO = 0;
+	texture->VBO = 0;
 	texture->FBO = 0;
 	texture->RefCount = 1;
 	asprintf(&texture->Name, "%d_%d_render_target_framebuffer", width, height);
@@ -160,15 +163,14 @@ Texture* TextureCreateRenderTargetImpl(int width, int height) {
 	}
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	unsigned int VBO = 0;
 	float vertices[] = {// pos(x,y)   // tex(u,v)
 						0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
 						0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
 						1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f};
 	glGenVertexArrays(1, &texture->VAO);
-	glGenBuffers(1, &VBO);
+	glGenBuffers(1, &texture->VBO);
 	glBindVertexArray(texture->VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, texture->VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
@@ -334,6 +336,11 @@ void TextureDestroyImpl(Texture* texture) {
 	if (texture->FBO != 0) {
 		glDeleteFramebuffers(1, &texture->FBO);
 		texture->FBO = 0;
+	}
+	// Delete VBO if it exists
+	if (texture->VBO != 0) {
+		glDeleteBuffers(1, &texture->VBO);
+		texture->VBO = 0;
 	}
 	// Delete VAO if it exists
 	if (texture->VAO != 0) {

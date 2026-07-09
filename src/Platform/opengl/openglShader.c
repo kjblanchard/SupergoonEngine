@@ -273,4 +273,7 @@ Shader* GetDefaultScreenShaderImpl(void) {
 	return _defaultScreenShader;
 }
 
-void ShaderDestroyImpl(Shader* shader) { free(shader); }
+void ShaderDestroyImpl(Shader* shader) {
+	if (shader->ID) glDeleteProgram(shader->ID);
+	free(shader);
+}
