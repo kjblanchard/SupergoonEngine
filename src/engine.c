@@ -14,25 +14,28 @@
 #include <Supergoon/engine.h>
 #include <Supergoon/events.h>
 #include <Supergoon/filesystem.h>
-#include <sgtools/log.h>
 #include <Supergoon/map.h>
 #include <Supergoon/sprite.h>
 #include <Supergoon/state.h>
 #include <Supergoon/text.h>
 #include <Supergoon/window.h>
+#include <sgtools/log.h>
 
 static Uint64 _previousNS = 0;
 static Uint64 _accumulatorNS = 0;
 int IsGameLoading = false;
 float RenderAlpha = 0.0f;
 #define FIXED_TIMESTEP_NS 16666666ULL  // 60 FPS
-
-static void start(void) {
+									   //
+static void initialize(void) {
 	InitializeSdl();
 	sgInitializeLogSystem("errors.log");
 	InitializeKeyboardSystem();
 	InitializeJoystickSystem();
 	InitializeEventSystem();
+}
+
+static void start(void) {
 	CreateWindow();
 	InitializeGraphicsSystem();
 	InitializeTextSystem();
@@ -118,6 +121,7 @@ void SetInputFunction(void (*updateFunc)(void)) { _inputFunc = updateFunc; }
 void SetQuitFunction(void (*quitFunc)(void)) { _quitFunc = quitFunc; }
 
 SDL_AppResult SDL_AppInit(void** appState, int argc, char* argv[]) {
+	initialize();
 	if (_initializeFunc) _initializeFunc();
 	start();
 	if (_startFunc) _startFunc();
