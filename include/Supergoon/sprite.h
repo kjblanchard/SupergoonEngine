@@ -15,6 +15,8 @@ typedef enum SpriteFlags {
 typedef struct Sprite {
 	float* parentX;
 	float* parentY;
+	float prevParentX;
+	float prevParentY;
 	Texture* Texture;
 	RectangleF TextureSourceRect;
 	RectangleF OffsetAndSizeRectF;
@@ -29,6 +31,7 @@ Sprite* NewSpriteManual(void);
 void DestroySprite(Sprite* sprite);
 void DestroySpriteManual(Sprite* sprite);
 void DrawSpriteManual(Sprite* sprite, RectangleF* dstRect, Color* color, int camera);
+void SnapshotSpritePositions(void);
 void DrawSpriteSystem(void);
 void ShutdownSpriteSystem(void);
 #ifdef __cplusplus

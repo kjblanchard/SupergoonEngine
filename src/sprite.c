@@ -4,6 +4,7 @@
 #include <Supergoon/Primitives/Color.h>
 #include <Supergoon/camera.h>
 #include <Supergoon/sprite.h>
+#include <Supergoon/state.h>
 #include <sgtools/tools.h>
 #include <string.h>
 #include <stdlib.h>
@@ -33,6 +34,8 @@ static Sprite* getFreeSprite(void) {
 void initSprite(Sprite* sprite) {
 	sprite->parentX = NULL;
 	sprite->parentY = NULL;
+	sprite->prevParentX = 0;
+	sprite->prevParentY = 0;
 	sprite->Texture = NULL;
 	sprite->Shader = NULL;
 	sprite->Scale = 1.0f;
@@ -57,6 +60,8 @@ void destroySprite(Sprite* sprite) {
 	if (GetDefaultShader() != sprite->Shader) ShaderDestroy(sprite->Shader);
 	TextureDestroy(sprite->Texture);
 	sprite->Texture = NULL;
+	sprite->parentX = NULL;
+	sprite->parentY = NULL;
 }
 
 void DestroySpriteManual(Sprite* sprite) {
@@ -86,15 +91,28 @@ void DrawSpriteManual(Sprite* sprite, RectangleF* dstRect, Color* color, int cam
 	if (!sprite || !sprite->Texture || !(sprite->Flags & SpriteFlagVisible)) {
 		return;
 	}
-	dstRect->x = sprite->parentX ? *sprite->parentX + sprite->OffsetAndSizeRectF.x : sprite->OffsetAndSizeRectF.x;
-	dstRect->y = sprite->parentY ? *sprite->parentY + sprite->OffsetAndSizeRectF.y : sprite->OffsetAndSizeRectF.y;
-	float *camFollowX, *camFollowY;
-	CameraGetFollow(&camFollowX, &camFollowY);
-	if (camera && sprite->parentX && sprite->parentX == camFollowX) {
-		dstRect->x += CameraGetSubPixelX();
-		dstRect->y += CameraGetSubPixelY();
+	if (camera && sprite->parentX) {
+		float interpX = sprite->prevParentX + RenderAlpha * (*sprite->parentX - sprite->prevParentX);
+		dstRect->x = interpX + sprite->OffsetAndSizeRectF.x;
+	} else {
+		dstRect->x = sprite->parentX ? *sprite->parentX + sprite->OffsetAndSizeRectF.x : sprite->OffsetAndSizeRectF.x;
+	}
+	if (camera && sprite->parentY) {
+		float interpY = sprite->prevParentY + RenderAlpha * (*sprite->parentY - sprite->prevParentY);
+		dstRect->y = interpY + sprite->OffsetAndSizeRectF.y;
+	} else {
+		dstRect->y = sprite->parentY ? *sprite->parentY + sprite->OffsetAndSizeRectF.y : sprite->OffsetAndSizeRectF.y;
 	}
 	DrawTexture(sprite->Texture, sprite->Shader, dstRect, &sprite->TextureSourceRect, camera, sprite->Scale, false, color);
+}
+
+void SnapshotSpritePositions(void) {
+	for (size_t i = 0; i < _numSprites; i++) {
+		Sprite* sprite = _sprites[i];
+		if (sprite->Flags & SpriteFlagDestroyed) continue;
+		if (sprite->parentX) sprite->prevParentX = *sprite->parentX;
+		if (sprite->parentY) sprite->prevParentY = *sprite->parentY;
+	}
 }
 
 void DrawSpriteSystem(void) {

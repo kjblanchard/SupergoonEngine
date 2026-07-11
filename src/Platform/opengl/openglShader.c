@@ -27,6 +27,8 @@
 #define DEFAULT_TEXT_FRAGMENT_FILENAME "2dTextFragment"
 #define DEFAULT_RECT_VERTEX_FILENAME "2dRectVertex"
 #define DEFAULT_RECT_FRAGMENT_FILENAME "2dRectFragment"
+#define DEFAULT_SCREEN_VERTEX_FILENAME "2dScreenVertex"
+#define DEFAULT_SCREEN_FRAGMENT_FILENAME "2dScreenFragment"
 
 static struct Directory* sDirectory = NULL;
 
@@ -47,6 +49,7 @@ typedef enum ShaderType {
 static Shader* _defaultShader = NULL;
 static Shader* _defaultTextShader = NULL;
 static Shader* _defaultRectShader = NULL;
+static Shader* _defaultScreenShader = NULL;
 
 CachedShaderFile _cachedShaders[NUM_CACHED_SHADERS];
 
@@ -248,7 +251,7 @@ Shader* GetDefaultTextShaderImpl(void) {
 		return _defaultTextShader;
 	}
 	_defaultTextShader = ShaderCreateImpl();
-	ShaderCompileImpl(_defaultTextShader, DEFAULT_VERTEX_FILENAME, DEFAULT_TEXT_FRAGMENT_FILENAME);
+	ShaderCompileImpl(_defaultTextShader, DEFAULT_TEXT_VERTEX_FILENAME, DEFAULT_TEXT_FRAGMENT_FILENAME);
 	return _defaultTextShader;
 }
 
@@ -261,4 +264,16 @@ Shader* GetDefaultRectShaderImpl(void) {
 	return _defaultRectShader;
 }
 
-void ShaderDestroyImpl(Shader* shader) { free(shader); }
+Shader* GetDefaultScreenShaderImpl(void) {
+	if (_defaultScreenShader) {
+		return _defaultScreenShader;
+	}
+	_defaultScreenShader = ShaderCreateImpl();
+	ShaderCompileImpl(_defaultScreenShader, DEFAULT_SCREEN_VERTEX_FILENAME, DEFAULT_SCREEN_FRAGMENT_FILENAME);
+	return _defaultScreenShader;
+}
+
+void ShaderDestroyImpl(Shader* shader) {
+	if (shader->ID) glDeleteProgram(shader->ID);
+	free(shader);
+}

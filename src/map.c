@@ -381,23 +381,13 @@ void UpdateCurrentMap(void) {
 
 void DrawCurrentMap(void) {
 	if (!_currentMap) return;
-
-	float viewW = 480;
-	float viewH = 270;
 	float texW = (float)TextureGetWidth(_currentMap->BackgroundTexture);
 	float texH = (float)TextureGetHeight(_currentMap->BackgroundTexture);
-	float camX = CameraGetX();
-	float camY = CameraGetY();
-	float srcW = viewW;
-	float srcH = viewH;
-	if (camX + srcW > texW) srcW = texW - camX;
-	if (camY + srcH > texH) srcH = texH - camY;
-	if (srcW <= 0 || srcH <= 0) return;
-	RectangleF src = {camX, camY, srcW, srcH};
-	RectangleF dst = {0, 0, srcW, srcH};
+	RectangleF src = {0, 0, texW, texH};
+	RectangleF dst = {0, 0, texW, texH};
 	DrawTexture(_currentMap->BackgroundTexture,
 				GetDefaultShader(), &dst, &src,
-				false, 1.0f, false,
+				true, 1.0f, false,
 				&(Color){255, 255, 255, 255});
 	drawAnimatedTiles();
 }

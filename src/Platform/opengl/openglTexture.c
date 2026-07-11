@@ -39,7 +39,7 @@ void TextureBindImpl(Texture* texture) {
 }
 
 static Texture* getTextureFromCache(const char* filename) {
-	for (int i = 0; i < _currentCachedTextures; ++i) {
+	for (int i = 0; i < MAX_CACHED_TEXTURES; ++i) {
 		if (_cachedTextures[i] &&
 			_cachedTextures[i]->Name &&
 			strcmp(filename, _cachedTextures[i]->Name) == 0) {
@@ -53,6 +53,7 @@ static void cacheTexture(Texture* texture) {
 	for (int i = 0; i < MAX_CACHED_TEXTURES; ++i) {
 		if (_cachedTextures[i] == NULL) {
 			_cachedTextures[i] = texture;
+			++_currentCachedTextures;
 			return;
 		}
 	}
@@ -63,6 +64,7 @@ static void removeTextureFromCache(Texture* t) {
 	for (int i = 0; i < MAX_CACHED_TEXTURES; ++i) {
 		if (_cachedTextures[i] == t) {
 			_cachedTextures[i] = NULL;
+			--_currentCachedTextures;
 			return;
 		}
 	}
@@ -81,18 +83,18 @@ Texture* TextureCreateNoCacheImpl(void) {
 	texture->ID = 0;
 	texture->Width = 0;
 	texture->Height = 0;
+	texture->VBO = 0;
 	texture->FBO = 0;
 	texture->Name = NULL;
 	texture->RefCount = 1;
 	// configure VAO/VBO
-	unsigned int VBO;
 	float vertices[] = {// pos      // tex
 						0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
 						0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
 						1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f};
 	glGenVertexArrays(1, &texture->VAO);
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glGenBuffers(1, &texture->VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, texture->VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 	glBindVertexArray(texture->VAO);
 	glEnableVertexAttribArray(0);
@@ -132,6 +134,7 @@ Texture* TextureCreateRenderTargetImpl(int width, int height) {
 	texture->Width = width;
 	texture->Height = height;
 	texture->VAO = 0;
+	texture->VBO = 0;
 	texture->FBO = 0;
 	texture->RefCount = 1;
 	asprintf(&texture->Name, "%d_%d_render_target_framebuffer", width, height);
@@ -160,15 +163,14 @@ Texture* TextureCreateRenderTargetImpl(int width, int height) {
 	}
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	unsigned int VBO = 0;
 	float vertices[] = {// pos(x,y)   // tex(u,v)
 						0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
 						0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
 						1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f};
 	glGenVertexArrays(1, &texture->VAO);
-	glGenBuffers(1, &VBO);
+	glGenBuffers(1, &texture->VBO);
 	glBindVertexArray(texture->VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, texture->VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
@@ -246,7 +248,7 @@ cleanup:
 
 void DrawTextureRaw(Texture* texture, Shader* shader, RectangleF* dstRect,
 					RectangleF* srcRect, bool useCamera, float scale, bool flipY,
-					Color* color, bool snapToPixel) {
+					Color* color) {
 	if (flipY) {
 		dstRect->y += dstRect->h * scale;
 		dstRect->h *= -1;
@@ -254,23 +256,17 @@ void DrawTextureRaw(Texture* texture, Shader* shader, RectangleF* dstRect,
 	ShaderUse(shader);
 	mat4 model;
 	glm_mat4_identity(model);
-	float px = snapToPixel ? floorf(dstRect->x) : dstRect->x;
-	float py = snapToPixel ? floorf(dstRect->y) : dstRect->y;
-	vec3 pos = {px, py, 0};
+	vec3 pos = {floorf(dstRect->x), floorf(dstRect->y), 0};
 	glm_translate(model, pos);
 	vec3 size = {dstRect->w * scale, dstRect->h * scale, 1.0f};
 	glm_scale(model, size);
 	mat4 view;
 	glm_mat4_identity(view);
 	if (useCamera) {
-		float cx = CameraGetX();
-		float cy = CameraGetY();
-		vec3 negCameraPos = {-cx, -cy, 0.0f};
+		vec3 negCameraPos = {-CameraGetX(), -CameraGetY(), 0.0f};
 		glm_translate(view, negCameraPos);
 	}
-	float sx = snapToPixel ? floorf(srcRect->x) : srcRect->x;
-	float sy = snapToPixel ? floorf(srcRect->y) : srcRect->y;
-	vec4 srcRectV = {sx, sy, srcRect->w, srcRect->h};
+	vec4 srcRectV = {floorf(srcRect->x), floorf(srcRect->y), srcRect->w, srcRect->h};
 	vec2 texSize = {(float)texture->Width, (float)texture->Height};
 	ShaderSetUniformVector4fV(shader, "srcRect", srcRectV, false);
 	ShaderSetUniformVector2fV(shader, "textureSize", texSize, false);
@@ -287,9 +283,34 @@ void DrawTextureRaw(Texture* texture, Shader* shader, RectangleF* dstRect,
 	glBindVertexArray(0);
 }
 
+void DrawTextureToScreen(Texture* texture, Shader* shader, RectangleF* dstRect,
+						 bool flipY, Color* color) {
+	if (flipY) {
+		dstRect->y += dstRect->h;
+		dstRect->h *= -1;
+	}
+	ShaderUse(shader);
+	mat4 model;
+	glm_mat4_identity(model);
+	vec3 pos = {dstRect->x, dstRect->y, 0};
+	glm_translate(model, pos);
+	vec3 size = {dstRect->w, dstRect->h, 1.0f};
+	glm_scale(model, size);
+	ShaderSetUniformMatrix4(shader, "model", model, false);
+	ShaderSetUniformMatrix4(shader, "projection", projectionMatrix, false);
+	ShaderSetUniformInteger(shader, "image", 0, false);
+	vec4 colorVec = {color->R / (float)255, color->G / (float)255, color->B / (float)255, color->A / (float)255};
+	ShaderSetUniformVector4fV(shader, "spriteColor", colorVec, false);
+	glActiveTexture(GL_TEXTURE0);
+	TextureBindImpl(texture);
+	glBindVertexArray(texture->VAO);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
+}
+
 void DrawTextureImpl(Texture* texture, Shader* shader, RectangleF* dstRect,
 					 RectangleF* srcRect, bool useCamera, float scale, bool flipY, Color* color) {
-	DrawTextureRaw(texture, shader, dstRect, srcRect, useCamera, scale, flipY, color, true);
+	DrawTextureRaw(texture, shader, dstRect, srcRect, useCamera, scale, flipY, color);
 }
 
 void DrawTextureToTextureImpl(Texture* dstTarget, Texture* srcTexture,
@@ -315,6 +336,11 @@ void TextureDestroyImpl(Texture* texture) {
 	if (texture->FBO != 0) {
 		glDeleteFramebuffers(1, &texture->FBO);
 		texture->FBO = 0;
+	}
+	// Delete VBO if it exists
+	if (texture->VBO != 0) {
+		glDeleteBuffers(1, &texture->VBO);
+		texture->VBO = 0;
 	}
 	// Delete VAO if it exists
 	if (texture->VAO != 0) {

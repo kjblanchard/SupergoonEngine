@@ -18,6 +18,7 @@ extern "C" {
 #endif
 extern float DeltaTimeSeconds;
 extern float DeltaTimeMilliseconds;
+extern float RenderAlpha;
 extern struct Directory* AssetDirectory;
 #ifdef __cplusplus
 }

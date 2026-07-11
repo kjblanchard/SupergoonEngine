@@ -24,7 +24,7 @@
 static Uint64 _previousNS = 0;
 static Uint64 _accumulatorNS = 0;
 int IsGameLoading = false;
-/* static float _deltaTimeSeconds = 0; */
+float RenderAlpha = 0.0f;
 #define FIXED_TIMESTEP_NS 16666666ULL  // 60 FPS
 
 static void start(void) {
@@ -76,6 +76,7 @@ static void update(void) {
 	int ticks = 0;
 	int maxTicksThisFrame = MAX_TICKS_PER_FRAME;
 	while (_accumulatorNS >= FIXED_TIMESTEP_NS && ticks < maxTicksThisFrame) {
+		SnapshotSpritePositions();
 		UpdateAudioSystem();
 		UpdateKeyboardSystem();
 		UpdateCurrentMap();
@@ -94,7 +95,7 @@ static void update(void) {
 		_accumulatorNS = 0;
 		sgLogDebug("Warning: too many ticks this frame, capping updates to avoid spiral of death");
 	}
-	/* sgLogDebug("Ticks this frame is %d, and last frametime was %f ms", ticks, SDL_NS_TO_MS((float)frameTime)); */
+	RenderAlpha = (float)_accumulatorNS / (float)FIXED_TIMESTEP_NS;
 	draw();
 }
 

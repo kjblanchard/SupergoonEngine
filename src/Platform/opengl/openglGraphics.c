@@ -21,9 +21,9 @@
 #include <sgtools/log.h>
 
 extern void ShaderSystemShutdown(void);
-extern void DrawTextureRaw(Texture* texture, Shader* shader, RectangleF* dstRect,
-						   RectangleF* srcRect, bool useCamera, float scale, bool flipY,
-						   Color* color, bool snapToPixel);
+extern Shader* GetDefaultScreenShaderImpl(void);
+extern void DrawTextureToScreen(Texture* texture, Shader* shader, RectangleF* dstRect,
+								bool flipY, Color* color);
 SDL_GLContext _context;
 static Texture* _screenFrameBufferTexture = NULL;
 static Texture* _uiFrameBufferTexture = NULL;
@@ -126,21 +126,21 @@ void DrawEndImpl(void) {
 	if (scale < 1) scale = 1;
 	int drawWidth = fbWidth * scale;
 	int drawHeight = fbHeight * scale;
-	float offsetX = (winWidth - drawWidth) / 2.0f;
-	float offsetY = (winHeight - drawHeight) / 2.0f;
-	float subX = CameraGetSubPixelX() * scale;
-	float subY = CameraGetSubPixelY() * scale;
+	float offsetX = floorf((winWidth - drawWidth) / 2.0f);
+	float offsetY = floorf((winHeight - drawHeight) / 2.0f);
+	float subX = floorf(CameraGetSubPixelX() * scale);
+	float subY = floorf(CameraGetSubPixelY() * scale);
 	Color fboColor = _fboColor;
-	RectangleF fbSrc = {0, 0, (float)fbWidth, (float)fbHeight};
 
 	float worldX = offsetX - subX;
 	float worldY = offsetY + subY;
 	RectangleF worldDst = {worldX, worldY, (float)drawWidth, (float)drawHeight};
-	DrawTextureRaw(_screenFrameBufferTexture, GetDefaultShader(), &worldDst, &fbSrc, false, 1.0f, true, &fboColor, false);
+	Shader* screenShader = GetDefaultScreenShaderImpl();
+	DrawTextureToScreen(_screenFrameBufferTexture, screenShader, &worldDst, true, &fboColor);
 
 	if (_uiFrameBufferTexture) {
 		RectangleF uiDst = {offsetX, offsetY, (float)drawWidth, (float)drawHeight};
-		DrawTextureRaw(_uiFrameBufferTexture, GetDefaultShader(), &uiDst, &fbSrc, false, 1.0f, true, &fboColor, false);
+		DrawTextureToScreen(_uiFrameBufferTexture, screenShader, &uiDst, true, &fboColor);
 	}
 
 	if (GraphicsPostFBODrawDebugFunc) GraphicsPostFBODrawDebugFunc();

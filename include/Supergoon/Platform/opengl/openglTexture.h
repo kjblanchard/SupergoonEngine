@@ -9,6 +9,7 @@ typedef struct Texture {
 	unsigned int Width;
 	unsigned int Height;
 	unsigned int VAO;
+	unsigned int VBO;
 	unsigned int FBO;
 	int RefCount;
 	char* Name;

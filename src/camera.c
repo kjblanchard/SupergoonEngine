@@ -1,7 +1,9 @@
 #include <SDL3/SDL_scancode.h>
 #include <Supergoon/Input/keyboard.h>
 #include <Supergoon/camera.h>
+#include <Supergoon/state.h>
 float cameraPos[3] = {0, 0, 0};
+static float prevCameraPos[2] = {0, 0};
 float cameraSize[3] = {0, 0, 0};
 float BoundsX = 0;
 float BoundsY = 0;
@@ -10,6 +12,8 @@ float* followX;
 float* followY;
 
 void UpdateCameraSystem(void) {
+	prevCameraPos[0] = cameraPos[0];
+	prevCameraPos[1] = cameraPos[1];
 	float viewWidth = 480;
 	float viewHeight = 270;
 	float camX = 0;
@@ -41,6 +45,8 @@ void SetCameraFollowTarget(float* x, float* y) {
 	followY = y;
 	cameraPos[0] = 0;
 	cameraPos[1] = 0;
+	prevCameraPos[0] = 0;
+	prevCameraPos[1] = 0;
 }
 
 void SetCameraBounds(float x, float y) {
@@ -57,12 +63,20 @@ void SetCameraZoom(float zoom) {
 	CameraZoom = zoom;
 }
 
+static float getRenderCamX(void) {
+	return prevCameraPos[0] + RenderAlpha * (cameraPos[0] - prevCameraPos[0]);
+}
+
+static float getRenderCamY(void) {
+	return prevCameraPos[1] + RenderAlpha * (cameraPos[1] - prevCameraPos[1]);
+}
+
 float CameraGetX(void) {
-	return SDL_floorf(cameraPos[0]);
+	return SDL_floorf(getRenderCamX());
 }
 
 float CameraGetY(void) {
-	return SDL_floorf(cameraPos[1]);
+	return SDL_floorf(getRenderCamY());
 }
 
 void ResetCameraFollow(void) {
@@ -70,6 +84,8 @@ void ResetCameraFollow(void) {
 	followX = NULL;
 	cameraPos[0] = 0;
 	cameraPos[1] = 0;
+	prevCameraPos[0] = 0;
+	prevCameraPos[1] = 0;
 }
 
 void CameraGetPositionHandle(float** x, float** y) {
@@ -84,7 +100,7 @@ void CameraGetFollow(float** x, float** y) {
 
 float CameraGetRawX(void) { return cameraPos[0]; }
 float CameraGetRawY(void) { return cameraPos[1]; }
-float CameraGetSubPixelX(void) { return cameraPos[0] - SDL_floorf(cameraPos[0]); }
-float CameraGetSubPixelY(void) { return cameraPos[1] - SDL_floorf(cameraPos[1]); }
+float CameraGetSubPixelX(void) { float r = getRenderCamX(); return r - SDL_floorf(r); }
+float CameraGetSubPixelY(void) { float r = getRenderCamY(); return r - SDL_floorf(r); }
 float CameraGetWidth(void) { return cameraSize[0]; }
 float CameraGetHeight(void) { return cameraSize[1]; }
