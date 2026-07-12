@@ -25,9 +25,17 @@ static Uint64 _previousNS = 0;
 static Uint64 _accumulatorNS = 0;
 int IsGameLoading = false;
 float RenderAlpha = 0.0f;
+void (*_initializeFunc)(void) = NULL;
+void (*_startFunc)(void) = NULL;
+void (*_updateFunc)(void) = NULL;
+void (*_drawFunc)(void) = NULL;
+void (*_quitFunc)(void) = NULL;
+void (*_inputFunc)(void) = NULL;
+int (*_handleEventFunc)(void*) = NULL;
+void (*_graphicsPostFBODrawUIFunc)(void) = NULL;
 #define FIXED_TIMESTEP_NS 16666666ULL  // 60 FPS
 									   //
-static void initialize(void) {
+static void initializeEngineInternal(void) {
 	InitializeSdl();
 	sgInitializeLogSystem("errors.log");
 	InitializeKeyboardSystem();
@@ -64,7 +72,7 @@ static void draw(void) {
 	DrawSpriteSystem();
 	if (_drawFunc) _drawFunc();
 	DrawUIStart();
-	if (GraphicsPostFBODrawUIFunc) GraphicsPostFBODrawUIFunc();
+	if (_graphicsPostFBODrawUIFunc) _graphicsPostFBODrawUIFunc();
 	DrawEnd();
 }
 
@@ -114,14 +122,18 @@ static void Quit(void) {
 	sgShutdownLogSystem();
 }
 
+void SetStartFunction(void (*startFunc)(void)) { _startFunc = startFunc; }
 void SetHandleEventFunction(int (*eventFunc)(void*)) { _handleEventFunc = eventFunc; }
+void SetInitializeFunction(void (*initializeFunc)(void)) { _initializeFunc = initializeFunc; }
 void SetUpdateFunction(void (*updateFunc)(void)) { _updateFunc = updateFunc; }
 void SetDrawFunction(void (*drawFunc)(void)) { _drawFunc = drawFunc; }
+void SetDrawUIFunction(void (*drawUIFunc)(void)) { _graphicsPostFBODrawUIFunc = drawUIFunc; }
 void SetInputFunction(void (*updateFunc)(void)) { _inputFunc = updateFunc; }
 void SetQuitFunction(void (*quitFunc)(void)) { _quitFunc = quitFunc; }
 
 SDL_AppResult SDL_AppInit(void** appState, int argc, char* argv[]) {
-	initialize();
+	initializeEngineInternal();
+	InitializeEngineFunctions();
 	if (_initializeFunc) _initializeFunc();
 	start();
 	if (_startFunc) _startFunc();
