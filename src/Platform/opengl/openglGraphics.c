@@ -24,13 +24,18 @@ extern void ShaderSystemShutdown(void);
 extern Shader* GetDefaultScreenShaderImpl(void);
 extern void DrawTextureToScreen(Texture* texture, Shader* shader, RectangleF* dstRect,
 								bool flipY, Color* color);
+#ifdef imgui
+Texture* _imGUIScreenRenderTargetTexture = NULL;
+#endif
+
 SDL_GLContext _context;
 static Texture* _screenFrameBufferTexture = NULL;
 static Texture* _uiFrameBufferTexture = NULL;
-static int _logicalX = 0;
+//Used in debug windows
+int _logicalX = 0;
+int _logicalY = 0;
 static GLuint vao = 0, vbo = 0;
 static Color _fboColor = {255, 255, 255, 255};
-static int _logicalY = 0;
 // TODO for now, only use the refresh rate set here.. we should set it eventually.
 static unsigned int _refreshRate = 999;
 /* #ifndef __EMSCRIPTEN__ */
@@ -103,6 +108,9 @@ void DrawStartImpl(void) {
 	TextureClearRenderTarget(NULL, 0.1f, 0.1f, 0.1f, 1.0f);
 	TextureClearRenderTarget(_screenFrameBufferTexture, 0.1f, 0.1f, 0.1f, 1.0f);
 	TextureClearRenderTarget(_uiFrameBufferTexture, 0.0f, 0.0f, 0.0f, 0.0f);
+#ifdef imgui
+	TextureClearRenderTarget(_imGUIScreenRenderTargetTexture, 0.0f, 0.0f, 0.0f, 0.0f);
+#endif
 	SetRenderTarget(_screenFrameBufferTexture);
 }
 
@@ -112,6 +120,9 @@ void DrawUIStartImpl(void) {
 
 void DrawEndImpl(void) {
 	SetRenderTarget(NULL);
+#ifdef imgui
+	SetRenderTarget(_imGUIScreenRenderTargetTexture);
+#endif
 	if (!_screenFrameBufferTexture) {
 		SDL_GL_SwapWindow(WindowGetImpl()->Handle);
 		return;
@@ -143,6 +154,9 @@ void DrawEndImpl(void) {
 		DrawTextureToScreen(_uiFrameBufferTexture, screenShader, &uiDst, true, &fboColor);
 	}
 
+#ifdef imgui
+	SetRenderTarget(NULL);
+#endif
 	if (GraphicsPostFBODrawDebugFunc) GraphicsPostFBODrawDebugFunc();
 
 	SDL_GL_SwapWindow(WindowGetImpl()->Handle);
@@ -244,6 +258,15 @@ void GraphicsSetLogicalWorldSizeImpl(int width, int height) {
 	}
 	_uiFrameBufferTexture = TextureCreateRenderTarget(width, height);
 	TextureClearRenderTarget(_uiFrameBufferTexture, 0, 0, 0, 0.0);
+#ifdef imgui
+	glViewport(0, 0, width, height);
+	glm_ortho(0.0f, width, height, 0.0f, -1.0f, 1.0f, projectionMatrix);
+	if (_imGUIScreenRenderTargetTexture) {
+		TextureDestroy(_imGUIScreenRenderTargetTexture);
+	}
+	_imGUIScreenRenderTargetTexture = TextureCreateRenderTarget(width, height);
+	TextureClearRenderTarget(_imGUIScreenRenderTargetTexture, 0, 0, 0, 1.0);
+#endif
 }
 
 void GraphicsUpdateFBOColorImpl(Color* color) {

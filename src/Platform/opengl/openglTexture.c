@@ -112,6 +112,10 @@ Texture* TextureCreateNoCacheImpl(void) {
 	return texture;
 }
 
+void* TextureGetIDImpl(Texture* texture){
+	return (void*)(intptr_t)texture->FBO;
+}
+
 Texture* TextureCreateImpl(const char* name) {
 	Texture* texture = getTextureFromCache(name);
 	if (texture) {
