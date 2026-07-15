@@ -129,8 +129,13 @@ void DrawEndImpl(void) {
 	}
 	int fbWidth = TextureGetWidth(_screenFrameBufferTexture);
 	int fbHeight = TextureGetHeight(_screenFrameBufferTexture);
+#ifdef imgui
+	int winWidth = TextureGetWidth(_imGUIScreenRenderTargetTexture);
+	int winHeight = TextureGetHeight(_imGUIScreenRenderTargetTexture);
+#else
 	int winWidth = WindowWidth();
 	int winHeight = WindowHeight();
+#endif
 	int scaleX = winWidth / fbWidth;
 	int scaleY = winHeight / fbHeight;
 	int scale = scaleX < scaleY ? scaleX : scaleY;
