@@ -113,7 +113,7 @@ Texture* TextureCreateNoCacheImpl(void) {
 }
 
 void* TextureGetIDImpl(Texture* texture){
-	return (void*)(intptr_t)texture->FBO;
+	return (void*)(intptr_t)texture->ID;
 }
 
 Texture* TextureCreateImpl(const char* name) {
