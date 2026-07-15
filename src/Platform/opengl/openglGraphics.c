@@ -109,7 +109,7 @@ void DrawStartImpl(void) {
 	TextureClearRenderTarget(_screenFrameBufferTexture, 0.1f, 0.1f, 0.1f, 1.0f);
 	TextureClearRenderTarget(_uiFrameBufferTexture, 0.0f, 0.0f, 0.0f, 0.0f);
 #ifdef imgui
-	TextureClearRenderTarget(_imGUIScreenRenderTargetTexture, 0.0f, 0.0f, 0.0f, 0.0f);
+	TextureClearRenderTarget(_imGUIScreenRenderTargetTexture, 0.1f, 0.1f, 0.1f, 1.0f);
 #endif
 	SetRenderTarget(_screenFrameBufferTexture);
 }
