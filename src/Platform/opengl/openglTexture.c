@@ -26,6 +26,41 @@
 #include <stdlib.h>
 #define MAX_CACHED_TEXTURES 124
 
+static inline void colorToVec4(const Color* c, vec4 out) {
+	out[0] = c->R / 255.0f;
+	out[1] = c->G / 255.0f;
+	out[2] = c->B / 255.0f;
+	out[3] = c->A / 255.0f;
+}
+
+static void buildViewMatrix(mat4 view, int useCamera) {
+	glm_mat4_identity(view);
+	if (useCamera) {
+		vec3 negCameraPos = {-CameraGetX(), -CameraGetY(), 0.0f};
+		glm_translate(view, negCameraPos);
+	}
+}
+
+static void setupTextureQuadVAO(Texture* texture) {
+	float vertices[] = {
+		0.0f, 1.0f, 0.0f, 1.0f,
+		1.0f, 0.0f, 1.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0f, 1.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
+		1.0f, 0.0f, 1.0f, 0.0f
+	};
+	glGenVertexArrays(1, &texture->VAO);
+	glGenBuffers(1, &texture->VBO);
+	glBindVertexArray(texture->VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, texture->VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+}
+
 static Texture* _currentRenderingTarget = NULL;
 static int _currentRenderingTargetWidth = 0;
 static int _currentRenderingTargetHeight = 0;
@@ -87,20 +122,7 @@ Texture* TextureCreateNoCacheImpl(void) {
 	texture->FBO = 0;
 	texture->Name = NULL;
 	texture->RefCount = 1;
-	// configure VAO/VBO
-	float vertices[] = {// pos      // tex
-						0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-						0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
-						1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f};
-	glGenVertexArrays(1, &texture->VAO);
-	glGenBuffers(1, &texture->VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, texture->VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	glBindVertexArray(texture->VAO);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
+	setupTextureQuadVAO(texture);
 	glGenTextures(1, &texture->ID);
 
 	glBindTexture(GL_TEXTURE_2D, texture->ID);
@@ -167,24 +189,27 @@ Texture* TextureCreateRenderTargetImpl(int width, int height) {
 	}
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	float vertices[] = {// pos(x,y)   // tex(u,v)
-						0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-						0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
-						1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f};
-	glGenVertexArrays(1, &texture->VAO);
-	glGenBuffers(1, &texture->VBO);
-	glBindVertexArray(texture->VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, texture->VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
+	setupTextureQuadVAO(texture);
 	return texture;
 }
 
 int TextureGetWidthImpl(Texture* texture) { return texture->Width; }
 int TextureGetHeightImpl(Texture* texture) { return texture->Height; }
+
+static void uploadRGBAPixels(Texture* texture, int w, int h, void* pixels) {
+	glBindTexture(GL_TEXTURE_2D, texture->ID);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+	GLenum err = glGetError();
+	if (err != GL_NO_ERROR) {
+		sgLogError("GL error after glTexImage2D: 0x%X", err);
+	}
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
 
 void TextureLoadFromPngImpl(Texture* texture, const char* filepath) {
 	if (texture->Width || texture->Height) return;
@@ -199,19 +224,7 @@ void TextureLoadFromPngImpl(Texture* texture, const char* filepath) {
 	}
 	texture->Width = surface->w;
 	texture->Height = surface->h;
-	glBindTexture(GL_TEXTURE_2D, texture->ID);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);	// avoid row alignment issues
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->Width, texture->Height, 0,
-				 GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
-	GLenum err = glGetError();
-	if (err != GL_NO_ERROR) {
-		sgLogError("GL error after glTexImage2D: 0x%X", err);
-	}
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	uploadRGBAPixels(texture, surface->w, surface->h, surface->pixels);
 cleanup:
 	free(fullFilepath);
 	SDL_DestroySurface(surface);
@@ -233,19 +246,7 @@ void TextureLoadFromPngBufferImpl(Texture* texture, const char* filepath, char* 
 	}
 	texture->Width = surface->w;
 	texture->Height = surface->h;
-	glBindTexture(GL_TEXTURE_2D, texture->ID);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);	// avoid row alignment issues
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->Width, texture->Height, 0,
-				 GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
-	GLenum err = glGetError();
-	if (err != GL_NO_ERROR) {
-		sgLogError("GL error after glTexImage2D: 0x%X", err);
-	}
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	uploadRGBAPixels(texture, surface->w, surface->h, surface->pixels);
 cleanup:
 	SDL_DestroySurface(surface);
 }
@@ -265,11 +266,7 @@ void DrawTextureRaw(Texture* texture, Shader* shader, RectangleF* dstRect,
 	vec3 size = {dstRect->w * scale, dstRect->h * scale, 1.0f};
 	glm_scale(model, size);
 	mat4 view;
-	glm_mat4_identity(view);
-	if (useCamera) {
-		vec3 negCameraPos = {-CameraGetX(), -CameraGetY(), 0.0f};
-		glm_translate(view, negCameraPos);
-	}
+	buildViewMatrix(view, useCamera);
 	vec4 srcRectV = {floorf(srcRect->x), floorf(srcRect->y), srcRect->w, srcRect->h};
 	vec2 texSize = {(float)texture->Width, (float)texture->Height};
 	ShaderSetUniformVector4fV(shader, "srcRect", srcRectV, false);
@@ -278,7 +275,8 @@ void DrawTextureRaw(Texture* texture, Shader* shader, RectangleF* dstRect,
 	ShaderSetUniformMatrix4(shader, "view", view, false);
 	ShaderSetUniformMatrix4(shader, "projection", projectionMatrix, false);
 	ShaderSetUniformInteger(shader, "image", 0, false);
-	vec4 colorVec = {color->R / (float)255, color->G / (float)255, color->B / (float)255, color->A / (float)255};
+	vec4 colorVec;
+	colorToVec4(color, colorVec);
 	ShaderSetUniformVector4fV(shader, "spriteColor", colorVec, false);
 	glActiveTexture(GL_TEXTURE0);
 	TextureBindImpl(texture);
@@ -303,7 +301,8 @@ void DrawTextureToScreen(Texture* texture, Shader* shader, RectangleF* dstRect,
 	ShaderSetUniformMatrix4(shader, "model", model, false);
 	ShaderSetUniformMatrix4(shader, "projection", projectionMatrix, false);
 	ShaderSetUniformInteger(shader, "image", 0, false);
-	vec4 colorVec = {color->R / (float)255, color->G / (float)255, color->B / (float)255, color->A / (float)255};
+	vec4 colorVec;
+	colorToVec4(color, colorVec);
 	ShaderSetUniformVector4fV(shader, "spriteColor", colorVec, false);
 	glActiveTexture(GL_TEXTURE0);
 	TextureBindImpl(texture);

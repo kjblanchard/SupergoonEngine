@@ -24,6 +24,21 @@ extern void ShaderSystemShutdown(void);
 extern Shader* GetDefaultScreenShaderImpl(void);
 extern void DrawTextureToScreen(Texture* texture, Shader* shader, RectangleF* dstRect,
 								bool flipY, Color* color);
+
+static inline void colorToVec4(const Color* c, vec4 out) {
+	out[0] = c->R / 255.0f;
+	out[1] = c->G / 255.0f;
+	out[2] = c->B / 255.0f;
+	out[3] = c->A / 255.0f;
+}
+
+static void buildViewMatrix(mat4 view, int useCamera) {
+	glm_mat4_identity(view);
+	if (useCamera) {
+		vec3 negCameraPos = {-CameraGetX(), -CameraGetY(), 0.0f};
+		glm_translate(view, negCameraPos);
+	}
+}
 #ifdef imgui
 Texture* _imGUIScreenRenderTargetTexture = NULL;
 #endif
@@ -190,20 +205,11 @@ void DrawLineImpl(float x1, float y1, float x2, float y2, float thickness, Color
 	// Scale to line length and thickness
 	glm_scale(model, (vec3){length, thickness, 1.0f});
 
-	// Color
-	vec4 colorV = {
-		color->R / 255.0f,
-		color->G / 255.0f,
-		color->B / 255.0f,
-		color->A / 255.0f};
+	vec4 colorV;
+	colorToVec4(color, colorV);
 
-	// View matrix
 	mat4 view;
-	glm_mat4_identity(view);
-	if (useCamera) {
-		vec3 negCameraPos = {-CameraGetX(), -CameraGetY(), 0.0f};
-		glm_translate(view, negCameraPos);
-	}
+	buildViewMatrix(view, useCamera);
 
 	ShaderSetUniformMatrix4(shader, "projection", projectionMatrix, false);
 	ShaderSetUniformMatrix4(shader, "model", model, false);
@@ -226,13 +232,10 @@ void DrawRectImpl(RectangleF* rect, Color* color, int filled, int useCamera) {
 	glm_mat4_identity(model);
 	glm_translate(model, (vec3){rect->x, rect->y, 0.0f});
 	glm_scale(model, (vec3){rect->w, rect->h, 1.0f});
-	vec4 colorV = {color->R / (float)255, color->G / (float)255, color->B / (float)255, color->A / (float)255};
+	vec4 colorV;
+	colorToVec4(color, colorV);
 	mat4 view;
-	glm_mat4_identity(view);
-	if (useCamera) {
-		vec3 negCameraPos = {-CameraGetX(), -CameraGetY(), 0.0f};
-		glm_translate(view, negCameraPos);
-	}
+	buildViewMatrix(view, useCamera);
 
 	ShaderSetUniformMatrix4(shader, "projection", projectionMatrix, false);
 	ShaderSetUniformMatrix4(shader, "model", model, false);
