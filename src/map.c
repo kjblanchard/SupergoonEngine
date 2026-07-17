@@ -490,7 +490,7 @@ void LoadMap(const char* name) {
 		snprintf(path, sizeof(path), "%sassets/tiled/%s.tmj", GetBasePath(), name);
 		json_object* root = jGetObjectFromFile(path);
 		if (!root) return;
-		loadMapInternal(path, map, root);
+		loadMapInternal(name, map, root);
 	}
 	_currentMap = map;
 	SetCameraBounds(map->Width * map->TileWidth, map->Height * map->TileHeight);
