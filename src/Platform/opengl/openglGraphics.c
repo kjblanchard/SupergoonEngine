@@ -46,16 +46,14 @@ Texture* _imGUIScreenRenderTargetTexture = NULL;
 SDL_GLContext _context;
 static Texture* _screenFrameBufferTexture = NULL;
 static Texture* _uiFrameBufferTexture = NULL;
-//Used in debug windows
+// Used in debug windows
 int _logicalX = 0;
 int _logicalY = 0;
 static GLuint vao = 0, vbo = 0;
 static Color _fboColor = {255, 255, 255, 255};
-// TODO for now, only use the refresh rate set here.. we should set it eventually.
-static unsigned int _refreshRate = 999;
-/* #ifndef __EMSCRIPTEN__ */
+#ifndef __EMSCRIPTEN__
 static bool _vsync = 1;
-/* #endif */
+#endif
 
 mat4 projectionMatrix;
 void GraphicsWindowResizeEventImpl(int width, int height) {
@@ -95,9 +93,9 @@ void InitializeGraphicsSystemImpl(void) {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glm_ortho(0.0f, WindowWidthImpl(), WindowHeightImpl(), 0.0f, -1.0f, 1.0f,
 			  projectionMatrix);
-	/* #ifndef __EMSCRIPTEN__ */
+#ifndef __EMSCRIPTEN__
 	SDL_GL_SetSwapInterval(_vsync);	 // vsync
-									 /* #endif */
+#endif
 	// Try to use the thing
 	float verts[] = {
 		0.0f, 0.0f,
@@ -282,10 +280,6 @@ void GraphicsUpdateFBOColorImpl(Color* color) {
 }
 Color GraphicsGetFBOColorImpl(void) {
 	return _fboColor;
-}
-
-int GraphicsGetTargetRefreshRateImpl(void) {
-	return _refreshRate;
 }
 
 void* GraphicsGetContextPtrImpl(void) {

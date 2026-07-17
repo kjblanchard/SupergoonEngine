@@ -7,7 +7,6 @@ extern void DrawStartImpl(void);
 extern void DrawUIStartImpl(void);
 extern void GraphicsWindowResizeEventImpl(int width, int height);
 extern void GraphicsSetLogicalWorldSizeImpl(int width, int height);
-extern int GraphicsGetTargetRefreshRateImpl(void);
 extern void DrawRectImpl(RectangleF* rect, Color* color, int filled, int cameraOffset);
 extern void DrawLineImpl(float x1, float y1, float x2, float y2, float thickness, Color* color, int useCamera);
 extern void GraphicsUpdateFBOColorImpl(Color* color);
@@ -22,7 +21,6 @@ void DrawUIStart(void) { DrawUIStartImpl(); }
 void DrawEnd(void) { DrawEndImpl(); }
 void GraphicsWindowResizeEvent(int width, int height) { GraphicsWindowResizeEventImpl(width, height); }
 void GraphicsSetLogicalWorldSize(int width, int height) { GraphicsSetLogicalWorldSizeImpl(width, height); }
-int GraphicsGetTargetRefreshRate(void) { return GraphicsGetTargetRefreshRateImpl(); }
 void GraphicsUpdateFBOColor(Color* color) { GraphicsUpdateFBOColorImpl(color); }
 Color GraphicsGetFBOColor(void) { return GraphicsGetFBOColorImpl(); }
 void* GraphicsGetContextPtr(void) { return GraphicsGetContextPtrImpl(); }

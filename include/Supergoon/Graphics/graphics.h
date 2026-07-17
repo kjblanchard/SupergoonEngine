@@ -24,7 +24,6 @@ void DrawStart(void);
 void DrawUIStart(void);
 void DrawEnd(void);
 void GraphicsSetLogicalWorldSize(int width, int height);
-int GraphicsGetTargetRefreshRate(void);
 void GraphicsWindowResizeEvent(int width, int height);
 void GraphicsUpdateFBOColor(Color* color);
 Color GraphicsGetFBOColor(void);
