@@ -55,7 +55,7 @@ JsonObjectTypes jGetObjectType(json_object* o) {
 		case json_type_string:
 			return JsonObjectTypes_String;
 		default:
-			sgLogError("Could not get object type from json, it's not implemented currently");
+			sgLogWarn("Could not get object type from json, it's not implemented currently");
 			return JsonObjectTypes_Default;
 	}
 	return JsonObjectTypes_Default;
@@ -68,7 +68,7 @@ int jGetObjectArrayLength(json_object* o) { return json_object_array_length(o); 
 json_object* jGetObjectFromFile(const char* file) {
 	json_object* obj = json_object_from_file(file);
 	if (!obj) {
-		sgLogError("Failure parsing file %s: %s", file, json_util_get_last_err());
+		sgLogWarn("Failure parsing file %s: %s", file, json_util_get_last_err());
 	}
 	return obj;
 }

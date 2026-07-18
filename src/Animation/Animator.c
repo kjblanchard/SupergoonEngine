@@ -110,6 +110,15 @@ void DestroyAnimator(Animator* animator) {
 		animator->NextAnimNum[i] = NO_NEXT_ANIM;
 		animator->NextAnimLoops[i] = -1;
 	}
+	animator->IsDestroyed = 1;
+	for (size_t i = 0; i < _animators.Count; i++) {
+		if (_animators.Animators[i] == animator) {
+			if (_firstAnimatorHole == NO_HOLE || i < _firstAnimatorHole) {
+				_firstAnimatorHole = i;
+			}
+			break;
+		}
+	}
 }
 
 void updateAnimator(Animator* animator) {

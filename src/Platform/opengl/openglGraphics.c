@@ -24,18 +24,36 @@ extern void ShaderSystemShutdown(void);
 extern Shader* GetDefaultScreenShaderImpl(void);
 extern void DrawTextureToScreen(Texture* texture, Shader* shader, RectangleF* dstRect,
 								bool flipY, Color* color);
+
+static inline void colorToVec4(const Color* c, vec4 out) {
+	out[0] = c->R / 255.0f;
+	out[1] = c->G / 255.0f;
+	out[2] = c->B / 255.0f;
+	out[3] = c->A / 255.0f;
+}
+
+static void buildViewMatrix(mat4 view, int useCamera) {
+	glm_mat4_identity(view);
+	if (useCamera) {
+		vec3 negCameraPos = {-CameraGetX(), -CameraGetY(), 0.0f};
+		glm_translate(view, negCameraPos);
+	}
+}
+#ifdef imgui
+Texture* _imGUIScreenRenderTargetTexture = NULL;
+#endif
+
 SDL_GLContext _context;
 static Texture* _screenFrameBufferTexture = NULL;
 static Texture* _uiFrameBufferTexture = NULL;
-static int _logicalX = 0;
+// Used in debug windows
+int _logicalX = 0;
+int _logicalY = 0;
 static GLuint vao = 0, vbo = 0;
 static Color _fboColor = {255, 255, 255, 255};
-static int _logicalY = 0;
-// TODO for now, only use the refresh rate set here.. we should set it eventually.
-static unsigned int _refreshRate = 999;
-/* #ifndef __EMSCRIPTEN__ */
+#ifndef __EMSCRIPTEN__
 static bool _vsync = 1;
-/* #endif */
+#endif
 
 mat4 projectionMatrix;
 void GraphicsWindowResizeEventImpl(int width, int height) {
@@ -75,10 +93,10 @@ void InitializeGraphicsSystemImpl(void) {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glm_ortho(0.0f, WindowWidthImpl(), WindowHeightImpl(), 0.0f, -1.0f, 1.0f,
 			  projectionMatrix);
-	/* #ifndef __EMSCRIPTEN__ */
+#ifndef __EMSCRIPTEN__
 	SDL_GL_SetSwapInterval(_vsync);	 // vsync
-									 /* #endif */
-	// Try to use the thing
+#endif
+	//Setup the reusable VAO and make it with the VBO.
 	float verts[] = {
 		0.0f, 0.0f,
 		1.0f, 0.0f,
@@ -103,6 +121,9 @@ void DrawStartImpl(void) {
 	TextureClearRenderTarget(NULL, 0.1f, 0.1f, 0.1f, 1.0f);
 	TextureClearRenderTarget(_screenFrameBufferTexture, 0.1f, 0.1f, 0.1f, 1.0f);
 	TextureClearRenderTarget(_uiFrameBufferTexture, 0.0f, 0.0f, 0.0f, 0.0f);
+#ifdef imgui
+	TextureClearRenderTarget(_imGUIScreenRenderTargetTexture, 0.1f, 0.1f, 0.1f, 1.0f);
+#endif
 	SetRenderTarget(_screenFrameBufferTexture);
 }
 
@@ -112,14 +133,22 @@ void DrawUIStartImpl(void) {
 
 void DrawEndImpl(void) {
 	SetRenderTarget(NULL);
+#ifdef imgui
+	SetRenderTarget(_imGUIScreenRenderTargetTexture);
+#endif
 	if (!_screenFrameBufferTexture) {
 		SDL_GL_SwapWindow(WindowGetImpl()->Handle);
 		return;
 	}
 	int fbWidth = TextureGetWidth(_screenFrameBufferTexture);
 	int fbHeight = TextureGetHeight(_screenFrameBufferTexture);
+#ifdef imgui
+	int winWidth = TextureGetWidth(_imGUIScreenRenderTargetTexture);
+	int winHeight = TextureGetHeight(_imGUIScreenRenderTargetTexture);
+#else
 	int winWidth = WindowWidth();
 	int winHeight = WindowHeight();
+#endif
 	int scaleX = winWidth / fbWidth;
 	int scaleY = winHeight / fbHeight;
 	int scale = scaleX < scaleY ? scaleX : scaleY;
@@ -142,60 +171,41 @@ void DrawEndImpl(void) {
 		RectangleF uiDst = {offsetX, offsetY, (float)drawWidth, (float)drawHeight};
 		DrawTextureToScreen(_uiFrameBufferTexture, screenShader, &uiDst, true, &fboColor);
 	}
-
+#ifdef imgui
+	SetRenderTarget(NULL);
+#endif
 	if (GraphicsPostFBODrawDebugFunc) GraphicsPostFBODrawDebugFunc();
-
 	SDL_GL_SwapWindow(WindowGetImpl()->Handle);
 }
 
 void DrawLineImpl(float x1, float y1, float x2, float y2, float thickness, Color* color, int useCamera) {
 	Shader* shader = GetDefaultRectShader();
 	ShaderUse(shader);
-
 	// Compute direction and length
 	float dx = x2 - x1;
 	float dy = y2 - y1;
 	float length = sqrtf(dx * dx + dy * dy);
 	float angle = atan2f(dy, dx);
-
 	// Build model matrix
 	mat4 model;
 	glm_mat4_identity(model);
-
 	// Translate to starting point
 	glm_translate(model, (vec3){x1, y1, 0.0f});
-
 	// Rotate to match direction
 	glm_rotate(model, angle, (vec3){0.0f, 0.0f, 1.0f});
-
 	// Scale to line length and thickness
 	glm_scale(model, (vec3){length, thickness, 1.0f});
-
-	// Color
-	vec4 colorV = {
-		color->R / 255.0f,
-		color->G / 255.0f,
-		color->B / 255.0f,
-		color->A / 255.0f};
-
-	// View matrix
+	vec4 colorV;
+	colorToVec4(color, colorV);
 	mat4 view;
-	glm_mat4_identity(view);
-	if (useCamera) {
-		vec3 negCameraPos = {-CameraGetX(), -CameraGetY(), 0.0f};
-		glm_translate(view, negCameraPos);
-	}
-
+	buildViewMatrix(view, useCamera);
 	ShaderSetUniformMatrix4(shader, "projection", projectionMatrix, false);
 	ShaderSetUniformMatrix4(shader, "model", model, false);
 	ShaderSetUniformMatrix4(shader, "view", view, false);
 	ShaderSetUniformVector4fV(shader, "color", colorV, false);
-
 	glBindVertexArray(vao);
-
-	// Draw as filled quad (same VAO as your rectangle)
+	// Draw as filled quad
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
 	glBindVertexArray(0);
 	glUseProgram(0);
 }
@@ -207,14 +217,10 @@ void DrawRectImpl(RectangleF* rect, Color* color, int filled, int useCamera) {
 	glm_mat4_identity(model);
 	glm_translate(model, (vec3){rect->x, rect->y, 0.0f});
 	glm_scale(model, (vec3){rect->w, rect->h, 1.0f});
-	vec4 colorV = {color->R / (float)255, color->G / (float)255, color->B / (float)255, color->A / (float)255};
+	vec4 colorV;
+	colorToVec4(color, colorV);
 	mat4 view;
-	glm_mat4_identity(view);
-	if (useCamera) {
-		vec3 negCameraPos = {-CameraGetX(), -CameraGetY(), 0.0f};
-		glm_translate(view, negCameraPos);
-	}
-
+	buildViewMatrix(view, useCamera);
 	ShaderSetUniformMatrix4(shader, "projection", projectionMatrix, false);
 	ShaderSetUniformMatrix4(shader, "model", model, false);
 	ShaderSetUniformVector4fV(shader, "color", colorV, false);
@@ -244,6 +250,13 @@ void GraphicsSetLogicalWorldSizeImpl(int width, int height) {
 	}
 	_uiFrameBufferTexture = TextureCreateRenderTarget(width, height);
 	TextureClearRenderTarget(_uiFrameBufferTexture, 0, 0, 0, 0.0);
+#ifdef imgui
+	if (_imGUIScreenRenderTargetTexture) {
+		TextureDestroy(_imGUIScreenRenderTargetTexture);
+	}
+	_imGUIScreenRenderTargetTexture = TextureCreateRenderTarget(width, height);
+	TextureClearRenderTarget(_imGUIScreenRenderTargetTexture, 0, 0, 0, 1.0);
+#endif
 }
 
 void GraphicsUpdateFBOColorImpl(Color* color) {
@@ -251,10 +264,6 @@ void GraphicsUpdateFBOColorImpl(Color* color) {
 }
 Color GraphicsGetFBOColorImpl(void) {
 	return _fboColor;
-}
-
-int GraphicsGetTargetRefreshRateImpl(void) {
-	return _refreshRate;
 }
 
 void* GraphicsGetContextPtrImpl(void) {

@@ -20,6 +20,8 @@ extern "C" {
  * @param startFunc Function to be called once when the game is starting
  */
 void SetStartFunction(void (*startFunc)(void));
+
+void SetInitializeFunction(void (*initializeFunc)(void));
 /**
  * @brief Set the Handle Event Function object
  *
@@ -46,17 +48,20 @@ void SetUpdateFunction(void (*updateFunc)(void));
  */
 void SetDrawFunction(void (*drawFunc)(void));
 void SetQuitFunction(void (*quitFunc)(void));
+void SetDrawUIFunction(void (*drawUIFunc)(void));
 //If this is set this frame, only allow one update if you need to catch up .. useful when loading to not accumulate on a regular basis.
 extern int IsGameLoading;
 
 void Run(void);
 
+extern void InitializeEngineFunctions(void);
 extern void (*_initializeFunc)(void);
 extern void (*_startFunc)(void);
 extern void (*_updateFunc)(void);
 extern void (*_drawFunc)(void);
 extern void (*_quitFunc)(void);
 extern void (*_inputFunc)(void);
+extern void (*_graphicsPostFBODrawUIFunc)(void);
 extern int (*_handleEventFunc)(void*);
 #ifdef __cplusplus
 }
