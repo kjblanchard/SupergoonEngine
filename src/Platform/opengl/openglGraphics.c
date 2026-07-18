@@ -96,7 +96,7 @@ void InitializeGraphicsSystemImpl(void) {
 #ifndef __EMSCRIPTEN__
 	SDL_GL_SetSwapInterval(_vsync);	 // vsync
 #endif
-	// Try to use the thing
+	//Setup the reusable VAO and make it with the VBO.
 	float verts[] = {
 		0.0f, 0.0f,
 		1.0f, 0.0f,
@@ -171,54 +171,41 @@ void DrawEndImpl(void) {
 		RectangleF uiDst = {offsetX, offsetY, (float)drawWidth, (float)drawHeight};
 		DrawTextureToScreen(_uiFrameBufferTexture, screenShader, &uiDst, true, &fboColor);
 	}
-
 #ifdef imgui
 	SetRenderTarget(NULL);
 #endif
 	if (GraphicsPostFBODrawDebugFunc) GraphicsPostFBODrawDebugFunc();
-
 	SDL_GL_SwapWindow(WindowGetImpl()->Handle);
 }
 
 void DrawLineImpl(float x1, float y1, float x2, float y2, float thickness, Color* color, int useCamera) {
 	Shader* shader = GetDefaultRectShader();
 	ShaderUse(shader);
-
 	// Compute direction and length
 	float dx = x2 - x1;
 	float dy = y2 - y1;
 	float length = sqrtf(dx * dx + dy * dy);
 	float angle = atan2f(dy, dx);
-
 	// Build model matrix
 	mat4 model;
 	glm_mat4_identity(model);
-
 	// Translate to starting point
 	glm_translate(model, (vec3){x1, y1, 0.0f});
-
 	// Rotate to match direction
 	glm_rotate(model, angle, (vec3){0.0f, 0.0f, 1.0f});
-
 	// Scale to line length and thickness
 	glm_scale(model, (vec3){length, thickness, 1.0f});
-
 	vec4 colorV;
 	colorToVec4(color, colorV);
-
 	mat4 view;
 	buildViewMatrix(view, useCamera);
-
 	ShaderSetUniformMatrix4(shader, "projection", projectionMatrix, false);
 	ShaderSetUniformMatrix4(shader, "model", model, false);
 	ShaderSetUniformMatrix4(shader, "view", view, false);
 	ShaderSetUniformVector4fV(shader, "color", colorV, false);
-
 	glBindVertexArray(vao);
-
-	// Draw as filled quad (same VAO as your rectangle)
+	// Draw as filled quad
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
 	glBindVertexArray(0);
 	glUseProgram(0);
 }
@@ -234,7 +221,6 @@ void DrawRectImpl(RectangleF* rect, Color* color, int filled, int useCamera) {
 	colorToVec4(color, colorV);
 	mat4 view;
 	buildViewMatrix(view, useCamera);
-
 	ShaderSetUniformMatrix4(shader, "projection", projectionMatrix, false);
 	ShaderSetUniformMatrix4(shader, "model", model, false);
 	ShaderSetUniformVector4fV(shader, "color", colorV, false);
@@ -265,8 +251,6 @@ void GraphicsSetLogicalWorldSizeImpl(int width, int height) {
 	_uiFrameBufferTexture = TextureCreateRenderTarget(width, height);
 	TextureClearRenderTarget(_uiFrameBufferTexture, 0, 0, 0, 0.0);
 #ifdef imgui
-	glViewport(0, 0, width, height);
-	glm_ortho(0.0f, width, height, 0.0f, -1.0f, 1.0f, projectionMatrix);
 	if (_imGUIScreenRenderTargetTexture) {
 		TextureDestroy(_imGUIScreenRenderTargetTexture);
 	}

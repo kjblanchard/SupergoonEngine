@@ -18,6 +18,7 @@ extern Texture** GetCachedTexturesImpl(void);
 extern int GetNumCachedTexturesImpl(void);
 extern void TextureLoadFromPngBufferImpl(Texture* texture, const char* filepath, char* buf, size_t sz);
 extern void* TextureGetIDImpl(Texture* texture);
+extern void DrawTextureToScreenImpl(Texture* texture, Shader* shader, RectangleF* dstRect, bool flipY, Color* color);
 
 Texture* TextureCreateNoCache(void) { return TextureCreateNoCacheImpl(); }
 Texture* TextureCreate(const char* name) { return TextureCreateImpl(name); }
@@ -52,3 +53,4 @@ void TextureLoadFromData(Texture* texture, const char* name, int width, int heig
 Texture** GetCachedTextures(void) { return GetCachedTexturesImpl(); }
 int GetNumCachedTextures(void) { return GetNumCachedTexturesImpl(); }
 void* TextureGetID(Texture* texture) { return TextureGetIDImpl(texture); }
+void DrawTextureToScreen(Texture* texture, Shader* shader, RectangleF* dstRect, bool flipY, Color* color) { DrawTextureToScreenImpl(texture, shader, dstRect, flipY, color); }

@@ -7,7 +7,7 @@
 #include <string.h>
 #ifndef __EMSCRIPTEN__
 #include <glad/glad.h>
-// must be forst<SDL3/SDL_opengl.h>
+// must be included before, this comment keeps ide from moving it :)
 #include <SDL3/SDL_opengl.h>
 #else
 #include <GLES3/gl3.h>
@@ -42,14 +42,13 @@ static void buildViewMatrix(mat4 view, int useCamera) {
 }
 
 static void setupTextureQuadVAO(Texture* texture) {
-	float vertices[] = {
+	static float vertices[] = {
 		0.0f, 1.0f, 0.0f, 1.0f,
 		1.0f, 0.0f, 1.0f, 0.0f,
 		0.0f, 0.0f, 0.0f, 0.0f,
 		0.0f, 1.0f, 0.0f, 1.0f,
 		1.0f, 1.0f, 1.0f, 1.0f,
-		1.0f, 0.0f, 1.0f, 0.0f
-	};
+		1.0f, 0.0f, 1.0f, 0.0f};
 	glGenVertexArrays(1, &texture->VAO);
 	glGenBuffers(1, &texture->VBO);
 	glBindVertexArray(texture->VAO);
@@ -65,7 +64,6 @@ static Texture* _currentRenderingTarget = NULL;
 static int _currentRenderingTargetWidth = 0;
 static int _currentRenderingTargetHeight = 0;
 static Texture* _previousRenderingTarget = NULL;
-
 static Texture* _cachedTextures[MAX_CACHED_TEXTURES] = {0};
 static int _currentCachedTextures = 0;
 
@@ -105,8 +103,7 @@ static void removeTextureFromCache(Texture* t) {
 	}
 }
 
-void TextureClearRenderTargetImpl(Texture* texture, float r, float g, float b,
-								  float a) {
+void TextureClearRenderTargetImpl(Texture* texture, float r, float g, float b, float a) {
 	SetRenderTarget(texture);
 	glClearColor(r, g, b, a);
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -124,17 +121,15 @@ Texture* TextureCreateNoCacheImpl(void) {
 	texture->RefCount = 1;
 	setupTextureQuadVAO(texture);
 	glGenTextures(1, &texture->ID);
-
 	glBindTexture(GL_TEXTURE_2D, texture->ID);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	return texture;
 }
 
-void* TextureGetIDImpl(Texture* texture){
+void* TextureGetIDImpl(Texture* texture) {
 	return (void*)(intptr_t)texture->ID;
 }
 
@@ -147,7 +142,7 @@ Texture* TextureCreateImpl(const char* name) {
 	}
 	sgLogDebug("Loading new texture, cache miss: %s", name);
 	texture = TextureCreateNoCacheImpl();
-	texture->Name = strdup(name);  // 🔑 identity set here
+	texture->Name = strdup(name);
 	cacheTexture(texture);
 	return texture;
 }
@@ -164,7 +159,6 @@ Texture* TextureCreateRenderTargetImpl(int width, int height) {
 	texture->FBO = 0;
 	texture->RefCount = 1;
 	asprintf(&texture->Name, "%d_%d_render_target_framebuffer", width, height);
-	// Create GL texture
 #ifndef __EMSCRIPTEN__
 	GLint internalFormat = GL_RGBA8;
 #else
@@ -251,9 +245,7 @@ cleanup:
 	SDL_DestroySurface(surface);
 }
 
-void DrawTextureRaw(Texture* texture, Shader* shader, RectangleF* dstRect,
-					RectangleF* srcRect, bool useCamera, float scale, bool flipY,
-					Color* color) {
+void DrawTextureRaw(Texture* texture, Shader* shader, RectangleF* dstRect, RectangleF* srcRect, bool useCamera, float scale, bool flipY, Color* color) {
 	if (flipY) {
 		dstRect->y += dstRect->h * scale;
 		dstRect->h *= -1;
@@ -285,8 +277,7 @@ void DrawTextureRaw(Texture* texture, Shader* shader, RectangleF* dstRect,
 	glBindVertexArray(0);
 }
 
-void DrawTextureToScreen(Texture* texture, Shader* shader, RectangleF* dstRect,
-						 bool flipY, Color* color) {
+void DrawTextureToScreenImpl(Texture* texture, Shader* shader, RectangleF* dstRect, bool flipY, Color* color) {
 	if (flipY) {
 		dstRect->y += dstRect->h;
 		dstRect->h *= -1;
@@ -311,14 +302,11 @@ void DrawTextureToScreen(Texture* texture, Shader* shader, RectangleF* dstRect,
 	glBindVertexArray(0);
 }
 
-void DrawTextureImpl(Texture* texture, Shader* shader, RectangleF* dstRect,
-					 RectangleF* srcRect, bool useCamera, float scale, bool flipY, Color* color) {
+void DrawTextureImpl(Texture* texture, Shader* shader, RectangleF* dstRect, RectangleF* srcRect, bool useCamera, float scale, bool flipY, Color* color) {
 	DrawTextureRaw(texture, shader, dstRect, srcRect, useCamera, scale, flipY, color);
 }
 
-void DrawTextureToTextureImpl(Texture* dstTarget, Texture* srcTexture,
-							  Shader* shader, RectangleF* dstRect,
-							  RectangleF* srcRect, float scale) {
+void DrawTextureToTextureImpl(Texture* dstTarget, Texture* srcTexture, Shader* shader, RectangleF* dstRect, RectangleF* srcRect, float scale) {
 	SetRenderTarget(dstTarget);
 	Color color = {255, 255, 255, 255};
 	DrawTexture(srcTexture, shader, dstRect, srcRect, false, scale, false, &color);
@@ -330,22 +318,18 @@ void TextureDestroyImpl(Texture* texture) {
 	--texture->RefCount;
 	if (texture->RefCount > 0) return;
 	removeTextureFromCache(texture);
-	// Delete texture object
 	if (texture->ID != 0) {
 		glDeleteTextures(1, &texture->ID);
 		texture->ID = 0;
 	}
-	// Delete framebuffer if it exists
 	if (texture->FBO != 0) {
 		glDeleteFramebuffers(1, &texture->FBO);
 		texture->FBO = 0;
 	}
-	// Delete VBO if it exists
 	if (texture->VBO != 0) {
 		glDeleteBuffers(1, &texture->VBO);
 		texture->VBO = 0;
 	}
-	// Delete VAO if it exists
 	if (texture->VAO != 0) {
 		glDeleteVertexArrays(1, &texture->VAO);
 		texture->VAO = 0;
@@ -369,7 +353,6 @@ void SetRenderTargetImpl(Texture* target) {
 		_currentRenderingTargetHeight = target->Height;
 		glBindFramebuffer(GL_FRAMEBUFFER, target->FBO);
 	} else {
-		// Restore to system default framebuffer
 		_currentRenderingTargetWidth = WindowWidth();
 		_currentRenderingTargetHeight = WindowHeight();
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -385,10 +368,7 @@ void TextureLoadFromDataImpl(Texture* texture, const char* name, int width, int 
 	texture->Height = height;
 	glBindTexture(GL_TEXTURE_2D, texture->ID);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	/* glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, texture->Width, texture->Height, 0, */
-	/* 			 GL_RED, GL_UNSIGNED_BYTE, data); */
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, texture->Width, texture->Height, 0,
-				 GL_RED, GL_UNSIGNED_BYTE, data);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, texture->Width, texture->Height, 0, GL_RED, GL_UNSIGNED_BYTE, data);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -398,6 +378,7 @@ void TextureLoadFromDataImpl(Texture* texture, const char* name, int width, int 
 Texture** GetCachedTexturesImpl(void) {
 	return _cachedTextures;
 }
+
 int GetNumCachedTexturesImpl(void) {
 	return _currentCachedTextures;
 }
