@@ -210,7 +210,7 @@ void DrawLineImpl(float x1, float y1, float x2, float y2, float thickness, Color
 	glUseProgram(0);
 }
 
-void DrawRectImpl(RectangleF* rect, Color* color, int filled, int useCamera) {
+void DrawRectImpl(const RectangleF* rect, Color* color, int filled, int useCamera) {
 	Shader* shader = GetDefaultRectShader();
 	ShaderUse(shader);
 	mat4 model;

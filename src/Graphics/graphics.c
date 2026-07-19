@@ -7,13 +7,13 @@ extern void DrawStartImpl(void);
 extern void DrawUIStartImpl(void);
 extern void GraphicsWindowResizeEventImpl(int width, int height);
 extern void GraphicsSetLogicalWorldSizeImpl(int width, int height);
-extern void DrawRectImpl(RectangleF* rect, Color* color, int filled, int cameraOffset);
+extern void DrawRectImpl(const RectangleF* rect, Color* color, int filled, int cameraOffset);
 extern void DrawLineImpl(float x1, float y1, float x2, float y2, float thickness, Color* color, int useCamera);
 extern void GraphicsUpdateFBOColorImpl(Color* color);
 extern Color GraphicsGetFBOColorImpl(void);
 extern void* GraphicsGetContextPtrImpl(void);
 
-void DrawRect(RectangleF* rect, Color* color, int filled, int cameraOffset) { DrawRectImpl(rect, color, filled, cameraOffset); }
+void DrawRect(const RectangleF* rect, Color* color, int filled, int cameraOffset) { DrawRectImpl(rect, color, filled, cameraOffset); }
 void InitializeGraphicsSystem(void) { InitializeGraphicsSystemImpl(); }
 void ShutdownGraphicsSystem(void) { ShutdownGraphicsSystemImpl(); }
 void DrawStart(void) { DrawStartImpl(); }
