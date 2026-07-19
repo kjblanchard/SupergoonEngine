@@ -30,6 +30,8 @@ void ShaderSetUniformVector3fV(Shader* shader, const char* name, vec3 value, int
 void ShaderSetUniformVector4f(Shader* shader, const char* name, float, float, float, float, int useShader);
 void ShaderSetUniformVector4fV(Shader* shader, const char* name, vec4 value, int useShader);
 void ShaderSetUniformMatrix4(Shader* shader, const char* name, mat4 value, int useShader);
+void SetScreenShaderOverride(Shader* shader);
+Shader* GetScreenShaderOverride(void);
 #ifdef __cplusplus
 }
 #endif

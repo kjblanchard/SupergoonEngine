@@ -50,6 +50,7 @@ static Shader* _defaultShader = NULL;
 static Shader* _defaultTextShader = NULL;
 static Shader* _defaultRectShader = NULL;
 static Shader* _defaultScreenShader = NULL;
+static Shader* _screenShaderOverride = NULL;
 
 CachedShaderFile _cachedShaders[NUM_CACHED_SHADERS];
 
@@ -265,12 +266,23 @@ Shader* GetDefaultRectShaderImpl(void) {
 }
 
 Shader* GetDefaultScreenShaderImpl(void) {
+	if (_screenShaderOverride) {
+		return _screenShaderOverride;
+	}
 	if (_defaultScreenShader) {
 		return _defaultScreenShader;
 	}
 	_defaultScreenShader = ShaderCreateImpl();
 	ShaderCompileImpl(_defaultScreenShader, DEFAULT_SCREEN_VERTEX_FILENAME, DEFAULT_SCREEN_FRAGMENT_FILENAME);
 	return _defaultScreenShader;
+}
+
+void SetScreenShaderOverrideImpl(Shader* s) {
+	_screenShaderOverride = s;
+}
+
+Shader* GetScreenShaderOverrideImpl(void) {
+	return _screenShaderOverride;
 }
 
 void ShaderDestroyImpl(Shader* shader) {

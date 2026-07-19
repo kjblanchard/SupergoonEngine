@@ -29,6 +29,8 @@ extern Shader* GetDefaultShaderImpl(void);
 extern Shader* GetDefaultTextShaderImpl(void);
 extern Shader* GetDefaultRectShaderImpl(void);
 extern void ShaderSetDirectoryImpl(struct Directory* d);
+extern void SetScreenShaderOverrideImpl(Shader* s);
+extern Shader* GetScreenShaderOverrideImpl(void);
 
 Shader* ShaderCreate(void) { return ShaderCreateImpl(); }
 Shader* GetDefaultShader(void) { return GetDefaultShaderImpl(); }
@@ -84,3 +86,6 @@ Shader* GetDefaultTextShader(void) {
 Shader* GetDefaultRectShader(void) {
 	return GetDefaultRectShaderImpl();
 }
+
+void SetScreenShaderOverride(Shader* s) { SetScreenShaderOverrideImpl(s); }
+Shader* GetScreenShaderOverride(void) { return GetScreenShaderOverrideImpl(); }
