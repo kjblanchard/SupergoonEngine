@@ -314,6 +314,7 @@ void DrawTextureToTextureImpl(Texture* dstTarget, Texture* srcTexture, Shader* s
 }
 
 void TextureDestroyImpl(Texture* texture) {
+	return;
 	if (!texture) return;
 	--texture->RefCount;
 	if (texture->RefCount > 0) return;

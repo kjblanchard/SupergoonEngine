@@ -166,7 +166,6 @@ static LoadedFont* getLoadedFont(const char* fontName, unsigned int size, struct
 		return NULL;
 	}
 	fontToLoadInto->FontName = strdup(fontAndSize);
-	/* snprintf(fontAndSize, sizeof(fontAndSize), "assets/fonts/%s.ttf", fontName); */
 	snprintf(fontAndSize, sizeof(fontAndSize), "%s.ttf", fontName);
 	char* buf;
 	size_t sz;
@@ -186,13 +185,6 @@ static LoadedFont* getLoadedFont(const char* fontName, unsigned int size, struct
 		sgLogCritical("Could not open font from memory with error %d\n", result);
 		return NULL;
 	}
-	/* GetFilenameWithExeFilepath(fullFilepath, sizeof(fullFilepath), fontAndSize); */
-	/* int result = FT_New_Face(_loadedLibrary, fullFilepath, 0, &fontToLoadInto->FontFace); */
-	/* if (result) { */
-	/* 	sgLogCritical("Could not open font %s with error %d\n", fullFilepath, result); */
-	/* 	return NULL; */
-	/* } */
-
 	fontToLoadInto->FontSize = size;
 	loadTexturesForFont(fontToLoadInto);
 	return fontToLoadInto;
