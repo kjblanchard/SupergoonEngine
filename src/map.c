@@ -410,7 +410,6 @@ static void freeTiledTilemap(Tilemap* map) {
 		SDL_free(ts->Name);
 		SDL_free(ts->Image);
 		TextureDestroy(ts->TilesetTexture);
-	
 	}
 
 	SDL_free(map->Tilesets);
@@ -469,14 +468,20 @@ static void loadMapInternal(const char* name, Tilemap* map, json_object* root) {
 	_previousMaps[0] = map;
 }
 
-void LoadMapFromBuffer(const char* name, char* buf, size_t sz) {
+void* CacheMapFromBuffer(const char* name, char* buf, size_t sz) {
 	Tilemap* map = checkCache(name);
 	if (!map) {
 		map = calloc(1, sizeof(Tilemap));
 		json_object* root = jGetObjectFromBuffer(buf, sz);
-		if (!root) return;
+		if (!root) return NULL;
 		loadMapInternal(name, map, root);
 	}
+	return map;
+}
+
+void LoadMapFromBuffer(const char* name, char* buf, size_t sz) {
+	Tilemap* map = (Tilemap*)CacheMapFromBuffer(name, buf, sz);
+	if(!map) sgLogCritical("Could not get map from cache, why for %s?", name);
 	_currentMap = map;
 	SetCameraBounds(map->Width * map->TileWidth, map->Height * map->TileHeight);
 	SetCameraSize(map->Width * map->TileWidth, map->Height * map->TileHeight);

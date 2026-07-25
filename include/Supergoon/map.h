@@ -49,6 +49,7 @@ typedef struct TiledObject {
 } TiledObject;
 
 void LoadMap(const char* map);
+void* CacheMapFromBuffer(const char* map, char* buf, size_t sz);
 void LoadMapFromBuffer(const char* map, char* buf, size_t sz);
 void CheckRectForCollisionWithSolids(RectangleF* rect);
 //  Frame data for tile animation
