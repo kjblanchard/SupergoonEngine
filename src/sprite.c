@@ -39,6 +39,7 @@ void initSprite(Sprite* sprite) {
 	sprite->Texture = NULL;
 	sprite->Shader = NULL;
 	sprite->Scale = 1.0f;
+	sprite->DrawColor = (Color){255, 255, 255, 255};
 	sprite->Flags = 0;
 	sprite->TextureSourceRect = (RectangleF){0, 0, 0, 0};
 	sprite->OffsetAndSizeRectF = (RectangleF){0, 0, 0, 0};
@@ -117,12 +118,11 @@ void SnapshotSpritePositions(void) {
 
 void DrawSpriteSystem(void) {
 	RectangleF dst = (RectangleF){0, 0, 0, 0};
-	Color color = {255, 255, 255, 255};
 	for (size_t i = 0; i < _numSprites; i++) {
 		Sprite* sprite = _sprites[i];
 		dst.w = sprite->OffsetAndSizeRectF.w;
 		dst.h = sprite->OffsetAndSizeRectF.h;
-		DrawSpriteManual(sprite, &dst, &color, true);
+		DrawSpriteManual(sprite, &dst, &sprite->DrawColor, true);
 	}
 }
 

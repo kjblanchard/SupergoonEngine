@@ -1,11 +1,11 @@
 #pragma once
+#include <Supergoon/Primitives/Color.h>
 #include <Supergoon/Primitives/rectangle.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
 typedef struct Texture Texture;
 typedef struct Shader Shader;
-typedef struct Color Color;
 struct sgGameObject;
 typedef enum SpriteFlags {
 	SpriteFlagVisible = 1 << 0,
@@ -22,6 +22,7 @@ typedef struct Sprite {
 	RectangleF OffsetAndSizeRectF;
 	float Scale;
 	Shader* Shader;
+	Color DrawColor;
 	unsigned int Flags;
 } Sprite;
 
