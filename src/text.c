@@ -139,7 +139,7 @@ static void drawLetter(Text* text) {
 	//  If this is a drawable texture, draw it and advance
 	if (texture) {
 		SetRenderTarget(text->Texture);
-		Color color = {255, 0, 0, 255};
+		Color color = {255, 255, 255, 255};
 		DrawTexture(texture, GetDefaultTextShader(), &dst, &src, false, 1.0, false, &color);
 		SetPreviousRenderTarget();
 	}
