@@ -41,6 +41,8 @@ void TextOnDirty(Text* text);
 void TextRedrawText(Text* text);
 void TextDraw(Text* text, float parentX, float parentY, Color* color);
 void TextDestroy(Text* text);
+int TextDrawStringDirect(const char* str, const char* fontName, unsigned int size, float x, float y, Color* color, int useCamera);
+int TextMeasureStringDirect(const char* str, const char* fontName, unsigned int size);
 
 #ifdef __cplusplus
 }

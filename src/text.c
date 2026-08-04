@@ -394,3 +394,51 @@ void TextDestroy(Text* text) {
 	text->Text = NULL;
 	free(text);
 }
+
+static LoadedFont* findCachedFont(const char* fontName, unsigned int size) {
+	char key[255];
+	snprintf(key, sizeof(key), "%s%d", fontName, size);
+	for (size_t i = 0; i < MAX_LOADED_FONTS; i++) {
+		if (_loadedFonts[i].FontName && strcmp(key, _loadedFonts[i].FontName) == 0)
+			return &_loadedFonts[i];
+	}
+	return NULL;
+}
+
+int TextMeasureStringDirect(const char* str, const char* fontName, unsigned int size) {
+	LoadedFont* font = findCachedFont(fontName, size);
+	if (!font) return 0;
+	int penX = 0;
+	for (size_t i = 0; str[i] != '\0'; i++) {
+		unsigned char c = (unsigned char)str[i];
+		if (c >= ASCII_CHAR_NUM) continue;
+		if (FT_Load_Char(font->FontFace, c, FT_LOAD_DEFAULT)) continue;
+		penX += font->FontFace->glyph->advance.x >> 6;
+	}
+	return penX;
+}
+
+int TextDrawStringDirect(const char* str, const char* fontName, unsigned int size, float x, float y, Color* color, int useCamera) {
+	LoadedFont* font = findCachedFont(fontName, size);
+	if (!font) return 0;
+	int ascender = (font->FontFace->ascender * font->FontSize) / font->FontFace->units_per_EM;
+	float penX = x;
+	float baseY = y + ascender;
+	for (size_t i = 0; str[i] != '\0'; i++) {
+		unsigned char c = (unsigned char)str[i];
+		if (c >= ASCII_CHAR_NUM) continue;
+		if (FT_Load_Char(font->FontFace, c, FT_LOAD_DEFAULT)) continue;
+		Texture* glyph = font->GlyphTextures[c];
+		if (glyph) {
+			float w = TextureGetWidth(glyph);
+			float h = TextureGetHeight(glyph);
+			float glyphX = penX + font->FontFace->glyph->bitmap_left;
+			float glyphY = baseY - font->FontFace->glyph->bitmap_top;
+			RectangleF dst = {glyphX, glyphY, w, h};
+			RectangleF src = {0, 0, w, h};
+			DrawTexture(glyph, GetDefaultTextShader(), &dst, &src, useCamera, 1.0f, false, color);
+		}
+		penX += font->FontFace->glyph->advance.x >> 6;
+	}
+	return (int)(penX - x);
+}
