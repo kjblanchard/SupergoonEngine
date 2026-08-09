@@ -104,7 +104,6 @@ set(SRC_FILES
     src/text.c
     #Services - Steam - Game Center, etc
     src/services.c
-
 )
 
 if(SDL_GL)
@@ -117,7 +116,9 @@ endif(SDL_RENDERER)
 
 if(STEAM_ENABLED)
     list(APPEND SRC_FILES src/Platform/steam/steam.cpp)
-endif(SDL_RENDERER)
+else()
+    list(APPEND SRC_FILES src/Platform/null/null_service.c)
+endif(STEAM_ENABLED)
 
 add_library(${LIBRARY_TARGET_NAME} ${SRC_FILES} ${DEBUG_FILES})
 
