@@ -15,6 +15,7 @@
 #include <Supergoon/events.h>
 #include <Supergoon/filesystem.h>
 #include <Supergoon/map.h>
+#include <Supergoon/services.h>
 #include <Supergoon/sprite.h>
 #include <Supergoon/state.h>
 #include <Supergoon/text.h>
@@ -41,6 +42,7 @@ static void initializeEngineInternal(void) {
 	InitializeKeyboardSystem();
 	InitializeJoystickSystem();
 	InitializeEventSystem();
+	InitializeServiceSystem();
 }
 
 static void start(void) {
@@ -97,6 +99,7 @@ static void update(void) {
 		UpdateCameraSystem();
 		UpdateControllerSystem();
 		UpdateMouseSystem();
+		UpdateServiceSystem();
 		_accumulatorNS -= FIXED_TIMESTEP_NS;
 		++ticks;
 		now = SDL_GetTicksNS();
@@ -120,6 +123,7 @@ static void Quit(void) {
 	CloseWindow();
 	ShutdownEngineSilesystem();
 	sgShutdownLogSystem();
+	ShutdownServiceSystem();
 }
 
 void SetStartFunction(void (*startFunc)(void)) { _startFunc = startFunc; }

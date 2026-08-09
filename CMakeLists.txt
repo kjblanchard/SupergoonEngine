@@ -39,6 +39,9 @@ endif(SDL_GL)
 if(SDL_RENDERER)
     add_definitions(-Dsdlrendererbackend)
 endif(SDL_RENDERER)
+if(STEAM_ENABLED)
+    add_definitions(-Dsteamed)
+endif(STEAM_ENABLED)
 
 if(UNIX OR APPLE)
     list(APPEND COMPILE_OPTIONS 
@@ -87,10 +90,11 @@ set(SRC_FILES
     src/Animation/AnimationData.c
     src/sprite.c
     src/Input/mouse.c
+    src/map.c
+    #SDL Platform is required
     src/Platform/sdl/sdl.c
     src/Platform/sdl/sdlInput.c
     src/Platform/sdl/sdlWindow.c
-    src/map.c
     # 2d engine
     src/Graphics/graphics.c
     src/Graphics/texture.c
@@ -98,6 +102,8 @@ set(SRC_FILES
     # input
     src/Input/joystick.c
     src/text.c
+    #Services - Steam - Game Center, etc
+    src/services.c
 
 )
 
@@ -107,6 +113,10 @@ endif(SDL_GL)
 
 if(SDL_RENDERER)
     list(APPEND SRC_FILES src/Platform/opengl/sdlGraphics.c src/Platform/opengl/sdlShader.c src/Platform/opengl/sdlTexture.c)
+endif(SDL_RENDERER)
+
+if(STEAM_ENABLED)
+    list(APPEND SRC_FILES src/Platform/steam/steam.cpp)
 endif(SDL_RENDERER)
 
 add_library(${LIBRARY_TARGET_NAME} ${SRC_FILES} ${DEBUG_FILES})
@@ -372,6 +382,28 @@ target_link_directories(${LIBRARY_TARGET_NAME} PUBLIC /usr/local/lib) # should a
 if(LINK_M)
     target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC m)
 endif(LINK_M)
+if(STEAM_ENABLED AND APPLE)
+endif()
+
+if(STEAM_ENABLED)
+    set(STEAM_DYLIB
+        "${CMAKE_CURRENT_LIST_DIR}/dist/redistributable_bin/osx/libsteam_api.dylib"
+    )
+
+    add_library(Steam::API SHARED IMPORTED GLOBAL)
+    set_target_properties(Steam::API PROPERTIES
+        IMPORTED_LOCATION "${STEAM_DYLIB}"
+    )
+
+    target_link_libraries(${LIBRARY_TARGET_NAME}
+        PUBLIC Steam::API
+    )
+
+    set(STEAM_RUNTIME_FILES
+        "${STEAM_DYLIB}"
+        CACHE INTERNAL "Engine runtime files"
+    )
+endif()
 
     # System is for blocking out the warnings, these are mostly external libs
 target_include_directories(

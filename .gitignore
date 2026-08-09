@@ -5,4 +5,5 @@ build/
 .terraform/
 terraform.tfvars
 memcheck.txt
+dist/
 *.swp
