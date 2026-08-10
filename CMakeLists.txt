@@ -383,25 +383,45 @@ target_link_directories(${LIBRARY_TARGET_NAME} PUBLIC /usr/local/lib) # should a
 if(LINK_M)
     target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC m)
 endif(LINK_M)
-if(STEAM_ENABLED AND APPLE)
-endif()
-
 if(STEAM_ENABLED)
-    set(STEAM_DYLIB
-        "${CMAKE_CURRENT_LIST_DIR}/dist/redistributable_bin/osx/libsteam_api.dylib"
-    )
+    set(STEAM_SDK_DIR "${CMAKE_CURRENT_LIST_DIR}/dist/redistributable_bin" CACHE PATH "Path to Steam SDK redistributable_bin directory")
 
-    add_library(Steam::API SHARED IMPORTED GLOBAL)
-    set_target_properties(Steam::API PROPERTIES
-        IMPORTED_LOCATION "${STEAM_DYLIB}"
-    )
+    if(APPLE)
+        set(STEAM_LIB_FILE
+            "${STEAM_SDK_DIR}/osx/libsteam_api.dylib"
+        )
+        add_library(Steam::API SHARED IMPORTED GLOBAL)
+        set_target_properties(Steam::API PROPERTIES
+            IMPORTED_LOCATION "${STEAM_LIB_FILE}"
+        )
+    elseif(WIN32)
+        set(STEAM_LIB_FILE
+            "${STEAM_SDK_DIR}/win64/steam_api64.dll"
+        )
+        set(STEAM_IMPLIB
+            "${STEAM_SDK_DIR}/win64/steam_api64.lib"
+        )
+        add_library(Steam::API SHARED IMPORTED GLOBAL)
+        set_target_properties(Steam::API PROPERTIES
+            IMPORTED_LOCATION "${STEAM_LIB_FILE}"
+            IMPORTED_IMPLIB   "${STEAM_IMPLIB}"
+        )
+    else()
+        set(STEAM_LIB_FILE
+            "${STEAM_SDK_DIR}/linux64/libsteam_api.so"
+        )
+        add_library(Steam::API SHARED IMPORTED GLOBAL)
+        set_target_properties(Steam::API PROPERTIES
+            IMPORTED_LOCATION "${STEAM_LIB_FILE}"
+        )
+    endif()
 
     target_link_libraries(${LIBRARY_TARGET_NAME}
         PUBLIC Steam::API
     )
 
     set(STEAM_RUNTIME_FILES
-        "${STEAM_DYLIB}"
+        "${STEAM_LIB_FILE}"
         CACHE INTERNAL "Engine runtime files"
     )
 endif()
