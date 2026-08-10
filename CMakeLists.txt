@@ -267,13 +267,13 @@ endif(NOT LIB_SGSOUND)
 
 if(NOT JSON-C_FOUND)
     message(STATUS "jsonc not found. Fetching...")
+    set(BUILD_APPS OFF CACHE BOOL "Do not build json-c apps" FORCE)
+    set(DISABLE_WERROR ON CACHE BOOL "Disable json-c werror" FORCE)
     FetchContent_Declare(
         LIB_JSON-C
         GIT_REPOSITORY https://github.com/json-c/json-c
         GIT_TAG json-c-0.18-20240915
         EXCLUDE_FROM_ALL
-        CMAKE_ARGS -DDISABLE_WERROR=YES
-
     )
     FetchContent_MakeAvailable(LIB_JSON-C)
     target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC json-c)
