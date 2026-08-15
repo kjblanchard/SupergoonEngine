@@ -14,9 +14,11 @@ typedef struct NetClient {
 
 } NetClient;
 
+typedef void (*NetReceiveCallback)(const void* data, size_t size, void* ctx);
+
 NetClient* NetClientCreate();
 void NetClientConnect(NetClient* c, const char* d, int port);
 void NetClientUpdate(NetClient* c);
 void NetClientSend(NetClient* c, void* d, size_t s);
-void NetClientReceive(NetClient* c);
+void NetClientReceive(NetClient* c, NetReceiveCallback cb, void* ctx);
 void NetClientDestroy(NetClient* c);

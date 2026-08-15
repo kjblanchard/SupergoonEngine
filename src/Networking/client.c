@@ -96,9 +96,13 @@ void NetClientSend(NetClient *c, void *d, size_t s) {
   sgLogInfo("Hello message sent from c\n");
 };
 
-void NetClientReceive(NetClient *c) {
-  char buffer[1024] = {0};
-  read(c->SocketFileDescriptor, buffer, 1024);
+void NetClientReceive(NetClient *c, NetReceiveCallback cb, void *ctx) {
+  char buffer[1024];
+  for (;;) {
+    ssize_t n = read(c->SocketFileDescriptor, buffer, sizeof(buffer));
+    if (n <= 0) break;
+    if (cb) cb(buffer, (size_t)n, ctx);
+  }
 }
 
 void NetClientDestroy(NetClient *c) {
