@@ -104,6 +104,9 @@ set(SRC_FILES
     src/text.c
     #Services - Steam - Game Center, etc
     src/services.c
+
+    #Networking
+    src/Networking/client.c
 )
 
 if(SDL_GL)
