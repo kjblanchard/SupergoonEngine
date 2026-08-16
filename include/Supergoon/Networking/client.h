@@ -1,6 +1,9 @@
 #pragma once
 
 #include <stddef.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
 typedef enum {
 	NET_DISCONNECTED,
 	NET_CONNECTING,
@@ -22,3 +25,6 @@ void NetClientUpdate(NetClient* c);
 void NetClientSend(NetClient* c, void* d, size_t s);
 void NetClientReceive(NetClient* c, NetReceiveCallback cb, void* ctx);
 void NetClientDestroy(NetClient* c);
+#ifdef __cplusplus
+}
+#endif
