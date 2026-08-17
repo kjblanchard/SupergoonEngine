@@ -106,7 +106,7 @@ set(SRC_FILES
     src/services.c
 
     #Networking
-    src/Networking/client.c
+    # src/Networking/client.c
 )
 
 if(SDL_GL)
