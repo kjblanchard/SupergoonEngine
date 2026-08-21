@@ -76,6 +76,18 @@ void ShutdownEngineSilesystem(void) {
 	free(_systemFilePath);
 }
 
+bool DoesFileExistAbs(const char* p) {
+	return SDL_GetPathInfo(p, NULL);
+}
+
+bool DoesFileExistRel(const char* p) {
+	size_t sz = 1024;
+	char buf[sz];
+	GetFilenameWithExeFilepath(buf, sz, p);
+	sgLogDebug("Checking file existance for %s", buf);
+	return DoesFileExistAbs(buf);
+}
+
 char* GetContentOfFileString(const char* fullFilePath) {
 	FILE* filePointer;
 	filePointer = fopen(fullFilePath, "rb");

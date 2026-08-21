@@ -29,6 +29,8 @@ void GetFilenameWithPrefFilepath(char* buffer, size_t bufferSize, const char* fi
 const char* GetBasePath(void);
 char* GetContentOfFileString(const char* fullFilePath);
 void ShutdownEngineSilesystem(void);
+bool DoesFileExistAbs(const char* p);
+bool DoesFileExistRel(const char* p);
 
 #ifdef __cplusplus
 }
