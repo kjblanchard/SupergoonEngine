@@ -11,6 +11,7 @@
 #include <SDL3/SDL_filesystem.h>
 #endif
 
+
 static char* _systemFilePath = NULL;
 static char* _systemPrefPath = NULL;
 
@@ -34,14 +35,8 @@ static const char* getBaseExePath(void) {
 		_systemFilePath = strdup("./");
 		return _systemFilePath;
 	}
-	// if (realpath(path, path) == NULL) {
-	// 	_systemFilePath = strdup("./");
-	// 	return _systemFilePath;
-	// }
-	// Use dirname() to strip executable name
 	char* dir = dirname(path);
 	_systemFilePath = strdup(dir);
-	// OPTIONAL: ensure it ends with '/'
 	if (_systemFilePath[strlen(_systemFilePath) - 1] != '/') {
 		char* withSlash;
 		asprintf(&withSlash, "%s/", _systemFilePath);
@@ -81,9 +76,8 @@ bool DoesFileExistAbs(const char* p) {
 }
 
 bool DoesFileExistRel(const char* p) {
-	size_t sz = 1024;
-	char buf[sz];
-	GetFilenameWithExeFilepath(buf, sz, p);
+	char buf[1024];
+	GetFilenameWithExeFilepath(buf, sizeof(buf), p);
 	sgLogDebug("Checking file existance for %s", buf);
 	return DoesFileExistAbs(buf);
 }
