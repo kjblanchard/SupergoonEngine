@@ -21,7 +21,7 @@ bool HandleSDLEvents(void* e) {
 			sgLogWarn("Going to quit from engine");
 			return true;
 		case SDL_EVENT_KEY_DOWN:
-			if (event->key.key == SDLK_Q) return true;
+			if (event->key.key == SDLK_Q && !SDL_TextInputActive(SDL_GetKeyboardFocus())) return true;
 			break;
 		default:
 			break;
