@@ -32,6 +32,8 @@ int WindowWidth(void);
 void CloseWindow(void);
 Window* WindowGet(void);
 int WindowHandleEvents(void* event);
+void GeStartTextInput(void);
+void GeStopTextInput(void);
 #ifdef __cplusplus
 }
 #endif

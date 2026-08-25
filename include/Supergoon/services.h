@@ -10,6 +10,19 @@
 */
 
 #pragma once
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void InitializeServiceSystem(void);
 void UpdateServiceSystem(void);
 void ShutdownServiceSystem(void);
+
+#ifdef steamed
+void ShowSteamKeyboard(int x, int y, int w, int h);
+#endif
+
+#ifdef __cplusplus
+}
+#endif

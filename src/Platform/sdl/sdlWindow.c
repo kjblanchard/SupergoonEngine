@@ -102,3 +102,11 @@ int getRefreshRate(void) {
 Window* WindowGetImpl(void) {
 	return &_window;
 }
+
+void StartTextInputImpl(void) {
+	SDL_StartTextInput(_window.Handle);
+}
+
+void StopTextInputImpl(void) {
+	SDL_StopTextInput(_window.Handle);
+}

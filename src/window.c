@@ -9,6 +9,8 @@ extern int WindowHeightImpl(void);
 extern int WindowWidthImpl(void);
 extern void CloseWindowImpl(void);
 extern Window* WindowGetImpl(void);
+extern void StartTextInputImpl(void);
+extern void StopTextInputImpl(void);
 
 void SetWindowOptions(int width, int height, const char* name) {
 	SetWindowOptionsImpl(width, height, name);
@@ -30,4 +32,12 @@ void CloseWindow(void) {
 
 Window* WindowGet(void) {
 	return WindowGetImpl();
+}
+
+void GeStartTextInput(void) {
+	StartTextInputImpl();
+}
+
+void GeStopTextInput(void) {
+	StopTextInputImpl();
 }

@@ -14,6 +14,8 @@ int WindowHeightImpl(void);
 int WindowWidthImpl(void);
 void CloseWindowImpl(void);
 Window* WindowGetImpl(void);
+void StartTextInputImpl(void);
+void StopTextInputImpl(void);
 #ifdef __cplusplus
 }
 #endif

@@ -11,3 +11,8 @@ extern "C" void UpdateServiceSystemImpl(void) {
 extern "C" void ShutdownServiceSystemImpl(void) {
 	SteamAPI_Shutdown();
 }
+
+extern "C" void ShowSteamKeyboard(int x, int y, int w, int h) {
+	SteamUtils()->ShowFloatingGamepadTextInput(
+		k_EFloatingGamepadTextInputModeModeSingleLine, x, y, w, h);
+}
