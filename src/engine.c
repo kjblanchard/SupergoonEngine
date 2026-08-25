@@ -158,5 +158,6 @@ SDL_AppResult SDL_AppIterate(void* appState) {
 }
 
 void SDL_AppQuit(void* appState, SDL_AppResult result) {
+    sgLogError("Quitting");
 	Quit();
 }

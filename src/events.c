@@ -1,18 +1,20 @@
 #include <Supergoon/Audio/Audio.h>
-#include <Supergoon/events.h>
 #include <Supergoon/Input/joystick.h>
+#include <Supergoon/events.h>
 #include <stdbool.h>
 #include <stdlib.h>
 
+#include "sgtools/log.h"
+
 // Function in tween.c
-extern void handleTweenEvents(void *event);
+extern void handleTweenEvents(void* event);
 // Functions in mouce.c
-extern void handleMouseEvent(void *event);
+extern void handleMouseEvent(void* event);
 // extern void handleTouchEvent(void *event);
-extern void windowEventHandler(void *event);
-extern bool HandleSDLEvents(void *e);
+extern void windowEventHandler(void* event);
+extern bool HandleSDLEvents(void* e);
 BuiltinEventTypes BuiltinEventIds;
-static int (*_customEventHandler)(void *event) = NULL;
+static int (*_customEventHandler)(void* event) = NULL;
 static int _currentCustomRegisteredEvent = 1000;
 
 static int _shouldQuit = 0;
@@ -28,7 +30,7 @@ void InitializeEventSystem(void) {
 	BuiltinEventIds.StopTweenEvent = _currentCustomRegisteredEvent++;
 }
 
-void PushEvent(uint32_t eventType, int eventCode, void *data, void *data2) {
+void PushEvent(uint32_t eventType, int eventCode, void* data, void* data2) {
 	// SDL_Event event;
 	// SDL_zero(event);
 	// event.type = eventType;
@@ -36,10 +38,13 @@ void PushEvent(uint32_t eventType, int eventCode, void *data, void *data2) {
 	// event.user.data1 = data;
 	// event.user.data2 = data2;
 	// SDL_PushEvent(&event);
-	if (eventType == BuiltinEventIds.QuitGameEvent) _shouldQuit = true;
+	if (eventType == BuiltinEventIds.QuitGameEvent) {
+		_shouldQuit = true;
+		sgLogError("Should quit");
+	}
 }
 
-int HandleEvents(void *event) {
+int HandleEvents(void* event) {
 	if (HandleSDLEvents(event)) return true;
 
 	/* AudioEventHandler(event); */
@@ -47,15 +52,18 @@ int HandleEvents(void *event) {
 	handleMouseEvent(event);
 	// handleTouchEvent(event);
 	windowEventHandler(event);
+	if (_shouldQuit) {
+		sgLogError("Should quit");
+	}
 	return _shouldQuit;
 	return false;
 }
 
-void SetCustomEventHandler(int (*eventHandlerFunction)(void *event)) {
+void SetCustomEventHandler(int (*eventHandlerFunction)(void* event)) {
 	_customEventHandler = eventHandlerFunction;
 }
 
-int HandleCustomEventHandler(void *event) {
+int HandleCustomEventHandler(void* event) {
 	if (_customEventHandler) {
 		return _customEventHandler(event);
 	}
