@@ -1,14 +1,16 @@
 #include <SDL3/SDL.h>
 #include <Supergoon/Input/touch.h>
-#include <sgtools/log.h>
 #include <Supergoon/window.h>
+#include <math.h>
+
+extern int _logicalX;
+extern int _logicalY;
 
 static bool _lastFrameTouch = false;
 static bool _thisFrameTouch = false;
 static float _touchX = -1.0f;
 static float _touchY = -1.0f;
 
-// Capture touch input and map it to screen-space
 void handleTouchEvent(const SDL_Event* event) {
 	if (!(event->type == SDL_EVENT_FINGER_DOWN ||
 		  event->type == SDL_EVENT_FINGER_UP ||
@@ -19,18 +21,32 @@ void handleTouchEvent(const SDL_Event* event) {
 	if (event->type == SDL_EVENT_FINGER_DOWN || event->type == SDL_EVENT_FINGER_MOTION) {
 		_thisFrameTouch = true;
 
-		int windowW, windowH;
-		// if (!SDL_GetRenderOutputSize(_renderer, &windowW, &windowH)) {
-		// 	sgLogError("Failed to get render output size: %s", SDL_GetError());
-		// 	return;
-		// }
+		int winW = WindowWidth();
+		int winH = WindowHeight();
+		float rawX = event->tfinger.x * winW;
+		float rawY = event->tfinger.y * winH;
 
-		// Touch positions are normalized (0.0 to 1.0), scale to window space
-		// _touchX = event->tfinger.x * windowW;
-		// _touchY = event->tfinger.y * windowH;
-
+		int scaleX = winW / _logicalX;
+		int scaleY = winH / _logicalY;
+		int scale = (scaleX < scaleY) ? scaleX : scaleY;
+		if (scale < 1) scale = 1;
+		int drawW = _logicalX * scale;
+		int drawH = _logicalY * scale;
+		float offsetX = floorf((winW - drawW) / 2.0f);
+		float offsetY = floorf((winH - drawH) / 2.0f);
+		float relX = rawX - offsetX;
+		float relY = rawY - offsetY;
+		if (relX < 0 || relY < 0 || relX >= drawW || relY >= drawH) {
+			_touchX = -1;
+			_touchY = -1;
+			return;
+		}
+		_touchX = relX / scale;
+		_touchY = relY / scale;
 	} else if (event->type == SDL_EVENT_FINGER_UP) {
 		_thisFrameTouch = false;
+		_touchX = -1.0f;
+		_touchY = -1.0f;
 	}
 }
 
@@ -39,17 +55,8 @@ void UpdateTouchSystem(void) {
 }
 
 void GetGameTouchPos(float* x, float* y) {
-	// int relX = _touchX - _gameImagePosX;
-	// int relY = _touchY - _gameImagePosY;
-
-	// if (_thisFrameTouch && relX >= 0 && relY >= 0 &&
-	// 	relX < _gameImageWidth && relY < _gameImageHeight) {
-	// 	*x = relX / _gameImageScale;
-	// 	*y = relY / _gameImageScale;
-	// } else {
-	// 	*x = -1;
-	// 	*y = -1;
-	// }
+	*x = _touchX;
+	*y = _touchY;
 }
 
 int IsTouchOverlapRect(int x, int y, int width, int height) {

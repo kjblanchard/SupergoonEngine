@@ -9,6 +9,7 @@
 #include <Supergoon/Input/joystick.h>
 #include <Supergoon/Input/keyboard.h>
 #include <Supergoon/Input/mouse.h>
+#include <Supergoon/Input/touch.h>
 #include <Supergoon/Platform/sdl/sdl.h>
 #include <Supergoon/camera.h>
 #include <Supergoon/engine.h>
@@ -99,6 +100,7 @@ static void update(void) {
 		UpdateCameraSystem();
 		UpdateControllerSystem();
 		UpdateMouseSystem();
+		UpdateTouchSystem();
 		UpdateServiceSystem();
 		_accumulatorNS -= FIXED_TIMESTEP_NS;
 		++ticks;
