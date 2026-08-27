@@ -10,9 +10,7 @@
 extern void handleTweenEvents(void* event);
 // Functions in mouce.c
 extern void handleMouseEvent(void* event);
-#ifdef IS_MOBILE
-extern void handleTouchEvent(void* event);
-#endif
+// extern void handleTouchEvent(void *event);
 extern void windowEventHandler(void* event);
 extern bool HandleSDLEvents(void* e);
 BuiltinEventTypes BuiltinEventIds;
@@ -52,9 +50,7 @@ int HandleEvents(void* event) {
 	/* AudioEventHandler(event); */
 	// handleTweenEvents(event);
 	handleMouseEvent(event);
-#ifdef IS_MOBILE
-	handleTouchEvent(event);
-#endif
+	// handleTouchEvent(event);
 	windowEventHandler(event);
 	if (_shouldQuit) {
 		sgLogError("Should quit");
