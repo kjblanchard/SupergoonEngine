@@ -74,7 +74,7 @@ void CreateWindowImpl(void) {
 	if (!_window.Handle) {
 		sgLogCritical("Could not create window, error, %s", SDL_GetError());
 	}
-	/* SDL_RaiseWindow(_window.Handle); */
+	SDL_GetWindowSizeInPixels(_window.Handle, &_windowWidth, &_windowHeight);
 	onWindowResize();
 	/* SDL_SetWindowPosition(_window.Handle, 0, 0); */
 }
