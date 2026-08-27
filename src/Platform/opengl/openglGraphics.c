@@ -13,12 +13,14 @@
 // Need to do glad first
 #include <SDL3/SDL_opengl.h>
 #else
-#include <GLES3/gl3.h>
+#include <OpenGLES/ES3/gl.h> // this is the ios version of it, so we need to handle this vs emscripten
+//#include <GLES3/gl3.h>  // this is the emscripten version
 #include <SDL3/SDL_opengles2.h>
 #endif
 #include <Supergoon/Platform/opengl/openglGraphics.h>
 #include <Supergoon/Platform/sdl/sdlWindow.h>
 #include <sgtools/log.h>
+
 
 extern void ShaderSystemShutdown(void);
 extern Shader* GetDefaultScreenShaderImpl(void);

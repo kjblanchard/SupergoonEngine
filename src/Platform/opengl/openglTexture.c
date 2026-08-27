@@ -10,7 +10,7 @@
 // must be included before, this comment keeps ide from moving it :)
 #include <SDL3/SDL_opengl.h>
 #else
-#include <GLES3/gl3.h>
+#include <OpenGLES/ES3/gl.h>
 #include <SDL3/SDL_opengles2.h>
 #endif
 #include <SDL3/SDL_iostream.h>

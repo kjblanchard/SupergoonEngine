@@ -1,11 +1,17 @@
-#if !defined(__EMSCRIPTEN__) && !defined(ANDROID) && !defined(USE_GLES)
-#include <glad/glad.h>
-// Need to do glad first
-#include <SDL3/SDL_opengl.h>
-#else
-#include <GLES3/gl3.h>
-#include <SDL3/SDL_opengles2.h>
+#if defined(__APPLE__)
+    #include <TargetConditionals.h>
 #endif
+
+#if defined(__APPLE__) && TARGET_OS_IOS
+#include <SDL3/SDL_opengles.h>
+    #include <OpenGLES/ES3/gl.h>
+#elif defined(__EMSCRIPTEN__) || defined(ANDROID) || defined(USE_GLES)
+    #include <GLES3/gl3.h>
+#else
+    #include <glad/glad.h>
+    #include <SDL3/SDL_opengl.h>
+#endif
+
 #include <Supergoon/Graphics/shader.h>
 #include <Supergoon/Platform/opengl/openglGraphics.h>
 #include <Supergoon/filesystem.h>

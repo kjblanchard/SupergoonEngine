@@ -1,11 +1,11 @@
 #include <SDL3/SDL.h>
-#include <SDL3/SDL_hints.h>
 #include <SDL3/SDL_events.h>
+#include <SDL3/SDL_hints.h>
 #include <SDL3/SDL_video.h>
 #include <Supergoon/Graphics/graphics.h>
 #include <Supergoon/Platform/sdl/sdlWindow.h>
-#include <sgtools/log.h>
 #include <Supergoon/window.h>
+#include <sgtools/log.h>
 typedef union SDL_Event Event;
 
 // Window/renderer is used as extern in graphics
@@ -66,6 +66,10 @@ void CreateWindowImpl(void) {
 #ifdef sdlglbackend
 	flags |= SDL_WINDOW_OPENGL;
 #endif
+#ifdef __IPHONEOS__
+	flags |= SDL_WINDOW_FULLSCREEN;
+#endif
+
 	_window.Handle = SDL_CreateWindow(name, _windowWidth, _windowHeight, flags);
 	if (!_window.Handle) {
 		sgLogCritical("Could not create window, error, %s", SDL_GetError());
@@ -73,7 +77,6 @@ void CreateWindowImpl(void) {
 	/* SDL_RaiseWindow(_window.Handle); */
 	onWindowResize();
 	/* SDL_SetWindowPosition(_window.Handle, 0, 0); */
-
 }
 
 int WindowHeightImpl(void) {
