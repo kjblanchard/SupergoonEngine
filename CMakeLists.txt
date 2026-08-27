@@ -355,12 +355,25 @@ if(NOT EMSCRIPTEN AND NOT LIB_OPENAL)
     set(ALSOFT_EXAMPLES OFF CACHE INTERNAL "")
     set(ALSOFT_BACKEND_WAVE OFF CACHE INTERNAL "")
     set(ALSOFT_EMBED_HRTF_DATA ON CACHE INTERNAL "")
+    if(ANDROID)
+        set(ALSOFT_REQUIRE_OBOE OFF CACHE INTERNAL "")
+        set(ALSOFT_REQUIRE_OPENSL OFF CACHE INTERNAL "")
+        set(HAVE_LIBATOMIC OFF CACHE INTERNAL "")
+    endif()
     FetchContent_Declare(
         LIB_OPENAL
         GIT_REPOSITORY https://github.com/kcat/openal-soft
         GIT_TAG 1.24.3
         EXCLUDE_FROM_ALL)
     FetchContent_MakeAvailable(LIB_OPENAL)
+    if(ANDROID)
+        get_target_property(_openal_libs OpenAL INTERFACE_LINK_LIBRARIES)
+        if(_openal_libs)
+            list(REMOVE_ITEM _openal_libs "atomic")
+            list(REMOVE_ITEM _openal_libs "-latomic")
+            set_target_properties(OpenAL PROPERTIES INTERFACE_LINK_LIBRARIES "${_openal_libs}")
+        endif()
+    endif()
     target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC OpenAL)
 endif(NOT EMSCRIPTEN AND NOT LIB_OPENAL)
 
