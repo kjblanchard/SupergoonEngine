@@ -5,7 +5,7 @@
 #include <sgtools/tools.h>
 #include <stdbool.h>
 #include <string.h>
-#ifndef __EMSCRIPTEN__
+#if !defined(__EMSCRIPTEN__) && !defined(ANDROID) && !defined(USE_GLES)
 #include <glad/glad.h>
 // must be included before, this comment keeps ide from moving it :)
 #include <SDL3/SDL_opengl.h>
@@ -159,7 +159,7 @@ Texture* TextureCreateRenderTargetImpl(int width, int height) {
 	texture->FBO = 0;
 	texture->RefCount = 1;
 	asprintf(&texture->Name, "%d_%d_render_target_framebuffer", width, height);
-#ifndef __EMSCRIPTEN__
+#if !defined(__EMSCRIPTEN__) && !defined(ANDROID) && !defined(USE_GLES)
 	GLint internalFormat = GL_RGBA8;
 #else
 	GLint internalFormat = GL_RGBA;

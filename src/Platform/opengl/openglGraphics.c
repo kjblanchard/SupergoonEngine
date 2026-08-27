@@ -8,7 +8,7 @@
 #include <Supergoon/camera.h>
 #include <Supergoon/window.h>
 #include <cglm/cglm.h>
-#ifndef __EMSCRIPTEN__
+#if !defined(__EMSCRIPTEN__) && !defined(ANDROID) && !defined(USE_GLES)
 #include <glad/glad.h>
 // Need to do glad first
 #include <SDL3/SDL_opengl.h>
@@ -51,7 +51,7 @@ int _logicalX = 0;
 int _logicalY = 0;
 static GLuint vao = 0, vbo = 0;
 static Color _fboColor = {255, 255, 255, 255};
-#ifndef __EMSCRIPTEN__
+#if !defined(__EMSCRIPTEN__) && !defined(ANDROID) && !defined(USE_GLES)
 static bool _vsync = 1;
 #endif
 
@@ -65,9 +65,9 @@ void GraphicsWindowResizeEventImpl(int width, int height) {
 }
 
 void InitializeGraphicsSystemImpl(void) {
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__) || defined(ANDROID) || defined(USE_GLES)
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);  // ES 3.0 = WebGL2
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
 #else
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -79,7 +79,7 @@ void InitializeGraphicsSystemImpl(void) {
 		sgLogCritical("Could not create opengl context, exiting! %s",
 					  SDL_GetError());
 	}
-#ifndef __EMSCRIPTEN__
+#if !defined(__EMSCRIPTEN__) && !defined(ANDROID) && !defined(USE_GLES)
 	if (!gladLoadGL()) {
 		sgLogError("Failed to initialize GLAD!");
 		return;
@@ -93,7 +93,7 @@ void InitializeGraphicsSystemImpl(void) {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glm_ortho(0.0f, WindowWidthImpl(), WindowHeightImpl(), 0.0f, -1.0f, 1.0f,
 			  projectionMatrix);
-#ifndef __EMSCRIPTEN__
+#if !defined(__EMSCRIPTEN__) && !defined(ANDROID) && !defined(USE_GLES)
 	SDL_GL_SetSwapInterval(_vsync);	 // vsync
 #endif
 	//Setup the reusable VAO and make it with the VBO.

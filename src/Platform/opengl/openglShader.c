@@ -1,4 +1,4 @@
-#ifndef __EMSCRIPTEN__
+#if !defined(__EMSCRIPTEN__) && !defined(ANDROID) && !defined(USE_GLES)
 #include <glad/glad.h>
 // Need to do glad first
 #include <SDL3/SDL_opengl.h>
@@ -56,7 +56,7 @@ CachedShaderFile _cachedShaders[NUM_CACHED_SHADERS];
 
 char* getShaderDataFromFile(const char* filename) {
 	const char* suffix = "";
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__) || defined(ANDROID) || defined(USE_GLES)
 	suffix = "E";
 #endif
 	char* filepath;
