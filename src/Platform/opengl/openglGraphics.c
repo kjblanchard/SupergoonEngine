@@ -46,6 +46,7 @@ Texture* _imGUIScreenRenderTargetTexture = NULL;
 #endif
 
 SDL_GLContext _context;
+GLint _defaultFBO = 0;
 static Texture* _screenFrameBufferTexture = NULL;
 static Texture* _uiFrameBufferTexture = NULL;
 // Used in debug windows
@@ -81,15 +82,19 @@ void InitializeGraphicsSystemImpl(void) {
 		sgLogCritical("Could not create opengl context, exiting! %s",
 					  SDL_GetError());
 	}
+	sgLogWarn("[GFX INIT] GL context created: %p", (void*)_context);
 #if !defined(__EMSCRIPTEN__) && !defined(ANDROID) && !defined(USE_GLES)
 	if (!gladLoadGL()) {
 		sgLogError("Failed to initialize GLAD!");
 		return;
 	}
 #endif
-	sgLogDebug("OpenGL version: %s", glGetString(GL_VERSION));
+	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &_defaultFBO);
+	sgLogWarn("[GFX INIT] Default FBO captured: %d", _defaultFBO);
+	sgLogWarn("[GFX INIT] OpenGL version: %s", glGetString(GL_VERSION));
 	int width = WindowWidthImpl();
 	int height = WindowHeightImpl();
+	sgLogWarn("[GFX INIT] Window pixel size: %d x %d", width, height);
 	glViewport(0, 0, width, height);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -133,12 +138,14 @@ void DrawUIStartImpl(void) {
 	SetRenderTarget(_uiFrameBufferTexture);
 }
 
+static int _drawEndLogCount = 0;
 void DrawEndImpl(void) {
 	SetRenderTarget(NULL);
 #ifdef imgui
 	SetRenderTarget(_imGUIScreenRenderTargetTexture);
 #endif
 	if (!_screenFrameBufferTexture) {
+		if (_drawEndLogCount < 3) sgLogWarn("[DRAW] DrawEnd: no screen FBO texture, just swapping");
 		SDL_GL_SwapWindow(WindowGetImpl()->Handle);
 		return;
 	}
@@ -159,6 +166,11 @@ void DrawEndImpl(void) {
 	int drawHeight = fbHeight * scale;
 	float offsetX = floorf((winWidth - drawWidth) / 2.0f);
 	float offsetY = floorf((winHeight - drawHeight) / 2.0f);
+	if (_drawEndLogCount < 3) {
+		sgLogWarn("[DRAW] fb=%dx%d win=%dx%d scale=%d draw=%dx%d offset=%.0f,%.0f",
+			fbWidth, fbHeight, winWidth, winHeight, scale, drawWidth, drawHeight, offsetX, offsetY);
+		++_drawEndLogCount;
+	}
 	float subX = floorf(CameraGetSubPixelX() * scale);
 	float subY = floorf(CameraGetSubPixelY() * scale);
 	Color fboColor = _fboColor;
@@ -238,6 +250,7 @@ void DrawRectImpl(const RectangleF* rect, Color* color, int filled, int useCamer
 }
 
 void GraphicsSetLogicalWorldSizeImpl(int width, int height) {
+	sgLogWarn("[GFX] SetLogicalWorldSize: %d x %d", width, height);
 	_logicalX = width;
 	_logicalY = height;
 	glViewport(0, 0, width, height);
@@ -246,11 +259,13 @@ void GraphicsSetLogicalWorldSizeImpl(int width, int height) {
 		TextureDestroy(_screenFrameBufferTexture);
 	}
 	_screenFrameBufferTexture = TextureCreateRenderTarget(width, height);
+	sgLogWarn("[GFX] Screen FBO created: texture=%p", (void*)_screenFrameBufferTexture);
 	TextureClearRenderTarget(_screenFrameBufferTexture, 0, 0, 0, 1.0);
 	if (_uiFrameBufferTexture) {
 		TextureDestroy(_uiFrameBufferTexture);
 	}
 	_uiFrameBufferTexture = TextureCreateRenderTarget(width, height);
+	sgLogWarn("[GFX] UI FBO created: texture=%p", (void*)_uiFrameBufferTexture);
 	TextureClearRenderTarget(_uiFrameBufferTexture, 0, 0, 0, 0.0);
 #ifdef imgui
 	if (_imGUIScreenRenderTargetTexture) {

@@ -60,6 +60,7 @@ static void setupTextureQuadVAO(Texture* texture) {
 	glBindVertexArray(0);
 }
 
+extern GLint _defaultFBO;
 static Texture* _currentRenderingTarget = NULL;
 static int _currentRenderingTargetWidth = 0;
 static int _currentRenderingTargetHeight = 0;
@@ -179,7 +180,9 @@ Texture* TextureCreateRenderTargetImpl(int width, int height) {
 	if (status != GL_FRAMEBUFFER_COMPLETE) {
 		sgLogError("Framebuffer not complete for render target %s (status 0x%X)",
 				   texture->Name, status);
-		// TODO continue — but you may want to fail/cleanup here
+	} else {
+		sgLogWarn("[FBO] Created render target %dx%d FBO=%u tex=%u status=COMPLETE",
+				  width, height, texture->FBO, texture->ID);
 	}
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -347,6 +350,7 @@ void SetPreviousRenderTargetImpl(void) {
 	SetRenderTarget(_previousRenderingTarget);
 }
 
+static int _renderTargetLogCount = 0;
 void SetRenderTargetImpl(Texture* target) {
 	_previousRenderingTarget = _currentRenderingTarget;
 	if (target) {
@@ -356,7 +360,11 @@ void SetRenderTargetImpl(Texture* target) {
 	} else {
 		_currentRenderingTargetWidth = WindowWidth();
 		_currentRenderingTargetHeight = WindowHeight();
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, _defaultFBO);
+		if (_renderTargetLogCount < 5) {
+			sgLogWarn("[RT] Binding default FBO: %d (win %dx%d)", _defaultFBO, _currentRenderingTargetWidth, _currentRenderingTargetHeight);
+			++_renderTargetLogCount;
+		}
 	}
 	_currentRenderingTarget = target;
 	glm_ortho(0.0f, _currentRenderingTargetWidth, 0.0f, _currentRenderingTargetHeight, -1.0f, 1.0f, projectionMatrix);

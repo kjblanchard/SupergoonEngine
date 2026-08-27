@@ -68,15 +68,19 @@ void CreateWindowImpl(void) {
 #endif
 #ifdef __IPHONEOS__
 	flags |= SDL_WINDOW_FULLSCREEN;
+	SDL_SetHint(SDL_HINT_ORIENTATIONS, "LandscapeLeft LandscapeRight");
+	sgLogWarn("[WIN] Set orientation hint: LandscapeLeft LandscapeRight");
 #endif
 
+	sgLogWarn("[WIN] Creating window: %s %dx%d flags=0x%X", name, _windowWidth, _windowHeight, flags);
 	_window.Handle = SDL_CreateWindow(name, _windowWidth, _windowHeight, flags);
 	if (!_window.Handle) {
 		sgLogCritical("Could not create window, error, %s", SDL_GetError());
 	}
+	sgLogWarn("[WIN] Window created: handle=%p", (void*)_window.Handle);
 	SDL_GetWindowSizeInPixels(_window.Handle, &_windowWidth, &_windowHeight);
+	sgLogWarn("[WIN] Window pixel size: %d x %d", _windowWidth, _windowHeight);
 	onWindowResize();
-	/* SDL_SetWindowPosition(_window.Handle, 0, 0); */
 }
 
 int WindowHeightImpl(void) {

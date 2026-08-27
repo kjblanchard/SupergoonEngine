@@ -7,10 +7,12 @@ int InitializeSdl(void) {
 	int options = 0;
 	SDL_SetHint(SDL_HINT_MAC_BACKGROUND_APP, "0");
 	options |= SDL_INIT_VIDEO | SDL_INIT_GAMEPAD;
+	sgLogWarn("[SDL] Initializing SDL with flags: 0x%X", options);
 	if (!SDL_Init(options)) {
 		sgLogError("Could not init sdl, %s", SDL_GetError());
 		return false;
 	}
+	sgLogWarn("[SDL] SDL_Init success");
 	return true;
 }
 

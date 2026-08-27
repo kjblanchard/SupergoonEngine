@@ -136,11 +136,17 @@ void SetInputFunction(void (*updateFunc)(void)) { _inputFunc = updateFunc; }
 void SetQuitFunction(void (*quitFunc)(void)) { _quitFunc = quitFunc; }
 
 SDL_AppResult SDL_AppInit(void** appState, int argc, char* argv[]) {
+	sgLogWarn("[ENGINE] SDL_AppInit begin");
 	initializeEngineInternal();
+	sgLogWarn("[ENGINE] Engine internal initialized");
 	InitializeEngineFunctions();
+	sgLogWarn("[ENGINE] Engine functions initialized");
 	if (_initializeFunc) _initializeFunc();
+	sgLogWarn("[ENGINE] Game initialize done");
 	start();
+	sgLogWarn("[ENGINE] Engine start() done - window/gfx/audio ready");
 	if (_startFunc) _startFunc();
+	sgLogWarn("[ENGINE] Game start done - entering main loop");
 	return SDL_APP_CONTINUE;
 }
 
@@ -152,7 +158,12 @@ SDL_AppResult SDL_AppEvent(void* appState, SDL_Event* event) {
 	return SDL_APP_CONTINUE;
 }
 
+static int _iterateLogCount = 0;
 SDL_AppResult SDL_AppIterate(void* appState) {
+	if (_iterateLogCount < 3) {
+		sgLogWarn("[ENGINE] SDL_AppIterate frame %d", _iterateLogCount);
+		++_iterateLogCount;
+	}
 	update();
 	return SDL_APP_CONTINUE;
 }
