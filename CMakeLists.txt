@@ -387,7 +387,9 @@ if(DEBUG_CMAKE_VARIABLES)
 endif(DEBUG_CMAKE_VARIABLES)
 
 target_compile_options(${LIBRARY_TARGET_NAME} PUBLIC ${COMPILE_OPTIONS})
-target_link_directories(${LIBRARY_TARGET_NAME} PUBLIC /usr/local/lib) # should always include from usr/local/lib
+if(NOT ANDROID)
+    target_link_directories(${LIBRARY_TARGET_NAME} PUBLIC /usr/local/lib)
+endif()
 
 if(LINK_M)
     target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC m)
@@ -436,11 +438,19 @@ if(STEAM_ENABLED)
 endif()
 
     # System is for blocking out the warnings, these are mostly external libs
-target_include_directories(
-    ${LIBRARY_TARGET_NAME} SYSTEM
-    PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include /usr/local/include
-    PRIVATE # linux builds
-    ${lib_ogg_SOURCE_DIR}/include ${lib_ogg_BINARY_DIR}/include)
+if(ANDROID)
+    target_include_directories(
+        ${LIBRARY_TARGET_NAME} SYSTEM
+        PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include
+        PRIVATE
+        ${lib_ogg_SOURCE_DIR}/include ${lib_ogg_BINARY_DIR}/include)
+else()
+    target_include_directories(
+        ${LIBRARY_TARGET_NAME} SYSTEM
+        PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include /usr/local/include
+        PRIVATE
+        ${lib_ogg_SOURCE_DIR}/include ${lib_ogg_BINARY_DIR}/include)
+endif()
 
 target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(
