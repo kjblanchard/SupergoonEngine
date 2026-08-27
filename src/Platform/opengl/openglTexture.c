@@ -7,10 +7,14 @@
 #include <string.h>
 #if !defined(__EMSCRIPTEN__) && !defined(ANDROID) && !defined(USE_GLES)
 #include <glad/glad.h>
-// must be included before, this comment keeps ide from moving it :)
+// Need to do glad first
 #include <SDL3/SDL_opengl.h>
 #else
+#ifdef __APPLE__
 #include <OpenGLES/ES3/gl.h>
+#else
+#include <GLES3/gl3.h>
+#endif
 #include <SDL3/SDL_opengles2.h>
 #endif
 #include <SDL3/SDL_iostream.h>
