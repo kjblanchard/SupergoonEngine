@@ -185,7 +185,7 @@ Texture* TextureCreateRenderTargetImpl(int width, int height) {
 		sgLogError("Framebuffer not complete for render target %s (status 0x%X)",
 				   texture->Name, status);
 	} else {
-		sgLogWarn("[FBO] Created render target %dx%d FBO=%u tex=%u status=COMPLETE",
+		sgLogDebug("[FBO] Created render target %dx%d FBO=%u tex=%u status=COMPLETE",
 				  width, height, texture->FBO, texture->ID);
 	}
 	glBindTexture(GL_TEXTURE_2D, 0);
