@@ -24,7 +24,6 @@
 #include <Supergoon/Platform/sdl/sdlWindow.h>
 #include <sgtools/log.h>
 
-
 extern void ShaderSystemShutdown(void);
 extern Shader* GetDefaultScreenShaderImpl(void);
 extern void DrawTextureToScreen(Texture* texture, Shader* shader, RectangleF* dstRect,
@@ -55,6 +54,9 @@ static Texture* _uiFrameBufferTexture = NULL;
 // Used in debug windows
 int _logicalX = 0;
 int _logicalY = 0;
+int _scaleX = 1;
+int _scaleY = 1;
+RectangleF _worldRect = {0, 0, 0, 0};
 static GLuint vao = 0, vbo = 0;
 static Color _fboColor = {255, 255, 255, 255};
 #if !defined(__EMSCRIPTEN__) && !defined(ANDROID) && !defined(USE_GLES)
@@ -106,7 +108,7 @@ void InitializeGraphicsSystemImpl(void) {
 #if !defined(__EMSCRIPTEN__) && !defined(ANDROID) && !defined(USE_GLES)
 	SDL_GL_SetSwapInterval(_vsync);	 // vsync
 #endif
-	//Setup the reusable VAO and make it with the VBO.
+	// Setup the reusable VAO and make it with the VBO.
 	float verts[] = {
 		0.0f, 0.0f,
 		1.0f, 0.0f,
@@ -165,13 +167,14 @@ void DrawEndImpl(void) {
 	int scaleY = winHeight / fbHeight;
 	int scale = scaleX < scaleY ? scaleX : scaleY;
 	if (scale < 1) scale = 1;
+	_scaleX = _scaleY = scale;
 	int drawWidth = fbWidth * scale;
 	int drawHeight = fbHeight * scale;
 	float offsetX = floorf((winWidth - drawWidth) / 2.0f);
 	float offsetY = floorf((winHeight - drawHeight) / 2.0f);
 	if (_drawEndLogCount < 3) {
 		sgLogWarn("[DRAW] fb=%dx%d win=%dx%d scale=%d draw=%dx%d offset=%.0f,%.0f",
-			fbWidth, fbHeight, winWidth, winHeight, scale, drawWidth, drawHeight, offsetX, offsetY);
+				  fbWidth, fbHeight, winWidth, winHeight, scale, drawWidth, drawHeight, offsetX, offsetY);
 		++_drawEndLogCount;
 	}
 	float subX = floorf(CameraGetSubPixelX() * scale);
@@ -180,9 +183,15 @@ void DrawEndImpl(void) {
 
 	float worldX = offsetX - subX;
 	float worldY = offsetY + subY;
-	RectangleF worldDst = {worldX, worldY, (float)drawWidth, (float)drawHeight};
+	RectangleF worldRect = {
+		worldX,
+		worldY,
+		(float)drawWidth,
+		(float)drawHeight};
+
+	_worldRect = worldRect;
 	Shader* screenShader = GetDefaultScreenShaderImpl();
-	DrawTextureToScreen(_screenFrameBufferTexture, screenShader, &worldDst, true, &fboColor);
+	DrawTextureToScreen(_screenFrameBufferTexture, screenShader, &worldRect, true, &fboColor);
 
 	if (_uiFrameBufferTexture) {
 		RectangleF uiDst = {offsetX, offsetY, (float)drawWidth, (float)drawHeight};

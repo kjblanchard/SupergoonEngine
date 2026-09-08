@@ -1,10 +1,10 @@
 #include <SDL3/SDL.h>
-#include <Supergoon/Input/mouse.h>
+#include <Supergoon/Primitives/rectangle.h>
 #include <Supergoon/window.h>
-#include <math.h>
 
-extern int _logicalX;
-extern int _logicalY;
+// From openglgraphics
+extern RectangleF _worldRect;
+extern int _scaleX;
 
 static bool _lastFrameMouseButtons[3] = {false};
 static bool _thisFrameMouseButtons[3] = {false};
@@ -28,25 +28,20 @@ void UpdateMouseSystem(void) {
 void GetGameMousePos(float* x, float* y) {
 	float mouseX, mouseY;
 	SDL_GetMouseState(&mouseX, &mouseY);
-	int winW = WindowWidth();
-	int winH = WindowHeight();
-	int scaleX = winW / _logicalX;
-	int scaleY = winH / _logicalY;
-	int scale = (scaleX < scaleY) ? scaleX : scaleY;
-	if (scale < 1) scale = 1;
-	int drawW = _logicalX * scale;
-	int drawH = _logicalY * scale;
-	float offsetX = floorf((winW - drawW) / 2.0f);
-	float offsetY = floorf((winH - drawH) / 2.0f);
+	float offsetX = _worldRect.x;
+	float offsetY = _worldRect.y;
 	float relX = mouseX - offsetX;
 	float relY = mouseY - offsetY;
-	if (relX < 0 || relY < 0 || relX >= drawW || relY >= drawH) {
+	// If it is in the letterboxing, we should return -1
+	if (relX < 0 || relY < 0 ||
+		relX >= _worldRect.w || relY >= _worldRect.h) {
 		*x = -1;
 		*y = -1;
 		return;
 	}
-	*x = relX / scale;
-	*y = relY / scale;
+	// Handle scale factor
+	*x = relX / _scaleX;
+	*y = relY / _scaleX;
 }
 
 int IsMouseOverlapRect(int x, int y, int width, int height) {
