@@ -16,6 +16,8 @@ float CameraGetSubPixelX(void);
 float CameraGetSubPixelY(void);
 float CameraGetWidth(void);
 float CameraGetHeight(void);
+float CameraGetInterpolationAlpha(void);
+void CameraSetInterpolationAlpha(float a);
 /**
  * @brief  Sets the camera size, should likely be set to the window size.
  * @param x

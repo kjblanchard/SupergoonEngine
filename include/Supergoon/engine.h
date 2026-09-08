@@ -19,50 +19,39 @@ extern "C" {
  *
  * @param startFunc Function to be called once when the game is starting
  */
-void SetStartFunction(void (*startFunc)(void));
+void SetStartFunction(void (*f)(void));
 
-void SetInitializeFunction(void (*initializeFunc)(void));
+void SetInitializeFunction(void (*f)(void));
 /**
  * @brief Set the Handle Event Function object
  *
  * @param eventFunc The function that should be called, this function should return 0 to continue,
  * 1 for quit, 2 for error quit
  */
-void SetHandleEventFunction(int (*eventFunc)(void*));
+void SetHandleEventFunction(int (*f)(void*));
 /**
  * @brief Set the Input Function object, used in the update loop before any gameobject updates, etc
  *
  * @param updateFunc
  */
-void SetInputFunction(void (*updateFunc)(void));
+void SetInputFunction(void (*f)(void));
 /**
  * @brief Set the Update Function object
  *
  * @param updateFunc Function to be called every frame
  */
-void SetUpdateFunction(void (*updateFunc)(void));
+void SetUpdateFunction(void (*f)(void));
 /**
  * @brief Set the Draw Function object
  *
  * @param drawFunc Function to be called when drawing
  */
-void SetDrawFunction(void (*drawFunc)(void));
-void SetQuitFunction(void (*quitFunc)(void));
-void SetDrawUIFunction(void (*drawUIFunc)(void));
-//If this is set this frame, only allow one update if you need to catch up .. useful when loading to not accumulate on a regular basis.
-extern int IsGameLoading;
-
+void SetDrawFunction(void (*f)(void));
+void SetQuitFunction(void (*f)(void));
+void SetDrawUIFunction(void (*f)(void));
 void Run(void);
 
 extern void InitializeEngineFunctions(void);
-extern void (*_initializeFunc)(void);
-extern void (*_startFunc)(void);
-extern void (*_updateFunc)(void);
-extern void (*_drawFunc)(void);
-extern void (*_quitFunc)(void);
-extern void (*_inputFunc)(void);
-extern void (*_graphicsPostFBODrawUIFunc)(void);
-extern int (*_handleEventFunc)(void*);
 #ifdef __cplusplus
 }
 #endif

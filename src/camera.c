@@ -4,6 +4,7 @@
 #include <Supergoon/state.h>
 float cameraPos[3] = {0, 0, 0};
 static float prevCameraPos[2] = {0, 0};
+static float interpolationAlpha = 0;
 float cameraSize[3] = {0, 0, 0};
 float BoundsX = 0;
 float BoundsY = 0;
@@ -12,34 +13,34 @@ float* followX;
 float* followY;
 
 void UpdateCameraSystem(void) {
-    prevCameraPos[0] = cameraPos[0];
-    prevCameraPos[1] = cameraPos[1];
+	prevCameraPos[0] = cameraPos[0];
+	prevCameraPos[1] = cameraPos[1];
 
-    float viewWidth = 480;
-    float viewHeight = 270;
+	float viewWidth = 480;
+	float viewHeight = 270;
 
-    if (followX && followY) {
-        float camX = (*followX) - viewWidth / 2.0f;
-        float camY = (*followY) - viewHeight / 2.0f;
+	if (followX && followY) {
+		float camX = (*followX) - viewWidth / 2.0f;
+		float camY = (*followY) - viewHeight / 2.0f;
 
-        if (BoundsX <= viewWidth)
-            camX = 0;
-        else if (camX < 0)
-            camX = 0;
-        else if (camX > BoundsX - viewWidth)
-            camX = BoundsX - viewWidth;
+		if (BoundsX <= viewWidth)
+			camX = 0;
+		else if (camX < 0)
+			camX = 0;
+		else if (camX > BoundsX - viewWidth)
+			camX = BoundsX - viewWidth;
 
-        if (BoundsY <= viewHeight)
-            camY = 0;
-        else if (camY < 0)
-            camY = 0;
-        else if (camY > BoundsY - viewHeight)
-            camY = BoundsY - viewHeight;
+		if (BoundsY <= viewHeight)
+			camY = 0;
+		else if (camY < 0)
+			camY = 0;
+		else if (camY > BoundsY - viewHeight)
+			camY = BoundsY - viewHeight;
 
-        cameraPos[0] = camX;
-        cameraPos[1] = camY;
-    }
-    // Otherwise leave cameraPos alone so it can be manually controlled
+		cameraPos[0] = camX;
+		cameraPos[1] = camY;
+	}
+	// Otherwise leave cameraPos alone so it can be manually controlled
 }
 
 void SetCameraFollowTarget(float* x, float* y) {
@@ -66,11 +67,11 @@ void SetCameraZoom(float zoom) {
 }
 
 static float getRenderCamX(void) {
-	return prevCameraPos[0] + RenderAlpha * (cameraPos[0] - prevCameraPos[0]);
+	return prevCameraPos[0] + interpolationAlpha * (cameraPos[0] - prevCameraPos[0]);
 }
 
 static float getRenderCamY(void) {
-	return prevCameraPos[1] + RenderAlpha * (cameraPos[1] - prevCameraPos[1]);
+	return prevCameraPos[1] + interpolationAlpha * (cameraPos[1] - prevCameraPos[1]);
 }
 
 float CameraGetX(void) {
@@ -102,7 +103,15 @@ void CameraGetFollow(float** x, float** y) {
 
 float CameraGetRawX(void) { return cameraPos[0]; }
 float CameraGetRawY(void) { return cameraPos[1]; }
-float CameraGetSubPixelX(void) { float r = getRenderCamX(); return r - SDL_floorf(r); }
-float CameraGetSubPixelY(void) { float r = getRenderCamY(); return r - SDL_floorf(r); }
+float CameraGetSubPixelX(void) {
+	float r = getRenderCamX();
+	return r - SDL_floorf(r);
+}
+float CameraGetSubPixelY(void) {
+	float r = getRenderCamY();
+	return r - SDL_floorf(r);
+}
 float CameraGetWidth(void) { return cameraSize[0]; }
 float CameraGetHeight(void) { return cameraSize[1]; }
+void CameraSetInterpolationAlpha(float a) { interpolationAlpha = a; }
+float CameraGetInterpolationAlpha(void) { return interpolationAlpha; }

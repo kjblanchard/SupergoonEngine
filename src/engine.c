@@ -22,20 +22,18 @@
 #include <Supergoon/window.h>
 #include <sgtools/log.h>
 
-static Uint64 _previousNS = 0;
-static Uint64 _accumulatorNS = 0;
-int IsGameLoading = false;
-float RenderAlpha = 0.0f;
-void (*_initializeFunc)(void) = NULL;
-void (*_startFunc)(void) = NULL;
-void (*_updateFunc)(void) = NULL;
-void (*_drawFunc)(void) = NULL;
-void (*_quitFunc)(void) = NULL;
-void (*_inputFunc)(void) = NULL;
-int (*_handleEventFunc)(void*) = NULL;
-void (*_graphicsPostFBODrawUIFunc)(void) = NULL;
-#define FIXED_TIMESTEP_NS 16666666ULL  // 60 FPS
-									   //
+static const int timestepNS = 16666666ULL;	// 60 FPS
+static const int MAX_TICKS_PER_FRAME = 5;
+static Uint64 previousNS = 0;
+static Uint64 accumulatorNS = 0;
+static void (*initializeFunc)(void) = NULL;
+static void (*startFunc)(void) = NULL;
+static void (*updateFunc)(void) = NULL;
+static void (*drawFunc)(void) = NULL;
+static void (*quitFunc)(void) = NULL;
+static void (*inputFunc)(void) = NULL;
+static int (*handleEventFunc)(void*) = NULL;
+static void (*graphicsPostFBODrawUIFunc)(void) = NULL;
 static void initializeEngineInternal(void) {
 	InitializeSdl();
 	sgInitializeLogSystem("errors.log");
@@ -50,71 +48,55 @@ static void start(void) {
 	InitializeGraphicsSystem();
 	InitializeTextSystem();
 	InitializeAudioSystem();
-	_previousNS = SDL_GetTicksNS();
+	previousNS = SDL_GetTicksNS();
 }
 
-/* static void handleFramerate(Uint64* now) { */
-/* 	#ifdef __EMSCRIPTEN__ */
-/* 		return; */
-/* 	#endif */
-/* 		int refreshRate = GraphicsGetTargetRefreshRate(); */
-/* 		if (refreshRate != 999) {  // If we are doing a capped frame rate, we should also wait between frames. */
-/* 			uint64_t current = getCurrentMSTicks(); */
-/* 			Uint64 elapsedMS = current - _previousNS; */
-/* 			const Uint64 FRAME_DURATION_MS = 1000 / refreshRate; */
-/* 			if (elapsedMS < FRAME_DURATION_MS) { */
-/* 				sgSleepMS(FRAME_DURATION_MS - elapsedMS); */
-/* 			} */
-/* 		} */
-/* } */
-
-static void draw(void) {
+static void draw() {
 	DrawStart();
 	DrawCurrentMap();
 	DrawSpriteSystem();
-	if (_drawFunc) _drawFunc();
+	if (drawFunc) drawFunc();
 	DrawUIStart();
-	if (_graphicsPostFBODrawUIFunc) _graphicsPostFBODrawUIFunc();
+	if (graphicsPostFBODrawUIFunc) graphicsPostFBODrawUIFunc();
 	DrawEnd();
 }
 
 static void update(void) {
-	const int MAX_TICKS_PER_FRAME = 5;
 	Uint64 now = SDL_GetTicksNS();
-	Uint64 frameTime = now - _previousNS;
-	_previousNS = now;
-	_accumulatorNS += frameTime;
-	DeltaTimeSeconds = (float)FIXED_TIMESTEP_NS / (float)SDL_NS_PER_SECOND;
-	DeltaTimeMilliseconds = (float)FIXED_TIMESTEP_NS / 1000000.0f;
+	Uint64 frameTime = now - previousNS;
+	previousNS = now;
+	accumulatorNS += frameTime;
+	DeltaTimeSeconds = (float)timestepNS / (float)SDL_NS_PER_SECOND;
+	DeltaTimeMilliseconds = (float)timestepNS / 1000000.0f;
 	int ticks = 0;
 	int maxTicksThisFrame = MAX_TICKS_PER_FRAME;
-	while (_accumulatorNS >= FIXED_TIMESTEP_NS && ticks < maxTicksThisFrame) {
+	while (accumulatorNS >= timestepNS && ticks < maxTicksThisFrame) {
 		SnapshotSpritePositions();
 		UpdateAudioSystem();
 		UpdateKeyboardSystem();
 		UpdateCurrentMap();
-		if (_inputFunc) _inputFunc();
+		if (inputFunc) inputFunc();
 		UpdateAnimators();
-		if (_updateFunc) _updateFunc();
+		if (updateFunc) updateFunc();
 		UpdateCameraSystem();
 		UpdateControllerSystem();
 		UpdateMouseSystem();
 		UpdateServiceSystem();
-		_accumulatorNS -= FIXED_TIMESTEP_NS;
+		accumulatorNS -= timestepNS;
 		++ticks;
 		now = SDL_GetTicksNS();
 	}
-	// Spiral of death
-	if (ticks == MAX_TICKS_PER_FRAME && _accumulatorNS >= FIXED_TIMESTEP_NS) {
-		_accumulatorNS = 0;
+	if (ticks == MAX_TICKS_PER_FRAME && accumulatorNS >= timestepNS) {
+		accumulatorNS = 0;
 		sgLogDebug("Warning: too many ticks this frame, capping updates to avoid spiral of death");
 	}
-	RenderAlpha = (float)_accumulatorNS / (float)FIXED_TIMESTEP_NS;
+	float a = (float)accumulatorNS / (float)timestepNS;
+	CameraSetInterpolationAlpha(a);
 	draw();
 }
 
 static void Quit(void) {
-	if (_quitFunc) _quitFunc();
+	if (quitFunc) quitFunc();
 	ShutdownMapSystem();
 	ShutdownSpriteSystem();
 	ShutdownJoystickSystem();
@@ -126,27 +108,21 @@ static void Quit(void) {
 	ShutdownServiceSystem();
 }
 
-void SetStartFunction(void (*startFunc)(void)) { _startFunc = startFunc; }
-void SetHandleEventFunction(int (*eventFunc)(void*)) { _handleEventFunc = eventFunc; }
-void SetInitializeFunction(void (*initializeFunc)(void)) { _initializeFunc = initializeFunc; }
-void SetUpdateFunction(void (*updateFunc)(void)) { _updateFunc = updateFunc; }
-void SetDrawFunction(void (*drawFunc)(void)) { _drawFunc = drawFunc; }
-void SetDrawUIFunction(void (*drawUIFunc)(void)) { _graphicsPostFBODrawUIFunc = drawUIFunc; }
-void SetInputFunction(void (*updateFunc)(void)) { _inputFunc = updateFunc; }
-void SetQuitFunction(void (*quitFunc)(void)) { _quitFunc = quitFunc; }
+void SetStartFunction(void (*f)(void)) { startFunc = f; }
+void SetHandleEventFunction(int (*f)(void*)) { handleEventFunc = f; }
+void SetInitializeFunction(void (*f)(void)) { initializeFunc = f; }
+void SetUpdateFunction(void (*f)(void)) { updateFunc = f; }
+void SetDrawFunction(void (*f)(void)) { drawFunc = f; }
+void SetDrawUIFunction(void (*f)(void)) { graphicsPostFBODrawUIFunc = f; }
+void SetInputFunction(void (*f)(void)) { inputFunc = f; }
+void SetQuitFunction(void (*f)(void)) { quitFunc = f; }
 
 SDL_AppResult SDL_AppInit(void** appState, int argc, char* argv[]) {
-	sgLogWarn("[ENGINE] SDL_AppInit begin");
 	initializeEngineInternal();
-	sgLogWarn("[ENGINE] Engine internal initialized");
 	InitializeEngineFunctions();
-	sgLogWarn("[ENGINE] Engine functions initialized");
-	if (_initializeFunc) _initializeFunc();
-	sgLogWarn("[ENGINE] Game initialize done");
+	if (initializeFunc) initializeFunc();
 	start();
-	sgLogWarn("[ENGINE] Engine start() done - window/gfx/audio ready");
-	if (_startFunc) _startFunc();
-	sgLogWarn("[ENGINE] Game start done - entering main loop");
+	if (startFunc) startFunc();
 	return SDL_APP_CONTINUE;
 }
 
@@ -154,14 +130,13 @@ SDL_AppResult SDL_AppInit(void** appState, int argc, char* argv[]) {
 SDL_AppResult SDL_AppEvent(void* appState, SDL_Event* event) {
 	if (HandleEvents(event)) return SDL_APP_SUCCESS;
 	geHandleJoystickEvent(event);
-	if (_handleEventFunc && _handleEventFunc(event)) return SDL_APP_SUCCESS;
+	if (handleEventFunc && handleEventFunc(event)) return SDL_APP_SUCCESS;
 	return SDL_APP_CONTINUE;
 }
 
 static int _iterateLogCount = 0;
 SDL_AppResult SDL_AppIterate(void* appState) {
 	if (_iterateLogCount < 3) {
-		sgLogWarn("[ENGINE] SDL_AppIterate frame %d", _iterateLogCount);
 		++_iterateLogCount;
 	}
 	update();
@@ -169,6 +144,6 @@ SDL_AppResult SDL_AppIterate(void* appState) {
 }
 
 void SDL_AppQuit(void* appState, SDL_AppResult result) {
-    sgLogError("Quitting");
+	sgLogError("Quitting");
 	Quit();
 }

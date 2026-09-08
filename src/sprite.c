@@ -6,8 +6,8 @@
 #include <Supergoon/sprite.h>
 #include <Supergoon/state.h>
 #include <sgtools/tools.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
 static size_t _firstSpriteHole = NO_HOLE;
 static size_t _numSprites = 0;
@@ -93,13 +93,13 @@ void DrawSpriteManual(Sprite* sprite, RectangleF* dstRect, Color* color, int cam
 		return;
 	}
 	if (camera && sprite->parentX) {
-		float interpX = sprite->prevParentX + RenderAlpha * (*sprite->parentX - sprite->prevParentX);
+		float interpX = sprite->prevParentX + CameraGetInterpolationAlpha() * (*sprite->parentX - sprite->prevParentX);
 		dstRect->x = interpX + sprite->OffsetAndSizeRectF.x;
 	} else {
 		dstRect->x = sprite->parentX ? *sprite->parentX + sprite->OffsetAndSizeRectF.x : sprite->OffsetAndSizeRectF.x;
 	}
 	if (camera && sprite->parentY) {
-		float interpY = sprite->prevParentY + RenderAlpha * (*sprite->parentY - sprite->prevParentY);
+		float interpY = sprite->prevParentY + CameraGetInterpolationAlpha() * (*sprite->parentY - sprite->prevParentY);
 		dstRect->y = interpY + sprite->OffsetAndSizeRectF.y;
 	} else {
 		dstRect->y = sprite->parentY ? *sprite->parentY + sprite->OffsetAndSizeRectF.y : sprite->OffsetAndSizeRectF.y;
