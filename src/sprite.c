@@ -50,11 +50,6 @@ Sprite* NewSprite(void) {
 	initSprite(sprite);
 	return sprite;
 }
-Sprite* NewSpriteManual(void) {
-	Sprite* sprite = malloc(sizeof(*sprite));
-	initSprite(sprite);
-	return sprite;
-}
 
 void destroySprite(Sprite* sprite) {
 	// If we are using the default shader, this breaks, so prevent it from destroying shader if so.
@@ -63,11 +58,6 @@ void destroySprite(Sprite* sprite) {
 	sprite->Texture = NULL;
 	sprite->parentX = NULL;
 	sprite->parentY = NULL;
-}
-
-void DestroySpriteManual(Sprite* sprite) {
-	destroySprite(sprite);
-	free(sprite);
 }
 
 void DestroySprite(Sprite* sprite) {
@@ -120,6 +110,9 @@ void DrawSpriteSystem(void) {
 	RectangleF dst = (RectangleF){0, 0, 0, 0};
 	for (size_t i = 0; i < _numSprites; i++) {
 		Sprite* sprite = _sprites[i];
+		if (sprite->Flags & SpriteFlagManual || !(sprite->Flags & SpriteFlagVisible)) {
+			continue;
+		}
 		dst.w = sprite->OffsetAndSizeRectF.w;
 		dst.h = sprite->OffsetAndSizeRectF.h;
 		DrawSpriteManual(sprite, &dst, &sprite->DrawColor, true);
@@ -136,4 +129,20 @@ void ShutdownSpriteSystem(void) {
 	_numSprites = 0;
 	_sizeSprites = 4;
 	_firstSpriteHole = (size_t)-1;	// Reset on shutdown
+}
+
+void SpriteSetManual(Sprite* s, bool v) {
+	if (v) {
+		s->Flags |= SpriteFlagManual;
+	} else {
+		s->Flags &= ~SpriteFlagManual;
+	}
+}
+
+void SpriteSetVisible(Sprite* s, bool v) {
+	if (v) {
+		s->Flags |= SpriteFlagVisible;
+	} else {
+		s->Flags &= ~SpriteFlagVisible;
+	}
 }

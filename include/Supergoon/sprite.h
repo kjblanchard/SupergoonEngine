@@ -10,6 +10,7 @@ struct sgGameObject;
 typedef enum SpriteFlags {
 	SpriteFlagVisible = 1 << 0,
 	SpriteFlagDestroyed = 1 << 1,
+	SpriteFlagManual = 1 << 2,
 } SpriteFlags;
 
 typedef struct Sprite {
@@ -27,10 +28,11 @@ typedef struct Sprite {
 } Sprite;
 
 Sprite* NewSprite(void);
-// This doesn't get drawn during the libraries, useful for UI or something lke that.
-Sprite* NewSpriteManual(void);
+// This doesn't get drawn during the libraries, useful for UI or something lke that
+// Sprite* NewSpriteManual(void);
+void SpriteSetVisible(Sprite* s, bool v);
+void SpriteSetManual(Sprite* s, bool v);
 void DestroySprite(Sprite* sprite);
-void DestroySpriteManual(Sprite* sprite);
 void DrawSpriteManual(Sprite* sprite, RectangleF* dstRect, Color* color, int camera);
 void SnapshotSpritePositions(void);
 void DrawSpriteSystem(void);
