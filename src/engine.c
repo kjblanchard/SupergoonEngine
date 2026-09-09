@@ -54,7 +54,7 @@ static void start(void) {
 static void draw() {
 	DrawStart();
 	DrawCurrentMap();
-	DrawSpriteSystem();
+	SpriteSystemDraw();
 	if (drawFunc) drawFunc();
 	DrawUIStart();
 	if (graphicsPostFBODrawUIFunc) graphicsPostFBODrawUIFunc();
@@ -71,7 +71,7 @@ static void update(void) {
 	int ticks = 0;
 	int maxTicksThisFrame = MAX_TICKS_PER_FRAME;
 	while (accumulatorNS >= timestepNS && ticks < maxTicksThisFrame) {
-		SnapshotSpritePositions();
+		SpriteSystemUpdate();
 		UpdateAudioSystem();
 		UpdateKeyboardSystem();
 		UpdateCurrentMap();
@@ -98,7 +98,7 @@ static void update(void) {
 static void Quit(void) {
 	if (quitFunc) quitFunc();
 	ShutdownMapSystem();
-	ShutdownSpriteSystem();
+	SpriteSystemShutdown();
 	ShutdownJoystickSystem();
 	ShutdownGraphicsSystem();
 	ShutdownAudioSystem();

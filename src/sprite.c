@@ -4,9 +4,7 @@
 #include <Supergoon/Primitives/Color.h>
 #include <Supergoon/camera.h>
 #include <Supergoon/sprite.h>
-#include <Supergoon/state.h>
 #include <sgtools/tools.h>
-#include <stdlib.h>
 #include <string.h>
 
 static size_t _firstSpriteHole = NO_HOLE;
@@ -31,11 +29,11 @@ static Sprite* getFreeSprite(void) {
 	return returnSprite;
 }
 
-void initSprite(Sprite* sprite) {
-	sprite->parentX = NULL;
-	sprite->parentY = NULL;
-	sprite->prevParentX = 0;
-	sprite->prevParentY = 0;
+static void initSprite(Sprite* sprite) {
+	sprite->ParentX = NULL;
+	sprite->ParentY = NULL;
+	sprite->PrevParentX = 0;
+	sprite->PrevParentY = 0;
 	sprite->Texture = NULL;
 	sprite->Shader = NULL;
 	sprite->Scale = 1.0f;
@@ -45,22 +43,22 @@ void initSprite(Sprite* sprite) {
 	sprite->OffsetAndSizeRectF = (RectangleF){0, 0, 0, 0};
 }
 
-Sprite* NewSprite(void) {
+Sprite* SpriteNew(void) {
 	Sprite* sprite = getFreeSprite();
 	initSprite(sprite);
 	return sprite;
 }
 
-void destroySprite(Sprite* sprite) {
+static void destroySprite(Sprite* sprite) {
 	// If we are using the default shader, this breaks, so prevent it from destroying shader if so.
 	if (GetDefaultShader() != sprite->Shader) ShaderDestroy(sprite->Shader);
 	TextureDestroy(sprite->Texture);
 	sprite->Texture = NULL;
-	sprite->parentX = NULL;
-	sprite->parentY = NULL;
+	sprite->ParentX = NULL;
+	sprite->ParentY = NULL;
 }
 
-void DestroySprite(Sprite* sprite) {
+void SpriteDestroy(Sprite* sprite) {
 	if (!sprite) {
 		sgLogWarn("Trying to destroy a null sprite!");
 		return;
@@ -78,35 +76,35 @@ void DestroySprite(Sprite* sprite) {
 	}
 }
 
-void DrawSpriteManual(Sprite* sprite, RectangleF* dstRect, Color* color, int camera) {
+void SpriteDrawManual(Sprite* sprite, RectangleF* dstRect, Color* color, int camera) {
 	if (!sprite || !sprite->Texture || !(sprite->Flags & SpriteFlagVisible)) {
 		return;
 	}
-	if (camera && sprite->parentX) {
-		float interpX = sprite->prevParentX + CameraGetInterpolationAlpha() * (*sprite->parentX - sprite->prevParentX);
+	if (camera && sprite->ParentX) {
+		float interpX = sprite->PrevParentX + CameraGetInterpolationAlpha() * (*sprite->ParentX - sprite->PrevParentX);
 		dstRect->x = interpX + sprite->OffsetAndSizeRectF.x;
 	} else {
-		dstRect->x = sprite->parentX ? *sprite->parentX + sprite->OffsetAndSizeRectF.x : sprite->OffsetAndSizeRectF.x;
+		dstRect->x = sprite->ParentX ? *sprite->ParentX + sprite->OffsetAndSizeRectF.x : sprite->OffsetAndSizeRectF.x;
 	}
-	if (camera && sprite->parentY) {
-		float interpY = sprite->prevParentY + CameraGetInterpolationAlpha() * (*sprite->parentY - sprite->prevParentY);
+	if (camera && sprite->ParentY) {
+		float interpY = sprite->PrevParentY + CameraGetInterpolationAlpha() * (*sprite->ParentY - sprite->PrevParentY);
 		dstRect->y = interpY + sprite->OffsetAndSizeRectF.y;
 	} else {
-		dstRect->y = sprite->parentY ? *sprite->parentY + sprite->OffsetAndSizeRectF.y : sprite->OffsetAndSizeRectF.y;
+		dstRect->y = sprite->ParentY ? *sprite->ParentY + sprite->OffsetAndSizeRectF.y : sprite->OffsetAndSizeRectF.y;
 	}
 	DrawTexture(sprite->Texture, sprite->Shader, dstRect, &sprite->TextureSourceRect, camera, sprite->Scale, false, color);
 }
 
-void SnapshotSpritePositions(void) {
+void SpriteSystemUpdate(void) {
 	for (size_t i = 0; i < _numSprites; i++) {
 		Sprite* sprite = _sprites[i];
 		if (sprite->Flags & SpriteFlagDestroyed) continue;
-		if (sprite->parentX) sprite->prevParentX = *sprite->parentX;
-		if (sprite->parentY) sprite->prevParentY = *sprite->parentY;
+		if (sprite->ParentX) sprite->PrevParentX = *sprite->ParentX;
+		if (sprite->ParentY) sprite->PrevParentY = *sprite->ParentY;
 	}
 }
 
-void DrawSpriteSystem(void) {
+void SpriteSystemDraw(void) {
 	RectangleF dst = (RectangleF){0, 0, 0, 0};
 	for (size_t i = 0; i < _numSprites; i++) {
 		Sprite* sprite = _sprites[i];
@@ -115,13 +113,13 @@ void DrawSpriteSystem(void) {
 		}
 		dst.w = sprite->OffsetAndSizeRectF.w;
 		dst.h = sprite->OffsetAndSizeRectF.h;
-		DrawSpriteManual(sprite, &dst, &sprite->DrawColor, true);
+		SpriteDrawManual(sprite, &dst, &sprite->DrawColor, true);
 	}
 }
 
-void ShutdownSpriteSystem(void) {
+void SpriteSystemShutdown(void) {
 	for (size_t i = 0; i < _sizeSprites; i++) {
-		DestroySprite(_sprites[i]);
+		SpriteDestroy(_sprites[i]);
 		free(_sprites[i]);
 	}
 	free(_sprites);

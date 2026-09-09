@@ -104,7 +104,7 @@ void DestroyAnimator(Animator* animator) {
 	animator->Name = NULL;
 	free(animator->Filename);
 	animator->Filename = NULL;
-	DestroySprite(animator->Sprite);
+	SpriteDestroy(animator->Sprite);
 	animator->Data = NULL;
 	for (size_t i = 0; i < MAX_NUM_ANIM_QUEUE; i++) {
 		animator->NextAnimNum[i] = NO_NEXT_ANIM;
