@@ -15,8 +15,7 @@ extern "C" {
 
 #include <Supergoon/Primitives/rectangle.h>
 
-// Tiled properties can be of many types, use this before accessing the union on
-// the property.
+// Tiled properties can be of many types, use this before accessing the union on the property.
 typedef enum TiledPropertyTypes {
 	TiledPropertyTypeInt,
 	TiledPropertyTypeFloat,
@@ -34,8 +33,7 @@ typedef struct TiledProperty {
 	} Data;
 } TiledProperty;
 
-// Tiled Object, this should be used in your gameobject load functions most
-// likely.
+// Tiled Object, this should be used in your gameobject load functions most likely.
 typedef struct TiledObject {
 	char* Name;
 	int Id;
