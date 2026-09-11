@@ -49,19 +49,20 @@ endif(STEAM_ENABLED)
 if(UNIX OR APPLE)
     list(APPEND COMPILE_OPTIONS 
         -Wall 
-        -Wextra 
-        -Wpedantic
+        # -Wextra 
+        # -Wpedantic
         -Wdeprecated 
         -Wshadow
         -Wnull-dereference
-        -Wdouble-promotion
+        # -Wdouble-promotion
         -Wformat=2
         -Wundef
-        -Wstrict-prototypes
-        -Wmissing-prototypes
+        # -Wstrict-prototypes
+        # -Wmissing-prototypes
         -Wold-style-definition
-        -Wconversion
-        -Wsign-conversion
+        # -Wconversion
+        # -Wsign-conversion
+        -Wno-unused-variable
         -Wno-unused-parameter 
         -Wno-sign-compare 
     )
@@ -116,9 +117,8 @@ set(SRC_FILES
     src/text.c
     #Services - Steam - Game Center, etc
     src/services.c
-
-    #Networking
-    # src/Networking/client.c
+    #Scripting
+    src/Scripting/lgraphics.c
 )
 
 if(SDL_GL)
@@ -227,18 +227,30 @@ if(SYSTEM_PACKAGES) # If we are using system packages, then we should try to fin
         target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC Freetype::Freetype)
     endif(FREETYPE_FOUND)
 
+    find_library(LIB_LUA lua )
+    if(LIB_LUA)
+      target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC ${LIB_LUA})
+    endif(LIB_LUA)
+
+    #find_package(LIB_LUA lua luastatic)
+    #if(LIB_LUA)
+    #    target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC lua)
+    #endif()
+
 
 endif(SYSTEM_PACKAGES)
 
 
-FetchContent_Declare(
-    lua
-    GIT_REPOSITORY "https://github.com/marovira/lua"
-    GIT_TAG master
-)
-
-FetchContent_MakeAvailable(lua)
-target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC lua::lua)
+if(NOT LIB_LUA)
+  message(STATUS "lua not found. Fetching...")
+  FetchContent_Declare(
+      lua
+      GIT_REPOSITORY "https://github.com/marovira/lua"
+      GIT_TAG master
+  )
+  FetchContent_MakeAvailable(lua)
+  target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC lua::lua)
+endif(NOT LIB_LUA)
 
 # Pull packages and build, use if incase we have found it with finds in system packages
 if(NOT LIB_CGLM)

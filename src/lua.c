@@ -1,5 +1,6 @@
 #include <Supergoon/filesystem.h>
 #include <Supergoon/lua.h>
+#include <assert.h>
 #include <lauxlib.h>
 #include <lua.h>
 #include <lualib.h>
@@ -40,35 +41,35 @@ static int buffer_searcher(lua_State* L) {
 }
 
 static void setLuaPath(void) {
-	int value = lua_getglobal(_luaState, "package");
+	int value = lua_getglobal(LuaGlobalState, "package");
 	if (value == LUA_TNIL)
 		sgLogCritical("Could not get lua package, what the");
-	lua_getfield(_luaState, -1, "path");
+	lua_getfield(LuaGlobalState, -1, "path");
 	const char* basePath = GetBasePath();
 	const char* nextPath =
 		"assets/lua/?.lua;../Resources/assets/lua/?.lua;assets/scripts/?.lua;../"
 		"Resources/assets/scripts/?.lua";
 	const char* currentLuaPath =
-		lua_tostring(_luaState, -1);  // grab path string from top of stack
+		lua_tostring(LuaGlobalState, -1);  // grab path string from top of stack
 
 	// size_t full_str_len = strlen(currentLuaPath) + strlen(nextPath) +
 	// strlen(basePath) + 2;
 	char* full_str = NULL;
 	asprintf(&full_str, "%s;%s%s", currentLuaPath, basePath, nextPath);
-	lua_pop(_luaState, 1);
-	lua_pushstring(_luaState, full_str);
-	lua_setfield(_luaState, -2, "path");
-	lua_pop(_luaState, 1);
+	lua_pop(LuaGlobalState, 1);
+	lua_pushstring(LuaGlobalState, full_str);
+	lua_setfield(LuaGlobalState, -2, "path");
+	lua_pop(LuaGlobalState, 1);
 	free(full_str);
 }
 
 void InitializeLuaSystem(void) {
-	_luaState = luaL_newstate();
-	if (_luaState == NULL) {
+	LuaGlobalState = luaL_newstate();
+	if (LuaGlobalState == NULL) {
 		sgLogCritical("Could not initialize Lua");
 		return;
 	}
-	luaL_openlibs(_luaState);
+	luaL_openlibs(LuaGlobalState);
 	setLuaPath();
 }
 
@@ -87,8 +88,8 @@ void LuaRunFile(const char* path) {
 	// size_t size = strlen(basePath) + strlen(path) + 1;
 	char* fullPath = NULL;
 	asprintf(&fullPath, "%s%s", basePath, path);
-	if (luaL_dofile(_luaState, fullPath) != 0) {
-		const char* luaError = lua_tostring(_luaState, -1);
+	if (luaL_dofile(LuaGlobalState, fullPath) != 0) {
+		const char* luaError = lua_tostring(LuaGlobalState, -1);
 		sgLogError("Lua error: %s", luaError);
 	}
 	free(fullPath);
@@ -98,14 +99,19 @@ void LuaRunFileFromBuffer(const char* p, Directory* d) {
 	char* buf;
 	size_t sz;
 	GetDataFromDirectory(p, &buf, &sz, d);
-	int result = luaL_loadbuffer(_luaState, buf, sz, p);
-	if (result == LUA_OK) {
-		result = lua_pcall(_luaState, 0, LUA_MULTRET, 0);
-	} else {
-		const char* luaError = lua_tostring(_luaState, -1);
-		sgLogError("Lua error: %s", luaError);
-		lua_pop(_luaState, 1);
+	int result = luaL_loadbuffer(LuaGlobalState, buf, sz, p);
+	if (result != LUA_OK) {
+		goto error;
 	}
+	result = lua_pcall(LuaGlobalState, 0, LUA_MULTRET, 0);
+	if (result == LUA_OK) {
+		return;
+	}
+error: {
+	const char* luaError = lua_tostring(LuaGlobalState, -1);
+	sgLogError("Lua error: %s", luaError);
+	lua_pop(LuaGlobalState, 1);
+}
 }
 
 int LuaGetStackSize(LuaState L) { return lua_gettop(L); }
@@ -122,7 +128,7 @@ void LuaMoveStackTipToIndex(LuaState L, int index) {
 	lua_insert(L, index);  // Rearrage the stack so that the function is before the
 						   // actual arguments.
 }
-void ShutdownLuaSystem(void) { lua_close(_luaState); }
+void ShutdownLuaSystem(void) { lua_close(LuaGlobalState); }
 
 // Tables
 void LuaPushTableFromFile(LuaState L, const char* path) {
@@ -142,14 +148,14 @@ void LuaPushTableFromStackTip(LuaState L, const char* path) {
 }
 int LuaGetIntFromTablei(LuaState L, int i) {
 	lua_rawgeti(L, -1, i + 1);
-	int value = lua_tointeger(_luaState, -1);
+	int value = lua_tointeger(LuaGlobalState, -1);
 	lua_pop(L, 1);
 	return value;
 }
 
 const char* LuaGetStringFromTablei(LuaState L, int i) {
 	lua_rawgeti(L, -1, i + 1);
-	const char* value = lua_tostring(_luaState, -1);
+	const char* value = lua_tostring(LuaGlobalState, -1);
 	if (value == NULL) {
 		sgLogDebug("nil value in string, returning empty ");
 		value = "";
@@ -160,7 +166,7 @@ const char* LuaGetStringFromTablei(LuaState L, int i) {
 
 float LuaGetFloatFromTablei(LuaState L, int i) {
 	lua_rawgeti(L, -1, i + 1);
-	float value = lua_tonumber(_luaState, -1);
+	float value = lua_tonumber(LuaGlobalState, -1);
 	lua_pop(L, 1);
 	return value;
 }
@@ -259,12 +265,12 @@ void LuaGetTable(LuaState L, const char* tableFieldName) {
 	}
 }
 void LuaSetGlobal(LuaState L, const char* global) {
-	lua_setglobal(_luaState, global);
+	lua_setglobal(LuaGlobalState, global);
 }
 
 void LuaUnsetGlobal(LuaState L, const char* global) {
 	lua_pushnil(L);
-	lua_setglobal(_luaState, global);
+	lua_setglobal(LuaGlobalState, global);
 }
 int LuaGetTablei(LuaState L, int i) {
 	if (lua_istable(L, i)) {
@@ -550,4 +556,17 @@ const char* LuaGetParamType(LuaFunctionParameterTypes paramType) {
 
 const char* LuaGetTypeStringi(LuaState L, int pos) {
 	return luaL_typename(L, pos);
+}
+
+#define LUA_REGISTER_MAX 12
+void LuaRegisterFunctionsToLuaLibraryInternal(const LuaCFuncRegister* f, size_t sz, const char* n) {
+	assert(sz <= LUA_REGISTER_MAX);
+	luaL_Reg funcs[LUA_REGISTER_MAX] = {0};
+	for (size_t i = 0; i < sz; i++) {
+		funcs[i].name = f[i].Name;
+		funcs[i].func = f[i].Func;
+	}
+	funcs[sz] = (luaL_Reg){NULL, NULL};
+	luaL_newlib(LuaGlobalState, funcs);
+	lua_setglobal(LuaGlobalState, n);
 }

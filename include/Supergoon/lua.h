@@ -1,14 +1,24 @@
 #pragma once
+#include <stddef.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// Keep these here for when registering functions, lua is mad lad gay,
 typedef struct lua_State* LuaState;
 typedef struct Directory Directory;
-// Defined in lua.c
-extern LuaState _luaState;
+extern LuaState LuaGlobalState;	 // Defined in lua.c
 
+typedef int (*LuaCFunction)(LuaState L);
+
+typedef struct LuaCFuncRegister {
+	const char* Name;
+	LuaCFunction Func;
+} LuaCFuncRegister;
+// Do not call this direct, use the macro to calculate the size properly
+void LuaRegisterFunctionsToLuaLibraryInternal(const LuaCFuncRegister* f, size_t sz, const char* n);
+#define LuaRegisterFunctionsToLuaLibrary(f, n) \
+	LuaRegisterFunctionsToLuaLibraryInternal(  \
+		(f), sizeof(f) / sizeof((f)[0]), (n))
 void InitializeLuaSystem(void);
 void LuaSetScriptDirectory(Directory* d);
 void LuaRunFile(const char* path);
