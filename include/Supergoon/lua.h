@@ -10,6 +10,7 @@ typedef struct Directory Directory;
 extern LuaState _luaState;
 
 void InitializeLuaSystem(void);
+void LuaSetScriptDirectory(Directory* d);
 void LuaRunFile(const char* path);
 void LuaRunFileFromBuffer(const char* p, Directory* d);
 int LuaGetStackSize(LuaState L);

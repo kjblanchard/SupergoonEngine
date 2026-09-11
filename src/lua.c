@@ -12,6 +12,32 @@
 #include "sgforge/unpack.h"
 
 LuaState _luaState = NULL;
+static Directory* _scriptDirectory = NULL;
+
+static int buffer_searcher(lua_State* L) {
+	if (!_scriptDirectory) {
+		lua_pushstring(L, "\n\tno script directory registered");
+		return 1;
+	}
+	const char* modname = luaL_checkstring(L, 1);
+	char path[256];
+	snprintf(path, sizeof(path), "%s", modname);
+	for (char* p = path; *p; p++) {
+		if (*p == '.') *p = '/';
+	}
+	strncat(path, ".lua", sizeof(path) - strlen(path) - 1);
+	char* buf;
+	size_t sz;
+	if (!GetDataFromDirectory(path, &buf, &sz, _scriptDirectory)) {
+		lua_pushfstring(L, "\n\tno buffer '%s'", path);
+		return 1;
+	}
+	if (luaL_loadbuffer(L, buf, sz, path) != LUA_OK) {
+		return luaL_error(L, "error loading module '%s':\n\t%s",
+						  modname, lua_tostring(L, -1));
+	}
+	return 1;
+}
 
 static void setLuaPath(void) {
 	int value = lua_getglobal(_luaState, "package");
@@ -44,6 +70,16 @@ void InitializeLuaSystem(void) {
 	}
 	luaL_openlibs(_luaState);
 	setLuaPath();
+}
+
+void LuaSetScriptDirectory(Directory* d) {
+	_scriptDirectory = d;
+	lua_getglobal(_luaState, "package");
+	lua_getfield(_luaState, -1, "searchers");
+	int len = (int)lua_rawlen(_luaState, -1);
+	lua_pushcfunction(_luaState, buffer_searcher);
+	lua_rawseti(_luaState, -2, len + 1);
+	lua_pop(_luaState, 2);
 }
 
 void LuaRunFile(const char* path) {
