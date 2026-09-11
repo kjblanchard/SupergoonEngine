@@ -50,13 +50,20 @@ if(UNIX OR APPLE)
     list(APPEND COMPILE_OPTIONS 
         -Wall 
         -Wextra 
+        -Wpedantic
         -Wdeprecated 
-        -Wno-unused-parameter 
-        -Wno-sign-compare 
         -Wshadow
         -Wnull-dereference
         -Wdouble-promotion
         -Wformat=2
+        -Wundef
+        -Wstrict-prototypes
+        -Wmissing-prototypes
+        -Wold-style-definition
+        -Wconversion
+        -Wsign-conversion
+        -Wno-unused-parameter 
+        -Wno-sign-compare 
     )
 endif(UNIX OR APPLE)
 
@@ -94,6 +101,8 @@ set(SRC_FILES
     src/sprite.c
     src/Input/mouse.c
     src/map.c
+    src/lua.c
+    src/string.c
     #SDL Platform is required
     src/Platform/sdl/sdl.c
     src/Platform/sdl/sdlInput.c
@@ -220,6 +229,16 @@ if(SYSTEM_PACKAGES) # If we are using system packages, then we should try to fin
 
 
 endif(SYSTEM_PACKAGES)
+
+
+FetchContent_Declare(
+    lua
+    GIT_REPOSITORY "https://github.com/marovira/lua"
+    GIT_TAG master
+)
+
+FetchContent_MakeAvailable(lua)
+target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC lua::lua)
 
 # Pull packages and build, use if incase we have found it with finds in system packages
 if(NOT LIB_CGLM)

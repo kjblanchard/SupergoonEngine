@@ -28,8 +28,6 @@ void GraphicsWindowResizeEvent(int width, int height);
 void GraphicsUpdateFBOColor(Color* color);
 Color GraphicsGetFBOColor(void);
 void* GraphicsGetContextPtr(void);
-extern void (*GraphicsPostFBODrawUIFunc)(void);
-extern void (*GraphicsPostFBODrawDebugFunc)(void);
 
 #ifdef __cplusplus
 }

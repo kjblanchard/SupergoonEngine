@@ -20,6 +20,7 @@
 #include <Supergoon/state.h>
 #include <Supergoon/text.h>
 #include <Supergoon/window.h>
+#include <Supergoon/lua.h>
 #include <sgtools/log.h>
 
 static const int timestepNS = 16666666ULL;	// 60 FPS
@@ -37,6 +38,7 @@ static void (*graphicsPostFBODrawUIFunc)(void) = NULL;
 static void initializeEngineInternal(void) {
 	InitializeSdl();
 	sgInitializeLogSystem("errors.log");
+  InitializeLuaSystem();
 	InitializeKeyboardSystem();
 	InitializeJoystickSystem();
 	InitializeEventSystem();

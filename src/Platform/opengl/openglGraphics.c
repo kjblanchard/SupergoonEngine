@@ -25,6 +25,8 @@
 #include <sgtools/log.h>
 
 
+static void (*GraphicsPostFBODrawUIFunc)(void) = NULL;
+static void (*GraphicsPostFBODrawDebugFunc)(void) = NULL;
 extern void ShaderSystemShutdown(void);
 extern Shader* GetDefaultScreenShaderImpl(void);
 extern void DrawTextureToScreen(Texture* texture, Shader* shader, RectangleF* dstRect,
