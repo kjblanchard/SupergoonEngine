@@ -6,7 +6,7 @@ extern "C" {
 
 typedef struct lua_State* LuaState;
 typedef struct Directory Directory;
-extern LuaState LuaGlobalState;	 // Defined in lua.c
+// extern LuaState LuaGlobalState;	 // Defined in lua.c
 
 typedef int (*LuaCFunction)(LuaState L);
 

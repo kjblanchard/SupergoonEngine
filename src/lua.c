@@ -12,11 +12,11 @@
 
 #include "sgforge/unpack.h"
 
-LuaState _luaState = NULL;
-static Directory* _scriptDirectory = NULL;
+static LuaState luaGlobalState = NULL;
+static Directory* scriptDirectory = NULL;
 
 static int buffer_searcher(lua_State* L) {
-	if (!_scriptDirectory) {
+	if (!scriptDirectory) {
 		lua_pushstring(L, "\n\tno script directory registered");
 		return 1;
 	}
@@ -29,7 +29,7 @@ static int buffer_searcher(lua_State* L) {
 	strncat(path, ".lua", sizeof(path) - strlen(path) - 1);
 	char* buf;
 	size_t sz;
-	if (!GetDataFromDirectory(path, &buf, &sz, _scriptDirectory)) {
+	if (!GetDataFromDirectory(path, &buf, &sz, scriptDirectory)) {
 		lua_pushfstring(L, "\n\tno buffer '%s'", path);
 		return 1;
 	}
@@ -41,46 +41,46 @@ static int buffer_searcher(lua_State* L) {
 }
 
 static void setLuaPath(void) {
-	int value = lua_getglobal(LuaGlobalState, "package");
+	int value = lua_getglobal(luaGlobalState, "package");
 	if (value == LUA_TNIL)
 		sgLogCritical("Could not get lua package, what the");
-	lua_getfield(LuaGlobalState, -1, "path");
+	lua_getfield(luaGlobalState, -1, "path");
 	const char* basePath = GetBasePath();
 	const char* nextPath =
 		"assets/lua/?.lua;../Resources/assets/lua/?.lua;assets/scripts/?.lua;../"
 		"Resources/assets/scripts/?.lua";
 	const char* currentLuaPath =
-		lua_tostring(LuaGlobalState, -1);  // grab path string from top of stack
+		lua_tostring(luaGlobalState, -1);  // grab path string from top of stack
 
 	// size_t full_str_len = strlen(currentLuaPath) + strlen(nextPath) +
 	// strlen(basePath) + 2;
 	char* full_str = NULL;
 	asprintf(&full_str, "%s;%s%s", currentLuaPath, basePath, nextPath);
-	lua_pop(LuaGlobalState, 1);
-	lua_pushstring(LuaGlobalState, full_str);
-	lua_setfield(LuaGlobalState, -2, "path");
-	lua_pop(LuaGlobalState, 1);
+	lua_pop(luaGlobalState, 1);
+	lua_pushstring(luaGlobalState, full_str);
+	lua_setfield(luaGlobalState, -2, "path");
+	lua_pop(luaGlobalState, 1);
 	free(full_str);
 }
 
 void InitializeLuaSystem(void) {
-	LuaGlobalState = luaL_newstate();
-	if (LuaGlobalState == NULL) {
+	luaGlobalState = luaL_newstate();
+	if (luaGlobalState == NULL) {
 		sgLogCritical("Could not initialize Lua");
 		return;
 	}
-	luaL_openlibs(LuaGlobalState);
+	luaL_openlibs(luaGlobalState);
 	setLuaPath();
 }
 
 void LuaSetScriptDirectory(Directory* d) {
-	_scriptDirectory = d;
-	lua_getglobal(_luaState, "package");
-	lua_getfield(_luaState, -1, "searchers");
-	int len = (int)lua_rawlen(_luaState, -1);
-	lua_pushcfunction(_luaState, buffer_searcher);
-	lua_rawseti(_luaState, -2, len + 1);
-	lua_pop(_luaState, 2);
+	scriptDirectory = d;
+	lua_getglobal(luaGlobalState, "package");
+	lua_getfield(luaGlobalState, -1, "searchers");
+	int len = (int)lua_rawlen(luaGlobalState, -1);
+	lua_pushcfunction(luaGlobalState, buffer_searcher);
+	lua_rawseti(luaGlobalState, -2, len + 1);
+	lua_pop(luaGlobalState, 2);
 }
 
 void LuaRunFile(const char* path) {
@@ -88,8 +88,8 @@ void LuaRunFile(const char* path) {
 	// size_t size = strlen(basePath) + strlen(path) + 1;
 	char* fullPath = NULL;
 	asprintf(&fullPath, "%s%s", basePath, path);
-	if (luaL_dofile(LuaGlobalState, fullPath) != 0) {
-		const char* luaError = lua_tostring(LuaGlobalState, -1);
+	if (luaL_dofile(luaGlobalState, fullPath) != 0) {
+		const char* luaError = lua_tostring(luaGlobalState, -1);
 		sgLogError("Lua error: %s", luaError);
 	}
 	free(fullPath);
@@ -99,18 +99,18 @@ void LuaRunFileFromBuffer(const char* p, Directory* d) {
 	char* buf;
 	size_t sz;
 	GetDataFromDirectory(p, &buf, &sz, d);
-	int result = luaL_loadbuffer(LuaGlobalState, buf, sz, p);
+	int result = luaL_loadbuffer(luaGlobalState, buf, sz, p);
 	if (result != LUA_OK) {
 		goto error;
 	}
-	result = lua_pcall(LuaGlobalState, 0, LUA_MULTRET, 0);
+	result = lua_pcall(luaGlobalState, 0, LUA_MULTRET, 0);
 	if (result == LUA_OK) {
 		return;
 	}
 error: {
-	const char* luaError = lua_tostring(LuaGlobalState, -1);
+	const char* luaError = lua_tostring(luaGlobalState, -1);
 	sgLogError("Lua error: %s", luaError);
-	lua_pop(LuaGlobalState, 1);
+	lua_pop(luaGlobalState, 1);
 }
 }
 
@@ -128,7 +128,7 @@ void LuaMoveStackTipToIndex(LuaState L, int index) {
 	lua_insert(L, index);  // Rearrage the stack so that the function is before the
 						   // actual arguments.
 }
-void ShutdownLuaSystem(void) { lua_close(LuaGlobalState); }
+void ShutdownLuaSystem(void) { lua_close(luaGlobalState); }
 
 // Tables
 void LuaPushTableFromFile(LuaState L, const char* path) {
@@ -148,14 +148,14 @@ void LuaPushTableFromStackTip(LuaState L, const char* path) {
 }
 int LuaGetIntFromTablei(LuaState L, int i) {
 	lua_rawgeti(L, -1, i + 1);
-	int value = lua_tointeger(LuaGlobalState, -1);
+	int value = lua_tointeger(luaGlobalState, -1);
 	lua_pop(L, 1);
 	return value;
 }
 
 const char* LuaGetStringFromTablei(LuaState L, int i) {
 	lua_rawgeti(L, -1, i + 1);
-	const char* value = lua_tostring(LuaGlobalState, -1);
+	const char* value = lua_tostring(luaGlobalState, -1);
 	if (value == NULL) {
 		sgLogDebug("nil value in string, returning empty ");
 		value = "";
@@ -166,7 +166,7 @@ const char* LuaGetStringFromTablei(LuaState L, int i) {
 
 float LuaGetFloatFromTablei(LuaState L, int i) {
 	lua_rawgeti(L, -1, i + 1);
-	float value = lua_tonumber(LuaGlobalState, -1);
+	float value = lua_tonumber(luaGlobalState, -1);
 	lua_pop(L, 1);
 	return value;
 }
@@ -265,12 +265,12 @@ void LuaGetTable(LuaState L, const char* tableFieldName) {
 	}
 }
 void LuaSetGlobal(LuaState L, const char* global) {
-	lua_setglobal(LuaGlobalState, global);
+	lua_setglobal(luaGlobalState, global);
 }
 
 void LuaUnsetGlobal(LuaState L, const char* global) {
 	lua_pushnil(L);
-	lua_setglobal(LuaGlobalState, global);
+	lua_setglobal(luaGlobalState, global);
 }
 int LuaGetTablei(LuaState L, int i) {
 	if (lua_istable(L, i)) {
@@ -567,6 +567,6 @@ void LuaRegisterFunctionsToLuaLibraryInternal(const LuaCFuncRegister* f, size_t 
 		funcs[i].func = f[i].Func;
 	}
 	funcs[sz] = (luaL_Reg){NULL, NULL};
-	luaL_newlib(LuaGlobalState, funcs);
-	lua_setglobal(LuaGlobalState, n);
+	luaL_newlib(luaGlobalState, funcs);
+	lua_setglobal(luaGlobalState, n);
 }
