@@ -6,8 +6,8 @@ extern "C" {
 
 typedef struct Texture {
 	unsigned int ID;
-	unsigned int Width;
-	unsigned int Height;
+	int Width;
+	int Height;
 	unsigned int VAO;
 	unsigned int VBO;
 	unsigned int FBO;

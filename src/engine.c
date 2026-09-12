@@ -10,17 +10,18 @@
 #include <Supergoon/Input/keyboard.h>
 #include <Supergoon/Input/mouse.h>
 #include <Supergoon/Platform/sdl/sdl.h>
+#include <Supergoon/Scripting/scripting.h>
 #include <Supergoon/camera.h>
 #include <Supergoon/engine.h>
 #include <Supergoon/events.h>
 #include <Supergoon/filesystem.h>
+#include <Supergoon/lua.h>
 #include <Supergoon/map.h>
 #include <Supergoon/services.h>
 #include <Supergoon/sprite.h>
 #include <Supergoon/state.h>
 #include <Supergoon/text.h>
 #include <Supergoon/window.h>
-#include <Supergoon/lua.h>
 #include <sgtools/log.h>
 
 static const int timestepNS = 16666666ULL;	// 60 FPS
@@ -38,11 +39,12 @@ static void (*graphicsPostFBODrawUIFunc)(void) = NULL;
 static void initializeEngineInternal(void) {
 	InitializeSdl();
 	sgInitializeLogSystem("errors.log");
-  InitializeLuaSystem();
+	InitializeLuaSystem();
 	InitializeKeyboardSystem();
 	InitializeJoystickSystem();
 	InitializeEventSystem();
 	InitializeServiceSystem();
+	InitializeLuaScriptingFunctions();
 }
 
 static void start(void) {
@@ -146,6 +148,6 @@ SDL_AppResult SDL_AppIterate(void* appState) {
 }
 
 void SDL_AppQuit(void* appState, SDL_AppResult result) {
-	sgLogError("Quitting");
+	sgLogDebug("Quitting");
 	Quit();
 }

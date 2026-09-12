@@ -31,10 +31,10 @@
 #define MAX_CACHED_TEXTURES 124
 
 static inline void colorToVec4(const Color* c, vec4 out) {
-	out[0] = c->R / 255.0f;
-	out[1] = c->G / 255.0f;
-	out[2] = c->B / 255.0f;
-	out[3] = c->A / 255.0f;
+	out[0] = (float)c->R / 255;
+	out[1] = (float)c->G / 255;
+	out[2] = (float)c->B / 255;
+	out[3] = (float)c->A / 255;
 }
 
 static void buildViewMatrix(mat4 view, int useCamera) {
@@ -64,13 +64,14 @@ static void setupTextureQuadVAO(Texture* texture) {
 	glBindVertexArray(0);
 }
 
-extern GLint _defaultFBO;
-static Texture* _currentRenderingTarget = NULL;
-static int _currentRenderingTargetWidth = 0;
-static int _currentRenderingTargetHeight = 0;
-static Texture* _previousRenderingTarget = NULL;
-static Texture* _cachedTextures[MAX_CACHED_TEXTURES] = {0};
-static int _currentCachedTextures = 0;
+//TODO get rid of this
+extern GLint defaultFBO;
+static Texture* currentRenderingTarget = NULL;
+static int currentRenderingTargetWidth = 0;
+static int currentRenderingTargetHeight = 0;
+static Texture* previousRenderingTarget = NULL;
+static Texture* cachedTextures[MAX_CACHED_TEXTURES] = {0};
+static int currentCachedTextures = 0;
 
 void TextureBindImpl(Texture* texture) {
 	glBindTexture(GL_TEXTURE_2D, texture->ID);
@@ -78,10 +79,10 @@ void TextureBindImpl(Texture* texture) {
 
 static Texture* getTextureFromCache(const char* filename) {
 	for (int i = 0; i < MAX_CACHED_TEXTURES; ++i) {
-		if (_cachedTextures[i] &&
-			_cachedTextures[i]->Name &&
-			strcmp(filename, _cachedTextures[i]->Name) == 0) {
-			return _cachedTextures[i];
+		if (cachedTextures[i] &&
+			cachedTextures[i]->Name &&
+			strcmp(filename, cachedTextures[i]->Name) == 0) {
+			return cachedTextures[i];
 		}
 	}
 	return NULL;
@@ -89,9 +90,9 @@ static Texture* getTextureFromCache(const char* filename) {
 
 static void cacheTexture(Texture* texture) {
 	for (int i = 0; i < MAX_CACHED_TEXTURES; ++i) {
-		if (_cachedTextures[i] == NULL) {
-			_cachedTextures[i] = texture;
-			++_currentCachedTextures;
+		if (cachedTextures[i] == NULL) {
+			cachedTextures[i] = texture;
+			++currentCachedTextures;
 			return;
 		}
 	}
@@ -100,9 +101,9 @@ static void cacheTexture(Texture* texture) {
 
 static void removeTextureFromCache(Texture* t) {
 	for (int i = 0; i < MAX_CACHED_TEXTURES; ++i) {
-		if (_cachedTextures[i] == t) {
-			_cachedTextures[i] = NULL;
-			--_currentCachedTextures;
+		if (cachedTextures[i] == t) {
+			cachedTextures[i] = NULL;
+			--currentCachedTextures;
 			return;
 		}
 	}
@@ -186,7 +187,7 @@ Texture* TextureCreateRenderTargetImpl(int width, int height) {
 				   texture->Name, status);
 	} else {
 		sgLogDebug("[FBO] Created render target %dx%d FBO=%u tex=%u status=COMPLETE",
-				  width, height, texture->FBO, texture->ID);
+				   width, height, texture->FBO, texture->ID);
 	}
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -351,28 +352,28 @@ void TextureDestroyImpl(Texture* texture) {
 }
 
 void SetPreviousRenderTargetImpl(void) {
-	SetRenderTarget(_previousRenderingTarget);
+	SetRenderTarget(previousRenderingTarget);
 }
 
-static int _renderTargetLogCount = 0;
+static int renderTargetLogCount = 0;
 void SetRenderTargetImpl(Texture* target) {
-	_previousRenderingTarget = _currentRenderingTarget;
+	previousRenderingTarget = currentRenderingTarget;
 	if (target) {
-		_currentRenderingTargetWidth = target->Width;
-		_currentRenderingTargetHeight = target->Height;
+		currentRenderingTargetWidth = target->Width;
+		currentRenderingTargetHeight = target->Height;
 		glBindFramebuffer(GL_FRAMEBUFFER, target->FBO);
 	} else {
-		_currentRenderingTargetWidth = WindowWidth();
-		_currentRenderingTargetHeight = WindowHeight();
-		glBindFramebuffer(GL_FRAMEBUFFER, _defaultFBO);
-		if (_renderTargetLogCount < 5) {
-			sgLogWarn("[RT] Binding default FBO: %d (win %dx%d)", _defaultFBO, _currentRenderingTargetWidth, _currentRenderingTargetHeight);
-			++_renderTargetLogCount;
+		currentRenderingTargetWidth = WindowWidth();
+		currentRenderingTargetHeight = WindowHeight();
+		glBindFramebuffer(GL_FRAMEBUFFER, defaultFBO);
+		if (renderTargetLogCount < 5) {
+			sgLogDebug("[RT] Binding default FBO: %d (win %dx%d)", defaultFBO, currentRenderingTargetWidth, currentRenderingTargetHeight);
+			++renderTargetLogCount;
 		}
 	}
-	_currentRenderingTarget = target;
-	glm_ortho(0.0f, _currentRenderingTargetWidth, 0.0f, _currentRenderingTargetHeight, -1.0f, 1.0f, projectionMatrix);
-	glViewport(0, 0, _currentRenderingTargetWidth, _currentRenderingTargetHeight);
+	currentRenderingTarget = target;
+	glm_ortho(0.0f, currentRenderingTargetWidth, 0.0f, currentRenderingTargetHeight, -1.0f, 1.0f, projectionMatrix);
+	glViewport(0, 0, currentRenderingTargetWidth, currentRenderingTargetHeight);
 }
 
 void TextureLoadFromDataImpl(Texture* texture, const char* name, int width, int height, void* data) {
@@ -389,9 +390,9 @@ void TextureLoadFromDataImpl(Texture* texture, const char* name, int width, int 
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 Texture** GetCachedTexturesImpl(void) {
-	return _cachedTextures;
+	return cachedTextures;
 }
 
 int GetNumCachedTexturesImpl(void) {
-	return _currentCachedTextures;
+	return currentCachedTextures;
 }

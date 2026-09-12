@@ -1,5 +1,6 @@
 #include <Supergoon/filesystem.h>
 #include <Supergoon/lua.h>
+#include <Supergoon/state.h>
 #include <assert.h>
 #include <lauxlib.h>
 #include <lua.h>
@@ -12,7 +13,7 @@
 
 #include "sgforge/unpack.h"
 
-static LuaState luaGlobalState = NULL;
+LuaState luaGlobalState = NULL;
 static Directory* scriptDirectory = NULL;
 
 static int buffer_searcher(lua_State* L) {
@@ -95,10 +96,10 @@ void LuaRunFile(const char* path) {
 	free(fullPath);
 }
 
-void LuaRunFileFromBuffer(const char* p, Directory* d) {
+void LuaRunFileFromBuffer(const char* p) {
 	char* buf;
 	size_t sz;
-	GetDataFromDirectory(p, &buf, &sz, d);
+	GetDataFromDirectory(p, &buf, &sz, AssetDirectory);
 	int result = luaL_loadbuffer(luaGlobalState, buf, sz, p);
 	if (result != LUA_OK) {
 		goto error;
@@ -464,6 +465,7 @@ void RunLuaFunctionOnStack(LuaState L, int numArgs) {
 }
 
 int LuaCheckFunctionCallParamsAndTypes(lua_State* L, int numArgsOnStack, ...) {
+	// count varargs
 	if (lua_gettop(L) != numArgsOnStack) {	// Lua stack is 1-based
 		sgLogWarn(
 			"Bad number of arguments passed to C function from Lua: expected "

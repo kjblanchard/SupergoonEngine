@@ -49,7 +49,7 @@ endif(STEAM_ENABLED)
 if(UNIX OR APPLE)
     list(APPEND COMPILE_OPTIONS 
         -Wall 
-        # -Wextra 
+        -Wextra 
         # -Wpedantic
         -Wdeprecated 
         -Wshadow
@@ -59,12 +59,13 @@ if(UNIX OR APPLE)
         -Wundef
         # -Wstrict-prototypes
         # -Wmissing-prototypes
-        -Wold-style-definition
+        # -Wold-style-definition
         # -Wconversion
-        # -Wsign-conversion
+        -Wsign-conversion
         -Wno-unused-variable
         -Wno-unused-parameter 
         -Wno-sign-compare 
+        -Wno-easily-swappable-parameters
     )
 endif(UNIX OR APPLE)
 
@@ -119,6 +120,8 @@ set(SRC_FILES
     src/services.c
     #Scripting
     src/Scripting/lgraphics.c
+    src/Scripting/laudio.c
+    src/Scripting/scripting.c
 )
 
 if(SDL_GL)
@@ -146,10 +149,10 @@ set(CMAKE_DEBUG_TARGET_PROPERTIES "DEBUG_OUTPUT" "" CACHE STRING "Don't use the 
 
 
 if(SYSTEM_PACKAGES) # If we are using system packages, then we should try to find them.
-    find_library(LIB_OPENAL openal)
-    if(LIB_OPENAL)
-        target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC ${LIB_OPENAL})
-    endif(LIB_OPENAL)
+    # find_library(LIB_OPENAL openal)
+    # if(LIB_OPENAL)
+    #     target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC ${LIB_OPENAL})
+    # endif(LIB_OPENAL)
 
     find_library(LIB_CGLM cglm
         # PATH_SUFFIXES .a .dll
@@ -378,46 +381,23 @@ if(NOT FREETYPE_FOUND)
     target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC freetype)
 endif(NOT FREETYPE_FOUND)
 
-if(NOT EMSCRIPTEN AND NOT LIB_OPENAL)
-    message(STATUS "openal not found. Fetching openal...")
-    set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "Do not use")
-    set(LIBTYPE "STATIC" CACHE INTERNAL "Do not use")
-    set(ALSOFT_UTILS OFF CACHE INTERNAL "")
-    set(ALSOFT_EXAMPLES OFF CACHE INTERNAL "")
-    set(ALSOFT_BACKEND_WAVE OFF CACHE INTERNAL "")
-    set(ALSOFT_EMBED_HRTF_DATA ON CACHE INTERNAL "")
-    FetchContent_Declare(
-        LIB_OPENAL
-        GIT_REPOSITORY https://github.com/kcat/openal-soft
-        GIT_TAG 1.24.3
-        EXCLUDE_FROM_ALL)
-    if(ANDROID)
-        set(CMAKE_REQUIRED_LIBRARIES_SAVE "${CMAKE_REQUIRED_LIBRARIES}")
-        set(CMAKE_REQUIRED_LIBRARIES "")
-        set(HAVE_LIBATOMIC FALSE CACHE BOOL "" FORCE)
-        FetchContent_MakeAvailable(LIB_OPENAL)
-        set(CMAKE_REQUIRED_LIBRARIES "${CMAKE_REQUIRED_LIBRARIES_SAVE}")
-        # Strip -latomic and host paths that OpenAL added
-        foreach(_prop INTERFACE_LINK_LIBRARIES LINK_LIBRARIES)
-            get_target_property(_libs OpenAL ${_prop})
-            if(_libs)
-                list(REMOVE_ITEM _libs "atomic")
-                list(FILTER _libs EXCLUDE REGEX "/usr/local")
-                set_target_properties(OpenAL PROPERTIES ${_prop} "${_libs}")
-            endif()
-        endforeach()
-        foreach(_prop INTERFACE_LINK_DIRECTORIES LINK_DIRECTORIES)
-            get_target_property(_dirs OpenAL ${_prop})
-            if(_dirs)
-                list(FILTER _dirs EXCLUDE REGEX "/usr/local")
-                set_target_properties(OpenAL PROPERTIES ${_prop} "${_dirs}")
-            endif()
-        endforeach()
-    else()
-        FetchContent_MakeAvailable(LIB_OPENAL)
-    endif()
-    target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC OpenAL)
-endif(NOT EMSCRIPTEN AND NOT LIB_OPENAL)
+# if(NOT EMSCRIPTEN AND NOT LIB_OPENAL)
+#     message(STATUS "openal not found. Fetching openal...")
+#     set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "Do not use")
+#     set(LIBTYPE "STATIC" CACHE INTERNAL "Do not use")
+#     set(ALSOFT_UTILS OFF CACHE INTERNAL "")
+#     set(ALSOFT_EXAMPLES OFF CACHE INTERNAL "")
+#     set(ALSOFT_BACKEND_WAVE OFF CACHE INTERNAL "")
+#     set(ALSOFT_EMBED_HRTF_DATA ON CACHE INTERNAL "")
+#     set(ALSOFT_BACKEND_PORTAUDIO OFF CACHE BOOL "Enable PortAudio backend" FORCE)
+#     FetchContent_Declare(
+#         LIB_OPENAL
+#         GIT_REPOSITORY https://github.com/kcat/openal-soft
+#         GIT_TAG 1.25.1
+#         EXCLUDE_FROM_ALL)
+#     FetchContent_MakeAvailable(LIB_OPENAL)
+#     target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC OpenAL)
+# endif(NOT EMSCRIPTEN AND NOT LIB_OPENAL)
 
 if(DEBUG_CMAKE_VARIABLES)
     get_cmake_property(ALL_VARIABLES VARIABLES)

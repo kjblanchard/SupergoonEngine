@@ -34,7 +34,7 @@ extern Shader* GetScreenShaderOverrideImpl(void);
 
 Shader* ShaderCreate(void) { return ShaderCreateImpl(); }
 Shader* GetDefaultShader(void) { return GetDefaultShaderImpl(); }
-void ShaderSetDirectory(struct Directory* d) { ShaderSetDirectoryImpl(d); }
+// void ShaderSetDirectory(struct Directory* d) { ShaderSetDirectoryImpl(d); }
 void ShaderDestroy(Shader* shader) { ShaderDestroyImpl(shader); }
 void ShaderUse(Shader* shader) { ShaderUseImpl(shader); }
 void ShaderCompile(Shader* shader, const char* vertexSource,

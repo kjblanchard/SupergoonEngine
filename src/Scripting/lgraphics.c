@@ -5,18 +5,15 @@
 #include <sgtools/log.h>
 
 static int setWindow(LuaState L) {
-	sgLogWarn("Setting window optionsbegin");
 	if (!LuaCheckFunctionCallParamsAndTypes(L, 3, LuaFunctionParameterTypeInt, LuaFunctionParameterTypeInt, LuaFunctionParameterTypeString)) {
 		sgLogWarn("Bad params for set window");
 		return 0;
 	}
-	sgLogWarn("Setting window options");
 	SetWindowOptions(LuaGetIntFromStacki(L, 1), LuaGetIntFromStacki(L, 2), LuaGetStringi(L, 3));
 	return 0;
 }
 
 static int setLogical(LuaState L) {
-	sgLogWarn("Hello from lua->C!!");
 	if (!LuaCheckFunctionCallParamsAndTypes(L, 2, LuaFunctionParameterTypeInt, LuaFunctionParameterTypeInt)) {
 		sgLogWarn("Bad params for set window");
 		return 0;
@@ -28,7 +25,7 @@ static int setLogical(LuaState L) {
 static const LuaCFuncRegister graphicsLib[] = {
 	{"SetWindow", setWindow},
 	{"SetLogicalWorld", setLogical},
-  };
+};
 
 void RegisterLuaGraphicsFunctions(void) {
 	LuaRegisterFunctionsToLuaLibrary(graphicsLib, "Graphics");

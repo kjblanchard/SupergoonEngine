@@ -15,6 +15,7 @@
 #include <Supergoon/Graphics/shader.h>
 #include <Supergoon/Platform/opengl/openglGraphics.h>
 #include <Supergoon/filesystem.h>
+#include <Supergoon/state.h>
 #include <cglm/mat4.h>
 #include <cglm/vec2.h>
 #include <cglm/vec3.h>
@@ -36,12 +37,6 @@
 #define DEFAULT_SCREEN_VERTEX_FILENAME "2dScreenVertex"
 #define DEFAULT_SCREEN_FRAGMENT_FILENAME "2dScreenFragment"
 
-static struct Directory* sDirectory = NULL;
-
-void ShaderSetDirectoryImpl(struct Directory* d) {
-	sDirectory = d;
-}
-
 typedef struct CachedShaderFile {
 	char* Data;
 	char* Name;
@@ -52,13 +47,13 @@ typedef enum ShaderType {
 	ShaderTypeFragment,
 	ShaderTypeProgram,
 } ShaderType;
-static Shader* _defaultShader = NULL;
-static Shader* _defaultTextShader = NULL;
-static Shader* _defaultRectShader = NULL;
-static Shader* _defaultScreenShader = NULL;
-static Shader* _screenShaderOverride = NULL;
+static Shader* defaultShader = NULL;
+static Shader* defaultTextShader = NULL;
+static Shader* defaultRectShader = NULL;
+static Shader* defaultScreenShader = NULL;
+static Shader* screenShaderOverride = NULL;
 
-CachedShaderFile _cachedShaders[NUM_CACHED_SHADERS];
+CachedShaderFile cachedShaders[NUM_CACHED_SHADERS];
 
 char* getShaderDataFromFile(const char* filename) {
 	const char* suffix = "";
@@ -69,7 +64,7 @@ char* getShaderDataFromFile(const char* filename) {
 	asprintf(&filepath, "%s%s%s", filename, suffix, ".glsl");
 	char* buf;
 	size_t sz;
-	GetDataFromDirectory(filepath, &buf, &sz, sDirectory);
+	GetDataFromDirectory(filepath, &buf, &sz, AssetDirectory);
 	if (!buf || !sz) {
 		sgLogWarn("Could not load shader from buffer for %s", filepath);
 	}
@@ -84,7 +79,7 @@ char* getShaderDataFromFile(const char* filename) {
 static void cacheShader(const char* name, char* data) {
 	CachedShaderFile* cache;
 	for (size_t i = 0; i < NUM_CACHED_SHADERS; i++) {
-		cache = &_cachedShaders[i];
+		cache = &cachedShaders[i];
 		if (cache->Data) {
 			continue;
 		}
@@ -96,12 +91,12 @@ static void cacheShader(const char* name, char* data) {
 
 static char* getCachedShader(const char* name) {
 	for (size_t i = 0; i < NUM_CACHED_SHADERS; i++) {
-		char* iName = _cachedShaders[i].Name;
+		char* iName = cachedShaders[i].Name;
 		if (!iName) {
 			continue;
 		}
 		if (strcmp(name, iName) == 0) {
-			return _cachedShaders[i].Data;
+			return cachedShaders[i].Data;
 		}
 	}
 	char* data = getShaderDataFromFile(name);
@@ -178,22 +173,19 @@ void ShaderCompileImpl(Shader* shader, const char* vertexSourceFile,
 	glDeleteShader(sVertex);
 	glDeleteShader(sFragment);
 }
-void ShaderSetUniformFloatImpl(Shader* shader, const char* name, float value,
-							   int useShader) {
+void ShaderSetUniformFloatImpl(Shader* shader, const char* name, float value, int useShader) {
 	if (useShader)
 		ShaderUseImpl(shader);
 	glUniform1f(glGetUniformLocation(shader->ID, name), value);
 }
 
-void ShaderSetUniformIntegerImpl(Shader* shader, const char* name, int value,
-								 int useShader) {
+void ShaderSetUniformIntegerImpl(Shader* shader, const char* name, int value, int useShader) {
 	if (useShader)
 		ShaderUseImpl(shader);
 	glUniform1i(glGetUniformLocation(shader->ID, name), value);
 }
 
-void ShaderSetUniformVector2fImpl(Shader* shader, const char* name, float x,
-								  float y, int useShader) {
+void ShaderSetUniformVector2fImpl(Shader* shader, const char* name, float x, float y, int useShader) {
 	if (useShader)
 		ShaderUseImpl(shader);
 	glUniform2f(glGetUniformLocation(shader->ID, name), x, y);
@@ -204,8 +196,7 @@ void ShaderSetUniformVector2fVImpl(Shader* shader, const char* name, vec2 value,
 		ShaderUseImpl(shader);
 	glUniform2f(glGetUniformLocation(shader->ID, name), value[0], value[1]);
 }
-void ShaderSetUniformVector3fImpl(Shader* shader, const char* name, float x,
-								  float y, float z, int useShader) {
+void ShaderSetUniformVector3fImpl(Shader* shader, const char* name, float x, float y, float z, int useShader) {
 	if (useShader)
 		ShaderUseImpl(shader);
 	glUniform3f(glGetUniformLocation(shader->ID, name), x, y, z);
@@ -240,55 +231,55 @@ void ShaderSetUniformMatrix4Impl(Shader* shader, const char* name, mat4 value,
 
 void ShaderSystemShutdown(void) {
 	for (size_t i = 0; i < NUM_CACHED_SHADERS; i++) {
-		freeCachedShader(&_cachedShaders[i]);
+		freeCachedShader(&cachedShaders[i]);
 	}
 }
 
 Shader* GetDefaultShaderImpl(void) {
-	if (_defaultShader) {
-		return _defaultShader;
+	if (defaultShader) {
+		return defaultShader;
 	}
-	_defaultShader = ShaderCreateImpl();
-	ShaderCompileImpl(_defaultShader, DEFAULT_VERTEX_FILENAME, DEFAULT_FRAGMENT_FILENAME);
-	return _defaultShader;
+	defaultShader = ShaderCreateImpl();
+	ShaderCompileImpl(defaultShader, DEFAULT_VERTEX_FILENAME, DEFAULT_FRAGMENT_FILENAME);
+	return defaultShader;
 }
 
 Shader* GetDefaultTextShaderImpl(void) {
-	if (_defaultTextShader) {
-		return _defaultTextShader;
+	if (defaultTextShader) {
+		return defaultTextShader;
 	}
-	_defaultTextShader = ShaderCreateImpl();
-	ShaderCompileImpl(_defaultTextShader, DEFAULT_TEXT_VERTEX_FILENAME, DEFAULT_TEXT_FRAGMENT_FILENAME);
-	return _defaultTextShader;
+	defaultTextShader = ShaderCreateImpl();
+	ShaderCompileImpl(defaultTextShader, DEFAULT_TEXT_VERTEX_FILENAME, DEFAULT_TEXT_FRAGMENT_FILENAME);
+	return defaultTextShader;
 }
 
 Shader* GetDefaultRectShaderImpl(void) {
-	if (_defaultRectShader) {
-		return _defaultRectShader;
+	if (defaultRectShader) {
+		return defaultRectShader;
 	}
-	_defaultRectShader = ShaderCreateImpl();
-	ShaderCompileImpl(_defaultRectShader, DEFAULT_RECT_VERTEX_FILENAME, DEFAULT_RECT_FRAGMENT_FILENAME);
-	return _defaultRectShader;
+	defaultRectShader = ShaderCreateImpl();
+	ShaderCompileImpl(defaultRectShader, DEFAULT_RECT_VERTEX_FILENAME, DEFAULT_RECT_FRAGMENT_FILENAME);
+	return defaultRectShader;
 }
 
 Shader* GetDefaultScreenShaderImpl(void) {
-	if (_screenShaderOverride) {
-		return _screenShaderOverride;
+	if (screenShaderOverride) {
+		return screenShaderOverride;
 	}
-	if (_defaultScreenShader) {
-		return _defaultScreenShader;
+	if (defaultScreenShader) {
+		return defaultScreenShader;
 	}
-	_defaultScreenShader = ShaderCreateImpl();
-	ShaderCompileImpl(_defaultScreenShader, DEFAULT_SCREEN_VERTEX_FILENAME, DEFAULT_SCREEN_FRAGMENT_FILENAME);
-	return _defaultScreenShader;
+	defaultScreenShader = ShaderCreateImpl();
+	ShaderCompileImpl(defaultScreenShader, DEFAULT_SCREEN_VERTEX_FILENAME, DEFAULT_SCREEN_FRAGMENT_FILENAME);
+	return defaultScreenShader;
 }
 
 void SetScreenShaderOverrideImpl(Shader* s) {
-	_screenShaderOverride = s;
+	screenShaderOverride = s;
 }
 
 Shader* GetScreenShaderOverrideImpl(void) {
-	return _screenShaderOverride;
+	return screenShaderOverride;
 }
 
 void ShaderDestroyImpl(Shader* shader) {

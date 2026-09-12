@@ -6,7 +6,7 @@ extern "C" {
 
 typedef struct lua_State* LuaState;
 typedef struct Directory Directory;
-// extern LuaState LuaGlobalState;	 // Defined in lua.c
+extern LuaState luaGlobalState;	 // Defined in lua.c
 
 typedef int (*LuaCFunction)(LuaState L);
 
@@ -22,7 +22,7 @@ void LuaRegisterFunctionsToLuaLibraryInternal(const LuaCFuncRegister* f, size_t 
 void InitializeLuaSystem(void);
 void LuaSetScriptDirectory(Directory* d);
 void LuaRunFile(const char* path);
-void LuaRunFileFromBuffer(const char* p, Directory* d);
+void LuaRunFileFromBuffer(const char* p);
 int LuaGetStackSize(LuaState L);
 void LuaPopStack(LuaState L, int num);
 void LuaClearStack(LuaState L);

@@ -16,9 +16,12 @@ struct Directory;
 #ifdef __cplusplus
 extern "C" {
 #endif
+//Seconds in this frame
 extern float DeltaTimeSeconds;
+//MS in this frame
 extern float DeltaTimeMilliseconds;
-extern float RenderAlpha;
+// extern float RenderAlpha;
+//Directory used for loading from buffers
 extern struct Directory* AssetDirectory;
 #ifdef __cplusplus
 }
