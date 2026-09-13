@@ -1,5 +1,3 @@
 # Make it so github doesn't show stats for vendored files.
-src/Imgui/* linguist-vendored
-src/Imgui/** linguist-vendored
-include/Supergoon/Imgui/* linguist-vendored
-include/Supergoon/Imgui/** linguist-vendored
+./external/* linguist-vendored
+./external/** linguist-vendored
