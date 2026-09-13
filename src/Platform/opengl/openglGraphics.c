@@ -23,7 +23,9 @@
 #include <Supergoon/Platform/opengl/openglGraphics.h>
 #include <Supergoon/Platform/sdl/sdlWindow.h>
 #include <sgtools/log.h>
-
+#ifdef imgui
+#include <DebugWindow.hpp>
+#endif
 
 static void (*GraphicsPostFBODrawUIFunc)(void) = NULL;
 static void (*GraphicsPostFBODrawDebugFunc)(void) = NULL;
@@ -108,7 +110,7 @@ void InitializeGraphicsSystemImpl(void) {
 #if !defined(__EMSCRIPTEN__) && !defined(ANDROID) && !defined(USE_GLES)
 	SDL_GL_SetSwapInterval(_vsync);	 // vsync
 #endif
-	//Setup the reusable VAO and make it with the VBO.
+	// Setup the reusable VAO and make it with the VBO.
 	float verts[] = {
 		0.0f, 0.0f,
 		1.0f, 0.0f,
@@ -147,6 +149,7 @@ static int _drawEndLogCount = 0;
 void DrawEndImpl(void) {
 	SetRenderTarget(NULL);
 #ifdef imgui
+	DebugSystemDraw();
 	SetRenderTarget(_imGUIScreenRenderTargetTexture);
 #endif
 	if (!_screenFrameBufferTexture) {
@@ -173,7 +176,7 @@ void DrawEndImpl(void) {
 	float offsetY = floorf((winHeight - drawHeight) / 2.0f);
 	if (_drawEndLogCount < 3) {
 		sgLogDebug("[DRAW] fb=%dx%d win=%dx%d scale=%d draw=%dx%d offset=%.0f,%.0f",
-			fbWidth, fbHeight, winWidth, winHeight, scale, drawWidth, drawHeight, offsetX, offsetY);
+				   fbWidth, fbHeight, winWidth, winHeight, scale, drawWidth, drawHeight, offsetX, offsetY);
 		++_drawEndLogCount;
 	}
 	float subX = floorf(CameraGetSubPixelX() * scale);
@@ -192,8 +195,8 @@ void DrawEndImpl(void) {
 	}
 #ifdef imgui
 	SetRenderTarget(NULL);
+	DebugSystemRender();
 #endif
-	if (GraphicsPostFBODrawDebugFunc) GraphicsPostFBODrawDebugFunc();
 	SDL_GL_SwapWindow(WindowGetImpl()->Handle);
 }
 

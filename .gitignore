@@ -7,3 +7,4 @@ terraform.tfvars
 memcheck.txt
 dist/
 *.swp
+external/steam/

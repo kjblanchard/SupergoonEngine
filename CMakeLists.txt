@@ -5,6 +5,7 @@ set(COMPILE_OPTIONS)
 set(CMAKE_INSTALL_MESSAGE LAZY)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
+option(IMGUI_DEBUGGING "Should we build with imgui enabled" OFF)
 set(BUILD_SHARED_LIBS
     OFF
     CACHE BOOL "Build libraries as static" FORCE)
@@ -27,6 +28,7 @@ if(DEBUG_ASAN AND CMAKE_BUILD_TYPE STREQUAL "Debug")
         set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${ASAN_FLAGS}")
     endif()
 endif()
+
 
 
 # Compile definitions based on backend
@@ -122,6 +124,25 @@ set(SRC_FILES
     src/Scripting/linput.c
     src/Scripting/scripting.c
 )
+
+if(IMGUI_DEBUGGING)
+  set(IMGUI_SRC 
+    external/imgui.cpp
+    external/imgui_demo.cpp
+    external/imgui_draw.cpp
+    external/imgui_impl_opengl3.cpp
+    external/imgui_tables.cpp
+    external/imgui_impl_sdl3.cpp
+    external/imgui_widgets.cpp
+    src/Debug/DebugWindow.cpp
+    src/Debug/DebugGameWindow.cpp
+    src/Debug/DebugConsoleWindow.cpp
+  )
+  list(APPEND SRC_FILES ${IMGUI_SRC})
+  add_definitions(-Dimgui)
+  #Ignore source file warnings from external imgui  
+  set_source_files_properties( ${IMGUI_SRC} PROPERTIES COMPILE_FLAGS "-w" )
+endif(IMGUI_DEBUGGING)
 
 if(SDL_GL)
     list(APPEND SRC_FILES src/Platform/opengl/openglGraphics.c src/Platform/opengl/openglShader.c src/Platform/opengl/openglTexture.c)
@@ -431,6 +452,10 @@ target_include_directories(
         PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include /usr/local/include
         PRIVATE
         ${lib_ogg_SOURCE_DIR}/include ${lib_ogg_BINARY_DIR}/include)
+if(IMGUI_DEBUGGING)
+  target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC external)
+  target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC src/Debug)
+endif(IMGUI_DEBUGGING)
 
 target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(

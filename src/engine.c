@@ -23,6 +23,9 @@
 #include <Supergoon/text.h>
 #include <Supergoon/window.h>
 #include <sgtools/log.h>
+#ifdef imgui
+#include <DebugWindow.hpp>
+#endif
 
 static const int timestepNS = 16666666ULL;	// 60 FPS
 static const int MAX_TICKS_PER_FRAME = 5;
@@ -35,7 +38,6 @@ static void (*drawFunc)(void) = NULL;
 static void (*quitFunc)(void) = NULL;
 static void (*inputFunc)(void) = NULL;
 static int (*handleEventFunc)(void*) = NULL;
-static void (*graphicsPostFBODrawUIFunc)(void) = NULL;
 static void initializeEngineInternal(void) {
 	InitializeSdl();
 	sgInitializeLogSystem("errors.log");
@@ -52,6 +54,9 @@ static void start(void) {
 	InitializeGraphicsSystem();
 	InitializeTextSystem();
 	InitializeAudioSystem();
+#ifdef imgui
+	DebugSystemInitialize();
+#endif
 	previousNS = SDL_GetTicksNS();
 }
 
@@ -61,7 +66,6 @@ static void draw() {
 	SpriteSystemDraw();
 	if (drawFunc) drawFunc();
 	DrawUIStart();
-	if (graphicsPostFBODrawUIFunc) graphicsPostFBODrawUIFunc();
 	DrawEnd();
 }
 
@@ -117,7 +121,6 @@ void SetHandleEventFunction(int (*f)(void*)) { handleEventFunc = f; }
 void SetInitializeFunction(void (*f)(void)) { initializeFunc = f; }
 void SetUpdateFunction(void (*f)(void)) { updateFunc = f; }
 void SetDrawFunction(void (*f)(void)) { drawFunc = f; }
-void SetDrawUIFunction(void (*f)(void)) { graphicsPostFBODrawUIFunc = f; }
 void SetInputFunction(void (*f)(void)) { inputFunc = f; }
 void SetQuitFunction(void (*f)(void)) { quitFunc = f; }
 
@@ -135,6 +138,9 @@ SDL_AppResult SDL_AppEvent(void* appState, SDL_Event* event) {
 	if (HandleEvents(event)) return SDL_APP_SUCCESS;
 	geHandleJoystickEvent(event);
 	if (handleEventFunc && handleEventFunc(event)) return SDL_APP_SUCCESS;
+#ifdef imgui
+	DebugSystemHandleEvent(event);
+#endif
 	return SDL_APP_CONTINUE;
 }
 
