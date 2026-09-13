@@ -4,6 +4,7 @@
 #include <Supergoon/Primitives/rectangle.h>
 #include <Supergoon/filesystem.h>
 #include <Supergoon/sprite.h>
+#include <Supergoon/string.h>
 #include <Supergoon/text.h>
 #include <assert.h>
 #include <ft2build.h>
@@ -33,7 +34,8 @@ static void loadTexturesForFont(LoadedFont* font) {
 			sgLogWarn("Freetype failed to load glyph!");
 			continue;
 		}
-		Texture* texture = TextureCreateNoCache();
+		String tx = StringSprintf("%s%d", font->FontFace, font->FontSize);
+		Texture* texture = TextureCreate(tx.Data);
 		font->GlyphTextures[i] = texture;
 		char name[2] = {i, '\0'};
 		TextureLoadFromData(texture, name, font->FontFace->glyph->bitmap.width, font->FontFace->glyph->bitmap.rows, font->FontFace->glyph->bitmap.buffer);
@@ -288,7 +290,6 @@ static void measureText(Text* text) {
 void TextRedrawText(Text* text) {
 	if (text->Texture) {
 		TextureDestroy(text->Texture);
-		
 	}
 	text->Texture = TextureCreateRenderTarget(text->Location.w, text->Location.h);
 	TextureClearRenderTarget(text->Texture, 0, 0, 0, 0);

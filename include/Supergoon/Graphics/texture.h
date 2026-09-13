@@ -9,15 +9,11 @@ extern "C" {
 typedef struct Texture Texture;
 typedef struct Shader Shader;
 
-//Used when you don't want the engine to cache it/draw with everything else, for text currently to keep it forever
-Texture* TextureCreateNoCache(void);
 // Caches the texture result, useful if you want to have the engine cleaning it up when unused
 Texture* TextureCreate(const char* name);
 Texture* TextureCreateRenderTarget(int width, int height);
 void* TextureGetID(Texture* texture);
 void SetRenderTarget(Texture* renderTarget);
-//Used by debugging
-int GetNumCachedTextures(void);
 void SetPreviousRenderTarget(void);
 void TextureLoadFromPng(Texture* texture, const char* filepath);
 void TextureLoadFromPngBuffer(Texture* texture, const char* filepath, char* buf, size_t sz);
@@ -33,7 +29,6 @@ void DrawTexture(Texture* texture, Shader* shader, RectangleF* dst, RectangleF* 
 void DrawTextureToTexture(Texture* dstTarget, Texture* srcTexture, Shader* shader, RectangleF* dstRect, RectangleF* srcRect, float scale);
 //Does not draw using the camera, used for pixel perfect drawing to screen, and by the UI
 void DrawTextureToScreen(Texture* texture, Shader* shader, RectangleF* dstRect, bool flipY, Color* color);
-Texture** GetCachedTextures(void);
 #ifdef __cplusplus
 }
 #endif

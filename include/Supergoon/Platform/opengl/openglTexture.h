@@ -11,7 +11,7 @@ typedef struct Texture {
 	unsigned int VAO;
 	unsigned int VBO;
 	unsigned int FBO;
-	int RefCount;
+	// int RefCount;
 	char* Name;
 } Texture;
 

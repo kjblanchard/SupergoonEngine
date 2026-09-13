@@ -36,9 +36,6 @@ endif(SDL_BACKEND)
 if(SDL_GL)
     add_definitions(-Dsdlglbackend)
 endif(SDL_GL)
-if(ANDROID)
-    add_definitions(-DUSE_GLES)
-endif()
 if(SDL_RENDERER)
     add_definitions(-Dsdlrendererbackend)
 endif(SDL_RENDERER)
@@ -65,7 +62,6 @@ if(UNIX OR APPLE)
         -Wno-unused-variable
         -Wno-unused-parameter 
         -Wno-sign-compare 
-        -Wno-easily-swappable-parameters
     )
 endif(UNIX OR APPLE)
 
@@ -121,14 +117,15 @@ set(SRC_FILES
     #Scripting
     src/Scripting/lgraphics.c
     src/Scripting/laudio.c
+    src/Scripting/llog.c
+    src/Scripting/lscene.c
+    src/Scripting/linput.c
     src/Scripting/scripting.c
 )
 
 if(SDL_GL)
     list(APPEND SRC_FILES src/Platform/opengl/openglGraphics.c src/Platform/opengl/openglShader.c src/Platform/opengl/openglTexture.c)
-    if(NOT ANDROID)
         list(APPEND SRC_FILES src/Platform/opengl/glad.c)
-    endif()
 endif(SDL_GL)
 
 if(SDL_RENDERER)
@@ -149,70 +146,53 @@ set(CMAKE_DEBUG_TARGET_PROPERTIES "DEBUG_OUTPUT" "" CACHE STRING "Don't use the 
 
 
 if(SYSTEM_PACKAGES) # If we are using system packages, then we should try to find them.
-    # find_library(LIB_OPENAL openal)
-    # if(LIB_OPENAL)
-    #     target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC ${LIB_OPENAL})
-    # endif(LIB_OPENAL)
 
-    find_library(LIB_CGLM cglm
-        # PATH_SUFFIXES .a .dll
-        # NAMES libcglm cglm libcglm.a cglm.dll libcglm.a
-        # HINTS /usr/local/lib /c/cmake/lib
-    )
+    find_library(LIB_CGLM cglm)
     if(LIB_CGLM)
         target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC ${LIB_CGLM})
     endif(LIB_CGLM)
 
-    find_library(LIB_VORBIS vorbis
-        # PATH_SUFFIXES .a .dll
-        # NAMES libvorbis vorbis vorbis.a vorbis.dll libvorbis.a
-        # HINTS /usr/local/lib /c/cmake/lib
-    )
+    find_library(LIB_VORBIS vorbis)
     if(LIB_VORBIS)
         target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC ${LIB_VORBIS})
     endif(LIB_VORBIS)
 
-    find_library( LIB_VORBISFILE vorbisfile
-        # PATH_SUFFIXES .a .dll
-        # NAMES libvorbisfile vorbisfile vorbisfile.a vorbisfile.dll
-        # HINTS /usr/local/lib
-    )
+    find_library( LIB_VORBISFILE vorbisfile)
     if(LIB_VORBISFILE)
         target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC ${LIB_VORBISFILE})
     endif(LIB_VORBISFILE)
 
-    find_library(LIB_OGG ogg
-        # PATH_SUFFIXES .a .dll
-        # NAMES ogg Ogg
-        # HINTS /usr/local/lib
-    )
+    find_library(LIB_OGG ogg)
     if(LIB_OGG)
         target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC ${LIB_OGG})
     endif(LIB_OGG)
 
-    find_library(LIB_SGTOOLS sgtools
-        # NAMES sgtools
-        # HINTS /opt/homebrew/bin/ /usr/local/bin /usr/local/lib /usr/bin/
-    )
+    find_library(LIB_SGTOOLS sgtools)
     if(LIB_SGTOOLS)
         target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC ${LIB_SGTOOLS})
     endif(LIB_SGTOOLS)
 
-    find_library(LIB_SGFORGE sgforge
-        # NAMES sgforge
-        # HINTS /opt/homebrew/bin/ /usr/local/bin /usr/local/lib /usr/bin/
-    )
+    find_library(LIB_SGFORGE sgforge)
     if(LIB_SGFORGE)
         target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC ${LIB_SGFORGE})
     endif(LIB_SGFORGE)
 
-    find_library(LIB_SGSOUND sgsound
-        # NAMES sgsound 
-        # HINTS /opt/homebrew/bin/ /usr/local/bin /usr/local/lib /usr/bin/
-    )
+    find_library(LIB_SGSOUND sgsound)
     if(LIB_SGSOUND)
         target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC ${LIB_SGSOUND})
     endif(LIB_SGSOUND)
+
+    find_library(
+        LIB_OPENAL
+        PATH_SUFFIXES .dylib .a .dll
+        NAMES libopenal.dylib libopenal openal libopenal.a openal.dll libopenal.a
+        HINTS /usr/local/lib /c/cmake/lib
+                )
+    #need openal for system builds cause reasons
+    if(LIB_OPENAL)
+      target_link_libraries(${LIBRARY_TARGET_NAME} INTERFACE ${LIB_OPENAL})
+    endif(LIB_OPENAL)
+
 
     find_package(SDL3 CONFIG COMPONENTS SDL3-shared)
     if(SDL3_FOUND)
@@ -234,13 +214,6 @@ if(SYSTEM_PACKAGES) # If we are using system packages, then we should try to fin
     if(LIB_LUA)
       target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC ${LIB_LUA})
     endif(LIB_LUA)
-
-    #find_package(LIB_LUA lua luastatic)
-    #if(LIB_LUA)
-    #    target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC lua)
-    #endif()
-
-
 endif(SYSTEM_PACKAGES)
 
 
@@ -381,24 +354,6 @@ if(NOT FREETYPE_FOUND)
     target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC freetype)
 endif(NOT FREETYPE_FOUND)
 
-# if(NOT EMSCRIPTEN AND NOT LIB_OPENAL)
-#     message(STATUS "openal not found. Fetching openal...")
-#     set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "Do not use")
-#     set(LIBTYPE "STATIC" CACHE INTERNAL "Do not use")
-#     set(ALSOFT_UTILS OFF CACHE INTERNAL "")
-#     set(ALSOFT_EXAMPLES OFF CACHE INTERNAL "")
-#     set(ALSOFT_BACKEND_WAVE OFF CACHE INTERNAL "")
-#     set(ALSOFT_EMBED_HRTF_DATA ON CACHE INTERNAL "")
-#     set(ALSOFT_BACKEND_PORTAUDIO OFF CACHE BOOL "Enable PortAudio backend" FORCE)
-#     FetchContent_Declare(
-#         LIB_OPENAL
-#         GIT_REPOSITORY https://github.com/kcat/openal-soft
-#         GIT_TAG 1.25.1
-#         EXCLUDE_FROM_ALL)
-#     FetchContent_MakeAvailable(LIB_OPENAL)
-#     target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC OpenAL)
-# endif(NOT EMSCRIPTEN AND NOT LIB_OPENAL)
-
 if(DEBUG_CMAKE_VARIABLES)
     get_cmake_property(ALL_VARIABLES VARIABLES)
     foreach(VAR ${ALL_VARIABLES})
@@ -422,13 +377,11 @@ if(DEBUG_CMAKE_VARIABLES)
 endif(DEBUG_CMAKE_VARIABLES)
 
 target_compile_options(${LIBRARY_TARGET_NAME} PUBLIC ${COMPILE_OPTIONS})
-if(NOT ANDROID)
-    target_link_directories(${LIBRARY_TARGET_NAME} PUBLIC /usr/local/lib)
-endif()
+target_link_directories(${LIBRARY_TARGET_NAME} PUBLIC /usr/local/lib)
 
-if(LINK_M)
-    target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC m)
-endif(LINK_M)
+# if(LINK_M)
+#     target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC m)
+# endif(LINK_M)
 if(STEAM_ENABLED)
     set(STEAM_SDK_DIR "${CMAKE_CURRENT_LIST_DIR}/dist/redistributable_bin" CACHE PATH "Path to Steam SDK redistributable_bin directory")
 
@@ -472,20 +425,12 @@ if(STEAM_ENABLED)
     )
 endif()
 
-    # System is for blocking out the warnings, these are mostly external libs
-if(ANDROID)
-    target_include_directories(
-        ${LIBRARY_TARGET_NAME} SYSTEM
-        PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include
-        PRIVATE
-        ${lib_ogg_SOURCE_DIR}/include ${lib_ogg_BINARY_DIR}/include)
-else()
-    target_include_directories(
+  # System is for blocking out the warnings, these are mostly external libs
+target_include_directories(
         ${LIBRARY_TARGET_NAME} SYSTEM
         PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include /usr/local/include
         PRIVATE
         ${lib_ogg_SOURCE_DIR}/include ${lib_ogg_BINARY_DIR}/include)
-endif()
 
 target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(

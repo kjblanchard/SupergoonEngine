@@ -28,7 +28,6 @@
 #include <sgtools/log.h>
 #include <stdio.h>
 #include <stdlib.h>
-#define MAX_CACHED_TEXTURES 124
 
 static inline void colorToVec4(const Color* c, vec4 out) {
 	out[0] = (float)c->R / 255;
@@ -64,49 +63,15 @@ static void setupTextureQuadVAO(Texture* texture) {
 	glBindVertexArray(0);
 }
 
-//TODO get rid of this
+// TODO get rid of this
 extern GLint defaultFBO;
 static Texture* currentRenderingTarget = NULL;
 static int currentRenderingTargetWidth = 0;
 static int currentRenderingTargetHeight = 0;
 static Texture* previousRenderingTarget = NULL;
-static Texture* cachedTextures[MAX_CACHED_TEXTURES] = {0};
-static int currentCachedTextures = 0;
 
 void TextureBindImpl(Texture* texture) {
 	glBindTexture(GL_TEXTURE_2D, texture->ID);
-}
-
-static Texture* getTextureFromCache(const char* filename) {
-	for (int i = 0; i < MAX_CACHED_TEXTURES; ++i) {
-		if (cachedTextures[i] &&
-			cachedTextures[i]->Name &&
-			strcmp(filename, cachedTextures[i]->Name) == 0) {
-			return cachedTextures[i];
-		}
-	}
-	return NULL;
-}
-
-static void cacheTexture(Texture* texture) {
-	for (int i = 0; i < MAX_CACHED_TEXTURES; ++i) {
-		if (cachedTextures[i] == NULL) {
-			cachedTextures[i] = texture;
-			++currentCachedTextures;
-			return;
-		}
-	}
-	sgLogError("Texture cache full");
-}
-
-static void removeTextureFromCache(Texture* t) {
-	for (int i = 0; i < MAX_CACHED_TEXTURES; ++i) {
-		if (cachedTextures[i] == t) {
-			cachedTextures[i] = NULL;
-			--currentCachedTextures;
-			return;
-		}
-	}
 }
 
 void TextureClearRenderTargetImpl(Texture* texture, float r, float g, float b, float a) {
@@ -124,7 +89,6 @@ Texture* TextureCreateNoCacheImpl(void) {
 	texture->VBO = 0;
 	texture->FBO = 0;
 	texture->Name = NULL;
-	texture->RefCount = 1;
 	setupTextureQuadVAO(texture);
 	glGenTextures(1, &texture->ID);
 	glBindTexture(GL_TEXTURE_2D, texture->ID);
@@ -140,16 +104,9 @@ void* TextureGetIDImpl(Texture* texture) {
 }
 
 Texture* TextureCreateImpl(const char* name) {
-	Texture* texture = getTextureFromCache(name);
-	if (texture) {
-		sgLogDebug("Found texture in cache, increasing ref count and returning: %s", name);
-		++texture->RefCount;
-		return texture;
-	}
-	sgLogDebug("Loading new texture, cache miss: %s", name);
-	texture = TextureCreateNoCacheImpl();
+	sgLogDebug("Loading new texture: %s", name);
+	Texture* texture = TextureCreateNoCacheImpl();
 	texture->Name = strdup(name);
-	cacheTexture(texture);
 	return texture;
 }
 
@@ -163,7 +120,6 @@ Texture* TextureCreateRenderTargetImpl(int width, int height) {
 	texture->VAO = 0;
 	texture->VBO = 0;
 	texture->FBO = 0;
-	texture->RefCount = 1;
 	asprintf(&texture->Name, "%d_%d_render_target_framebuffer", width, height);
 #if !defined(__EMSCRIPTEN__) && !defined(ANDROID) && !defined(USE_GLES)
 	GLint internalFormat = GL_RGBA8;
@@ -324,9 +280,6 @@ void DrawTextureToTextureImpl(Texture* dstTarget, Texture* srcTexture, Shader* s
 void TextureDestroyImpl(Texture* texture) {
 	return;
 	if (!texture) return;
-	--texture->RefCount;
-	if (texture->RefCount > 0) return;
-	removeTextureFromCache(texture);
 	if (texture->ID != 0) {
 		glDeleteTextures(1, &texture->ID);
 		texture->ID = 0;
@@ -388,11 +341,4 @@ void TextureLoadFromDataImpl(Texture* texture, const char* name, int width, int 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glBindTexture(GL_TEXTURE_2D, 0);
-}
-Texture** GetCachedTexturesImpl(void) {
-	return cachedTextures;
-}
-
-int GetNumCachedTexturesImpl(void) {
-	return currentCachedTextures;
 }

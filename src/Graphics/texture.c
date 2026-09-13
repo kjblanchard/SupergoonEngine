@@ -10,17 +10,13 @@ extern void TextureBindImpl(Texture* texture);
 extern Texture* TextureCreateRenderTargetImpl(int width, int height);
 extern void SetRenderTargetImpl(Texture* renderTarget);
 extern void TextureClearRenderTargetImpl(Texture* texture, float r, float g, float b, float a);
-extern Texture* TextureCreateNoCacheImpl(void);
 extern void DrawTextureToTextureImpl(Texture* dstTarget, Texture* srcTexture, Shader* shader, RectangleF* dstRect, RectangleF* srcRect, float scale);
 extern void SetPreviousRenderTargetImpl(void);
 extern void TextureLoadFromDataImpl(Texture* texture, const char* name, int width, int height, void* data);
-extern Texture** GetCachedTexturesImpl(void);
-extern int GetNumCachedTexturesImpl(void);
 extern void TextureLoadFromPngBufferImpl(Texture* texture, const char* filepath, char* buf, size_t sz);
 extern void* TextureGetIDImpl(Texture* texture);
 extern void DrawTextureToScreenImpl(Texture* texture, Shader* shader, RectangleF* dstRect, bool flipY, Color* color);
 
-Texture* TextureCreateNoCache(void) { return TextureCreateNoCacheImpl(); }
 Texture* TextureCreate(const char* name) { return TextureCreateImpl(name); }
 void TextureLoadFromPng(Texture* texture, const char* filepath) {
 	TextureLoadFromPngImpl(texture, filepath);
@@ -50,7 +46,5 @@ void SetPreviousRenderTarget(void) {
 void TextureLoadFromData(Texture* texture, const char* name, int width, int height, void* data) {
 	TextureLoadFromDataImpl(texture, name, width, height, data);
 }
-Texture** GetCachedTextures(void) { return GetCachedTexturesImpl(); }
-int GetNumCachedTextures(void) { return GetNumCachedTexturesImpl(); }
 void* TextureGetID(Texture* texture) { return TextureGetIDImpl(texture); }
 void DrawTextureToScreen(Texture* texture, Shader* shader, RectangleF* dstRect, bool flipY, Color* color) { DrawTextureToScreenImpl(texture, shader, dstRect, flipY, color); }

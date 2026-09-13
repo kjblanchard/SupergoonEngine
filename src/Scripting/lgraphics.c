@@ -15,7 +15,7 @@ static int setWindow(LuaState L) {
 
 static int setLogical(LuaState L) {
 	if (!LuaCheckFunctionCallParamsAndTypes(L, 2, LuaFunctionParameterTypeInt, LuaFunctionParameterTypeInt)) {
-		sgLogWarn("Bad params for set window");
+		sgLogWarn("Bad params for set logical");
 		return 0;
 	}
 	GraphicsSetLogicalWorldSize(LuaGetIntFromStacki(L, 1), LuaGetIntFromStacki(L, 2));
