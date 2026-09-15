@@ -457,7 +457,7 @@ if(IMGUI_DEBUGGING)
   target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC src/Debug)
 endif(IMGUI_DEBUGGING)
 
-target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/external)
 target_include_directories(
     ${LIBRARY_TARGET_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src/engine/include ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}_
     /emsdk/upstream/emscripten/cache/sysroot/include /usr/local/include/freetype2) # Add the freetype2 specific include

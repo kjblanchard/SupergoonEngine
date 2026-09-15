@@ -10,8 +10,10 @@
 #include <sgtools/tools.h>
 #include <stdio.h>
 #include <string.h>
-
-#include "sgforge/unpack.h"
+// TODO we need to switch to pcall on releases.
+#define DEBUGGER_LUA_IMPLEMENTATION
+#include <debugger_lua.h>
+#include <sgforge/unpack.h>
 
 LuaState luaGlobalState = NULL;
 static Directory* scriptDirectory = NULL;
@@ -72,6 +74,7 @@ void InitializeLuaSystem(void) {
 	}
 	luaL_openlibs(luaGlobalState);
 	setLuaPath();
+	dbg_setup_default(luaGlobalState);
 }
 
 void LuaSetScriptDirectory(Directory* d) {
@@ -100,11 +103,14 @@ void LuaRunFileFromBuffer(const char* p) {
 	char* buf;
 	size_t sz;
 	GetDataFromDirectory(p, &buf, &sz, AssetDirectory);
-	int result = luaL_loadbuffer(luaGlobalState, buf, sz, p);
+	char namepathBuf[256];
+	// int result = luaL_loadbuffer(luaGlobalState, buf, sz, p);
+	snprintf(namepathBuf, sizeof namepathBuf, "@./assets/scripts/%s", p);  // helpful for debugging properly, so it can lookup the file locally from disk
+	int result = luaL_loadbuffer(luaGlobalState, buf, sz, namepathBuf);
 	if (result != LUA_OK) {
 		goto error;
 	}
-	result = lua_pcall(luaGlobalState, 0, LUA_MULTRET, 0);
+	result = dbg_pcall(luaGlobalState, 0, LUA_MULTRET, 0);
 	if (result == LUA_OK) {
 		return;
 	}
@@ -457,7 +463,7 @@ void LuaGetLuaFunc(LuaState L, const char* field) {
 	}
 }
 void RunLuaFunctionOnStack(LuaState L, int numArgs) {
-	if (lua_pcall(L, numArgs, 0, 0) != LUA_OK) {
+	if (dbg_pcall(L, numArgs, 0, 0) != LUA_OK) {
 		const char* err = lua_tostring(L, -1);
 		sgLogWarn("Failed to run Lua function: %s\n", err);
 		lua_pop(L, 1);	// pop func

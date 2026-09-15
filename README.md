@@ -17,6 +17,7 @@
 - [freetype (text)]("https://freetype.org/")
 - [ogg (sound)]("https://www.xiph.org/ogg/")
 - [vorbis (sound)]("https://www.xiph.org/vorbis/")
+- [Lua Debugger]("https://github.com/slembcke/debugger.lua")
 
 ## Contributing
 
