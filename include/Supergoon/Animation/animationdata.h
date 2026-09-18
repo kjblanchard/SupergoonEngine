@@ -1,3 +1,10 @@
+/**
+ * @file animationdata.h
+ * @brief Aseprite animation data loader
+ * @author Kevin Blanchard
+ * @version 0.2.0
+ * @date 2026-09-17
+ */
 #pragma once
 #include <stddef.h>
 #ifdef __cplusplus
@@ -15,8 +22,6 @@ typedef struct {
 	char* filename;
 	Rect frame;
 	int rotated;
-	// int trimmed;
-	// Rect spriteSourceSize;
 	struct {
 		int w;
 		int h;
@@ -35,7 +40,6 @@ typedef struct {
 	int from;
 	int to;
 	AnimationDataDirections direction;
-	// char* color;
 } FrameTag;
 
 typedef struct {
@@ -46,16 +50,9 @@ typedef struct {
 
 typedef struct {
 	char* image;
-	// char* name;
-	// struct {
-	// 	int w;
-	// 	int h;
-	// } size;
 
 	FrameTag* frameTags;
 	int frameTagCount;
-	// Layer* layers;
-	// int layerCount;
 } Meta;
 
 typedef struct {
@@ -63,7 +60,8 @@ typedef struct {
 	int frameCount;
 	Meta meta;
 } AnimationData;
-AnimationData* CreateAnimationData();
+
+AnimationData* CreateAnimationData(void);
 void CreateAnimationDataFromAsepriteFile(AnimationData* animationData, const char* filename);
 void CreateAnimationDataFromAsepriteBuffer(AnimationData* animationData, char* buf, size_t sz);
 void DestroyAnimationData(AnimationData* data);

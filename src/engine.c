@@ -84,7 +84,7 @@ static void update(void) {
 		UpdateKeyboardSystem();
 		UpdateCurrentMap();
 		if (inputFunc) inputFunc();
-		UpdateAnimators();
+		UpdateAnimatorSystem();
 		if (updateFunc) updateFunc();
 		UpdateCameraSystem();
 		UpdateControllerSystem();

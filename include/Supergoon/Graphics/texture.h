@@ -9,7 +9,6 @@ extern "C" {
 typedef struct Texture Texture;
 typedef struct Shader Shader;
 
-// Caches the texture result, useful if you want to have the engine cleaning it up when unused
 Texture* TextureCreate(const char* name);
 Texture* TextureCreateRenderTarget(int width, int height);
 void* TextureGetID(Texture* texture);

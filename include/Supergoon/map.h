@@ -14,6 +14,7 @@ extern "C" {
 #endif
 
 #include <Supergoon/Primitives/rectangle.h>
+typedef struct Tilemap Tilemap;
 
 // Tiled properties can be of many types, use this before accessing the union on the property.
 typedef enum TiledPropertyTypes {
@@ -46,9 +47,8 @@ typedef struct TiledObject {
 	TiledProperty* Properties;
 } TiledObject;
 
-void LoadMap(const char* map);
-void* CacheMapFromBuffer(const char* map, char* buf, size_t sz);
-void LoadMapFromBuffer(const char* map, char* buf, size_t sz);
+void LoadMap(Tilemap* m);
+Tilemap* LoadMapFromBuffer(const char* map, char* buf, size_t sz);
 void CheckRectForCollisionWithSolids(RectangleF* rect);
 //  Frame data for tile animation
 typedef struct TileAnimationFrame {

@@ -1,14 +1,13 @@
 #include <Supergoon/Animation/animator.h>
-#include <sgtools/log.h>
 #include <Supergoon/state.h>
-#include <sgtools/tools.h>
 #include <assert.h>
+#include <sgtools/log.h>
+#include <sgtools/tools.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #define NO_NEXT_ANIM -1
-static size_t _firstAnimatorHole = NO_HOLE;
 
 typedef struct AnimatorArray {
 	Animator** Animators;
@@ -16,70 +15,43 @@ typedef struct AnimatorArray {
 	size_t Size;
 } AnimatorArray;
 
-AnimatorArray _animators;
-
-// Used when reusing a old animator to reset anim queue
-static void onAnimatorCreate(Animator* anim) {
-	CLEAR_STRUCT(anim);
-	for (size_t j = 0; j < MAX_NUM_ANIM_QUEUE; j++) {
-		anim->NextAnimNum[j] = NO_NEXT_ANIM;
-		anim->NextAnimLoops[j] = NO_NEXT_ANIM;
-	}
-}
-
-static Animator* getFreeAnimator(void) {
-	if (_firstAnimatorHole == NO_HOLE) {
-		RESIZE_ARRAY_PTR_ALLOC(_animators.Animators, _animators.Count, _animators.Size, Animator, onAnimatorCreate);
-		Animator* anim = _animators.Animators[_animators.Count++];
-		return anim;
-	}
-	Animator* returnSprite = _animators.Animators[_firstAnimatorHole];
-	onAnimatorCreate(returnSprite);
-	size_t nextHole = NO_HOLE;
-	for (size_t i = _firstAnimatorHole + 1; i < _animators.Count; i++) {
-		if (_animators.Animators[i]->IsDestroyed) {
-			nextHole = i;
-			break;
-		}
-	}
-	_firstAnimatorHole = nextHole;
-	return returnSprite;
-}
+AnimatorArray animators;
 
 Animator* CreateAnimator(const char* filename, AnimationData* data) {
-	Animator* anim = getFreeAnimator();
-	assert(anim && "Could not get free anim");
-	anim->Name = strdup(filename);
-	asprintf(&anim->Filename, "assets/aseprite/%s.json", filename);
-	anim->Data = data;
-	return anim;
+	Animator* a = malloc(sizeof(*a));
+	a->Name = strdup(filename);
+	asprintf(&a->Filename, "assets/aseprite/%s.json", filename);
+	a->Data = data;
+	ArrayResizeIfNeeded((void**)&animators.Animators, animators.Count + 1, &animators.Size, sizeof(Animator*));
+	animators.Animators[animators.Count++] = a;
+	return a;
 }
 
-static void updateAnimatorRect(Animator* animator) {
-	if (!animator || !animator->Sprite) {
-		sgLogWarn("bad animator and or sprite for assert");
+static void updateAnimatorRect(Animator* a) {
+	if (!a || !a->Sprite) {
+		sgLogWarn("bad animator and or sprite for update");
 	}
-	animator->Sprite->TextureSourceRect.x = animator->Data->frames[animator->CurrentFrame].frame.x;
-	animator->Sprite->TextureSourceRect.y = animator->Data->frames[animator->CurrentFrame].frame.y;
-	animator->Sprite->TextureSourceRect.h = animator->Data->frames[animator->CurrentFrame].frame.h;
-	animator->Sprite->TextureSourceRect.w = animator->Data->frames[animator->CurrentFrame].frame.w;
+	a->Sprite->TextureSourceRect.x = (float)a->Data->frames[a->CurrentFrame].frame.x;
+	a->Sprite->TextureSourceRect.y = (float)a->Data->frames[a->CurrentFrame].frame.y;
+	a->Sprite->TextureSourceRect.h = (float)a->Data->frames[a->CurrentFrame].frame.h;
+	a->Sprite->TextureSourceRect.w = (float)a->Data->frames[a->CurrentFrame].frame.w;
 }
 
-static void playAnimation(Animator* anim, int animNum, int loops) {
-	anim->CurrentAnimNum = animNum;
-	anim->CurrentFrame = anim->Data->meta.frameTags[animNum].from;
-	anim->CurrentFrameTime = 0;
-	anim->Loops = loops;
-	updateAnimatorRect(anim);
+static void playAnimation(Animator* a, int animNum, int loops) {
+	a->CurrentAnimNum = animNum;
+	a->CurrentFrame = a->Data->meta.frameTags[animNum].from;
+	a->CurrentFrameTime = 0;
+	a->Loops = loops;
+	updateAnimatorRect(a);
 }
 
-static int findAnimationNumberByName(Animator* anim, const char* animName) {
-	if (!anim || !anim->Data) {
-		sgLogWarn("Trying to find anim to play on bad anim");
+static int findAnimationNumberByName(Animator* a, const char* animName) {
+	if (!a || !a->Data) {
+		sgLogWarn("invalid anim");
 		return NO_NEXT_ANIM;
 	}
-	for (size_t i = 0; i < anim->Data->meta.frameTagCount; i++) {
-		if (strcmp(anim->Data->meta.frameTags[i].name, animName) == 0) {
+	for (int i = 0; i < a->Data->meta.frameTagCount; i++) {
+		if (strcmp(a->Data->meta.frameTags[i].name, animName) == 0) {
 			return i;
 		}
 	}
@@ -87,52 +59,40 @@ static int findAnimationNumberByName(Animator* anim, const char* animName) {
 	return NO_NEXT_ANIM;
 }
 
-void PlayAnimation(Animator* animator, const char* anim, int loops) {
-	if (!animator || !animator->Data) {
+void PlayAnimation(Animator* a, const char* animName, int loops) {
+	if (!a || !a->Data) {
 		sgLogWarn("Could not play animation, bad animator");
 	}
-	int animToPlay = findAnimationNumberByName(animator, anim);
+	int animToPlay = findAnimationNumberByName(a, animName);
 	if (animToPlay == NO_NEXT_ANIM) {
 		return;
 	}
-	playAnimation(animator, animToPlay, loops);
+	playAnimation(a, animToPlay, loops);
 }
 
-void DestroyAnimator(Animator* animator) {
-	assert(animator && "No anim");
-	free(animator->Name);
-	animator->Name = NULL;
-	free(animator->Filename);
-	animator->Filename = NULL;
-	SpriteDestroy(animator->Sprite);
-	animator->Data = NULL;
-	for (size_t i = 0; i < MAX_NUM_ANIM_QUEUE; i++) {
-		animator->NextAnimNum[i] = NO_NEXT_ANIM;
-		animator->NextAnimLoops[i] = -1;
-	}
-	animator->IsDestroyed = 1;
-	for (size_t i = 0; i < _animators.Count; i++) {
-		if (_animators.Animators[i] == animator) {
-			if (_firstAnimatorHole == NO_HOLE || i < _firstAnimatorHole) {
-				_firstAnimatorHole = i;
-			}
+void DestroyAnimator(Animator* a) {
+	assert(a && "No anim");
+	free(a->Name);
+	free(a->Filename);
+	SpriteDestroy(a->Sprite);
+	for (size_t i = 0; i < animators.Count; ++i) {
+		if (a == animators.Animators[i]) {
+			ArrayRemoveFromUnsorted((void*)animators.Animators, &animators.Count, sizeof(Animator*), i);
 			break;
 		}
 	}
+	free(a);
 }
 
 void updateAnimator(Animator* animator) {
-	if (!animator || animator->IsDestroyed || animator->Loops == 0 || animator->AnimationSpeed == 0.0f) {
+	if (!animator || animator->Loops == 0 || animator->AnimationSpeed == 0.0f) {
 		return;
 	}
 	animator->CurrentFrameTime += DeltaTimeMilliseconds * animator->AnimationSpeed;
 	Frame* frameData = &animator->Data->frames[animator->CurrentFrame];
 	FrameTag* animData = &animator->Data->meta.frameTags[animator->CurrentAnimNum];
-	// bool progressed = false;
-	//   // use a while loop incase the delta time is long
-	while (animator->CurrentFrameTime >= frameData->duration) {
-		// progressed = true;
-		animator->CurrentFrameTime -= frameData->duration;
+	while (animator->CurrentFrameTime >= (float)frameData->duration) {
+		animator->CurrentFrameTime -= (float)frameData->duration;
 		if (animData->direction == AnimationDataDirectionsPingPong) {
 			if (animator->Reverse) {
 				animator->NextFrame = animator->CurrentFrame - 1;
@@ -183,37 +143,31 @@ void updateAnimator(Animator* animator) {
 	}
 }
 
-void UpdateAnimators(void) {
-	for (size_t i = 0; i < _animators.Count; i++) {
-		if (_animators.Animators[i]->Data)
-			updateAnimator(_animators.Animators[i]);
+void UpdateAnimatorSystem(void) {
+	for (size_t i = 0; i < animators.Count; i++) {
+		if (animators.Animators[i]->Data)
+			updateAnimator(animators.Animators[i]);
 	}
 }
 
-void AddAnimationToAnimatorQueue(Animator* animator, const char* animName, int loops) {
-	if (!animator) {
+void AddAnimationToAnimatorQueue(Animator* a, const char* animName, int loops) {
+	if (!a) {
 		return;
 	}
-	int animNum = findAnimationNumberByName(animator, animName);
-	if (animNum == -1) {
+	int animNum = findAnimationNumberByName(a, animName);
+	if (animNum == NO_NEXT_ANIM) {
 		return;
 	}
 	for (size_t i = 0; i < MAX_NUM_ANIM_QUEUE; i++) {
-		if (animator->NextAnimNum[i] != NO_NEXT_ANIM) {
+		if (a->NextAnimNum[i] != NO_NEXT_ANIM) {
 			continue;
 		}
 		sgLogDebug("Adding in anim %s to queue at pos %d", animName, i);
-		animator->NextAnimNum[i] = animNum;
-		animator->NextAnimLoops[i] = loops;
+		a->NextAnimNum[i] = animNum;
+		a->NextAnimLoops[i] = loops;
 		return;
 	}
-	sgLogWarn("Could not add animation %s to animator queue of %s, because it is full!", animName, animator->Name);
-}
-
-void ClearAnimationQueue(Animator* animator) {
-	for (size_t i = 0; i < MAX_NUM_ANIM_QUEUE; i++) {
-		animator->NextAnimNum[i] = NO_NEXT_ANIM;
-	}
+	sgLogWarn("Could not add animation %s to animator queue of %s, because it is full!", animName, a->Name);
 }
 
 void ShutdownAnimationSystem(void) {

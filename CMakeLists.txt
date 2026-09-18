@@ -119,6 +119,7 @@ set(SRC_FILES
     #Scripting
     src/Scripting/lgraphics.c
     src/Scripting/laudio.c
+    src/Scripting/lsprite.c
     src/Scripting/llog.c
     src/Scripting/lscene.c
     src/Scripting/linput.c

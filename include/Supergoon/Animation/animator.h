@@ -22,8 +22,7 @@ typedef struct Animator {
 	char* Filename;
 	int CurrentFrame;
 	int NextFrame;
-	unsigned int CurrentAnimNum;
-	// Allows for animations to play consecutively when they finish.
+	int CurrentAnimNum;
 	int NextAnimNum[MAX_NUM_ANIM_QUEUE];
 	int NextAnimLoops[MAX_NUM_ANIM_QUEUE];
 	float CurrentFrameTime;
@@ -32,19 +31,13 @@ typedef struct Animator {
 	AnimationData* Data;
 	Sprite* Sprite;
 	float AnimationSpeed;
-	int IsDestroyed;
-
 } Animator;
 
-void UpdateAnimators(void);
-
 Animator* CreateAnimator(const char* filename, AnimationData* data);
-void PlayAnimation(Animator* animator, const char* anim, int loops);
-// 1.0 is regular, 0.0 is none, etc
-// void SetAnimatorAnimationSpeed(Animator* animator, float speed);
-void AddAnimationToAnimatorQueue(Animator* animator, const char* animName, int loops);
-void ClearAnimationQueue(Animator* animator);
-void DestroyAnimator(Animator* animator);
+void PlayAnimation(Animator* a, const char* anim, int loops);
+void AddAnimationToAnimatorQueue(Animator* a, const char* animName, int loops);
+void DestroyAnimator(Animator* a);
+void UpdateAnimatorSystem(void);
 void ShutdownAnimationSystem(void);
 
 #ifdef __cplusplus

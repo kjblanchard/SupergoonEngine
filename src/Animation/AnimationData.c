@@ -4,16 +4,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-AnimationData* CreateAnimationData() {
-	AnimationData* data = malloc(sizeof(*data));
-	return data;
+AnimationData* CreateAnimationData(void) {
+	AnimationData* d = malloc(sizeof(*d));
+	return d;
 }
 
 static void loadAnimDataInternal(AnimationData* animationData, json_object* root) {
 	json_object* frameObject = jobj(root, "frames");
 	animationData->frameCount = jGetObjectArrayLength(frameObject);
-	animationData->frames = calloc(animationData->frameCount, sizeof(Frame));
-	for (size_t i = 0; i < animationData->frameCount; i++) {
+	animationData->frames = calloc((unsigned long)animationData->frameCount, sizeof(Frame));
+	for (int i = 0; i < animationData->frameCount; i++) {
 		Frame* frame = &animationData->frames[i];
 		json_object* currentObj = jGetObjectInObjectWithIndex(frameObject, i);
 		frame->duration = jint(currentObj, "duration");
@@ -31,8 +31,8 @@ static void loadAnimDataInternal(AnimationData* animationData, json_object* root
 	animationData->meta.image = strdup(jstr(metaObject, "image"));
 	json_object* frameTabObject = jobj(metaObject, "frameTags");
 	animationData->meta.frameTagCount = jGetObjectArrayLength(frameTabObject);
-	animationData->meta.frameTags = calloc(animationData->meta.frameTagCount, sizeof(FrameTag));
-	for (size_t i = 0; i < animationData->meta.frameTagCount; i++) {
+	animationData->meta.frameTags = calloc((unsigned long)animationData->meta.frameTagCount, sizeof(FrameTag));
+	for (int i = 0; i < animationData->meta.frameTagCount; i++) {
 		json_object* currentObj = jGetObjectInObjectWithIndex(frameTabObject, i);
 		animationData->meta.frameTags[i].name = strdup(jstr(currentObj, "name"));
 		animationData->meta.frameTags[i].from = jint(currentObj, "from");
@@ -46,7 +46,6 @@ static void loadAnimDataInternal(AnimationData* animationData, json_object* root
 			animationData->meta.frameTags[i].direction = AnimationDataDirectionsDefault;
 		}
 	}
-	jReleaseObjectFromFile(root);
 }
 
 void CreateAnimationDataFromAsepriteBuffer(AnimationData* animationData, char* buf, size_t sz) {
@@ -61,6 +60,7 @@ void CreateAnimationDataFromAsepriteBuffer(AnimationData* animationData, char* b
 		return;
 	}
 	loadAnimDataInternal(animationData, root);
+	jReleaseObjectFromFile(root);
 }
 
 void CreateAnimationDataFromAsepriteFile(AnimationData* animationData, const char* filename) {
@@ -79,21 +79,13 @@ void CreateAnimationDataFromAsepriteFile(AnimationData* animationData, const cha
 
 void DestroyAnimationData(AnimationData* data) {
 	if (!data) return;
-
-	// Free frames array
 	free(data->frames);
-
-	// Free meta.image string
 	free(data->meta.image);
-
-	// Free frameTags array and each tag name
 	if (data->meta.frameTags) {
 		for (size_t i = 0; i < data->meta.frameTagCount; i++) {
 			free(data->meta.frameTags[i].name);
 		}
 		free(data->meta.frameTags);
 	}
-
-	// Finally free the struct itself
 	free(data);
 }

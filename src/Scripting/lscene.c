@@ -26,7 +26,17 @@ static int loadScene(LuaState L) {
 		sgLogError("Could not load map %s", nextMapName);
 		return 0;
 	}
-	LoadMapFromBuffer(name, buf, sz);
+	Tilemap* m = LoadMapFromBuffer(name, buf, sz);
+	LuaPushLightUserdata(L, m);
+	return 1;
+}
+
+static int loadSceneFromTiledMap(LuaState L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 1, LuaFunctionParameterTypeUserdata)) {
+		sgLogWarn("Bad params for load scene from map");
+		return 0;
+	}
+	LoadMap(LuaGetLightUserdatai(L, 1));
 	return 0;
 }
 
@@ -68,6 +78,7 @@ static int getAllEntityData(LuaState l) {
 static const LuaCFuncRegister sceneLib[] = {
 	{"LoadScene", loadScene},
 	{"GetGameObjectData", getAllEntityData},
+	{"LoadSceneFromMap", loadSceneFromTiledMap},
 };
 
 void RegisterLuaSceneFunctions(void) {

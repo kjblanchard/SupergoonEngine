@@ -335,6 +335,14 @@ float LuaGetFloatFromTableStackiKey(LuaState L, int i, const char* key) {
 	lua_pop(L, 1);
 	return fieldFloat;
 }
+
+// float LuaGetFloatFromTableStackIndex(LuaState L, int i, int idx);
+float LuaGetFloatFromTableStackIndex(lua_State* L, int i, int idx) {
+	lua_rawgeti(L, i, idx);
+	float value = (float)lua_tonumber(L, -1);
+	lua_pop(L, 1);
+	return value;
+}
 // Strings
 // i is stack location of table, const char* is key.. so not directly on stack
 // -1.

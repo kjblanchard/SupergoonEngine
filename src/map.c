@@ -19,13 +19,7 @@
 #define MAX_PREVIOUS_MAPS_CACHE 20
 
 Tilemap* _currentMap = NULL;
-static Tilemap* _previousMaps[MAX_PREVIOUS_MAPS_CACHE] = {NULL};
-
-//
-// ------------------------------------------------------------
-// Tileset helpers
-// ------------------------------------------------------------
-//
+// static Tilemap* _previousMaps[MAX_PREVIOUS_MAPS_CACHE] = {NULL};
 
 static void GetRectForGid(int gid, Tileset* tileset, RectangleF* rect) {
 	int local = gid - tileset->FirstGid;
@@ -74,11 +68,9 @@ static void createAnimatedTiles(Tileset* tileset, json_object* ts) {
 	json_object* tiles = jobj(ts, "tiles");
 	if (!tiles)
 		return;
-
 	tileset->NumAnimatedTiles = jGetObjectArrayLength(tiles);
 	tileset->AnimatedTiles =
 		calloc(tileset->NumAnimatedTiles, sizeof(AnimatedTile));
-
 	for (size_t i = 0; i < tileset->NumAnimatedTiles; i++) {
 		json_object* tile = jGetObjectInObjectWithIndex(tiles, i);
 		AnimatedTile* anim = &tileset->AnimatedTiles[i];
@@ -87,11 +79,9 @@ static void createAnimatedTiles(Tileset* tileset, json_object* ts) {
 		anim->NumFrames = jGetObjectArrayLength(animArr);
 		anim->TileFrames =
 			calloc(anim->NumFrames, sizeof(TileAnimationFrame));
-
 		for (size_t j = 0; j < anim->NumFrames; j++) {
 			json_object* frame = jGetObjectInObjectWithIndex(animArr, j);
 			TileAnimationFrame* f = &anim->TileFrames[j];
-
 			f->MsTime = jint(frame, "duration");
 			f->Id = jint(frame, "tileid") + tileset->FirstGid;
 			GetRectForGid(f->Id, tileset, &f->SrcRect);
@@ -103,11 +93,9 @@ static void createTilesets(Tilemap* map, json_object* root) {
 	json_object* tilesets = jobj(root, "tilesets");
 	map->NumTilesets = jGetObjectArrayLength(tilesets);
 	map->Tilesets = calloc(map->NumTilesets, sizeof(Tileset));
-
 	for (int i = 0; i < map->NumTilesets; i++) {
 		json_object* ts = jGetObjectInObjectWithIndex(tilesets, i);
 		Tileset* tileset = &map->Tilesets[i];
-		/* tileset->Name = strdup(jstr(ts, "name")); */
 		const char* name = jstr(ts, "name");
 		if (!name) {
 			sgLogCritical("For some reason can not get name from tileset number %d; %s", i, map->BaseFilename);
@@ -120,7 +108,6 @@ static void createTilesets(Tilemap* map, json_object* root) {
 		tileset->Image = strdup(jstr(ts, "image"));
 		tileset->ImageWidth = jint(ts, "imagewidth");
 		tileset->ImageHeight = jint(ts, "imageheight");
-
 		createAnimatedTiles(tileset, ts);
 	}
 }
@@ -128,10 +115,8 @@ static void createTilesets(Tilemap* map, json_object* root) {
 static void createTileLayer(TileLayer* layer, json_object* layerObj) {
 	layer->Width = jint(layerObj, "width");
 	layer->Height = jint(layerObj, "height");
-
 	int count = layer->Width * layer->Height;
 	layer->Data = calloc(count, sizeof(int));
-
 	json_object* data = jobj(layerObj, "data");
 	for (int i = 0; i < count; i++) {
 		layer->Data[i] = jintIndex(data, i);
@@ -142,52 +127,40 @@ static void handleTiledObjectEntities(Tilemap* map, json_object* layer) {
 	json_object* objects = jobj(layer, "objects");
 	if (!objects)
 		return;
-
 	map->NumObjects = jGetObjectArrayLength(objects);
 	map->Objects = calloc(map->NumObjects, sizeof(TiledObject));
-
 	for (size_t i = 0; i < (size_t)map->NumObjects; i++) {
 		json_object* obj = jGetObjectInObjectWithIndex(objects, i);
 		TiledObject* object = &map->Objects[i];
-
 		object->Id = jint(obj, "id");
 		object->ObjectType = atoi(jstr(obj, "type"));
 		object->X = jfloat(obj, "x");
 		object->Y = jfloat(obj, "y");
 		object->Width = jfloat(obj, "width");
 		object->Height = jfloat(obj, "height");
-
 		json_object* props = jobj(obj, "properties");
 		if (!props) {
 			object->NumProperties = 0;
 			continue;
 		}
-
 		object->NumProperties = jGetObjectArrayLength(props);
 		if (object->NumProperties == 0)
 			continue;
-
 		object->Properties = calloc(object->NumProperties, sizeof(TiledProperty));
-
 		for (size_t j = 0; j < (size_t)object->NumProperties; j++) {
 			json_object* prop = jGetObjectInObjectWithIndex(props, j);
 			TiledProperty* property = &object->Properties[j];
-
 			property->Name = strdup(jstr(prop, "name"));
-
 			json_object* value = jobj(prop, "value");
 			property->PropertyType = getPropertyTypeForJson(value);
-
 			switch (property->PropertyType) {
 				case TiledPropertyTypeInt:
 					property->Data.IntData = jint(prop, "value");
 					break;
-
 				case TiledPropertyTypeFloat:
 					property->Data.FloatData =
 						(float)jfloat(prop, "value");
 					break;
-
 				case TiledPropertyTypeString:
 				default:
 					property->Data.StringData = strdup(jstr(prop, "value"));
@@ -200,14 +173,11 @@ static void handleTiledObjectEntities(Tilemap* map, json_object* layer) {
 static void handleLayerGroup(Tilemap* map, json_object* group) {
 	const char* name = jstr(group, "name");
 	int idx = (strcmp(name, "bg1") == 0) ? 0 : 1;
-
 	LayerGroup* g = &map->LayerGroups[idx];
 	g->Name = strdup(name);
-
 	json_object* layers = jobj(group, "layers");
 	g->NumLayers = jGetObjectArrayLength(layers);
 	g->Layers = calloc(g->NumLayers, sizeof(TileLayer));
-
 	for (size_t i = 0; i < g->NumLayers; i++) {
 		createTileLayer(&g->Layers[i], jGetObjectInObjectWithIndex(layers, i));
 	}
@@ -222,34 +192,28 @@ static void handleSolidObjects(Tilemap* map, json_object* layer) {
 	for (size_t i = 0; i < map->NumSolids; i++) {
 		json_object* o = jGetObjectInObjectWithIndex(objects, i);
 		RectangleF* r = &map->Solids[i];
-
 		r->x = jfloat(o, "x");
 		r->y = jfloat(o, "y");
 		r->w = jfloat(o, "width");
 		r->h = jfloat(o, "height");
 	}
-
 	int mw = map->Width * map->TileWidth;
 	int mh = map->Height * map->TileHeight;
 	int bs = 16;
-
 	RectangleF walls[NUM_WALLS] = {
 		{0, -bs, mw, bs},
 		{mw, 0, bs, mh},
 		{0, mh, mw, bs},
 		{-bs, 0, bs, mh}};
-
 	memcpy(&map->Solids[map->NumSolids], walls, sizeof(walls));
 	map->NumSolids += NUM_WALLS;
 }
 
 static void createLayers(Tilemap* map, json_object* root) {
 	json_object* layers = jobj(root, "layers");
-
 	for (size_t i = 0; i < jGetObjectArrayLength(layers); i++) {
 		json_object* layer = jGetObjectInObjectWithIndex(layers, i);
 		const char* type = jstr(layer, "type");
-
 		if (strcmp(type, "group") == 0) {
 			handleLayerGroup(map, layer);
 		} else if (strcmp(type, "objectgroup") == 0) {
@@ -275,27 +239,16 @@ static void loadTilesetTextures(Tilemap* map) {
 		if (!AssetDirectory) {
 			sgLogCritical("No asset directory to load from, exiting!");
 		}
-
-		/* int len = strlen(map->Tilesets[i].Image); */
-		// Remove PNG from the filename if it exists
-		/* if (len > 4 && strcmp(map->Tilesets[i].Image + len - 4, ".png") == 0) { */
-		/* 	map->Tilesets[i].Image[len - 4] = '\0'; */
-		/* } */
-
-		// Remove from the last trailing slash
-		// Get the position of the last, and then increment it by one
 		char* lastSlash = strrchr(map->Tilesets[i].Image, '/');
 		if (lastSlash) {
 			++lastSlash;
 		}
 		char* findName = lastSlash ? lastSlash : map->Tilesets[i].Image;
-		/* map->Tilesets[i].TilesetTexture = TextureCreate(map->Tilesets[i].Image); */
 		map->Tilesets[i].TilesetTexture = TextureCreate(findName);
 		char* buf;
 		size_t sz;
 		int result = GetDataFromDirectory(findName, &buf, &sz, AssetDirectory);
 		if (!result) continue;
-		/* TextureLoadFromPng(map->Tilesets[i].TilesetTexture, findName); */
 		TextureLoadFromPngBuffer(map->Tilesets[i].TilesetTexture, findName, buf, sz);
 	}
 }
@@ -310,24 +263,19 @@ static void createBackgroundsFromTilemap(Tilemap* map) {
 	LayerGroup* bg = &map->LayerGroups[0];
 	RectangleF dst = {0, 0, map->TileWidth, map->TileHeight};
 	RectangleF src = {0, 0, 0, 0};
-
 	for (size_t i = 0; i < bg->NumLayers; i++) {
 		TileLayer* layer = &bg->Layers[i];
 		for (int y = 0; y < layer->Height; y++) {
 			for (int x = 0; x < layer->Width; x++) {
 				int gid = layer->Data[y * layer->Width + x];
 				if (!gid) continue;
-
 				Tileset* ts = GetTilesetForGID(gid, map);
 				dst.x = x * map->TileWidth;
 				dst.y = y * map->TileHeight;
-
 				AnimatedTile* at = getAnimatedTileForGid(gid, ts);
 				if (at) {
 					at->DrawRectangles =
-						realloc(at->DrawRectangles,
-								sizeof(RectangleF) *
-									(++at->NumDrawRectangles));
+						realloc(at->DrawRectangles, sizeof(RectangleF) * (++at->NumDrawRectangles));
 					at->DrawRectangles[at->NumDrawRectangles - 1] = dst;
 					continue;
 				}
@@ -367,13 +315,9 @@ void UpdateCurrentMap(void) {
 		for (size_t j = 0; j < ts->NumAnimatedTiles; j++) {
 			AnimatedTile* a = &ts->AnimatedTiles[j];
 			a->CurrentMSOnFrame += DeltaTimeMilliseconds;
-
-			while (a->CurrentMSOnFrame >=
-				   a->TileFrames[a->CurrentFrame].MsTime) {
-				a->CurrentMSOnFrame -=
-					a->TileFrames[a->CurrentFrame].MsTime;
-				a->CurrentFrame =
-					(a->CurrentFrame + 1) % a->NumFrames;
+			while (a->CurrentMSOnFrame >= a->TileFrames[a->CurrentFrame].MsTime) {
+				a->CurrentMSOnFrame -= a->TileFrames[a->CurrentFrame].MsTime;
+				a->CurrentFrame = (a->CurrentFrame + 1) % a->NumFrames;
 			}
 		}
 	}
@@ -399,7 +343,6 @@ static void freeTiledTilemap(Tilemap* map) {
 		SDL_free(map->LayerGroups[i].Layers);
 		SDL_free(map->LayerGroups[i].Name);
 	}
-
 	for (int i = 0; i < map->NumTilesets; i++) {
 		Tileset* ts = &map->Tilesets[i];
 		for (size_t j = 0; j < ts->NumAnimatedTiles; j++) {
@@ -411,7 +354,6 @@ static void freeTiledTilemap(Tilemap* map) {
 		SDL_free(ts->Image);
 		TextureDestroy(ts->TilesetTexture);
 	}
-
 	SDL_free(map->Tilesets);
 	SDL_free(map->Solids);
 	for (int i = 0; i < map->NumObjects; ++i) {
@@ -430,24 +372,6 @@ static void freeTiledTilemap(Tilemap* map) {
 	SDL_free(map);
 }
 
-static void moveToFront(Tilemap** arr, int idx) {
-	Tilemap* tmp = arr[idx];
-	for (int i = idx; i > 0; i--)
-		arr[i] = arr[i - 1];
-	arr[0] = tmp;
-}
-
-static Tilemap* checkCache(const char* name) {
-	for (int i = 0; i < MAX_PREVIOUS_MAPS_CACHE; i++) {
-		if (!_previousMaps[i]) break;
-		if (strcmp(_previousMaps[i]->BaseFilename, name) == 0) {
-			moveToFront(_previousMaps, i);
-			return _previousMaps[0];
-		}
-	}
-	return NULL;
-}
-
 static void loadMapInternal(const char* name, Tilemap* map, json_object* root) {
 	map->BaseFilename = strdup(name);
 	map->Width = jint(root, "width");
@@ -458,18 +382,10 @@ static void loadMapInternal(const char* name, Tilemap* map, json_object* root) {
 	createLayers(map, root);
 	createBackgroundsFromTilemap(map);
 	jReleaseObjectFromFile(root);
-
-	// If cache is full, destroy last and then reorder them.
-	if (_previousMaps[MAX_PREVIOUS_MAPS_CACHE - 1]) {
-		freeTiledTilemap(_previousMaps[MAX_PREVIOUS_MAPS_CACHE - 1]);
-	}
-	for (int i = MAX_PREVIOUS_MAPS_CACHE - 1; i > 0; i--)
-		_previousMaps[i] = _previousMaps[i - 1];
-	_previousMaps[0] = map;
 }
 
-void* CacheMapFromBuffer(const char* name, char* buf, size_t sz) {
-	Tilemap* map = checkCache(name);
+static Tilemap* cacheMapFromBuffer(const char* name, char* buf, size_t sz) {
+	Tilemap* map = NULL;
 	if (!map) {
 		map = calloc(1, sizeof(Tilemap));
 		json_object* root = jGetObjectFromBuffer(buf, sz);
@@ -479,36 +395,26 @@ void* CacheMapFromBuffer(const char* name, char* buf, size_t sz) {
 	return map;
 }
 
-void LoadMapFromBuffer(const char* name, char* buf, size_t sz) {
-	Tilemap* map = (Tilemap*)CacheMapFromBuffer(name, buf, sz);
-	if(!map) sgLogCritical("Could not get map from cache, why for %s?", name);
+Tilemap* LoadMapFromBuffer(const char* name, char* buf, size_t sz) {
+	Tilemap* map = (Tilemap*)cacheMapFromBuffer(name, buf, sz);
+	if (!map) sgLogCritical("Could not get map from cache, why for %s?", name);
 	_currentMap = map;
 	SetCameraBounds(map->Width * map->TileWidth, map->Height * map->TileHeight);
 	SetCameraSize(map->Width * map->TileWidth, map->Height * map->TileHeight);
+	return map;
 }
 
-void LoadMap(const char* name) {
-	Tilemap* map = checkCache(name);
-	if (!map) {
-		map = calloc(1, sizeof(Tilemap));
-		char path[256];
-		snprintf(path, sizeof(path), "%sassets/tiled/%s.tmj", GetBasePath(), name);
-		json_object* root = jGetObjectFromFile(path);
-		if (!root) return;
-		loadMapInternal(name, map, root);
+void LoadMap(Tilemap* m) {
+	if (!m) {
+		sgLogError("tried to load a bad map!?");
+		return;
 	}
-	_currentMap = map;
-	SetCameraBounds(map->Width * map->TileWidth, map->Height * map->TileHeight);
-	SetCameraSize(map->Width * map->TileWidth, map->Height * map->TileHeight);
+	_currentMap = m;
+	SetCameraBounds(m->Width * m->TileWidth, m->Height * m->TileHeight);
+	SetCameraSize(m->Width * m->TileWidth, m->Height * m->TileHeight);
 }
 
-void ShutdownMapSystem(void) {
-	for (int i = 0; i < MAX_PREVIOUS_MAPS_CACHE; i++) {
-		if (_previousMaps[i])
-			freeTiledTilemap(_previousMaps[i]);
-		_previousMaps[i] = NULL;
-	}
-}
+void ShutdownMapSystem(void) {}
 
 void CheckRectForCollisionWithSolids(RectangleF* rect) {
 	for (int i = 0; i < _currentMap->NumSolids; i++) {

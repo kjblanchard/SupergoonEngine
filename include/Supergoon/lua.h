@@ -84,6 +84,8 @@ float LuaGetFloati(LuaState L, int i);
 float LuaGetFloatFromStack(LuaState L);
 // Gets a float from a table at position i with field name of key
 float LuaGetFloatFromTableStackiKey(LuaState L, int i, const char* key);
+// Gets a float from a table at position i from index idx
+float LuaGetFloatFromTableStackIndex(LuaState L, int i, int idx);
 // Strings
 // i is stack location of table, const char* is key.. so not directly on stack -1.
 void LuaCopyString(LuaState L, const char* name, char* location, int strlen);

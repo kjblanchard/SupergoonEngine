@@ -25,8 +25,8 @@ typedef enum SpriteFlags {
 // Also allows for interpolating over that parents movement for frame perfect movement
 // Offset/size handles it's actual offset from the gameobject and it's size
 typedef struct Sprite {
-	float* ParentX;
-	float* ParentY;
+	float ParentX;
+	float ParentY;
 	float PrevParentX;
 	float PrevParentY;
 	Texture* Texture;
@@ -36,6 +36,8 @@ typedef struct Sprite {
 	Shader* Shader;
 	Color DrawColor;
 	unsigned int Flags;
+  unsigned int Layer;
+  unsigned int Priority;
 } Sprite;
 Sprite* SpriteNew(void);
 void SpriteSetVisible(Sprite* s, bool v);
