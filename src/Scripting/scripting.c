@@ -1,3 +1,4 @@
+#include <Supergoon/Scripting/lanimator.h>
 #include <Supergoon/Scripting/laudio.h>
 #include <Supergoon/Scripting/lgraphics.h>
 #include <Supergoon/Scripting/linput.h>
@@ -14,4 +15,5 @@ void InitializeLuaScriptingFunctions(void) {
 	RegisterLuaLogFunctions();
 	RegisterLuaSpriteFunctions();
 	RegisterLuaUIFunctions();
+	RegisterLuaAnimatorFunctions();
 }

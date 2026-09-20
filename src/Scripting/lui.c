@@ -1,4 +1,5 @@
 #include <Supergoon/Scripting/lui.h>
+#include <Supergoon/UI/animation.h>
 #include <Supergoon/UI/image.h>
 #include <Supergoon/UI/object.h>
 #include <Supergoon/lua.h>
@@ -49,6 +50,22 @@ static int createUiImage(LuaState L) {
 	return 1;
 }
 
+static int createUIAnimation(LuaState L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 3, LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeUserdata)) {
+		sgLogWarn("Bad params for create UIImage");
+		return 0;
+	}
+	// TODO this is kind of gross
+	UIObject* o = UICreateAnimator(&(UIAnimatorArgs){
+		.Object = LuaGetLightUserdatai(L, 1),
+		.Sprite = LuaGetLightUserdatai(L, 2),
+		.Animator = LuaGetLightUserdatai(L, 3),
+	});
+	SpriteSetManual(LuaGetLightUserdatai(L, 2), true);
+	LuaPushLightUserdata(L, o);
+	return 1;
+}
+
 static int setRootUIObject(LuaState L) {
 	if (!LuaCheckFunctionCallParamsAndTypes(L, 1, LuaFunctionParameterTypeUserdata)) {
 		sgLogWarn("Bad params for set UI root");
@@ -72,6 +89,7 @@ static int drawUIObject(LuaState L) {
 static const LuaCFuncRegister uiLib[] = {
 	{"CreateUIObject", createUIObjectL},
 	{"CreateUIImage", createUiImage},
+	{"CreateUIAnimator", createUIAnimation},
 	{"DrawUIObject", drawUIObject},
 	{"SetRootUI", setRootUIObject},
 };

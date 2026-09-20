@@ -18,7 +18,7 @@ typedef struct AnimatorArray {
 AnimatorArray animators;
 
 Animator* CreateAnimator(const char* filename, AnimationData* data) {
-	Animator* a = malloc(sizeof(*a));
+	Animator* a = calloc(1, sizeof(*a));
 	a->Name = strdup(filename);
 	asprintf(&a->Filename, "assets/aseprite/%s.json", filename);
 	a->Data = data;
@@ -46,7 +46,7 @@ static void playAnimation(Animator* a, int animNum, int loops) {
 }
 
 static int findAnimationNumberByName(Animator* a, const char* animName) {
-	if (!a || !a->Data) {
+	if (!a || !a->Data || !animName) {
 		sgLogWarn("invalid anim");
 		return NO_NEXT_ANIM;
 	}

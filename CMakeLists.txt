@@ -117,11 +117,13 @@ set(SRC_FILES
     #ui
     src/UI/object.c
     src/UI/image.c
+    src/UI/animation.c
     #Services - Steam - Game Center, etc
     src/services.c
     #Scripting
     src/Scripting/lgraphics.c
     src/Scripting/laudio.c
+    src/Scripting/lanimator.c
     src/Scripting/lui.c
     src/Scripting/lsprite.c
     src/Scripting/llog.c
