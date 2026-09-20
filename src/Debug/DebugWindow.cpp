@@ -9,6 +9,7 @@
 
 #include <DebugConsoleWindow.hpp>
 #include <DebugGameWindow.hpp>
+#include <DebugUIWindow.hpp>
 #include <DebugWindow.hpp>
 #include <functional>
 #include <string>
@@ -75,6 +76,7 @@ void debugWindowInitialize() {
 	DebugWindowAddWindowFunc("Debugging Tools", drawMainWindow);
 	DebugWindowAddWindowFunc("Game", DebugGameWindowDraw);
 	DebugWindowAddWindowFunc("Console", DebugConsoleWindowDraw);
+	DebugWindowAddWindowFunc("UI", DebugUIWindowDraw);
 }
 
 void debugWindowDrawWindows() {

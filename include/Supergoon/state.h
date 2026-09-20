@@ -8,21 +8,24 @@
  * @copyright Copyright (c) 2025
  *
  */
-#include <stdint.h>
 #pragma once
 
 struct Directory;
+struct UIObject;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-//Seconds in this frame
+// Seconds in this frame
 extern float DeltaTimeSeconds;
-//MS in this frame
+// MS in this frame
 extern float DeltaTimeMilliseconds;
-// extern float RenderAlpha;
-//Directory used for loading from buffers
+// Directory used for loading from buffers
 extern struct Directory* AssetDirectory;
+#ifdef imgui
+// used to draw the imgui root ui if it is set.
+extern struct UIObject* RootUIObject;
+#endif
 #ifdef __cplusplus
 }
 #endif

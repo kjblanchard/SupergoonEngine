@@ -114,11 +114,15 @@ set(SRC_FILES
     # input
     src/Input/joystick.c
     src/text.c
+    #ui
+    src/UI/object.c
+    src/UI/image.c
     #Services - Steam - Game Center, etc
     src/services.c
     #Scripting
     src/Scripting/lgraphics.c
     src/Scripting/laudio.c
+    src/Scripting/lui.c
     src/Scripting/lsprite.c
     src/Scripting/llog.c
     src/Scripting/lscene.c
@@ -138,6 +142,7 @@ if(IMGUI_DEBUGGING)
     src/Debug/DebugWindow.cpp
     src/Debug/DebugGameWindow.cpp
     src/Debug/DebugConsoleWindow.cpp
+    src/Debug/DebugUIWindow.cpp
   )
   list(APPEND SRC_FILES ${IMGUI_SRC})
   add_definitions(-Dimgui)

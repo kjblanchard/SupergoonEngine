@@ -1,17 +1,28 @@
 #pragma once
-typedef struct sgVector2 {
-  float X, Y;
-} sgVector2;
+#include <stdbool.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-inline void sgVector2Multiply(sgVector2 *product, sgVector2 mult) {
-  product->X *= mult.X;
-  product->Y *= mult.Y;
-}
-inline void sgVector2Add(sgVector2 *product, sgVector2 add) {
-  product->X += add.X;
-  product->Y += add.Y;
+typedef struct Vector2 {
+	float X, Y;
+} Vector2;
+
+static inline Vector2 Vector2Multiply(Vector2 lhs, Vector2 rhs) {
+	return (Vector2){lhs.X * rhs.X, lhs.Y * rhs.Y};
 }
 
-inline bool sgVector2IsEqual(const sgVector2 *lhs, const sgVector2 *rhs) {
-  return lhs->X == rhs->X && rhs->Y == rhs->Y;
+static inline Vector2 Vector2Add(Vector2 lhs, Vector2 rhs) {
+	return (Vector2){lhs.X + rhs.X, lhs.Y + rhs.Y};
 }
+
+static inline Vector2 Vector2Subtract(Vector2 lhs, Vector2 rhs) {
+	return (Vector2){lhs.X - rhs.X, lhs.Y - rhs.Y};
+}
+
+static inline bool Vector2IsEqual(const Vector2* lhs, const Vector2* rhs) {
+	return lhs->X == rhs->X && lhs->Y == rhs->Y;
+}
+#ifdef __cplusplus
+}
+#endif
