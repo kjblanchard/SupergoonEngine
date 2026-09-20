@@ -66,19 +66,21 @@ void SpriteDrawManual(Sprite* sprite, RectangleF* dstRect, Color* color, int cam
 	if (!sprite || !sprite->Texture || !(sprite->Flags & SpriteFlagVisible)) {
 		return;
 	}
+	RectangleF dst = *dstRect;
+
 	if (camera && sprite->ParentX) {
 		float interpX = sprite->PrevParentX + CameraGetInterpolationAlpha() * (sprite->ParentX - sprite->PrevParentX);
-		dstRect->x = interpX + sprite->OffsetAndSizeRectF.x;
+		dst.x = interpX + sprite->OffsetAndSizeRectF.x;
 	} else {
-		dstRect->x = sprite->ParentX ? sprite->ParentX + sprite->OffsetAndSizeRectF.x : sprite->OffsetAndSizeRectF.x;
+		dst.x = sprite->ParentX ? sprite->ParentX + sprite->OffsetAndSizeRectF.x : sprite->OffsetAndSizeRectF.x;
 	}
 	if (camera && sprite->ParentY) {
 		float interpY = sprite->PrevParentY + CameraGetInterpolationAlpha() * (sprite->ParentY - sprite->PrevParentY);
-		dstRect->y = interpY + sprite->OffsetAndSizeRectF.y;
+		dst.y = interpY + sprite->OffsetAndSizeRectF.y;
 	} else {
-		dstRect->y = sprite->ParentY ? sprite->ParentY + sprite->OffsetAndSizeRectF.y : sprite->OffsetAndSizeRectF.y;
+		dst.y = sprite->ParentY ? sprite->ParentY + sprite->OffsetAndSizeRectF.y : sprite->OffsetAndSizeRectF.y;
 	}
-	DrawTexture(sprite->Texture, sprite->Shader, dstRect, &sprite->TextureSourceRect, camera, sprite->Scale, false, color);
+	DrawTexture(sprite->Texture, sprite->Shader, &dst, &sprite->TextureSourceRect, camera, sprite->Scale, false, color);
 }
 
 void SpriteSystemUpdate(void) {

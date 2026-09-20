@@ -8,8 +8,8 @@ static void UIAnimatorDraw(UIObject* o) {
 	if (!data) {
 		return;
 	}
-	data->Sprite->ParentX = o->Parent ? o->Parent->AbsolutePos.X : 0;
-	data->Sprite->ParentY = o->Parent ? o->Parent->AbsolutePos.Y : 0;
+	data->Sprite->ParentX = o->AbsolutePos.X;
+	data->Sprite->ParentY = o->AbsolutePos.Y;
 	SpriteDrawManual(data->Sprite, &o->Rect, &(Color){255, 255, 255, 255}, false);
 }
 

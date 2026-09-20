@@ -17,9 +17,9 @@ UIObject* UIObjectCreate(void) {
 	return o;
 }
 
-void UIObjectDraw(UIObject* o, Vector2* p) {
-	// Draw self
-	o->AbsolutePos = (Vector2){p->X + o->Rect.x, p->Y + o->Rect.y};
+void UIObjectDraw(UIObject* o, Vector2* parentPos) {
+	// TODO maybe for efficiency switch this to a "layout" function to remove these each frame, small benefit?
+	o->AbsolutePos = (Vector2){parentPos->X + o->Rect.x, parentPos->Y + o->Rect.y};
 	if (o->Active && o->Visible && o->Type && o->Type->Draw) {
 		o->Type->Draw(o);
 	}
@@ -53,7 +53,6 @@ void UIObjectDestroy(UIObject* o) {
 		UIObjectDestroy(child);
 	}
 	o->Child = NULL;
-	// Destroy the uiobject
 	if (o->Type && o->Type->Destroy) {
 		o->Type->Destroy(o);
 	}
@@ -66,22 +65,15 @@ void UIObjectDestroy(UIObject* o) {
 	free(o);
 }
 
-// Vector2 UIObjectGetAbsolutePosition(UIObject* o) {
-// 	Vector2 offset = Vector2Add(o->ParentOffset, (Vector2){o->Rect.x, o->Rect.y});
-// 	return offset;
-// }
-
 void UIObjectSetAbsolutePosition(UIObject* o, Vector2 pos) {
 	o->Rect.x = pos.X - o->AbsolutePos.X;
 	o->Rect.y = pos.Y - o->AbsolutePos.Y;
 }
 
 UIObject* GetChildByName(UIObject* o, const char* name) {
-	// Check self
 	if (o->Name && strcmp(o->Name, name) == 0) {
 		return o;
 	}
-	// Check Child and his siblings
 	for (UIObject* child = o->Child; child; child = child->Sibling) {
 		UIObject* found = GetChildByName(child, name);
 		if (found) {
@@ -137,7 +129,6 @@ void UIObjectRemoveChild(UIObject* o, UIObject* child) {
 	if (!o->Child) {
 		return;
 	}
-
 	if (o->Child == child) {
 		o->Child = child->Sibling;
 		child->Sibling = NULL;
