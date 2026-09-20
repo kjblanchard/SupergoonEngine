@@ -18,22 +18,18 @@ UIObject* UIObjectCreate(void) {
 }
 
 void UIObjectDraw(UIObject* o, Vector2* p) {
-	o->ParentOffset.X = p->X;
-	o->ParentOffset.Y = p->Y;
+	// Draw self
+	o->AbsolutePos = (Vector2){p->X + o->Rect.x, p->Y + o->Rect.y};
 	if (o->Active && o->Visible && o->Type && o->Type->Draw) {
 		o->Type->Draw(o);
 	}
-	Vector2 offset = Vector2Add(*p, (Vector2){o->Rect.x, o->Rect.y});
 #ifdef imgui
 	if (o->Debug) {
-		DrawRect(&(RectangleF){offset.X, offset.Y, o->Rect.w, o->Rect.h}, &(Color){255, 255, 255, 255}, false, false);
+		DrawRect(&(RectangleF){o->AbsolutePos.X, o->AbsolutePos.Y, o->Rect.w, o->Rect.h}, &(Color){255, 255, 255, 255}, false, false);
 	}
 #endif
-	if (o->Child) {
-		UIObjectDraw(o->Child, &offset);
-	}
-	if (o->Sibling) {
-		UIObjectDraw(o->Sibling, p);
+	for (UIObject* child = o->Child; child; child = child->Sibling) {
+		UIObjectDraw(child, &o->AbsolutePos);
 	}
 }
 
@@ -42,28 +38,19 @@ void UIObjectDirty(UIObject* o) {
 		o->Type->Dirty(o);
 		o->Dirty = false;
 	}
-	if (o->Child) {
-		UIObjectDirty(o->Child);
-	}
-	if (o->Sibling) {
-		UIObjectDirty(o->Sibling);
+	for (UIObject* child = o->Child; child; child = child->Sibling) {
+		UIObjectDirty(child);
 	}
 }
 
-// TODO this is overly complicated, reduce / make internal function
 void UIObjectDestroy(UIObject* o) {
-	// Remove from parent
 	if (o->Parent) {
 		UIObjectRemoveChild(o->Parent, o);
 	}
-	// Destroy child and children
-	UIObject* child = o->Child;
-	while (child) {
-		UIObject* next = child->Sibling;
+	for (UIObject* child = o->Child; child; child = child->Sibling) {
 		child->Sibling = NULL;
 		child->Parent = NULL;
 		UIObjectDestroy(child);
-		child = next;
 	}
 	o->Child = NULL;
 	// Destroy the uiobject
@@ -79,15 +66,14 @@ void UIObjectDestroy(UIObject* o) {
 	free(o);
 }
 
-Vector2 UIObjectGetAbsolutePosition(UIObject* o) {
-	Vector2 offset = Vector2Add(o->ParentOffset, (Vector2){o->Rect.x, o->Rect.y});
-	return offset;
-}
+// Vector2 UIObjectGetAbsolutePosition(UIObject* o) {
+// 	Vector2 offset = Vector2Add(o->ParentOffset, (Vector2){o->Rect.x, o->Rect.y});
+// 	return offset;
+// }
 
 void UIObjectSetAbsolutePosition(UIObject* o, Vector2 pos) {
-	Vector2 parentPos = UIObjectGetAbsolutePosition(o);
-	o->Rect.x = pos.X - parentPos.X;
-	o->Rect.y = pos.Y - parentPos.Y;
+	o->Rect.x = pos.X - o->AbsolutePos.X;
+	o->Rect.y = pos.Y - o->AbsolutePos.Y;
 }
 
 UIObject* GetChildByName(UIObject* o, const char* name) {

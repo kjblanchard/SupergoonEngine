@@ -18,33 +18,42 @@ static int playAnimation(LuaState L) {
 	return 0;
 }
 
-static int createAnimator(LuaState L) {
-	if (!LuaCheckFunctionCallParamsAndTypes(L, 2, LuaFunctionParameterTypeString, LuaFunctionParameterTypeUserdata)) {
-		sgLogWarn("Bad params for create animator");
+static int createAnimationData(LuaState L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 1, LuaFunctionParameterTypeString)) {
+		sgLogWarn("Bad params for create animator data");
 		return 0;
 	}
 	const char* name = LuaGetStringi(L, 1);
 	AnimationData* raw = CreateAnimationData();
 	char* buf;
 	size_t sz;
-	// TODO we should make this a function, and also preload all of the animation data.
-	//  Engine::Json::GetJsonBufferFromDirectory(filename.c_str(), &buf, &sz);
 	char fullPath[256];
 	snprintf(fullPath, sizeof fullPath, "%s.json", name);
 	int result = GetDataFromDirectory(fullPath, &buf, &sz, AssetDirectory);
 	if (!result || !buf || !sz) {
-		sgLogWarn("Could not load json for thing");
+		sgLogWarn("Could not load json for animation data %s", name);
 		return 0;
 	}
 	CreateAnimationDataFromAsepriteBuffer(raw, buf, sz);
-	Animator* a = CreateAnimator(name, raw);
-	a->Sprite = LuaGetLightUserdatai(L, 2);
+	LuaPushLightUserdata(L, raw);
+	return 1;
+}
+
+static int createAnimator(LuaState L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 3, LuaFunctionParameterTypeString, LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeUserdata)) {
+		sgLogWarn("Bad params for create animator");
+		return 0;
+	}
+	const char* name = LuaGetStringi(L, 1);
+	Animator* a = CreateAnimator(name, LuaGetLightUserdatai(L, 2));
+	a->Sprite = LuaGetLightUserdatai(L, 3);
 	a->AnimationSpeed = 1.0f;
 	LuaPushLightUserdata(L, a);
 	return 1;
 }
 
 static const LuaCFuncRegister animatorLib[] = {
+	{"CreateAnimationData", createAnimationData},
 	{"CreateAnimator", createAnimator},
 	{"PlayAnimation", playAnimation},
 };

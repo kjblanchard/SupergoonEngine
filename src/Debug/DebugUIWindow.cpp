@@ -49,7 +49,9 @@ void drawUIObject(UIObject* o) {
 	ImGui::PushID((int)o->Id);
 	if (ImGui::TreeNode(o->Name)) {
 		ImGui::SliderFloat("X", &o->Rect.x, -200, 200);
+		ImGui::SliderFloat("AbsX", &o->AbsolutePos.X, -200, 200);
 		ImGui::SliderFloat("Y", &o->Rect.y, -200, 200);
+		ImGui::SliderFloat("AbsY", &o->AbsolutePos.Y, -200, 200);
 		ImGui::SliderFloat("W", &o->Rect.w, 0, 200);
 		ImGui::SliderFloat("H", &o->Rect.h, 0, 200);
 		bool debug = o->Debug;

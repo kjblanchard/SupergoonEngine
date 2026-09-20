@@ -19,7 +19,7 @@ struct UIObject {
 	unsigned int Id;
 	char* Name;
 	RectangleF Rect;
-	Vector2 ParentOffset;
+	Vector2 AbsolutePos;
 	unsigned int Active : 1;
 	unsigned int Visible : 1;
 	unsigned int Dirty : 1;
@@ -44,7 +44,7 @@ UIObject* UIObjectCreate(void);
 void UIObjectDraw(UIObject* o, Vector2* p);
 void UIObjectDirty(UIObject* o);
 void UIObjectDestroy(UIObject* o);
-Vector2 UIObjectGetAbsolutePosition(UIObject* o);
+// Vector2 UIObjectGetAbsolutePosition(UIObject* o);
 void UIObjectSetAbsolutePosition(UIObject* o, Vector2 pos);
 void UIObjectUpdatePriority(UIObject* o, unsigned int p);
 // Recursive walk through each, can be expensive so cache result

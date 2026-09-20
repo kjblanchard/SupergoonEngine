@@ -10,9 +10,10 @@
 #include <sgtools/tools.h>
 #include <stdio.h>
 #include <string.h>
-// TODO we need to switch to pcall on releases.
+#ifndef NDEBUG
 #define DEBUGGER_LUA_IMPLEMENTATION
 #include <debugger_lua.h>
+#endif
 #include <sgforge/unpack.h>
 
 LuaState luaGlobalState = NULL;
@@ -74,7 +75,9 @@ void InitializeLuaSystem(void) {
 	}
 	luaL_openlibs(luaGlobalState);
 	setLuaPath();
+#ifndef NDEBUG
 	dbg_setup_default(luaGlobalState);
+#endif
 }
 
 void LuaSetScriptDirectory(Directory* d) {
@@ -110,7 +113,11 @@ void LuaRunFileFromBuffer(const char* p) {
 	if (result != LUA_OK) {
 		goto error;
 	}
+#ifndef NDEBUG
 	result = dbg_pcall(luaGlobalState, 0, LUA_MULTRET, 0);
+#else
+	result = lua_pcall(luaGlobalState, 0, LUA_MULTRET, 0);
+#endif
 	if (result == LUA_OK) {
 		return;
 	}
@@ -471,7 +478,11 @@ void LuaGetLuaFunc(LuaState L, const char* field) {
 	}
 }
 void RunLuaFunctionOnStack(LuaState L, int numArgs) {
+#ifndef NDEBUG
 	if (dbg_pcall(L, numArgs, 0, 0) != LUA_OK) {
+#else
+	if (lua_pcall(L, numArgs, 0, 0) != LUA_OK) {
+#endif
 		const char* err = lua_tostring(L, -1);
 		sgLogWarn("Failed to run Lua function: %s\n", err);
 		lua_pop(L, 1);	// pop func

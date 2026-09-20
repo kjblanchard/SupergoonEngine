@@ -40,7 +40,6 @@ static int createUiImage(LuaState L) {
 		sgLogWarn("Bad params for create UIImage");
 		return 0;
 	}
-	// TODO this is kind of gross
 	SpriteSetManual(LuaGetLightUserdatai(L, 2), true);
 	UIObject* o = CreateUIImage(&(UIImageArgs){
 		.Object = LuaGetLightUserdatai(L, 1),
@@ -55,7 +54,6 @@ static int createUIAnimation(LuaState L) {
 		sgLogWarn("Bad params for create UIImage");
 		return 0;
 	}
-	// TODO this is kind of gross
 	UIObject* o = UICreateAnimator(&(UIAnimatorArgs){
 		.Object = LuaGetLightUserdatai(L, 1),
 		.Sprite = LuaGetLightUserdatai(L, 2),
