@@ -41,7 +41,7 @@ struct UIType {
 };
 
 UIObject* UIObjectCreate(void);
-void UIObjectDraw(UIObject* o, Vector2* p);
+void UIObjectDraw(UIObject* o, Vector2* parentPos);
 void UIObjectDirty(UIObject* o);
 void UIObjectDestroy(UIObject* o);
 // Vector2 UIObjectGetAbsolutePosition(UIObject* o);
