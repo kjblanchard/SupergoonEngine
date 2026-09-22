@@ -55,9 +55,6 @@ static void setLuaPath(void) {
 		"Resources/assets/scripts/?.lua";
 	const char* currentLuaPath =
 		lua_tostring(luaGlobalState, -1);  // grab path string from top of stack
-
-	// size_t full_str_len = strlen(currentLuaPath) + strlen(nextPath) +
-	// strlen(basePath) + 2;
 	char* full_str = NULL;
 	asprintf(&full_str, "%s;%s%s", currentLuaPath, basePath, nextPath);
 	lua_pop(luaGlobalState, 1);
@@ -92,7 +89,6 @@ void LuaSetScriptDirectory(Directory* d) {
 
 void LuaRunFile(const char* path) {
 	const char* basePath = GetBasePath();
-	// size_t size = strlen(basePath) + strlen(path) + 1;
 	char* fullPath = NULL;
 	asprintf(&fullPath, "%s%s", basePath, path);
 	if (luaL_dofile(luaGlobalState, fullPath) != 0) {
@@ -102,30 +98,55 @@ void LuaRunFile(const char* path) {
 	free(fullPath);
 }
 
-void LuaRunFileFromBuffer(const char* p) {
+static bool loadFuncFromBuffer(const char* p) {
 	char* buf;
 	size_t sz;
 	GetDataFromDirectory(p, &buf, &sz, AssetDirectory);
 	char namepathBuf[256];
-	// int result = luaL_loadbuffer(luaGlobalState, buf, sz, p);
 	snprintf(namepathBuf, sizeof namepathBuf, "@./assets/scripts/%s", p);  // helpful for debugging properly, so it can lookup the file locally from disk
 	int result = luaL_loadbuffer(luaGlobalState, buf, sz, namepathBuf);
 	if (result != LUA_OK) {
 		goto error;
 	}
-#ifndef NDEBUG
-	result = dbg_pcall(luaGlobalState, 0, LUA_MULTRET, 0);
-#else
-	result = lua_pcall(luaGlobalState, 0, LUA_MULTRET, 0);
-#endif
-	if (result == LUA_OK) {
-		return;
-	}
+	return true;
+
 error: {
 	const char* luaError = lua_tostring(luaGlobalState, -1);
 	sgLogError("Lua error: %s", luaError);
 	lua_pop(luaGlobalState, 1);
 }
+	return false;
+}
+
+int LuaRefFileFromBuffer(LuaState L, const char* p) {
+	if (!loadFuncFromBuffer(p)) {
+		return LUA_NOREF;
+	}
+	int ref = LuaCreateRefInLuaRegistry(L, -1);
+	return ref;
+}
+
+void LuaRunRefFunction(LuaState L, int ref) {
+	LuaPushRefValueInLuaRegistry(L, ref);
+	RunLuaFunctionOnStack(L, 0);
+	// LuaPopStack(L, 1);
+}
+
+void LuaRunFileFromBuffer(const char* p) {
+	if (!loadFuncFromBuffer(p)) {
+		return;
+	}
+	int result = 0;
+#ifndef NDEBUG
+	result = dbg_pcall(luaGlobalState, 0, LUA_MULTRET, 0);
+#else
+	result = lua_pcall(luaGlobalState, 0, LUA_MULTRET, 0);
+#endif
+	if (result != LUA_OK) {
+		sgLogError("failed to run func from buffer!");
+		LuaClearStack(luaGlobalState);
+		return;
+	}
 }
 
 int LuaGetStackSize(LuaState L) { return lua_gettop(L); }

@@ -118,12 +118,14 @@ void LuaEnsureRegistryTable(LuaState L, const char* registryKey);
 int LuaRegistryGetSubTableEntry(LuaState L, const char* registryKey, int subKey);
 void LuaRegistrySetSubTableEntry(LuaState L, const char* registryKey, int subKey, int valueIndex);
 /**
- * @brief Creates a reference in the lua registry.  It will use what is at the top of the stack.  It doesn't modify the stack
+ * @brief Creates a reference in the lua registry.  i is location on stack, -1 is for tip.  It doesn't modify the stack
  *
  * @param L Lua state
  * @return int the ref
  */
 int LuaCreateRefInLuaRegistry(LuaState L, int i);
+int LuaRefFileFromBuffer(LuaState L, const char* p);
+void LuaRunRefFunction(LuaState L, int ref);
 void LuaPushRefValueInLuaRegistry(LuaState L, int refInt);
 // Functions
 void LuaGetLuaFuncAtIndex(LuaState L, int index);
