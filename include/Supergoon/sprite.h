@@ -16,34 +16,25 @@ extern "C" {
 #endif
 typedef struct Texture Texture;
 typedef struct Shader Shader;
-typedef enum SpriteFlags {
-	SpriteFlagVisible = 1 << 0,
-	SpriteFlagDestroyed = 1 << 1,
-	SpriteFlagManual = 1 << 2,
-} SpriteFlags;
-// Parentx/y allows for this to be attached to some "gameobject" and it will "follow" that thing if its set
-// Also allows for interpolating over that parents movement for frame perfect movement
-// Offset/size handles it's actual offset from the gameobject and it's size
+// Parentx/y is the base location that should be updated every frame
+// Offset/size handles it's actual offset from the parent.
+// Caller should handle memory of the sprite from spritenew by calling spritedestroy.
+// All sprites created with spritenew are drawn automatically, unless they are set to manual
 typedef struct Sprite {
-	float ParentX;
-	float ParentY;
-	float PrevParentX;
-	float PrevParentY;
+	RectangleF Location;
+	float PreviousX;
+	float PreviousY;
 	Texture* Texture;
 	RectangleF TextureSourceRect;
-	RectangleF OffsetAndSizeRectF;
 	float Scale;
 	Shader* Shader;
 	Color DrawColor;
-	unsigned int Flags;
-  unsigned int Layer;
-  unsigned int Priority;
+	unsigned int Visible : 1;
+	unsigned int Manual : 1;
 } Sprite;
 Sprite* SpriteNew(void);
-void SpriteSetVisible(Sprite* s, bool v);
-void SpriteSetManual(Sprite* s, bool v);
 void SpriteDestroy(Sprite* sprite);
-void SpriteDrawManual(Sprite* sprite, RectangleF* dstRect, Color* color, int camera);
+void SpriteDrawManual(Sprite* sprite, Color* color, int camera);
 void SpriteSystemUpdate(void);
 void SpriteSystemDraw(void);
 void SpriteSystemShutdown(void);

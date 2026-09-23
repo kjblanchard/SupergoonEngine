@@ -8,9 +8,9 @@ static void UIAnimatorDraw(UIObject* o) {
 	if (!data) {
 		return;
 	}
-	data->Sprite->ParentX = o->AbsolutePos.X;
-	data->Sprite->ParentY = o->AbsolutePos.Y;
-	SpriteDrawManual(data->Sprite, &o->Rect, &(Color){255, 255, 255, 255}, false);
+	data->Sprite->Location.x = o->AbsolutePos.X;
+	data->Sprite->Location.y = o->AbsolutePos.Y;
+	SpriteDrawManual(data->Sprite, &(Color){255, 255, 255, 255}, false);
 }
 
 static void UIAnimatorDestroy(UIObject* o) {

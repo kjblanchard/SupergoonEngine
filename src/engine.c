@@ -96,7 +96,7 @@ static void update(void) {
 	}
 	if (ticks == MAX_TICKS_PER_FRAME && accumulatorNS >= timestepNS) {
 		accumulatorNS = 0;
-		sgLogDebug("Warning: too many ticks this frame, capping updates to avoid spiral of death");
+		sgLogWarn("Warning:  too many ticks this frame, %d, capping", MAX_TICKS_PER_FRAME);
 	}
 	float a = (float)accumulatorNS / (float)timestepNS;
 	CameraSetInterpolationAlpha(a);
@@ -105,6 +105,7 @@ static void update(void) {
 
 static void Quit(void) {
 	if (quitFunc) quitFunc();
+	ShutdownLuaSystem();
 	ShutdownMapSystem();
 	SpriteSystemShutdown();
 	ShutdownJoystickSystem();
@@ -144,16 +145,12 @@ SDL_AppResult SDL_AppEvent(void* appState, SDL_Event* event) {
 	return SDL_APP_CONTINUE;
 }
 
-static int _iterateLogCount = 0;
 SDL_AppResult SDL_AppIterate(void* appState) {
-	if (_iterateLogCount < 3) {
-		++_iterateLogCount;
-	}
 	update();
 	return SDL_APP_CONTINUE;
 }
 
 void SDL_AppQuit(void* appState, SDL_AppResult result) {
-	sgLogDebug("Quitting");
+	sgLogDebug("SDL quit, quitting!");
 	Quit();
 }

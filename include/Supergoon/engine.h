@@ -48,7 +48,6 @@ void SetUpdateFunction(void (*f)(void));
  */
 void SetDrawFunction(void (*f)(void));
 void SetQuitFunction(void (*f)(void));
-void Run(void);
 
 extern void InitializeEngineFunctions(void);
 #ifdef __cplusplus

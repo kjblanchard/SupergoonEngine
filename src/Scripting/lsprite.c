@@ -6,24 +6,22 @@
 #include <sgtools/log.h>
 
 static int createSprite(LuaState L) {
-	if (!LuaCheckFunctionCallParamsAndTypes(L, 5, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeNumber, LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeTable, LuaFunctionParameterTypeTable)) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 3, LuaFunctionParameterTypeTable, LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeTable)) {
 		sgLogWarn("Bad params for create sprite");
 		return 0;
 	}
 	Sprite* s = SpriteNew();
-	s->ParentX = LuaGetFloati(L, 1);
-	s->ParentY = LuaGetFloati(L, 2);
-	s->Texture = LuaGetLightUserdatai(L, 3);
-	s->OffsetAndSizeRectF.x = LuaGetFloatFromTableStackIndex(L, 4, 1);
-	s->OffsetAndSizeRectF.y = LuaGetFloatFromTableStackIndex(L, 4, 2);
-	s->OffsetAndSizeRectF.w = LuaGetFloatFromTableStackIndex(L, 4, 3);
-	s->OffsetAndSizeRectF.h = LuaGetFloatFromTableStackIndex(L, 4, 4);
-	s->TextureSourceRect.x = LuaGetFloatFromTableStackIndex(L, 5, 1);
-	s->TextureSourceRect.y = LuaGetFloatFromTableStackIndex(L, 5, 2);
-	s->TextureSourceRect.w = LuaGetFloatFromTableStackIndex(L, 5, 3);
-	s->TextureSourceRect.h = LuaGetFloatFromTableStackIndex(L, 5, 4);
+	s->Location.x = LuaGetFloatFromTableStackIndex(L, 1, 1);
+	s->Location.y = LuaGetFloatFromTableStackIndex(L, 1, 2);
+	s->Location.w = LuaGetFloatFromTableStackIndex(L, 1, 3);
+	s->Location.h = LuaGetFloatFromTableStackIndex(L, 1, 4);
+	s->Texture = LuaGetLightUserdatai(L, 2);
+	s->TextureSourceRect.x = LuaGetFloatFromTableStackIndex(L, 3, 1);
+	s->TextureSourceRect.y = LuaGetFloatFromTableStackIndex(L, 3, 2);
+	s->TextureSourceRect.w = LuaGetFloatFromTableStackIndex(L, 3, 3);
+	s->TextureSourceRect.h = LuaGetFloatFromTableStackIndex(L, 3, 4);
 	s->Shader = GetDefaultShader();
-	SpriteSetVisible(s, true);
+	s->Visible = true;
 	LuaPushLightUserdata(L, s);
 	return 1;
 }

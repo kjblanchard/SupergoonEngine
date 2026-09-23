@@ -15,14 +15,12 @@ extern "C" {
 
 #include <Supergoon/Primitives/rectangle.h>
 typedef struct Tilemap Tilemap;
-
 // Tiled properties can be of many types, use this before accessing the union on the property.
 typedef enum TiledPropertyTypes {
 	TiledPropertyTypeInt,
 	TiledPropertyTypeFloat,
 	TiledPropertyTypeString,
 } TiledPropertyTypes;
-
 // Tiled property, probably use this in your gameobject load functions
 typedef struct TiledProperty {
 	TiledPropertyTypes PropertyType;
@@ -33,7 +31,6 @@ typedef struct TiledProperty {
 		char* StringData;
 	} Data;
 } TiledProperty;
-
 // Tiled Object, this should be used in your gameobject load functions most likely.
 typedef struct TiledObject {
 	char* Name;
@@ -46,17 +43,12 @@ typedef struct TiledObject {
 	int NumProperties;
 	TiledProperty* Properties;
 } TiledObject;
-
-void LoadMap(Tilemap* m);
-Tilemap* LoadMapFromBuffer(const char* map, char* buf, size_t sz);
-void CheckRectForCollisionWithSolids(RectangleF* rect);
 //  Frame data for tile animation
 typedef struct TileAnimationFrame {
 	unsigned int Id;
 	RectangleF SrcRect;
 	unsigned int MsTime;
 } TileAnimationFrame;
-
 // A animated tile from tiled. One instance of this per animated tile in tiled,
 // and it will be updated each frame.
 typedef struct AnimatedTile {
@@ -75,7 +67,6 @@ typedef struct AnimatedTile {
 	unsigned int CurrentFrame;
 } AnimatedTile;
 typedef struct Texture Texture;
-
 // Tiled tileset
 typedef struct Tileset {
 	char* Name;
@@ -89,7 +80,6 @@ typedef struct Tileset {
 	AnimatedTile* AnimatedTiles;
 	unsigned int NumAnimatedTiles;
 } Tileset;
-
 // A tile layer in tiled.  Just has a bunch of ints for gids for tiles to draw,
 // and a width and height of the layer.
 typedef struct TileLayer {
@@ -97,7 +87,6 @@ typedef struct TileLayer {
 	int Height;
 	int* Data;	// Dynamically allocated array for tile IDs
 } TileLayer;
-
 // A tiled layer group, that contains a bunch of tile layers.  We use this for
 // the map BG1 and BG1 groups.
 typedef struct LayerGroup {
@@ -105,9 +94,8 @@ typedef struct LayerGroup {
 	int NumLayers;
 	TileLayer* Layers;
 } LayerGroup;
-
 // Tiled tilemap, contains the objects, Groups, etc
-typedef struct Tilemap {
+struct Tilemap {
 	char* BaseFilename;
 	int Width;
 	int Height;
@@ -122,13 +110,15 @@ typedef struct Tilemap {
 	RectangleF* Solids;
 	int NumSolids;
 	Texture* BackgroundTexture;
-} Tilemap;
+};
 
+void LoadMap(Tilemap* m);
+Tilemap* LoadMapFromBuffer(const char* map, char* buf, size_t sz);
+void CheckRectForCollisionWithSolids(RectangleF* rect);
 void UpdateCurrentMap(void);
 // Draws the current map bg layers and animated tiles.
 void DrawCurrentMap(void);
-// Used when resetting or closing the game, clears out any static info like a
-// loaded map, etc.
+// Used when resetting or closing the game, clears out any static info like a loaded map, etc.
 void ShutdownMapSystem(void);
 // Current map that will be drawn, if it exists.
 extern Tilemap* _currentMap;

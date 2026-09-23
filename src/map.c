@@ -19,12 +19,10 @@
 #define MAX_PREVIOUS_MAPS_CACHE 20
 
 Tilemap* _currentMap = NULL;
-// static Tilemap* _previousMaps[MAX_PREVIOUS_MAPS_CACHE] = {NULL};
 
 static void GetRectForGid(int gid, Tileset* tileset, RectangleF* rect) {
 	int local = gid - tileset->FirstGid;
 	int cols = tileset->ImageWidth / tileset->TileWidth;
-
 	rect->x = (local % cols) * tileset->TileWidth;
 	rect->y = (local / cols) * tileset->TileHeight;
 	rect->w = tileset->TileWidth;
@@ -34,7 +32,6 @@ static void GetRectForGid(int gid, Tileset* tileset, RectangleF* rect) {
 static Tileset* GetTilesetForGID(int gid, Tilemap* map) {
 	Tileset* best = NULL;
 	int highest = 0;
-
 	for (int i = 0; i < map->NumTilesets; i++) {
 		if (gid >= map->Tilesets[i].FirstGid &&
 			map->Tilesets[i].FirstGid >= highest) {
@@ -186,8 +183,7 @@ static void handleLayerGroup(Tilemap* map, json_object* group) {
 static void handleSolidObjects(Tilemap* map, json_object* layer) {
 	json_object* objects = jobj(layer, "objects");
 	map->NumSolids = jGetObjectArrayLength(objects);
-	map->Solids =
-		calloc(map->NumSolids + NUM_WALLS, sizeof(RectangleF));
+	map->Solids = calloc(map->NumSolids + NUM_WALLS, sizeof(RectangleF));
 
 	for (size_t i = 0; i < map->NumSolids; i++) {
 		json_object* o = jGetObjectInObjectWithIndex(objects, i);
