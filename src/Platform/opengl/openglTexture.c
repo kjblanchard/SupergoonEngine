@@ -210,6 +210,7 @@ cleanup:
 }
 
 void DrawTextureRaw(Texture* texture, Shader* shader, RectangleF* dstRect, RectangleF* srcRect, bool useCamera, float scale, bool flipY, Color* color) {
+	assert(texture && shader && dstRect && srcRect && color && "Bad draw call");
 	if (flipY) {
 		dstRect->y += dstRect->h * scale;
 		dstRect->h *= -1;

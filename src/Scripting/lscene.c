@@ -42,12 +42,12 @@ static int loadSceneFromTiledMap(LuaState L) {
 
 static int getAllEntityData(LuaState l) {
 	LuaPushNewTableToStack(l);	// array table that will be left on stack to be sent back
-	if (!_currentMap) {
+	if (!currentMap) {
 		sgLogWarn("No current map, cannot get gameobjects!");
 		return 0;
 	}
-	for (int i = 0; i < _currentMap->NumObjects; ++i) {
-		TiledObject* o = &_currentMap->Objects[i];
+	for (int i = 0; i < currentMap->NumObjects; ++i) {
+		TiledObject* o = &currentMap->Objects[i];
 		LuaPushNewTableToStack(l);	// put all data in lua table
 		LuaPushIntToTable(l, "ObjectType", o->ObjectType);
 		LuaPushIntToTable(l, "X", o->X);

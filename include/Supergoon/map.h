@@ -61,11 +61,10 @@ typedef struct AnimatedTile {
 	TileAnimationFrame* TileFrames;
 	// Current time on the animation
 	unsigned int CurrentMSOnFrame;
-	// The rectangles where to draw this animated tile, used in draw function
-	RectangleF* DrawRectangles;
-	unsigned int NumDrawRectangles;
 	unsigned int CurrentFrame;
+	struct Tileset* Tileset;
 } AnimatedTile;
+
 typedef struct Texture Texture;
 // Tiled tileset
 typedef struct Tileset {
@@ -101,8 +100,8 @@ struct Tilemap {
 	int Height;
 	int TileWidth;
 	int TileHeight;
-	int NumTilesets;
-	Tileset* Tilesets;
+	// unsigned int NumTilesets;
+	// Tileset* Tilesets;
 	int NumObjects;
 	struct TiledObject* Objects;
 	int NumLayers;
@@ -110,6 +109,10 @@ struct Tilemap {
 	RectangleF* Solids;
 	int NumSolids;
 	Texture* BackgroundTexture;
+	// The rectangles where to draw this animated tile, used in draw function
+	RectangleF* AnimatedDrawRectangles;
+	unsigned int AnimatedNumDrawRectangles;
+	AnimatedTile** AnimatedGIDList;
 };
 
 void LoadMap(Tilemap* m);
@@ -121,7 +124,7 @@ void DrawCurrentMap(void);
 // Used when resetting or closing the game, clears out any static info like a loaded map, etc.
 void ShutdownMapSystem(void);
 // Current map that will be drawn, if it exists.
-extern Tilemap* _currentMap;
+extern Tilemap* currentMap;
 #ifdef __cplusplus
 }
 #endif
