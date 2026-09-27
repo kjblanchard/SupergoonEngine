@@ -13,6 +13,8 @@
 extern "C" {
 #endif
 
+#define MAX_NUM_LAYERGROUPS 2
+
 #include <Supergoon/Primitives/rectangle.h>
 typedef struct Tilemap Tilemap;
 // Tiled properties can be of many types, use this before accessing the union on the property.
@@ -100,12 +102,10 @@ struct Tilemap {
 	int Height;
 	int TileWidth;
 	int TileHeight;
-	// unsigned int NumTilesets;
-	// Tileset* Tilesets;
 	int NumObjects;
 	struct TiledObject* Objects;
 	int NumLayers;
-	LayerGroup LayerGroups[2];
+	LayerGroup LayerGroups[MAX_NUM_LAYERGROUPS];
 	RectangleF* Solids;
 	int NumSolids;
 	Texture* BackgroundTexture;
@@ -115,6 +115,7 @@ struct Tilemap {
 	AnimatedTile** AnimatedGIDList;
 };
 
+void DestroyMap(Tilemap* m);
 void LoadMap(Tilemap* m);
 Tilemap* LoadMapFromBuffer(const char* map, char* buf, size_t sz);
 void CheckRectForCollisionWithSolids(RectangleF* rect);

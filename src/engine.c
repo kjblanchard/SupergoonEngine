@@ -38,6 +38,9 @@ static void (*drawFunc)(void) = NULL;
 static void (*quitFunc)(void) = NULL;
 static void (*inputFunc)(void) = NULL;
 static int (*handleEventFunc)(void*) = NULL;
+#ifdef imgui
+uint64_t frametime = 0;
+#endif
 static void initializeEngineInternal(void) {
 	InitializeSdl();
 	sgInitializeLogSystem("errors.log");
@@ -72,6 +75,9 @@ static void draw() {
 static void update(void) {
 	Uint64 now = SDL_GetTicksNS();
 	Uint64 frameTime = now - previousNS;
+#ifdef imgui
+	frametime = frameTime;
+#endif
 	previousNS = now;
 	accumulatorNS += frameTime;
 	DeltaTimeSeconds = (float)timestepNS / (float)SDL_NS_PER_SECOND;

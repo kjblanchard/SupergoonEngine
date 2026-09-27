@@ -1,4 +1,3 @@
-#include <SDL3/SDL.h>
 #include <Supergoon/Graphics/shader.h>
 #include <Supergoon/Graphics/texture.h>
 #include <Supergoon/Primitives/Color.h>
@@ -32,7 +31,7 @@ static void GetRectForGid(int gid, Tileset* tileset, RectangleF* rect) {
 	rect->h = tileset->TileHeight;
 }
 
-static Tileset* GetTilesetForGID(int gid, Tilemap* map) {
+static Tileset* GetTilesetForGID(int gid) {
 	Tileset* best = NULL;
 	int highest = 0;
 	for (int i = 0; i < tilesetCount; i++) {
@@ -110,7 +109,6 @@ static void createTilesets(Tilemap* map, json_object* root) {
 	for (int i = 0; i < numTilesets; i++) {
 		// Check if we already have cached the tileset
 		json_object* tilesetJson = jGetObjectInObjectWithIndex(tilesetsArrayJson, i);
-		// Tileset* tileset = &map->Tilesets[i];
 		const char* name = jstr(tilesetJson, "name");
 		if (!name) {
 			sgLogError("For some reason can not get name from tileset number %d; %s", i, map->BaseFilename);
@@ -137,7 +135,7 @@ static void createTileLayer(TileLayer* layer, json_object* layerObj) {
 	layer->Width = jint(layerObj, "width");
 	layer->Height = jint(layerObj, "height");
 	int count = layer->Width * layer->Height;
-	layer->Data = calloc(count, sizeof(int));
+	layer->Data = calloc((unsigned int)count, sizeof(int));
 	json_object* data = jobj(layerObj, "data");
 	for (int i = 0; i < count; i++) {
 		layer->Data[i] = jintIndex(data, i);
@@ -149,16 +147,16 @@ static void handleTiledObjectEntities(Tilemap* map, json_object* layer) {
 	if (!objects)
 		return;
 	map->NumObjects = jGetObjectArrayLength(objects);
-	map->Objects = calloc(map->NumObjects, sizeof(TiledObject));
-	for (size_t i = 0; i < (size_t)map->NumObjects; i++) {
+	map->Objects = calloc((unsigned int)map->NumObjects, sizeof(TiledObject));
+	for (int i = 0; i < (size_t)map->NumObjects; i++) {
 		json_object* obj = jGetObjectInObjectWithIndex(objects, i);
 		TiledObject* object = &map->Objects[i];
 		object->Id = jint(obj, "id");
 		object->ObjectType = atoi(jstr(obj, "type"));
-		object->X = jfloat(obj, "x");
-		object->Y = jfloat(obj, "y");
-		object->Width = jfloat(obj, "width");
-		object->Height = jfloat(obj, "height");
+		object->X = (int)jfloat(obj, "x");
+		object->Y = (int)jfloat(obj, "y");
+		object->Width = (int)jfloat(obj, "width");
+		object->Height = (int)jfloat(obj, "height");
 		json_object* props = jobj(obj, "properties");
 		if (!props) {
 			object->NumProperties = 0;
@@ -167,7 +165,7 @@ static void handleTiledObjectEntities(Tilemap* map, json_object* layer) {
 		object->NumProperties = jGetObjectArrayLength(props);
 		if (object->NumProperties == 0)
 			continue;
-		object->Properties = calloc(object->NumProperties, sizeof(TiledProperty));
+		object->Properties = calloc((unsigned int)object->NumProperties, sizeof(TiledProperty));
 		for (size_t j = 0; j < (size_t)object->NumProperties; j++) {
 			json_object* prop = jGetObjectInObjectWithIndex(props, j);
 			TiledProperty* property = &object->Properties[j];
@@ -290,13 +288,13 @@ static void createBackgroundsFromTilemap(Tilemap* map) {
 			for (int x = 0; x < layer->Width; x++) {
 				int gid = layer->Data[y * layer->Width + x];
 				if (!gid) continue;
-				Tileset* ts = GetTilesetForGID(gid, map);
+				Tileset* ts = GetTilesetForGID(gid);
 				dst.x = x * map->TileWidth;
 				dst.y = y * map->TileHeight;
 				AnimatedTile* at = getAnimatedTileForGid(gid, ts);
 				if (at) {
-					map->AnimatedDrawRectangles = realloc(map->AnimatedDrawRectangles, sizeof(RectangleF) * (++map->AnimatedNumDrawRectangles));
-					map->AnimatedGIDList = realloc(map->AnimatedGIDList, sizeof(AnimatedTile*) * map->AnimatedNumDrawRectangles);
+					map->AnimatedDrawRectangles = sgrealloc(map->AnimatedDrawRectangles, sizeof(RectangleF) * (++map->AnimatedNumDrawRectangles));
+					map->AnimatedGIDList = sgrealloc(map->AnimatedGIDList, sizeof(AnimatedTile*) * map->AnimatedNumDrawRectangles);
 					map->AnimatedDrawRectangles[map->AnimatedNumDrawRectangles - 1] = dst;
 					map->AnimatedGIDList[map->AnimatedNumDrawRectangles - 1] = at;
 					continue;
@@ -352,40 +350,32 @@ void DrawCurrentMap(void) {
 	drawAnimatedTiles();
 }
 
-static void freeTiledTilemap(Tilemap* map) {
-	for (int i = 0; i < 2; i++) {
-		for (int j = 0; j < map->LayerGroups[i].NumLayers; j++)
-			SDL_free(map->LayerGroups[i].Layers[j].Data);
-		SDL_free(map->LayerGroups[i].Layers);
-		SDL_free(map->LayerGroups[i].Name);
+void DestroyMap(Tilemap* m) {
+	if (m == currentMap) {
+		currentMap = NULL;
 	}
-	// for (int i = 0; i < map->NumTilesets; i++) {
-	// 	Tileset* ts = &map->Tilesets[i];
-	// 	for (size_t j = 0; j < ts->NumAnimatedTiles; j++) {
-	// 		SDL_free(ts->AnimatedTiles[j].TileFrames);
-	// 	}
-	// 	SDL_free(ts->AnimatedTiles);
-	// 	SDL_free(ts->Name);
-	// 	SDL_free(ts->Image);
-	// 	TextureDestroy(ts->TilesetTexture);
-	// }
-	SDL_free(map->AnimatedDrawRectangles);
-	// SDL_free(map->Tilesets);
-	SDL_free(map->Solids);
-	for (int i = 0; i < map->NumObjects; ++i) {
-		TiledObject* object = &map->Objects[i];
+	for (int i = 0; i < MAX_NUM_LAYERGROUPS; i++) {
+		for (int j = 0; j < m->LayerGroups[i].NumLayers; j++)
+			free(m->LayerGroups[i].Layers[j].Data);
+		free(m->LayerGroups[i].Layers);
+		free(m->LayerGroups[i].Name);
+	}
+	free(m->AnimatedDrawRectangles);
+	free(m->Solids);
+	for (int i = 0; i < m->NumObjects; ++i) {
+		TiledObject* object = &m->Objects[i];
 		for (int j = 0; j < object->NumProperties; ++j) {
 			if (object->Properties[j].PropertyType == TiledPropertyTypeString) {
-				SDL_free(object->Properties[j].Data.StringData);
+				free(object->Properties[j].Data.StringData);
 			}
-			SDL_free(object->Properties[j].Name);
+			free(object->Properties[j].Name);
 		}
-		SDL_free(object->Properties);
+		free(object->Properties);
 	}
-	SDL_free(map->Objects);
-	TextureDestroy(map->BackgroundTexture);
-	SDL_free(map->BaseFilename);
-	SDL_free(map);
+	free(m->Objects);
+	TextureDestroy(m->BackgroundTexture);
+	free(m->BaseFilename);
+	free(m);
 }
 
 static void loadMapInternal(const char* name, Tilemap* map, json_object* root) {

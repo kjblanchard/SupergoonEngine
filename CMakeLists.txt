@@ -145,6 +145,8 @@ if(IMGUI_DEBUGGING)
     src/Debug/DebugGameWindow.cpp
     src/Debug/DebugConsoleWindow.cpp
     src/Debug/DebugUIWindow.cpp
+    src/Debug/DebugMapTab.cpp
+    src/Debug/DebugEngineTab.cpp
   )
   list(APPEND SRC_FILES ${IMGUI_SRC})
   add_definitions(-Dimgui)

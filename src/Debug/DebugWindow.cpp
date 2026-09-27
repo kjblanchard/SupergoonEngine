@@ -8,7 +8,9 @@
 #include <imgui_impl_sdl3.h>
 
 #include <DebugConsoleWindow.hpp>
+#include <DebugEngineTab.hpp>
 #include <DebugGameWindow.hpp>
+#include <DebugMapTab.hpp>
 #include <DebugUIWindow.hpp>
 #include <DebugWindow.hpp>
 #include <functional>
@@ -77,6 +79,8 @@ void debugWindowInitialize() {
 	DebugWindowAddWindowFunc("Game", DebugGameWindowDraw);
 	DebugWindowAddWindowFunc("Console", DebugConsoleWindowDraw);
 	DebugWindowAddWindowFunc("UI", DebugUIWindowDraw);
+	DebugWindowAddTabFuncToMainDebugWindow(DebugEngineTabDraw);
+	DebugWindowAddTabFuncToMainDebugWindow(DebugMapTabDraw);
 }
 
 void debugWindowDrawWindows() {
