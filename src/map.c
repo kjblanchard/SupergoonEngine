@@ -23,7 +23,7 @@ size_t tilesetCount = 0;
 size_t tilesetSize = 0;
 
 static void GetRectForGid(int gid, Tileset* tileset, RectangleF* rect) {
-	int local = gid - tileset->FirstGid;
+	int local = gid;
 	int cols = tileset->ImageWidth / tileset->TileWidth;
 	rect->x = (local % cols) * tileset->TileWidth;
 	rect->y = (local / cols) * tileset->TileHeight;
@@ -31,20 +31,21 @@ static void GetRectForGid(int gid, Tileset* tileset, RectangleF* rect) {
 	rect->h = tileset->TileHeight;
 }
 
-static Tileset* GetTilesetForGID(int gid) {
+static Tileset* GetTilesetForGID(int gid, Tilemap* m) {
 	Tileset* best = NULL;
 	int highest = 0;
-	for (int i = 0; i < tilesetCount; i++) {
-		if (gid >= tilesets[i]->FirstGid &&
-			tilesets[i]->FirstGid >= highest) {
-			highest = tilesets[i]->FirstGid;
-			best = tilesets[i];
+	for (int i = 0; i < m->NumTilesets; i++) {
+		if (gid >= m->TilesetFirstGID[i] &&
+			m->TilesetFirstGID[i] >= highest) {
+			highest = m->TilesetFirstGID[i];
+			best = m->Tilesets[i];
 		}
 	}
 	return best;
 }
 
 static AnimatedTile* getAnimatedTileForGid(int gid, Tileset* tileset) {
+	assert(tileset);
 	for (size_t i = 0; i < tileset->NumAnimatedTiles; i++) {
 		if (tileset->AnimatedTiles[i].GID == gid)
 			return &tileset->AnimatedTiles[i];
@@ -74,7 +75,7 @@ static void createAnimatedTiles(Tileset* tileset, json_object* ts) {
 		json_object* tile = jGetObjectInObjectWithIndex(tiles, i);
 		AnimatedTile* anim = &tileset->AnimatedTiles[i];
 		anim->Tileset = tileset;
-		anim->GID = (unsigned int)jint(tile, "id") + (unsigned int)tileset->FirstGid;
+		anim->GID = (unsigned int)jint(tile, "id");
 		json_object* animArr = jobj(tile, "animation");
 		anim->NumFrames = (unsigned int)jGetObjectArrayLength(animArr);
 		anim->TileFrames = calloc(anim->NumFrames, sizeof(TileAnimationFrame));
@@ -82,7 +83,7 @@ static void createAnimatedTiles(Tileset* tileset, json_object* ts) {
 			json_object* frame = jGetObjectInObjectWithIndex(animArr, j);
 			TileAnimationFrame* f = &anim->TileFrames[j];
 			f->MsTime = (unsigned int)jint(frame, "duration");
-			f->Id = (unsigned int)jint(frame, "tileid") + (unsigned int)tileset->FirstGid;
+			f->Id = (unsigned int)jint(frame, "tileid");
 			GetRectForGid((int)f->Id, tileset, &f->SrcRect);
 		}
 	}
@@ -106,6 +107,9 @@ static void addTilesetToCache(Tileset* ts) {
 static void createTilesets(Tilemap* map, json_object* root) {
 	json_object* tilesetsArrayJson = jobj(root, "tilesets");
 	int numTilesets = jGetObjectArrayLength(tilesetsArrayJson);
+	map->NumTilesets = numTilesets;
+	map->Tilesets = (Tileset**)calloc((size_t)numTilesets, sizeof(Tileset*));
+	map->TilesetFirstGID = (int*)calloc((size_t)numTilesets, sizeof(int));
 	for (int i = 0; i < numTilesets; i++) {
 		// Check if we already have cached the tileset
 		json_object* tilesetJson = jGetObjectInObjectWithIndex(tilesetsArrayJson, i);
@@ -115,19 +119,19 @@ static void createTilesets(Tilemap* map, json_object* root) {
 			continue;
 		}
 		Tileset* tileset = checkForLoadedTileset(name);
-		if (tileset) {
-			continue;
+		if (!tileset) {
+			tileset = malloc(sizeof(*tileset));
+			tileset->Name = strdup(jstr(tilesetJson, "name"));
+			tileset->TileWidth = jint(tilesetJson, "tilewidth");
+			tileset->TileHeight = jint(tilesetJson, "tileheight");
+			tileset->Image = strdup(jstr(tilesetJson, "image"));
+			tileset->ImageWidth = jint(tilesetJson, "imagewidth");
+			tileset->ImageHeight = jint(tilesetJson, "imageheight");
+			addTilesetToCache(tileset);
+			createAnimatedTiles(tileset, tilesetJson);
 		}
-		tileset = malloc(sizeof(*tileset));
-		tileset->Name = strdup(jstr(tilesetJson, "name"));
-		tileset->FirstGid = jint(tilesetJson, "firstgid");
-		tileset->TileWidth = jint(tilesetJson, "tilewidth");
-		tileset->TileHeight = jint(tilesetJson, "tileheight");
-		tileset->Image = strdup(jstr(tilesetJson, "image"));
-		tileset->ImageWidth = jint(tilesetJson, "imagewidth");
-		tileset->ImageHeight = jint(tilesetJson, "imageheight");
-		addTilesetToCache(tileset);
-		createAnimatedTiles(tileset, tilesetJson);
+		map->Tilesets[i] = tileset;
+		map->TilesetFirstGID[i] = jint(tilesetJson, "firstgid");
 	}
 }
 
@@ -243,7 +247,7 @@ static void createLayers(Tilemap* map, json_object* root) {
 	}
 }
 
-static void loadTilesetTextures() {
+static void loadTilesetTextures(void) {
 	for (size_t i = 0; i < (size_t)tilesetCount; i++) {
 		Tileset* ts = tilesets[i];
 		assert(ts);
@@ -278,7 +282,7 @@ static void createBackgroundsFromTilemap(Tilemap* map) {
 	map->BackgroundTexture = TextureCreateRenderTarget(w, h);
 	SetRenderTarget(map->BackgroundTexture);
 	TextureClearRenderTarget(map->BackgroundTexture, 0.1f, 0.1f, 0.1f, 255);
-	loadTilesetTextures(map);
+	loadTilesetTextures();
 	LayerGroup* bg = &map->LayerGroups[0];
 	RectangleF dst = {0, 0, map->TileWidth, map->TileHeight};
 	RectangleF src = {0, 0, 0, 0};
@@ -288,7 +292,7 @@ static void createBackgroundsFromTilemap(Tilemap* map) {
 			for (int x = 0; x < layer->Width; x++) {
 				int gid = layer->Data[y * layer->Width + x];
 				if (!gid) continue;
-				Tileset* ts = GetTilesetForGID(gid);
+				Tileset* ts = GetTilesetForGID(gid, map);
 				dst.x = x * map->TileWidth;
 				dst.y = y * map->TileHeight;
 				AnimatedTile* at = getAnimatedTileForGid(gid, ts);

@@ -71,7 +71,7 @@ typedef struct Texture Texture;
 // Tiled tileset
 typedef struct Tileset {
 	char* Name;
-	int FirstGid;
+	// int FirstGid;
 	int TileWidth;
 	int TileHeight;
 	char* Image;
@@ -109,6 +109,9 @@ struct Tilemap {
 	RectangleF* Solids;
 	int NumSolids;
 	Texture* BackgroundTexture;
+	Tileset** Tilesets;
+	int* TilesetFirstGID;
+	int NumTilesets;
 	// The rectangles where to draw this animated tile, used in draw function
 	RectangleF* AnimatedDrawRectangles;
 	unsigned int AnimatedNumDrawRectangles;

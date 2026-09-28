@@ -118,6 +118,23 @@ error: {
 	return false;
 }
 
+int LuaRefFuncFromFile(LuaState L, const char* p, const char* f) {
+	if (!loadFuncFromBuffer(p)) {
+		return LUA_NOREF;
+	}
+	if (LuaIsNili(L, -1)) {
+		sgLogWarn("cannot create ref, nil is on table!");
+		return LUA_NOREF;
+	}
+	RunLuaFunctionOnStack(L, 0, 1);
+	LuaGetLuaFunc(L, f);
+	int ref = LuaCreateRefInLuaRegistry(L, -1);
+	if (ref == LUA_NOREF) {
+		sgLogWarn("Ref is noref, something borked");
+	}
+	return ref;
+}
+
 int LuaRefFileFromBuffer(LuaState L, const char* p) {
 	if (!loadFuncFromBuffer(p)) {
 		return LUA_NOREF;
@@ -128,7 +145,7 @@ int LuaRefFileFromBuffer(LuaState L, const char* p) {
 
 void LuaRunRefFunction(LuaState L, int ref) {
 	LuaPushRefValueInLuaRegistry(L, ref);
-	RunLuaFunctionOnStack(L, 0);
+	RunLuaFunctionOnStack(L, 0, 0);
 	// LuaPopStack(L, 1);
 }
 
@@ -320,7 +337,7 @@ int LuaGetTablei(LuaState L, int i) {
 // pop it off, use stopiteration when done, only pop value
 void LuaStartTableKeyValueIteration(LuaState L) {
 	lua_pushnil(L);
-	lua_pushnil(L);
+	// lua_pushnil(L);
 }
 // Goes to the next item in the table, returns if there is any more values left
 // You must pop the value off before next iteration.
@@ -498,11 +515,11 @@ void LuaGetLuaFunc(LuaState L, const char* field) {
 		return;
 	}
 }
-void RunLuaFunctionOnStack(LuaState L, int numArgs) {
+void RunLuaFunctionOnStack(LuaState L, int numArgs, int numReturn) {
 #ifndef NDEBUG
-	if (dbg_pcall(L, numArgs, 0, 0) != LUA_OK) {
+	if (dbg_pcall(L, numArgs, numReturn, 0) != LUA_OK) {
 #else
-	if (lua_pcall(L, numArgs, 0, 0) != LUA_OK) {
+	if (lua_pcall(L, numArgs, numReturn, 0) != LUA_OK) {
 #endif
 		const char* err = lua_tostring(L, -1);
 		sgLogWarn("Failed to run Lua function: %s\n", err);

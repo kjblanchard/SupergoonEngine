@@ -124,13 +124,14 @@ void LuaRegistrySetSubTableEntry(LuaState L, const char* registryKey, int subKey
  * @return int the ref
  */
 int LuaCreateRefInLuaRegistry(LuaState L, int i);
+int LuaRefFuncFromFile(LuaState L, const char* p, const char* f);
 int LuaRefFileFromBuffer(LuaState L, const char* p);
 void LuaRunRefFunction(LuaState L, int ref);
 void LuaPushRefValueInLuaRegistry(LuaState L, int refInt);
 // Functions
 void LuaGetLuaFuncAtIndex(LuaState L, int index);
 void LuaGetLuaFunc(LuaState L, const char* field);
-void RunLuaFunctionOnStack(LuaState L, int numArgs);
+void RunLuaFunctionOnStack(LuaState L, int numArgs, int numReturn);
 // Helpers
 typedef enum LuaFunctionParameterTypes {
 	// Used if you don't want to check this type.
