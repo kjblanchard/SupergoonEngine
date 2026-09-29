@@ -18,9 +18,12 @@ UIObject* UIObjectCreate(void) {
 }
 
 void UIObjectDraw(UIObject* o, Vector2* parentPos) {
+	if (!o->Active || !o->Visible) {
+		return;
+	}
 	// TODO maybe for efficiency switch this to a "layout" function to remove these each frame, small benefit?
 	o->AbsolutePos = (Vector2){parentPos->X + o->Rect.x, parentPos->Y + o->Rect.y};
-	if (o->Active && o->Visible && o->Type && o->Type->Draw) {
+	if (o->Type && o->Type->Draw) {
 		o->Type->Draw(o);
 	}
 #ifdef imgui

@@ -86,12 +86,24 @@ static int drawUIObject(LuaState L) {
 	return 1;
 }
 
+static int setUIObjectVisible(LuaState L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 2, LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeBoolean)) {
+		sgLogWarn("Bad params for set visible");
+		return 0;
+	}
+	UIObject* o = LuaGetLightUserdatai(L, 1);
+	bool visible = LuaGetBooli(L, 2);
+	o->Visible = (unsigned int)LuaGetBooli(L, 2);
+	return 0;
+}
+
 static const LuaCFuncRegister uiLib[] = {
 	{"CreateUIObject", createUIObjectL},
 	{"CreateUIImage", createUiImage},
 	{"CreateUIAnimator", createUIAnimation},
 	{"DrawUIObject", drawUIObject},
 	{"SetRootUI", setRootUIObject},
+	{"SetUIObjectVisible", setUIObjectVisible},
 };
 
 void RegisterLuaUIFunctions(void) {
