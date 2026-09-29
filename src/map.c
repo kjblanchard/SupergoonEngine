@@ -31,7 +31,7 @@ static void GetRectForGid(int gid, Tileset* tileset, RectangleF* rect) {
 	rect->h = tileset->TileHeight;
 }
 
-static Tileset* GetTilesetForGID(int gid, Tilemap* m) {
+static Tileset* GetTilesetForGID(int gid, Tilemap* m, int* outFirstGid) {
 	Tileset* best = NULL;
 	int highest = 0;
 	for (int i = 0; i < m->NumTilesets; i++) {
@@ -41,6 +41,7 @@ static Tileset* GetTilesetForGID(int gid, Tilemap* m) {
 			best = m->Tilesets[i];
 		}
 	}
+	*outFirstGid = highest;
 	return best;
 }
 
@@ -292,10 +293,12 @@ static void createBackgroundsFromTilemap(Tilemap* map) {
 			for (int x = 0; x < layer->Width; x++) {
 				int gid = layer->Data[y * layer->Width + x];
 				if (!gid) continue;
-				Tileset* ts = GetTilesetForGID(gid, map);
+				int firstGid = 0;
+				Tileset* ts = GetTilesetForGID(gid, map, &firstGid);
+				int localId = gid - firstGid;
 				dst.x = x * map->TileWidth;
 				dst.y = y * map->TileHeight;
-				AnimatedTile* at = getAnimatedTileForGid(gid, ts);
+				AnimatedTile* at = getAnimatedTileForGid(localId, ts);
 				if (at) {
 					map->AnimatedDrawRectangles = sgrealloc(map->AnimatedDrawRectangles, sizeof(RectangleF) * (++map->AnimatedNumDrawRectangles));
 					map->AnimatedGIDList = sgrealloc(map->AnimatedGIDList, sizeof(AnimatedTile*) * map->AnimatedNumDrawRectangles);
@@ -303,7 +306,7 @@ static void createBackgroundsFromTilemap(Tilemap* map) {
 					map->AnimatedGIDList[map->AnimatedNumDrawRectangles - 1] = at;
 					continue;
 				}
-				GetRectForGid(gid, ts, &src);
+				GetRectForGid(localId, ts, &src);
 				DrawTextureToTexture(map->BackgroundTexture,
 									 ts->TilesetTexture,
 									 GetDefaultShader(),
