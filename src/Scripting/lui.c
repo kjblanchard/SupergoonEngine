@@ -1,6 +1,7 @@
 #include <Supergoon/Scripting/lui.h>
 #include <Supergoon/UI/animation.h>
 #include <Supergoon/UI/image.h>
+#include <Supergoon/UI/nineslice.h>
 #include <Supergoon/UI/object.h>
 #include <Supergoon/lua.h>
 #include <Supergoon/sprite.h>
@@ -33,7 +34,6 @@ static int createUIObjectL(LuaState L) {
 	LuaPushLightUserdata(L, o);
 	return 1;
 }
-
 // uiobject, sprite
 static int createUiImage(LuaState L) {
 	if (!LuaCheckFunctionCallParamsAndTypes(L, 2, LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeUserdata)) {
@@ -46,6 +46,25 @@ static int createUiImage(LuaState L) {
 		.Object = LuaGetLightUserdatai(L, 1),
 		.Sprite = LuaGetLightUserdatai(L, 2),
 	});
+	LuaPushLightUserdata(L, o);
+	return 1;
+}
+// uiobject, texture, colortbl, offsettbl
+static int createUINineSlice(LuaState L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 4, LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeTable, LuaFunctionParameterTypeTable)) {
+		sgLogWarn("Bad params for create nineslice");
+		return 0;
+	}
+	UIObject* o = CreateUINineSlice(&(UINineSliceArgs){
+		.Object = LuaGetLightUserdatai(L, 1),
+		.Texture = LuaGetLightUserdatai(L, 2),
+		.NineSliceOffset = (Point){LuaGetFloatFromTableStackIndex(L, 4, 1), LuaGetFloatFromTableStackIndex(L, 4, 2)},
+		.Color = (Color){
+			LuaGetFloatFromTableStackIndex(L, 3, 1),
+			LuaGetFloatFromTableStackIndex(L, 3, 2),
+			LuaGetFloatFromTableStackIndex(L, 3, 3),
+			LuaGetFloatFromTableStackIndex(L, 3, 4),
+		}});
 	LuaPushLightUserdata(L, o);
 	return 1;
 }
@@ -104,6 +123,7 @@ static const LuaCFuncRegister uiLib[] = {
 	{"DrawUIObject", drawUIObject},
 	{"SetRootUI", setRootUIObject},
 	{"SetUIObjectVisible", setUIObjectVisible},
+	{"CreateNineSlice", createUINineSlice},
 };
 
 void RegisterLuaUIFunctions(void) {
