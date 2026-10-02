@@ -119,6 +119,7 @@ set(SRC_FILES
     src/UI/image.c
     src/UI/animation.c
     src/UI/nineslice.c
+    src/UI/text.c
     #Services - Steam - Game Center, etc
     src/services.c
     #Scripting

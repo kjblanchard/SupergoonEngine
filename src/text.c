@@ -17,21 +17,23 @@
 
 #define MAX_LOADED_FONTS 12
 #define ASCII_CHAR_NUM 128
-static FT_Library _loadedLibrary = NULL;
+
+static FT_Library loadedLibrary = NULL;
 typedef struct LoadedFont {
 	char* FontName;
 	FT_Face FontFace;
 	int FontSize;
 	Texture* GlyphTextures[ASCII_CHAR_NUM];
 } LoadedFont;
-static LoadedFont _loadedFonts[MAX_LOADED_FONTS];
-static LoadedFont* _currentFont = NULL;
+static LoadedFont loadedFonts[MAX_LOADED_FONTS];
+static LoadedFont* currentFont = NULL;
 
 static void loadTexturesForFont(LoadedFont* font) {
 	FT_Set_Pixel_Sizes(font->FontFace, 0, font->FontSize);
 	for (size_t i = 0; i < ASCII_CHAR_NUM; i++) {
-		if (FT_Load_Char(font->FontFace, i, FT_LOAD_RENDER)) {
-			sgLogWarn("Freetype failed to load glyph!");
+		int result = FT_Load_Char(font->FontFace, i, FT_LOAD_RENDER);
+		if (result) {
+			sgLogWarn("Freetype failed to load glyph, ft error %d!", result);
 			continue;
 		}
 		String tx = StringSprintf("%s%d", font->FontFace, font->FontSize);
@@ -152,14 +154,14 @@ static LoadedFont* getLoadedFont(const char* fontName, unsigned int size, struct
 	char fontAndSize[255];
 	snprintf(fontAndSize, sizeof(fontAndSize), "%s%d", fontName, size);
 	for (size_t i = 0; i < MAX_LOADED_FONTS; i++) {
-		if (_loadedFonts[i].FontName && strcmp(fontAndSize, _loadedFonts[i].FontName) == 0) {
-			return &_loadedFonts[i];
+		if (loadedFonts[i].FontName && strcmp(fontAndSize, loadedFonts[i].FontName) == 0) {
+			return &loadedFonts[i];
 		}
 	}
 	LoadedFont* fontToLoadInto = NULL;
 	for (size_t i = 0; i < MAX_LOADED_FONTS; i++) {
-		if (!_loadedFonts[i].FontName) {
-			fontToLoadInto = &_loadedFonts[i];
+		if (!loadedFonts[i].FontName) {
+			fontToLoadInto = &loadedFonts[i];
 			break;
 		}
 	}
@@ -177,7 +179,7 @@ static LoadedFont* getLoadedFont(const char* fontName, unsigned int size, struct
 		return NULL;
 	}
 	FT_Error result = FT_New_Memory_Face(
-		_loadedLibrary,
+		loadedLibrary,
 		(const FT_Byte*)buf,
 		(FT_Long)sz,
 		0,
@@ -205,8 +207,9 @@ static void addWordToWrapPoints(unsigned int currentWordWraps, Text* text, int l
 }
 
 static void measureText(Text* text) {
+	assert(text->Font && "No font loaded, please load a font previously");
 	FT_Face fontFace = text->Font->FontFace;
-	assert(fontFace && text && "no font loaded for text to load");
+	assert(fontFace && text && "no font loaded from ft for text to load");
 	// Max width and height will be the size of the uiobject, this should be loaded prior
 	int currentWordLength = 0;
 	int currentWordLetters = 0;
@@ -286,7 +289,6 @@ static void measureText(Text* text) {
 	}
 }
 
-// Used if we need to redraw all of the text, usually done if recentering, resizing, etc
 void TextRedrawText(Text* text) {
 	if (text->Texture) {
 		TextureDestroy(text->Texture);
@@ -309,15 +311,16 @@ void TextRedrawText(Text* text) {
 }
 
 void InitializeTextSystem(void) {
-	if (!_loadedLibrary) {
-		if (FT_Init_FreeType(&_loadedLibrary)) {
+	if (!loadedLibrary) {
+		if (FT_Init_FreeType(&loadedLibrary)) {
 			sgLogWarn("Could not initialize FreeType library");
 		}
 	}
 }
+
 void ShutdownTextSystem(void) {
 	for (size_t i = 0; i < MAX_LOADED_FONTS; i++) {
-		LoadedFont* font = &_loadedFonts[i];
+		LoadedFont* font = &loadedFonts[i];
 		if (!font) {
 			break;
 		}
@@ -327,7 +330,7 @@ void ShutdownTextSystem(void) {
 		}
 		FT_Done_Face(font->FontFace);
 	}
-	if (_loadedLibrary) FT_Done_FreeType(_loadedLibrary);
+	if (loadedLibrary) FT_Done_FreeType(loadedLibrary);
 }
 
 int TextSetFont(const char* fontName, unsigned int size, struct Directory* directory) {
@@ -339,8 +342,8 @@ int TextSetFont(const char* fontName, unsigned int size, struct Directory* direc
 		sgLogWarn("Improper size passed into font, must be between 1 and 1000, setting to 32.");
 		size = 32;
 	}
-	_currentFont = getLoadedFont(fontName, size, directory);
-	return _currentFont != NULL;
+	currentFont = getLoadedFont(fontName, size, directory);
+	return currentFont != NULL;
 }
 
 void TextLoad(Text* text) {
@@ -349,12 +352,6 @@ void TextLoad(Text* text) {
 
 void TextOnDirty(Text* text) {
 	if (text && !text->Texture) {
-		TextRedrawText(text);
-	}
-	// Recreate texture if the size has changed
-	float w = TextureGetWidth(text->Texture);
-	float h = TextureGetHeight(text->Texture);
-	if (text->Location.h != h || text->Location.w != w) {
 		TextRedrawText(text);
 	}
 	// If there is more letters drawn than the current amount to draw, clear the texture and start from 0
@@ -376,15 +373,14 @@ Text* TextCreate(RectangleF* location, const char* textText) {
 	text->Text = strdup(textText);
 	text->NumLettersToDraw = strlen(textText);
 	text->Location = *location;
-	text->Font = _currentFont;
+	text->Font = currentFont;
 	return text;
 }
 
-void TextDraw(Text* text, float parentX, float parentY, Color* color) {
+void TextDraw(Text* text, Color* color) {
 	if (!text->Texture) return;
 	RectangleF src = {0, 0, text->Location.w, text->Location.h};
-	RectangleF dst = {text->Location.x + parentX, text->Location.y + parentY, text->Location.w, text->Location.h};
-	DrawTexture(text->Texture, GetDefaultShader(), &dst, &src, false, 1.0, false, color);
+	DrawTexture(text->Texture, GetDefaultShader(), &text->Location, &src, false, 1.0f, false, color);
 }
 
 void TextDestroy(Text* text) {
@@ -400,15 +396,17 @@ static LoadedFont* findCachedFont(const char* fontName, unsigned int size) {
 	char key[255];
 	snprintf(key, sizeof(key), "%s%d", fontName, size);
 	for (size_t i = 0; i < MAX_LOADED_FONTS; i++) {
-		if (_loadedFonts[i].FontName && strcmp(key, _loadedFonts[i].FontName) == 0)
-			return &_loadedFonts[i];
+		if (loadedFonts[i].FontName && strcmp(key, loadedFonts[i].FontName) == 0)
+			return &loadedFonts[i];
 	}
 	return NULL;
 }
 
 int TextMeasureStringDirect(const char* str, const char* fontName, unsigned int size) {
 	LoadedFont* font = findCachedFont(fontName, size);
-	if (!font) return 0;
+	if (!font) {
+		return 0;
+	}
 	int penX = 0;
 	for (size_t i = 0; str[i] != '\0'; i++) {
 		unsigned char c = (unsigned char)str[i];
@@ -421,7 +419,9 @@ int TextMeasureStringDirect(const char* str, const char* fontName, unsigned int 
 
 int TextDrawStringDirect(const char* str, const char* fontName, unsigned int size, float x, float y, Color* color, int useCamera) {
 	LoadedFont* font = findCachedFont(fontName, size);
-	if (!font) return 0;
+	if (!font) {
+		return 0;
+	}
 	int ascender = (font->FontFace->ascender * font->FontSize) / font->FontFace->units_per_EM;
 	float penX = x;
 	float baseY = y + ascender;

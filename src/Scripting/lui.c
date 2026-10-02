@@ -3,9 +3,12 @@
 #include <Supergoon/UI/image.h>
 #include <Supergoon/UI/nineslice.h>
 #include <Supergoon/UI/object.h>
+#include <Supergoon/UI/text.h>
 #include <Supergoon/lua.h>
 #include <Supergoon/sprite.h>
 #include <Supergoon/state.h>
+#include <Supergoon/text.h>
+#include <assert.h>
 #include <string.h>
 
 #include "sgtools/log.h"
@@ -84,6 +87,31 @@ static int createUIAnimation(LuaState L) {
 	LuaPushLightUserdata(L, o);
 	return 1;
 }
+// uiobj, text, font, size, centered, color
+static int createUIText(LuaState L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 6, LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeString, LuaFunctionParameterTypeString, LuaFunctionParameterTypeInt, LuaFunctionParameterTypeBoolean, LuaFunctionParameterTypeTable)) {
+		sgLogWarn("Bad params for create uitext");
+		return 0;
+	}
+	UIObject* o = (UIObject*)LuaGetLightUserdatai(L, 1);
+	assert(o);
+	TextSetFont(LuaGetStringi(L, 3), (unsigned int)LuaGetIntFromStacki(L, 4), AssetDirectory);
+	Text* t = TextCreate(&o->Rect, LuaGetStringi(L, 2));
+	t->CenteredX = t->CenteredY = (unsigned int)LuaGetBooli(L, 5);
+	t->Color = (Color){
+		(uint8_t)LuaGetFloatFromTableStackIndex(L, 6, 1),
+		(uint8_t)LuaGetFloatFromTableStackIndex(L, 6, 2),
+		(uint8_t)LuaGetFloatFromTableStackIndex(L, 6, 3),
+		(uint8_t)LuaGetFloatFromTableStackIndex(L, 6, 3),
+	};
+	TextLoad(t);
+	CreateUIText(&(UITextArgs){
+		.Text = t,
+		.Object = o,
+		.Color = t->Color});
+	LuaPushLightUserdata(L, o);
+	return 1;
+}
 
 static int setRootUIObject(LuaState L) {
 	if (!LuaCheckFunctionCallParamsAndTypes(L, 1, LuaFunctionParameterTypeUserdata)) {
@@ -124,6 +152,7 @@ static const LuaCFuncRegister uiLib[] = {
 	{"SetRootUI", setRootUIObject},
 	{"SetUIObjectVisible", setUIObjectVisible},
 	{"CreateNineSlice", createUINineSlice},
+	{"CreateUIText", createUIText},
 };
 
 void RegisterLuaUIFunctions(void) {
