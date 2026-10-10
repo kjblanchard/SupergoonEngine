@@ -28,6 +28,7 @@ extern void ShaderSetUniformMatrix4Impl(Shader* shader, const char* name,
 extern Shader* GetDefaultShaderImpl(void);
 extern Shader* GetDefaultTextShaderImpl(void);
 extern Shader* GetDefaultRectShaderImpl(void);
+extern Shader* GetDefaultScreenShaderImpl(void);
 extern void ShaderSetDirectoryImpl(struct Directory* d);
 extern void SetScreenShaderOverrideImpl(Shader* s);
 extern Shader* GetScreenShaderOverrideImpl(void);
@@ -79,6 +80,9 @@ void ShaderSetUniformMatrix4(Shader* shader, const char* name, mat4 value,
 	ShaderSetUniformMatrix4Impl(shader, name, value, useShader);
 }
 
+Shader* GetDefaultScreenShader(void) {
+	return GetDefaultScreenShaderImpl();
+}
 Shader* GetDefaultTextShader(void) {
 	return GetDefaultTextShaderImpl();
 }

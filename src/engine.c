@@ -1,4 +1,5 @@
 #include <SDL3/SDL_init.h>
+#include <Supergoon/UI/object.h>
 #include <ogg/ogg.h>
 #define SDL_MAIN_USE_CALLBACKS
 #include <SDL3/SDL.h>
@@ -69,6 +70,7 @@ static void draw() {
 	SpriteSystemDraw();
 	if (drawFunc) drawFunc();
 	DrawUIStart();
+	if (RootUIObject) UIObjectDraw(RootUIObject, &(Vector2){0, 0});
 	DrawEnd();
 }
 

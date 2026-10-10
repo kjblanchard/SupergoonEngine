@@ -380,7 +380,7 @@ Text* TextCreate(RectangleF* location, const char* textText) {
 void TextDraw(Text* text, Color* color) {
 	if (!text->Texture) return;
 	RectangleF src = {0, 0, text->Location.w, text->Location.h};
-	DrawTexture(text->Texture, GetDefaultShader(), &text->Location, &src, false, 1.0f, false, color);
+	DrawTexture(text->Texture, GetDefaultScreenShader(), &text->Location, &src, false, 1.0f, false, color);
 }
 
 void TextDestroy(Text* text) {

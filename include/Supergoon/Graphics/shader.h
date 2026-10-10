@@ -19,6 +19,7 @@ void ShaderUse(Shader* shader);
 Shader* GetDefaultShader(void);
 Shader* GetDefaultTextShader(void);
 Shader* GetDefaultRectShader(void);
+Shader* GetDefaultScreenShader(void);
 void ShaderSetDirectory(struct Directory* d);
 void ShaderCompile(Shader* shader, const char* vertexFile, const char* fragmentFile);
 void ShaderSetUniformFloat(Shader* shader, const char* name, float value, int useShader);

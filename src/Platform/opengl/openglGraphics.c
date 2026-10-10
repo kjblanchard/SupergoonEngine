@@ -190,7 +190,8 @@ void DrawEndImpl(void) {
 	DrawTextureToScreen(_screenFrameBufferTexture, screenShader, &worldDst, true, &fboColor);
 
 	if (_uiFrameBufferTexture) {
-		RectangleF uiDst = {offsetX, offsetY, (float)drawWidth, (float)drawHeight};
+		// RectangleF uiDst = {offsetX, offsetY, (float)drawWidth, (float)drawHeight};
+		RectangleF uiDst = {offsetX, offsetY, (float)fbWidth, (float)fbHeight};
 		DrawTextureToScreen(_uiFrameBufferTexture, screenShader, &uiDst, true, &fboColor);
 	}
 #ifdef imgui
