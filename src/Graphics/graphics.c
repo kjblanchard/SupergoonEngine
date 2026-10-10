@@ -12,6 +12,7 @@ extern void DrawLineImpl(float x1, float y1, float x2, float y2, float thickness
 extern void GraphicsUpdateFBOColorImpl(Color* color);
 extern Color GraphicsGetFBOColorImpl(void);
 extern void* GraphicsGetContextPtrImpl(void);
+extern void GraphicsSetPremultipliedBlendImpl(int premultiplied);
 
 void DrawRect(const RectangleF* rect, Color* color, int filled, int cameraOffset) { DrawRectImpl(rect, color, filled, cameraOffset); }
 void InitializeGraphicsSystem(void) { InitializeGraphicsSystemImpl(); }
@@ -25,3 +26,4 @@ void GraphicsUpdateFBOColor(Color* color) { GraphicsUpdateFBOColorImpl(color); }
 Color GraphicsGetFBOColor(void) { return GraphicsGetFBOColorImpl(); }
 void* GraphicsGetContextPtr(void) { return GraphicsGetContextPtrImpl(); }
 void DrawLine(float x1, float y1, float x2, float y2, float thickness, Color* color, int useCamera){DrawLineImpl(x1, y1, x2, y2, thickness, color, useCamera);}
+void GraphicsSetPremultipliedBlend(int premultiplied) { GraphicsSetPremultipliedBlendImpl(premultiplied); }

@@ -1,3 +1,4 @@
+#include <Supergoon/Graphics/graphics.h>
 #include <Supergoon/Graphics/shader.h>
 #include <Supergoon/Graphics/texture.h>
 #include <Supergoon/Primitives/Color.h>
@@ -380,7 +381,9 @@ Text* TextCreate(RectangleF* location, const char* textText) {
 void TextDraw(Text* text, Color* color) {
 	if (!text->Texture) return;
 	RectangleF src = {0, 0, text->Location.w, text->Location.h};
+	GraphicsSetPremultipliedBlend(1);
 	DrawTexture(text->Texture, GetDefaultScreenShader(), &text->Location, &src, false, 1.0f, false, color);
+	GraphicsSetPremultipliedBlend(0);
 }
 
 void TextDestroy(Text* text) {

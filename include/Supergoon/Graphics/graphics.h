@@ -28,6 +28,7 @@ void GraphicsWindowResizeEvent(int width, int height);
 void GraphicsUpdateFBOColor(Color* color);
 Color GraphicsGetFBOColor(void);
 void* GraphicsGetContextPtr(void);
+void GraphicsSetPremultipliedBlend(int premultiplied);
 
 #ifdef __cplusplus
 }

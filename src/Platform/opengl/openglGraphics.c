@@ -104,7 +104,7 @@ void InitializeGraphicsSystemImpl(void) {
 	sgLogDebug("[GFX INIT] Window pixel size: %d x %d", width, height);
 	glViewport(0, 0, width, height);
 	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 	glm_ortho(0.0f, WindowWidthImpl(), WindowHeightImpl(), 0.0f, -1.0f, 1.0f,
 			  projectionMatrix);
 #if !defined(__EMSCRIPTEN__) && !defined(ANDROID) && !defined(USE_GLES)
@@ -187,13 +187,14 @@ void DrawEndImpl(void) {
 	float worldY = offsetY + subY;
 	RectangleF worldDst = {worldX, worldY, (float)drawWidth, (float)drawHeight};
 	Shader* screenShader = GetDefaultScreenShaderImpl();
+	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 	DrawTextureToScreen(_screenFrameBufferTexture, screenShader, &worldDst, true, &fboColor);
 
 	if (_uiFrameBufferTexture) {
-		// RectangleF uiDst = {offsetX, offsetY, (float)drawWidth, (float)drawHeight};
 		RectangleF uiDst = {offsetX, offsetY, (float)fbWidth, (float)fbHeight};
 		DrawTextureToScreen(_uiFrameBufferTexture, screenShader, &uiDst, true, &fboColor);
 	}
+	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 #ifdef imgui
 	SetRenderTarget(NULL);
 	DebugSystemRender();
@@ -294,4 +295,12 @@ Color GraphicsGetFBOColorImpl(void) {
 
 void* GraphicsGetContextPtrImpl(void) {
 	return _context;
+}
+
+void GraphicsSetPremultipliedBlendImpl(int premultiplied) {
+	if (premultiplied) {
+		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+	} else {
+		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+	}
 }
