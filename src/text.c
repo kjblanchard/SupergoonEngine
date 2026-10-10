@@ -363,10 +363,12 @@ void TextOnDirty(Text* text) {
 		text->PenY = getCenteredYPenLoc(text);
 	}
 	unsigned int lettersToWrite = text->NumLettersToDraw > strlen(text->Text) ? strlen(text->Text) : text->NumLettersToDraw;
+	GraphicsSetPremultipliedBlend(1);
 	while (text->CurrentDrawnLetters < lettersToWrite) {
 		drawLetter(text);
 		++text->CurrentDrawnLetters;
 	}
+	GraphicsSetPremultipliedBlend(0);
 }
 
 Text* TextCreate(RectangleF* location, const char* textText) {
@@ -428,6 +430,7 @@ int TextDrawStringDirect(const char* str, const char* fontName, unsigned int siz
 	int ascender = (font->FontFace->ascender * font->FontSize) / font->FontFace->units_per_EM;
 	float penX = x;
 	float baseY = y + ascender;
+	GraphicsSetPremultipliedBlend(1);
 	for (size_t i = 0; str[i] != '\0'; i++) {
 		unsigned char c = (unsigned char)str[i];
 		if (c >= ASCII_CHAR_NUM) continue;
@@ -444,5 +447,6 @@ int TextDrawStringDirect(const char* str, const char* fontName, unsigned int siz
 		}
 		penX += font->FontFace->glyph->advance.x >> 6;
 	}
+	GraphicsSetPremultipliedBlend(0);
 	return (int)(penX - x);
 }
