@@ -29,6 +29,7 @@ void GraphicsUpdateFBOColor(Color* color);
 Color GraphicsGetFBOColor(void);
 void* GraphicsGetContextPtr(void);
 void GraphicsSetPremultipliedBlend(int premultiplied);
+int GraphicsGetUIScale(void);
 
 #ifdef __cplusplus
 }

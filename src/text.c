@@ -101,19 +101,20 @@ static bool shouldWrap(int x, int wordLength, int glyphWidth, int maxX) {
 }
 
 static int getCenteredXPenLoc(Text* text) {
-	int x = (text->Location.w - text->TextSizeX) / 2;
+	int scale = GraphicsGetUIScale();
+	int x = ((int)(text->Location.w * scale) - text->TextSizeX) / 2;
 	return x < 0 ? 0 : x;
 }
 
 static int getCenteredYPenLoc(Text* text) {
+	int scale = GraphicsGetUIScale();
 	int yTop = (text->Font->FontFace->ascender * text->Font->FontSize) / text->Font->FontFace->units_per_EM;
-	int y = (text->Location.h - text->TextSizeY) / 2;
+	int y = ((int)(text->Location.h * scale) - text->TextSizeY) / 2;
 	y = yTop + y;
 	return yTop < y ? y : yTop;
 }
 
 static void drawLetter(Text* text) {
-	// Check to see if we should move to the next line:
 	for (size_t i = 0; i < text->NumWordWrapCharacters; i++) {
 		if (text->WordWrapCharacters[i] == text->CurrentDrawnLetters) {
 			text->PenX = 0;
@@ -211,21 +212,20 @@ static void measureText(Text* text) {
 	assert(text->Font && "No font loaded, please load a font previously");
 	FT_Face fontFace = text->Font->FontFace;
 	assert(fontFace && text && "no font loaded from ft for text to load");
-	// Max width and height will be the size of the uiobject, this should be loaded prior
+	int scale = GraphicsGetUIScale();
+	int maxWidth = (int)(text->Location.w * scale);
 	int currentWordLength = 0;
 	int currentWordLetters = 0;
 	int ascenderInPixels = (fontFace->ascender * text->Font->FontSize) / fontFace->units_per_EM;
 	int descenderInPixels = (fontFace->descender * text->Font->FontSize) / fontFace->units_per_EM;
 	int lineSpace = (fontFace->height * text->Font->FontSize) / fontFace->units_per_EM;
 	int startLoc = ascenderInPixels;
-	// Used to determine when to start for alignments, after we measure the text.
 	int textSizeX = 0, textSizeY = 0;
 	int penX = 0;
 	int penY = startLoc;
 	int currentWordWraps = 0;
 	for (size_t i = 0; i < strlen(text->Text); i++) {
 		char letter = text->Text[i];
-		// If this is a newline, we should add to our letter points if there is a word
 		if (letter == '\n' || letter == '\r') {
 			if (currentWordLength) {
 				addWordToWrapPoints(currentWordWraps, text, i);
@@ -247,15 +247,12 @@ static void measureText(Text* text) {
 			penX += letterSize;
 			currentWordLetters = 0;
 			currentWordLength = 0;
-			// We probably should see if we are wrapping now.  If we wrap, then we shouldn't count this.
 			continue;
 		} else {
 			currentWordLength += letterSize;
 		}
-		// If we should wrap to the next line, move penx to beginning, and increment peny
-		if (shouldWrap(penX, currentWordLength, 0, text->Location.w)) {
+		if (shouldWrap(penX, currentWordLength, 0, maxWidth)) {
 			addWordToWrapPoints(currentWordWraps, text, i - currentWordLetters);
-			// If current pen location is greater than the calculated text size, update
 			if (penX > textSizeX) {
 				textSizeX = penX;
 			}
@@ -267,14 +264,12 @@ static void measureText(Text* text) {
 		} else {
 			++currentWordLetters;
 		}
-		// If we shouldn't word wrap, treat every letter like it's own word.
 		if (!text->WordWrap) {
 			penX += letterSize;
 			currentWordLength = 0;
 			currentWordLetters = 0;
 		}
 	}
-	// Once the word is completed, we should cleanup
 	if (currentWordLength) {
 		penX += currentWordLength;
 	}
@@ -282,7 +277,7 @@ static void measureText(Text* text) {
 	textSizeY = penY - descenderInPixels;
 	text->TextSizeX = textSizeX;
 	text->TextSizeY = textSizeY;
-	if (textSizeY > text->Location.h) {
+	if (textSizeY > (int)(text->Location.h * scale)) {
 		sgLogWarn("Your text overflowed through Y, please adjust your bounds else it will flow past");
 	}
 	if (text->CenteredX) {
@@ -294,7 +289,10 @@ void TextRedrawText(Text* text) {
 	if (text->Texture) {
 		TextureDestroy(text->Texture);
 	}
-	text->Texture = TextureCreateRenderTarget(text->Location.w, text->Location.h);
+	int scale = GraphicsGetUIScale();
+	int physW = (int)(text->Location.w * scale);
+	int physH = (int)(text->Location.h * scale);
+	text->Texture = TextureCreateRenderTarget(physW, physH);
 	TextureClearRenderTarget(text->Texture, 0, 0, 0, 0);
 	text->PenX = 0;
 	text->CurrentDrawnLetters = 0;
@@ -343,7 +341,8 @@ int TextSetFont(const char* fontName, unsigned int size, struct Directory* direc
 		sgLogWarn("Improper size passed into font, must be between 1 and 1000, setting to 32.");
 		size = 32;
 	}
-	currentFont = getLoadedFont(fontName, size, directory);
+	unsigned int physicalSize = size * GraphicsGetUIScale();
+	currentFont = getLoadedFont(fontName, physicalSize, directory);
 	return currentFont != NULL;
 }
 
@@ -408,7 +407,8 @@ static LoadedFont* findCachedFont(const char* fontName, unsigned int size) {
 }
 
 int TextMeasureStringDirect(const char* str, const char* fontName, unsigned int size) {
-	LoadedFont* font = findCachedFont(fontName, size);
+	int scale = GraphicsGetUIScale();
+	LoadedFont* font = findCachedFont(fontName, size * scale);
 	if (!font) {
 		return 0;
 	}
@@ -419,17 +419,19 @@ int TextMeasureStringDirect(const char* str, const char* fontName, unsigned int 
 		if (FT_Load_Char(font->FontFace, c, FT_LOAD_DEFAULT)) continue;
 		penX += font->FontFace->glyph->advance.x >> 6;
 	}
-	return penX;
+	return penX / scale;
 }
 
 int TextDrawStringDirect(const char* str, const char* fontName, unsigned int size, float x, float y, Color* color, int useCamera) {
-	LoadedFont* font = findCachedFont(fontName, size);
+	int scale = GraphicsGetUIScale();
+	LoadedFont* font = findCachedFont(fontName, size * scale);
 	if (!font) {
 		return 0;
 	}
+	float invScale = 1.0f / scale;
 	int ascender = (font->FontFace->ascender * font->FontSize) / font->FontFace->units_per_EM;
 	float penX = x;
-	float baseY = y + ascender;
+	float baseY = y + ascender * invScale;
 	GraphicsSetPremultipliedBlend(1);
 	for (size_t i = 0; str[i] != '\0'; i++) {
 		unsigned char c = (unsigned char)str[i];
@@ -437,15 +439,15 @@ int TextDrawStringDirect(const char* str, const char* fontName, unsigned int siz
 		if (FT_Load_Char(font->FontFace, c, FT_LOAD_DEFAULT)) continue;
 		Texture* glyph = font->GlyphTextures[c];
 		if (glyph) {
-			float w = TextureGetWidth(glyph);
-			float h = TextureGetHeight(glyph);
-			float glyphX = penX + font->FontFace->glyph->bitmap_left;
-			float glyphY = baseY - font->FontFace->glyph->bitmap_top;
+			float w = TextureGetWidth(glyph) * invScale;
+			float h = TextureGetHeight(glyph) * invScale;
+			float glyphX = penX + font->FontFace->glyph->bitmap_left * invScale;
+			float glyphY = baseY - font->FontFace->glyph->bitmap_top * invScale;
 			RectangleF dst = {glyphX, glyphY, w, h};
-			RectangleF src = {0, 0, w, h};
+			RectangleF src = {0, 0, (float)TextureGetWidth(glyph), (float)TextureGetHeight(glyph)};
 			DrawTexture(glyph, GetDefaultTextShader(), &dst, &src, useCamera, 1.0f, false, color);
 		}
-		penX += font->FontFace->glyph->advance.x >> 6;
+		penX += (font->FontFace->glyph->advance.x >> 6) * invScale;
 	}
 	GraphicsSetPremultipliedBlend(0);
 	return (int)(penX - x);

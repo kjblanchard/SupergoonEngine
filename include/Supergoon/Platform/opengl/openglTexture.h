@@ -8,6 +8,8 @@ typedef struct Texture {
 	unsigned int ID;
 	int Width;
 	int Height;
+	int LogicalWidth;
+	int LogicalHeight;
 	unsigned int VAO;
 	unsigned int VBO;
 	unsigned int FBO;

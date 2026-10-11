@@ -86,6 +86,8 @@ Texture* TextureCreateNoCacheImpl(void) {
 	texture->ID = 0;
 	texture->Width = 0;
 	texture->Height = 0;
+	texture->LogicalWidth = 0;
+	texture->LogicalHeight = 0;
 	texture->VBO = 0;
 	texture->FBO = 0;
 	texture->Name = NULL;
@@ -117,6 +119,8 @@ Texture* TextureCreateRenderTargetImpl(int width, int height) {
 	texture->ID = 0;
 	texture->Width = width;
 	texture->Height = height;
+	texture->LogicalWidth = 0;
+	texture->LogicalHeight = 0;
 	texture->VAO = 0;
 	texture->VBO = 0;
 	texture->FBO = 0;
@@ -281,7 +285,6 @@ void DrawTextureToTextureImpl(Texture* dstTarget, Texture* srcTexture, Shader* s
 }
 
 void TextureDestroyImpl(Texture* texture) {
-	return;
 	if (!texture) return;
 	if (texture->ID != 0) {
 		glDeleteTextures(1, &texture->ID);
@@ -314,22 +317,29 @@ void SetPreviousRenderTargetImpl(void) {
 static int renderTargetLogCount = 0;
 void SetRenderTargetImpl(Texture* target) {
 	previousRenderingTarget = currentRenderingTarget;
+	int projWidth, projHeight, vpWidth, vpHeight;
 	if (target) {
-		currentRenderingTargetWidth = target->Width;
-		currentRenderingTargetHeight = target->Height;
+		projWidth = target->LogicalWidth > 0 ? target->LogicalWidth : target->Width;
+		projHeight = target->LogicalHeight > 0 ? target->LogicalHeight : target->Height;
+		vpWidth = target->Width;
+		vpHeight = target->Height;
 		glBindFramebuffer(GL_FRAMEBUFFER, target->FBO);
 	} else {
-		currentRenderingTargetWidth = WindowWidth();
-		currentRenderingTargetHeight = WindowHeight();
+		projWidth = WindowWidth();
+		projHeight = WindowHeight();
+		vpWidth = projWidth;
+		vpHeight = projHeight;
 		glBindFramebuffer(GL_FRAMEBUFFER, defaultFBO);
 		if (renderTargetLogCount < 5) {
-			sgLogDebug("[RT] Binding default FBO: %d (win %dx%d)", defaultFBO, currentRenderingTargetWidth, currentRenderingTargetHeight);
+			sgLogDebug("[RT] Binding default FBO: %d (win %dx%d)", defaultFBO, vpWidth, vpHeight);
 			++renderTargetLogCount;
 		}
 	}
 	currentRenderingTarget = target;
-	glm_ortho(0.0f, currentRenderingTargetWidth, 0.0f, currentRenderingTargetHeight, -1.0f, 1.0f, projectionMatrix);
-	glViewport(0, 0, currentRenderingTargetWidth, currentRenderingTargetHeight);
+	currentRenderingTargetWidth = projWidth;
+	currentRenderingTargetHeight = projHeight;
+	glm_ortho(0.0f, projWidth, 0.0f, projHeight, -1.0f, 1.0f, projectionMatrix);
+	glViewport(0, 0, vpWidth, vpHeight);
 }
 
 void TextureLoadFromDataImpl(Texture* texture, const char* name, int width, int height, void* data) {

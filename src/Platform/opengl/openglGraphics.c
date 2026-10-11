@@ -60,6 +60,7 @@ static Texture* _uiFrameBufferTexture = NULL;
 int _logicalX = 0;
 int _logicalY = 0;
 static GLuint vao = 0, vbo = 0;
+static int _uiScale = 1;
 static Color _fboColor = {255, 255, 255, 255};
 #if !defined(__EMSCRIPTEN__) && !defined(ANDROID) && !defined(USE_GLES)
 static bool _vsync = 1;
@@ -72,6 +73,9 @@ void GraphicsWindowResizeEventImpl(int width, int height) {
 	}
 	glViewport(0, 0, width, height);
 	glm_ortho(0.0f, width, height, 0.0f, -1.0f, 1.0f, projectionMatrix);
+	if (_logicalX > 0 && _logicalY > 0) {
+		GraphicsSetLogicalWorldSizeImpl(_logicalX, _logicalY);
+	}
 }
 
 void InitializeGraphicsSystemImpl(void) {
@@ -191,7 +195,7 @@ void DrawEndImpl(void) {
 	DrawTextureToScreen(_screenFrameBufferTexture, screenShader, &worldDst, true, &fboColor);
 
 	if (_uiFrameBufferTexture) {
-		RectangleF uiDst = {offsetX, offsetY, (float)fbWidth, (float)fbHeight};
+		RectangleF uiDst = {offsetX, offsetY, (float)drawWidth, (float)drawHeight};
 		DrawTextureToScreen(_uiFrameBufferTexture, screenShader, &uiDst, true, &fboColor);
 	}
 	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
@@ -263,6 +267,13 @@ void GraphicsSetLogicalWorldSizeImpl(int width, int height) {
 	sgLogDebug("[GFX] SetLogicalWorldSize: %d x %d", width, height);
 	_logicalX = width;
 	_logicalY = height;
+	int winW = WindowWidth();
+	int winH = WindowHeight();
+	int scaleX = winW / width;
+	int scaleY = winH / height;
+	_uiScale = scaleX < scaleY ? scaleX : scaleY;
+	if (_uiScale < 1) _uiScale = 1;
+	sgLogDebug("[GFX] UI scale: %d (win %dx%d, logical %dx%d)", _uiScale, winW, winH, width, height);
 	glViewport(0, 0, width, height);
 	glm_ortho(0.0f, width, height, 0.0f, -1.0f, 1.0f, projectionMatrix);
 	if (_screenFrameBufferTexture) {
@@ -274,8 +285,16 @@ void GraphicsSetLogicalWorldSizeImpl(int width, int height) {
 	if (_uiFrameBufferTexture) {
 		TextureDestroy(_uiFrameBufferTexture);
 	}
-	_uiFrameBufferTexture = TextureCreateRenderTarget(width, height);
-	sgLogDebug("[GFX] UI FBO created: texture=%p", (void*)_uiFrameBufferTexture);
+	int uiPhysW = width * _uiScale;
+	int uiPhysH = height * _uiScale;
+	_uiFrameBufferTexture = TextureCreateRenderTarget(uiPhysW, uiPhysH);
+	_uiFrameBufferTexture->LogicalWidth = width;
+	_uiFrameBufferTexture->LogicalHeight = height;
+	TextureBind(_uiFrameBufferTexture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	sgLogDebug("[GFX] UI FBO created: %dx%d physical, %dx%d logical", uiPhysW, uiPhysH, width, height);
 	TextureClearRenderTarget(_uiFrameBufferTexture, 0, 0, 0, 0.0);
 #ifdef imgui
 	if (_imGUIScreenRenderTargetTexture) {
@@ -284,6 +303,10 @@ void GraphicsSetLogicalWorldSizeImpl(int width, int height) {
 	_imGUIScreenRenderTargetTexture = TextureCreateRenderTarget(width, height);
 	TextureClearRenderTarget(_imGUIScreenRenderTargetTexture, 0, 0, 0, 1.0);
 #endif
+}
+
+int GraphicsGetUIScaleImpl(void) {
+	return _uiScale;
 }
 
 void GraphicsUpdateFBOColorImpl(Color* color) {
