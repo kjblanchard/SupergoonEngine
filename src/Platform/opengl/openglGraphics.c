@@ -74,7 +74,7 @@ void GraphicsWindowResizeEventImpl(int width, int height) {
 	glViewport(0, 0, width, height);
 	glm_ortho(0.0f, width, height, 0.0f, -1.0f, 1.0f, projectionMatrix);
 	if (_logicalX > 0 && _logicalY > 0) {
-		GraphicsSetLogicalWorldSizeImpl(_logicalX, _logicalY);
+		GraphicsSetLogicalWorldSize(_logicalX, _logicalY);
 	}
 }
 
