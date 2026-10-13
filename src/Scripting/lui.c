@@ -102,7 +102,7 @@ static int createUIText(LuaState L) {
 		(uint8_t)LuaGetFloatFromTableStackIndex(L, 6, 1),
 		(uint8_t)LuaGetFloatFromTableStackIndex(L, 6, 2),
 		(uint8_t)LuaGetFloatFromTableStackIndex(L, 6, 3),
-		(uint8_t)LuaGetFloatFromTableStackIndex(L, 6, 3),
+		(uint8_t)LuaGetFloatFromTableStackIndex(L, 6, 4),
 	};
 	TextLoad(t);
 	CreateUIText(&(UITextArgs){

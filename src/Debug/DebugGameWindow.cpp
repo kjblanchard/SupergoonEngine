@@ -5,23 +5,21 @@
 
 #include <DebugGameWindow.hpp>
 
-using namespace std;
+#include <cmath>
 
 extern "C" {
 extern Texture* _imGUIScreenRenderTargetTexture;
-extern int _logicalX;
-extern int _logicalY;
 }
 
 void DebugGameWindowDraw() {
-	ImVec2 imguiWindowSize = ImGui::GetContentRegionAvail();
-	int scaleX = imguiWindowSize.x / _logicalX;
-	int scaleY = imguiWindowSize.y / _logicalY;
-	int scale = (scaleX < scaleY) ? scaleX : scaleY;
-	if (scale < 1) scale = 1;
-	int scaledWidth = _logicalX * scale;
-	int scaledHeight = _logicalY * scale;
+	ImVec2 avail = ImGui::GetContentRegionAvail();
+	int rtW = TextureGetWidth(_imGUIScreenRenderTargetTexture);
+	int rtH = TextureGetHeight(_imGUIScreenRenderTargetTexture);
+	float scaleX = avail.x / (float)rtW;
+	float scaleY = avail.y / (float)rtH;
+	float scale = (scaleX < scaleY) ? scaleX : scaleY;
+	if (scale < 0.01f) scale = 0.01f;
 	auto tex = (void*)TextureGetID(_imGUIScreenRenderTargetTexture);
 	if (!tex) return;
-	ImGui::Image(tex, ImVec2(scaledWidth, scaledHeight), ImVec2(0, 1), ImVec2(1, 0));
+	ImGui::Image(tex, ImVec2(rtW * scale, rtH * scale), ImVec2(0, 1), ImVec2(1, 0));
 }
