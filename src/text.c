@@ -128,7 +128,6 @@ static void drawLetter(Text* text) {
 		}
 	}
 	Texture* texture = text->Font->GlyphTextures[(unsigned char)text->Text[text->CurrentDrawnLetters]];
-	// Draw text If text is a space, and we are at beginning of a line, do not draw it }
 	if (text->Text[text->CurrentDrawnLetters] == ' ' && text->WordWrap && text->PenX == text->TextStartX) {
 		return;
 	}

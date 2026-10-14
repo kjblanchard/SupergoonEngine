@@ -22,6 +22,8 @@
 #endif
 #include <Supergoon/Platform/opengl/openglGraphics.h>
 #include <Supergoon/Platform/sdl/sdlWindow.h>
+#include <Supergoon/UI/object.h>
+#include <Supergoon/state.h>
 #include <sgtools/log.h>
 #ifdef imgui
 #include <DebugWindow.hpp>
@@ -75,6 +77,7 @@ void GraphicsWindowResizeEventImpl(int width, int height) {
 	glm_ortho(0.0f, width, height, 0.0f, -1.0f, 1.0f, projectionMatrix);
 	if (_logicalX > 0 && _logicalY > 0) {
 		GraphicsSetLogicalWorldSizeImpl(_logicalX, _logicalY);
+		if (RootUIObject) UIObjectDirty(RootUIObject);
 	}
 }
 

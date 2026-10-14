@@ -48,20 +48,6 @@ void SpriteDrawManual(Sprite* sprite, Color* color, int camera) {
 	DrawTexture(sprite->Texture, sprite->Shader, &dst, &sprite->TextureSourceRect, camera, sprite->Scale, false, color);
 }
 
-// void SpriteDrawManual(Sprite* sprite, Color* color, int camera) {
-// 	if (!sprite || !sprite->Texture || !sprite->Visible) {
-// 		return;
-// 	}
-// 	RectangleF dst = sprite->Location;
-// 	if (camera) {
-// 		float interpX = sprite->PreviousX + CameraGetInterpolationAlpha() * (sprite->Location.x - sprite->PreviousX);
-// 		dst.x = interpX + sprite->Location.x;
-// 		float interpY = sprite->PreviousY + CameraGetInterpolationAlpha() * (sprite->Location.y - sprite->PreviousY);
-// 		dst.y = interpY + sprite->Location.y;
-// 	}
-// DrawTexture(sprite->Texture, sprite->Shader, &dst, &sprite->TextureSourceRect, camera, sprite->Scale, false, color);
-// }
-
 void SpriteSystemUpdate(void) {
 	for (size_t i = 0; i < countSprites; i++) {
 		Sprite* sprite = sprites[i];

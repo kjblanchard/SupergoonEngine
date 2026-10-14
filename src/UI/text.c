@@ -22,12 +22,11 @@ static void UITextDraw(UIObject* o) {
 }
 
 static void UITextDestroy(UIObject* o) {
-	// UIImageData* data = (UIImageData*)o->TypeData;
-	// if (!data) {
-	// 	return;
-	// }
-	// SpriteDestroy(data->Sprite);
-	// free(o->TypeData);
+	UITextData* data = (UITextData*)o->TypeData;
+	if (!data) {
+		return;
+	}
+	TextDestroy(data->Text);
 }
 
 static UIType uiTextType = {"Text", UITextOnDirty, UITextDraw, UITextDestroy};
