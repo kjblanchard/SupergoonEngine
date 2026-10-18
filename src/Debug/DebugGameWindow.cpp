@@ -1,6 +1,5 @@
 #include <Supergoon/Graphics/graphics.h>
 #include <Supergoon/Graphics/texture.h>
-#include <Supergoon/Platform/opengl/openglTexture.h>
 #include <imgui.h>
 
 #include <DebugGameWindow.hpp>
@@ -21,5 +20,11 @@ void DebugGameWindowDraw() {
 	if (scale < 0.01f) scale = 0.01f;
 	auto tex = (void*)TextureGetID(_imGUIScreenRenderTargetTexture);
 	if (!tex) return;
+#ifdef sdlrendererbackend
+	// SDL render targets are top-down, same as the window, so no V flip.
+	ImGui::Image(tex, ImVec2(rtW * scale, rtH * scale), ImVec2(0, 0), ImVec2(1, 1));
+#else
+	// GL framebuffers are bottom-up, so flip V.
 	ImGui::Image(tex, ImVec2(rtW * scale, rtH * scale), ImVec2(0, 1), ImVec2(1, 0));
+#endif
 }

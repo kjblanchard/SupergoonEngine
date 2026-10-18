@@ -4,8 +4,14 @@
 #include <Supergoon/window.h>
 #include <imconfig.h>
 #include <imgui.h>
-#include <imgui_impl_opengl3.h>
 #include <imgui_impl_sdl3.h>
+#ifdef sdlrendererbackend
+#include <SDL3/SDL_render.h>
+
+#include <imgui_impl_sdlrenderer3.h>
+#else
+#include <imgui_impl_opengl3.h>
+#endif
 
 #include <DebugConsoleWindow.hpp>
 #include <DebugEngineTab.hpp>
@@ -93,7 +99,14 @@ void debugWindowDrawWindows() {
 
 void DebugSystemRender() {
 	ImGui::Render();
+#ifdef sdlrendererbackend
+	// Caller has already bound the window as the render target at scale 1, which
+	// this backend requires: it restores viewport and clip, but not the target.
+	ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(),
+										  static_cast<SDL_Renderer*>(GraphicsGetContextPtr()));
+#else
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+#endif
 }
 
 void DebugSystemInitialize() {
@@ -102,13 +115,23 @@ void DebugSystemInitialize() {
 	ImGuiIO& io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	ImGui::StyleColorsClassic();
+#ifdef sdlrendererbackend
+	auto renderer = static_cast<SDL_Renderer*>(GraphicsGetContextPtr());
+	ImGui_ImplSDL3_InitForSDLRenderer((SDL_Window*)WindowGet()->Handle, renderer);
+	ImGui_ImplSDLRenderer3_Init(renderer);
+#else
 	ImGui_ImplSDL3_InitForOpenGL((SDL_Window*)WindowGet()->Handle, GraphicsGetContextPtr());
 	ImGui_ImplOpenGL3_Init();
+#endif
 	debugWindowInitialize();
 }
 
 void DebugSystemDraw() {
+#ifdef sdlrendererbackend
+	ImGui_ImplSDLRenderer3_NewFrame();
+#else
 	ImGui_ImplOpenGL3_NewFrame();
+#endif
 	ImGui_ImplSDL3_NewFrame();
 	ImGui::NewFrame();
 	ImGui::ShowDemoWindow();

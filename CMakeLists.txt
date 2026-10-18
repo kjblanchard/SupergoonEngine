@@ -32,6 +32,15 @@ endif()
 
 
 # Compile definitions based on backend
+# Exactly one graphics backend must be selected: they define the same *Impl
+# symbols, so enabling both is a duplicate-symbol link error and enabling
+# neither leaves every Graphics/ facade call undefined.
+if(SDL_GL AND SDL_RENDERER)
+    message(FATAL_ERROR "SDL_GL and SDL_RENDERER are mutually exclusive - pick one graphics backend")
+endif()
+if(NOT SDL_GL AND NOT SDL_RENDERER)
+    message(FATAL_ERROR "No graphics backend selected - set either SDL_GL=ON or SDL_RENDERER=ON")
+endif()
 if(SDL_BACKEND)
     add_definitions(-Dsdlbackend)
 endif(SDL_BACKEND)
@@ -135,11 +144,19 @@ set(SRC_FILES
 )
 
 if(IMGUI_DEBUGGING)
-  set(IMGUI_SRC 
+  # The renderer backend has to match the graphics backend: imgui_impl_opengl3
+  # needs a GL context, which SDL_Renderer does not expose (it may well be on
+  # Metal or D3D instead).
+  if(SDL_RENDERER)
+    set(IMGUI_RENDERER_BACKEND_SRC external/imgui_impl_sdlrenderer3.cpp)
+  else()
+    set(IMGUI_RENDERER_BACKEND_SRC external/imgui_impl_opengl3.cpp)
+  endif(SDL_RENDERER)
+  set(IMGUI_SRC
     external/imgui.cpp
     external/imgui_demo.cpp
     external/imgui_draw.cpp
-    external/imgui_impl_opengl3.cpp
+    ${IMGUI_RENDERER_BACKEND_SRC}
     external/imgui_tables.cpp
     external/imgui_impl_sdl3.cpp
     external/imgui_widgets.cpp
@@ -162,7 +179,7 @@ if(SDL_GL)
 endif(SDL_GL)
 
 if(SDL_RENDERER)
-    list(APPEND SRC_FILES src/Platform/opengl/sdlGraphics.c src/Platform/opengl/sdlShader.c src/Platform/opengl/sdlTexture.c)
+    list(APPEND SRC_FILES src/Platform/sdl/sdlgraphics.c src/Platform/sdl/sdlshader.c src/Platform/sdl/sdltexture.c)
 endif(SDL_RENDERER)
 
 if(STEAM_ENABLED)
