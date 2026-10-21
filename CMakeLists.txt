@@ -123,6 +123,7 @@ set(SRC_FILES
     src/Input/joystick.c
     src/Input/keyboard.c
     src/Input/mouse.c
+    src/Input/touch.c
     src/text.c
     #ui
     src/UI/object.c

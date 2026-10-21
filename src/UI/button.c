@@ -1,4 +1,5 @@
 #include <Supergoon/Input/mouse.h>
+#include <Supergoon/Input/touch.h>
 #include <Supergoon/UI/button.h>
 #include <stdlib.h>
 
@@ -11,7 +12,8 @@ static void UIButtonUpdate(UIObject* o) {
 		data->CurrentMouseStatus = UIButtonMouseStatusNone;
 		return;
 	}
-	int over = IsMouseOverlapRect(o->AbsolutePos.X, o->AbsolutePos.Y, o->Rect.w, o->Rect.h);
+	int over = IsMouseOverlapRect(o->AbsolutePos.X, o->AbsolutePos.Y, o->Rect.w, o->Rect.h) ||
+			   IsTouchOverlapRect(o->AbsolutePos.X, o->AbsolutePos.Y, o->Rect.w, o->Rect.h);
 	int wasOver = data->CurrentMouseStatus == UIButtonMouseStatusJustOverlap ||
 				  data->CurrentMouseStatus == UIButtonMouseStatusOverlap;
 	if (over) {

@@ -9,6 +9,8 @@ typedef enum MouseButtons {
 	MouseButtonsMiddleClick,
 } MouseButtons;
 
+// Converts a point in SDL window points to game coords, returns 0 and sets -1 if outside the game
+int WindowPointToGamePos(float winX, float winY, float* x, float* y);
 // Gets the mouse position in the game window
 void GetGameMousePos(float* x, float* y);
 // Checks to see if the mouse overlapped here, in game coords.
@@ -23,7 +25,6 @@ int IsMouseButtonJustPressed(int button);
 int IsMouseButtonJustReleased(int button);
 // Functions in mouce.c
 void UpdateMouseSystem(void);
-void UpdateTouchSystem(void);
 
 #ifdef __cplusplus
 }
