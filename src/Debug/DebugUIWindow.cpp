@@ -2,12 +2,15 @@
 #include <Supergoon/Primitives/Color.h>
 #include <Supergoon/UI/image.h>
 #include <Supergoon/UI/object.h>
+#include <Supergoon/UI/text.h>
 #include <Supergoon/sprite.h>
 #include <Supergoon/state.h>
+#include <Supergoon/text.h>
 #include <imgui.h>
 #include <sgtools/log.h>
 
 #include <DebugUIWindow.hpp>
+#include <string>
 using namespace std;
 
 namespace {
@@ -20,11 +23,18 @@ void drawUIObjectList(UIObject* o) {
 		o = o->Sibling;
 	}
 }
-
-void drawUIImage(UIImageData* data) {
-	if (!data) {
-		return;
+void drawUIText(UIObject* o) {
+	auto data = static_cast<UITextData*>(o->TypeData);
+	assert(data && "No text data!");
+	auto letters = data->NumDrawLetters;
+	if (ImGui::SliderInt("Num Letters", &letters, 0, (int)std::string(data->Text->Text).length())) {
+		UITextUpdateNumDrawLetters(o, letters);
 	}
+}
+
+void drawUIImage(UIObject* o) {
+	auto data = static_cast<UIImageData*>(o->TypeData);
+	assert(data);
 	int color[4] = {
 		data->Sprite->DrawColor.R,
 		data->Sprite->DrawColor.G,
@@ -39,9 +49,11 @@ void drawUIImage(UIImageData* data) {
 	}
 }
 
-void drawType(const char* type, void* data) {
+void drawType(const char* type, UIObject* o) {
 	if (strcmp(type, "Image") == 0) {
-		drawUIImage((UIImageData*)data);
+		drawUIImage(o);
+	} else if (strcmp(type, "Text") == 0) {
+		drawUIText(o);
 	}
 }
 
@@ -71,6 +83,8 @@ void drawUIObject(UIObject* o) {
 		// Draw the type info
 		if (o->Type && o->Type->Name) {
 			ImGui::Text("Type: %s", o->Type->Name);
+			// Draw type specific stuff
+			drawType(o->Type->Name, o);
 		}
 		drawUIObjectList(o->Child);
 		ImGui::TreePop();

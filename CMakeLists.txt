@@ -97,7 +97,6 @@ set(SRC_FILES
     src/camera.c
     src/json.c
     src/state.c
-    src/Input/keyboard.c
     src/window.c
     src/filesystem.c
     src/events.c
@@ -122,6 +121,8 @@ set(SRC_FILES
     src/Graphics/shader.c
     # input
     src/Input/joystick.c
+    src/Input/keyboard.c
+    src/Input/mouse.c
     src/text.c
     #ui
     src/UI/object.c
@@ -129,6 +130,7 @@ set(SRC_FILES
     src/UI/animation.c
     src/UI/nineslice.c
     src/UI/text.c
+    src/UI/button.c
     #Services - Steam - Game Center, etc
     src/services.c
     #Scripting

@@ -13,7 +13,7 @@ UIObject* UIObjectCreate(void) {
 	o->Active = true;
 	o->Visible = true;
 	o->Dirty = true;
-	o->Debug = true;
+	o->Debug = false;
 	return o;
 }
 

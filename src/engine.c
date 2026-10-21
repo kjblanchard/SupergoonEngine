@@ -93,6 +93,7 @@ static void update(void) {
 		UpdateCurrentMap();
 		if (inputFunc) inputFunc();
 		UpdateAnimatorSystem();
+		if (RootUIObject) UIObjectDirty(RootUIObject);
 		if (updateFunc) updateFunc();
 		UpdateCameraSystem();
 		UpdateControllerSystem();

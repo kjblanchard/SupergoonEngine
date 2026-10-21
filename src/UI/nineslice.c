@@ -23,7 +23,7 @@ static void UINinesliceDestroy(UIObject* o) {
 	TextureDestroy(data->Texture);
 }
 
-static UIType uininesliceType = {"Image", NULL, UINinesliceDraw, UINinesliceDestroy};
+static UIType uininesliceType = {"NineSlice", NULL, UINinesliceDraw, UINinesliceDestroy};
 
 UIObject* CreateUINineSlice(UINineSliceArgs* args) {
 	UINineSliceData* data = malloc(sizeof(*data));

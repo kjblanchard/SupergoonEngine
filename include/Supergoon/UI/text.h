@@ -11,7 +11,7 @@ struct Text;
 typedef struct UITextData {
 	struct Text* Text;
 	Color Color;
-
+	int NumDrawLetters;
 } UITextData;
 
 typedef struct UITextArgs {
@@ -21,6 +21,7 @@ typedef struct UITextArgs {
 } UITextArgs;
 
 UIObject* CreateUIText(UITextArgs* args);
+void UITextUpdateNumDrawLetters(UIObject* o, int n);
 
 #ifdef __cplusplus
 }
