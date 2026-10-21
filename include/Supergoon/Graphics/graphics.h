@@ -29,7 +29,16 @@ void GraphicsUpdateFBOColor(Color* color);
 Color GraphicsGetFBOColor(void);
 void* GraphicsGetContextPtr(void);
 void GraphicsSetPremultipliedBlend(int premultiplied);
+// Scale UI/text are rasterized at; same as GraphicsGetGameScale.
 int GraphicsGetUIScale(void);
+// SDL backend only.  Integer scale the game is presented at.  Without imgui this
+// is the window scale; with imgui it follows the "Game" debug window.
+int GraphicsGetGameScale(void);
+// SDL backend only.  Largest integer scale of the logical size that fits the OS window.
+int GraphicsGetWindowScale(void);
+// SDL backend only.  Requests a new game scale (imgui builds); applied at the
+// next DrawStart, which rebuilds the scaled targets and re-renders all text.
+void GraphicsRequestGameScale(int scale);
 
 #ifdef __cplusplus
 }

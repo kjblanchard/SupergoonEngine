@@ -22,6 +22,11 @@ typedef struct Text {
 	RectangleF Location;
 	char* Text;
 	struct LoadedFont* Font;
+	char* FontName;              // base font name, strdup'd (e.g. "arial")
+	unsigned int FontBaseSize;   // logical/base point size passed to TextSetFont, NOT physical
+	struct Directory* FontDirectory;
+	int FontScale;               // GraphicsGetUIScale() value Font was last resolved against
+	int TextureScale;            // GraphicsGetUIScale() value Texture was rasterized at
 	unsigned int TextSizeX;
 	unsigned int TextSizeY;
 	int PenX, PenY;

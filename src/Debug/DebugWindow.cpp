@@ -28,6 +28,7 @@ using namespace std;
 struct debugWindow {
 	string WindowName;
 	function<void()> DrawFunction;
+	int ExtraFlags;
 };
 
 namespace {
@@ -47,7 +48,7 @@ static void drawWindowInternal(debugWindow& windowToDraw) {
 	static bool no_background = false;
 	static bool no_bring_to_front = false;
 	static bool unsaved_document = false;
-	ImGuiWindowFlags window_flags = 0;
+	ImGuiWindowFlags window_flags = windowToDraw.ExtraFlags;
 	if (no_titlebar) window_flags |= ImGuiWindowFlags_NoTitleBar;
 	if (no_scrollbar) window_flags |= ImGuiWindowFlags_NoScrollbar;
 	if (!no_menu) window_flags |= ImGuiWindowFlags_MenuBar;
@@ -82,7 +83,9 @@ static void drawMainWindow() {
 void debugWindowInitialize() {
 	DebugConsoleWindowInitialize();
 	DebugWindowAddWindowFunc("Debugging Tools", drawMainWindow);
-	DebugWindowAddWindowFunc("Game", DebugGameWindowDraw);
+	// The game image fills the content region; a scrollbar would shrink it and
+	// make the integer game scale flip back and forth.
+	DebugWindowAddWindowFuncWithFlags("Game", DebugGameWindowDraw, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 	DebugWindowAddWindowFunc("Console", DebugConsoleWindowDraw);
 	DebugWindowAddWindowFunc("UI", DebugUIWindowDraw);
 	DebugWindowAddTabFuncToMainDebugWindow(DebugEngineTabDraw);
@@ -148,5 +151,9 @@ void DebugWindowAddTabFuncToMainDebugWindow(DebugWindowDrawFunc drawFunc) {
 }
 
 void DebugWindowAddWindowFunc(const char* windowName, DebugWindowDrawFunc drawFunc) {
-	windowsToDraw_.push_back({windowName, drawFunc});
+	DebugWindowAddWindowFuncWithFlags(windowName, drawFunc, 0);
+}
+
+void DebugWindowAddWindowFuncWithFlags(const char* windowName, DebugWindowDrawFunc drawFunc, int extraFlags) {
+	windowsToDraw_.push_back({windowName, drawFunc, extraFlags});
 }

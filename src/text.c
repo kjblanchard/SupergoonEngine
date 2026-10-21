@@ -24,10 +24,14 @@ typedef struct LoadedFont {
 	char* FontName;
 	FT_Face FontFace;
 	int FontSize;
+	int Scale;	// GraphicsGetUIScale() when loaded; other scales are evictable
 	Texture* GlyphTextures[ASCII_CHAR_NUM];
 } LoadedFont;
 static LoadedFont loadedFonts[MAX_LOADED_FONTS];
 static LoadedFont* currentFont = NULL;
+static char* currentFontName = NULL;
+static unsigned int currentFontBaseSize = 0;
+static struct Directory* currentFontDirectory = NULL;
 
 static void loadTexturesForFont(LoadedFont* font) {
 	FT_Set_Pixel_Sizes(font->FontFace, 0, font->FontSize);
@@ -151,6 +155,15 @@ static void drawLetter(Text* text) {
 	text->PenX += getLetterAdvance(text, text->CurrentDrawnLetters);
 }
 
+static void unloadFont(LoadedFont* font) {
+	free(font->FontName);
+	for (size_t i = 0; i < ASCII_CHAR_NUM; i++) {
+		TextureDestroy(font->GlyphTextures[i]);
+	}
+	if (font->FontFace) FT_Done_Face(font->FontFace);
+	memset(font, 0, sizeof(*font));
+}
+
 static LoadedFont* getLoadedFont(const char* fontName, unsigned int size, struct Directory* directory) {
 	char fontAndSize[255];
 	snprintf(fontAndSize, sizeof(fontAndSize), "%s%d", fontName, size);
@@ -159,6 +172,7 @@ static LoadedFont* getLoadedFont(const char* fontName, unsigned int size, struct
 			return &loadedFonts[i];
 		}
 	}
+	int scale = GraphicsGetUIScale();
 	LoadedFont* fontToLoadInto = NULL;
 	for (size_t i = 0; i < MAX_LOADED_FONTS; i++) {
 		if (!loadedFonts[i].FontName) {
@@ -167,13 +181,24 @@ static LoadedFont* getLoadedFont(const char* fontName, unsigned int size, struct
 		}
 	}
 	if (!fontToLoadInto) {
+		// Fonts rasterized for another game scale are only reachable through
+		// Text objects that re-resolve their font before use, so reuse one.
+		for (size_t i = 0; i < MAX_LOADED_FONTS; i++) {
+			if (loadedFonts[i].Scale != scale) {
+				sgLogDebug("Evicting font %s (scale %d) for %s", loadedFonts[i].FontName, loadedFonts[i].Scale, fontAndSize);
+				unloadFont(&loadedFonts[i]);
+				fontToLoadInto = &loadedFonts[i];
+				break;
+			}
+		}
+	}
+	if (!fontToLoadInto) {
 		sgLogError("Could not load font, you have used the max fonts/sizes, pleas up MAX_LOADED_FONTS in uitext.c");
 		return NULL;
 	}
-	fontToLoadInto->FontName = strdup(fontAndSize);
 	snprintf(fontAndSize, sizeof(fontAndSize), "%s.ttf", fontName);
-	char* buf;
-	size_t sz;
+	char* buf = NULL;
+	size_t sz = 0;
 	GetDataFromDirectory(fontAndSize, &buf, &sz, directory);
 	if (!buf || !sz) {
 		sgLogCritical("Could not load font for %s", fontAndSize);
@@ -188,8 +213,13 @@ static LoadedFont* getLoadedFont(const char* fontName, unsigned int size, struct
 
 	if (result) {
 		sgLogCritical("Could not open font from memory with error %d\n", result);
+		fontToLoadInto->FontFace = NULL;
 		return NULL;
 	}
+	// Only name the slot once loaded, so a failed load can't be found by later lookups.
+	snprintf(fontAndSize, sizeof(fontAndSize), "%s%d", fontName, size);
+	fontToLoadInto->FontName = strdup(fontAndSize);
+	fontToLoadInto->Scale = scale;
 	fontToLoadInto->FontSize = size;
 	loadTexturesForFont(fontToLoadInto);
 	return fontToLoadInto;
@@ -285,13 +315,24 @@ static void measureText(Text* text) {
 }
 
 void TextRedrawText(Text* text) {
+	int scale = GraphicsGetUIScale();
+	if (scale != text->FontScale) {
+		LoadedFont* refreshed = getLoadedFont(text->FontName, text->FontBaseSize * scale, text->FontDirectory);
+		if (refreshed) {
+			text->Font = refreshed;
+			text->FontScale = scale;
+		}
+		// else: cache full (MAX_LOADED_FONTS) or load failure - leave Font/FontScale
+		// untouched, keep drawing with the stale-resolution font rather than
+		// crashing or dropping text.
+	}
 	if (text->Texture) {
 		TextureDestroy(text->Texture);
 	}
-	int scale = GraphicsGetUIScale();
 	int physW = (int)(text->Location.w * scale);
 	int physH = (int)(text->Location.h * scale);
 	text->Texture = TextureCreateRenderTarget(physW, physH);
+	text->TextureScale = scale;
 	TextureClearRenderTarget(text->Texture, 0, 0, 0, 0);
 	text->PenX = 0;
 	text->CurrentDrawnLetters = 0;
@@ -318,15 +359,7 @@ void InitializeTextSystem(void) {
 
 void ShutdownTextSystem(void) {
 	for (size_t i = 0; i < MAX_LOADED_FONTS; i++) {
-		LoadedFont* font = &loadedFonts[i];
-		if (!font) {
-			break;
-		}
-		free(font->FontName);
-		for (size_t j = 0; j < ASCII_CHAR_NUM; j++) {
-			TextureDestroy(font->GlyphTextures[j]);
-		}
-		FT_Done_Face(font->FontFace);
+		unloadFont(&loadedFonts[i]);
 	}
 	if (loadedLibrary) FT_Done_FreeType(loadedLibrary);
 }
@@ -340,6 +373,10 @@ int TextSetFont(const char* fontName, unsigned int size, struct Directory* direc
 		sgLogWarn("Improper size passed into font, must be between 1 and 1000, setting to 32.");
 		size = 32;
 	}
+	free(currentFontName);
+	currentFontName = strdup(fontName);
+	currentFontBaseSize = size;
+	currentFontDirectory = directory;
 	unsigned int physicalSize = size * GraphicsGetUIScale();
 	currentFont = getLoadedFont(fontName, physicalSize, directory);
 	return currentFont != NULL;
@@ -350,7 +387,9 @@ void TextLoad(Text* text) {
 }
 
 void TextOnDirty(Text* text) {
-	if (text && !text->Texture) {
+	// Also rebuild when the game scale changed since the texture was rasterized,
+	// so glyphs are re-rendered at the new physical size instead of stretched.
+	if (text && (!text->Texture || text->TextureScale != GraphicsGetUIScale())) {
 		TextRedrawText(text);
 	}
 	// If there is more letters drawn than the current amount to draw, clear the texture and start from 0
@@ -375,6 +414,12 @@ Text* TextCreate(RectangleF* location, const char* textText) {
 	text->NumLettersToDraw = strlen(textText);
 	text->Location = *location;
 	text->Font = currentFont;
+	text->FontName = strdup(currentFontName ? currentFontName : "");
+	text->FontBaseSize = currentFontBaseSize;
+	text->FontDirectory = currentFontDirectory;
+	// 0 forces TextRedrawText to resolve Font by name at the current scale; the
+	// scale may have changed (and currentFont been evicted) since TextSetFont.
+	text->FontScale = 0;
 	return text;
 }
 
@@ -390,6 +435,7 @@ void TextDestroy(Text* text) {
 	TextureDestroy(text->Texture);
 	if (text->WordWrapCharacters) free(text->WordWrapCharacters);
 	free(text->Text);
+	free(text->FontName);
 	text->Texture = NULL;
 	text->Text = NULL;
 	free(text);
@@ -401,6 +447,11 @@ static LoadedFont* findCachedFont(const char* fontName, unsigned int size) {
 	for (size_t i = 0; i < MAX_LOADED_FONTS; i++) {
 		if (loadedFonts[i].FontName && strcmp(key, loadedFonts[i].FontName) == 0)
 			return &loadedFonts[i];
+	}
+	// The game scale may have changed since TextSetFont loaded this font, so load
+	// it at the new physical size rather than drawing nothing.
+	if (currentFontDirectory) {
+		return getLoadedFont(fontName, size, currentFontDirectory);
 	}
 	return NULL;
 }

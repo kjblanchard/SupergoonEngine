@@ -4,10 +4,10 @@
 // architecture is unchanged:
 //
 //   _screenFrameBufferTexture        logical size (e.g. 480x270), the world
-//   _uiFrameBufferTexture            logical * uiScale, drawn in logical coords
-//   _imGUIScreenRenderTargetTexture  logical * uiScale, what imgui samples
+//   _uiFrameBufferTexture            logical * gameScale, drawn in logical coords
+//   _imGUIScreenRenderTargetTexture  logical * gameScale, what imgui samples
 //
-// DrawEnd integer-scales and centers those onto the window, exactly as before.
+// DrawEnd integer-scales and centers those onto the window (or the imgui RT).
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
 #include <Supergoon/Graphics/graphics.h>
@@ -42,13 +42,74 @@ Texture* _imGUIScreenRenderTargetTexture = NULL;
 
 static Texture* _screenFrameBufferTexture = NULL;
 static Texture* _uiFrameBufferTexture = NULL;
-// Defaults to 1 because text.c reads it to pick a FreeType pixel size, possibly
-// before GraphicsSetLogicalWorldSize has run.
-static int _uiScale = 1;
+// Integer scale of logical size that fits the OS window.
+static int _windowScale = 1;
+// Integer scale the game is presented at, and what the UI FBO/text render at.
+// Equal to _windowScale without imgui; with imgui it follows the "Game" debug
+// window instead.  Defaults to 1 because text.c reads it to pick a FreeType
+// pixel size, possibly before GraphicsSetLogicalWorldSize has run.
+static int _gameScale = 1;
+#ifdef imgui
+// Set by the imgui game window mid-frame, applied at the next DrawStart so the
+// render target imgui already recorded this frame stays alive until presented.
+static int _requestedGameScale = 0;
+#endif
 static Color _fboColor = {255, 255, 255, 255};
 
 extern void ShaderSystemShutdown(void);
 extern Shader* GetDefaultScreenShaderImpl(void);
+
+static int integerScaleFor(int availW, int availH) {
+	if (_logicalX <= 0 || _logicalY <= 0) return 1;
+	int scaleX = availW / _logicalX;
+	int scaleY = availH / _logicalY;
+	int scale = scaleX < scaleY ? scaleX : scaleY;
+	return scale < 1 ? 1 : scale;
+}
+
+// Recreates every target sized logical * _gameScale.
+static void recreateGameScaleTargets(void) {
+	// UI target: physical resolution, but drawn in logical coordinates.  Setting
+	// LogicalWidth/Height before the render scale is applied is what makes that
+	// work, so assign them before the first SetRenderTarget.
+	if (_uiFrameBufferTexture) {
+		TextureDestroy(_uiFrameBufferTexture);
+	}
+	int uiPhysW = _logicalX * _gameScale;
+	int uiPhysH = _logicalY * _gameScale;
+	_uiFrameBufferTexture = TextureCreateRenderTarget(uiPhysW, uiPhysH);
+	_uiFrameBufferTexture->LogicalWidth = _logicalX;
+	_uiFrameBufferTexture->LogicalHeight = _logicalY;
+	if (_uiFrameBufferTexture->Handle) {
+		SDL_SetTextureScaleMode(_uiFrameBufferTexture->Handle, SDL_SCALEMODE_LINEAR);
+	}
+	sgLogDebug("[GFX] UI FBO created: %dx%d physical, %dx%d logical, game scale %d", uiPhysW, uiPhysH, _logicalX, _logicalY, _gameScale);
+	TextureClearRenderTarget(_uiFrameBufferTexture, 0, 0, 0, 0.0f);
+
+#ifdef imgui
+	if (_imGUIScreenRenderTargetTexture) {
+		TextureDestroy(_imGUIScreenRenderTargetTexture);
+	}
+	// Physical resolution with LogicalWidth/Height left at 0, so the UI FBO
+	// composites into it 1:1 with no downscale.
+	_imGUIScreenRenderTargetTexture = TextureCreateRenderTarget(uiPhysW, uiPhysH);
+	if (_imGUIScreenRenderTargetTexture->Handle) {
+		SDL_SetTextureScaleMode(_imGUIScreenRenderTargetTexture->Handle, SDL_SCALEMODE_LINEAR);
+	}
+	TextureClearRenderTarget(_imGUIScreenRenderTargetTexture, 0.1f, 0.1f, 0.1f, 1.0f);
+#endif
+	// Every text texture was rasterized at the old scale; dirtying the tree makes
+	// each Text notice the scale change and re-render its glyphs (see TextOnDirty).
+	if (RootUIObject) UIObjectDirty(RootUIObject);
+}
+
+static void applyGameScale(int scale) {
+	if (scale < 1) scale = 1;
+	if (scale == _gameScale && _uiFrameBufferTexture) return;
+	sgLogDebug("[GFX] Game scale %d -> %d", _gameScale, scale);
+	_gameScale = scale;
+	recreateGameScaleTargets();
+}
 
 void InitializeGraphicsSystemImpl(void) {
 	_renderer = SDL_CreateRenderer(WindowGet()->Handle, NULL);
@@ -83,23 +144,20 @@ void GraphicsWindowResizeEventImpl(int width, int height) {
 	}
 	(void)width;
 	(void)height;
-	if (_logicalX > 0 && _logicalY > 0) {
-		GraphicsSetLogicalWorldSize(_logicalX, _logicalY);
-		if (RootUIObject) UIObjectDirty(RootUIObject);
-	}
+	if (_logicalX <= 0 || _logicalY <= 0) return;
+	_windowScale = integerScaleFor(WindowWidth(), WindowHeight());
+	sgLogDebug("[GFX] Window scale: %d (win %dx%d)", _windowScale, WindowWidth(), WindowHeight());
+#ifndef imgui
+	// With imgui the game scale follows the Game debug window, not the OS window.
+	applyGameScale(_windowScale);
+#endif
 }
 
 void GraphicsSetLogicalWorldSizeImpl(int width, int height) {
 	sgLogDebug("[GFX] SetLogicalWorldSize: %d x %d", width, height);
 	_logicalX = width;
 	_logicalY = height;
-	int winW = WindowWidth();
-	int winH = WindowHeight();
-	int scaleX = winW / width;
-	int scaleY = winH / height;
-	_uiScale = scaleX < scaleY ? scaleX : scaleY;
-	if (_uiScale < 1) _uiScale = 1;
-	sgLogDebug("[GFX] UI scale: %d (win %dx%d, logical %dx%d)", _uiScale, winW, winH, width, height);
+	_windowScale = integerScaleFor(WindowWidth(), WindowHeight());
 
 	// World target: logical resolution, nearest-sampled when blitted up.
 	if (_screenFrameBufferTexture) {
@@ -109,38 +167,24 @@ void GraphicsSetLogicalWorldSizeImpl(int width, int height) {
 	sgLogDebug("[GFX] Screen FBO created: texture=%p", (void*)_screenFrameBufferTexture);
 	TextureClearRenderTarget(_screenFrameBufferTexture, 0, 0, 0, 1.0f);
 
-	// UI target: physical resolution, but drawn in logical coordinates.  Setting
-	// LogicalWidth/Height before the render scale is applied is what makes that
-	// work, so assign them before the first SetRenderTarget.
-	if (_uiFrameBufferTexture) {
-		TextureDestroy(_uiFrameBufferTexture);
-	}
-	int uiPhysW = width * _uiScale;
-	int uiPhysH = height * _uiScale;
-	_uiFrameBufferTexture = TextureCreateRenderTarget(uiPhysW, uiPhysH);
-	_uiFrameBufferTexture->LogicalWidth = width;
-	_uiFrameBufferTexture->LogicalHeight = height;
-	if (_uiFrameBufferTexture->Handle) {
-		SDL_SetTextureScaleMode(_uiFrameBufferTexture->Handle, SDL_SCALEMODE_LINEAR);
-	}
-	sgLogDebug("[GFX] UI FBO created: %dx%d physical, %dx%d logical", uiPhysW, uiPhysH, width, height);
-	TextureClearRenderTarget(_uiFrameBufferTexture, 0, 0, 0, 0.0f);
-
+	// Logical size changed, so the scaled targets are always rebuilt here even if
+	// the scale itself did not change.
 #ifdef imgui
-	if (_imGUIScreenRenderTargetTexture) {
-		TextureDestroy(_imGUIScreenRenderTargetTexture);
-	}
-	// Physical resolution with LogicalWidth/Height left at 0, so the UI FBO
-	// composites into it 1:1 with no downscale.
-	_imGUIScreenRenderTargetTexture = TextureCreateRenderTarget(uiPhysW, uiPhysH);
-	if (_imGUIScreenRenderTargetTexture->Handle) {
-		SDL_SetTextureScaleMode(_imGUIScreenRenderTargetTexture->Handle, SDL_SCALEMODE_LINEAR);
-	}
-	TextureClearRenderTarget(_imGUIScreenRenderTargetTexture, 0.1f, 0.1f, 0.1f, 1.0f);
+	_gameScale = _requestedGameScale > 0 ? _requestedGameScale : _windowScale;
+#else
+	_gameScale = _windowScale;
 #endif
+	sgLogDebug("[GFX] Window scale %d, game scale %d (win %dx%d, logical %dx%d)", _windowScale, _gameScale,
+			   WindowWidth(), WindowHeight(), width, height);
+	recreateGameScaleTargets();
 }
 
 void DrawStartImpl(void) {
+#ifdef imgui
+	if (_requestedGameScale > 0) {
+		applyGameScale(_requestedGameScale);
+	}
+#endif
 	TextureClearRenderTarget(NULL, 0.1f, 0.1f, 0.1f, 1.0f);
 	TextureClearRenderTarget(_screenFrameBufferTexture, 0.1f, 0.1f, 0.1f, 1.0f);
 	TextureClearRenderTarget(_uiFrameBufferTexture, 0.0f, 0.0f, 0.0f, 0.0f);
@@ -269,7 +313,18 @@ void DrawLineImpl(float x1, float y1, float x2, float y2, float thickness, Color
 	}
 }
 
-int GraphicsGetUIScaleImpl(void) { return _uiScale; }
+int GraphicsGetUIScaleImpl(void) { return _gameScale; }
+int GraphicsGetGameScale(void) { return _gameScale; }
+int GraphicsGetWindowScale(void) { return _windowScale; }
+
+void GraphicsRequestGameScale(int scale) {
+#ifdef imgui
+	_requestedGameScale = scale < 1 ? 1 : scale;
+#else
+	// Without imgui the game always fills the OS window.
+	(void)scale;
+#endif
+}
 
 void GraphicsUpdateFBOColorImpl(Color* color) { _fboColor = *color; }
 Color GraphicsGetFBOColorImpl(void) { return _fboColor; }
