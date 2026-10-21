@@ -39,9 +39,16 @@ void DebugGameWindowDraw() {
 	auto tex = (void*)TextureGetID(_imGUIScreenRenderTargetTexture);
 	if (!tex) return;
 	// SDL render targets are top-down, same as the window, so no V flip.
+	ImVec2 imagePos = ImGui::GetCursorPos();
 	ImGui::Image(tex, size, ImVec2(0, 0), ImVec2(1, 1));
+	// An Image doesn't take clicks, so imgui would start dragging the window and
+	// report the image as not hovered.  This button over it owns the clicks instead.
+	ImGui::SetCursorPos(imagePos);
+	ImGui::InvisibleButton("##gameview", size,
+						   ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight | ImGuiButtonFlags_MouseButtonMiddle);
 	// imgui units are SDL window points, same as SDL_GetMouseState
 	ImVec2 imageMin = ImGui::GetItemRectMin();
 	ImVec2 imageSize = ImGui::GetItemRectSize();
-	MouseSetGameViewRect(imageMin.x, imageMin.y, imageSize.x, imageSize.y, ImGui::IsItemHovered());
+	MouseSetGameViewRect(imageMin.x, imageMin.y, imageSize.x, imageSize.y,
+						 ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem));
 }

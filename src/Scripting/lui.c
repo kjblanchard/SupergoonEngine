@@ -119,9 +119,7 @@ static int setRootUIObject(LuaState L) {
 		sgLogWarn("Bad params for set UI root");
 		return 0;
 	}
-#ifdef imgui
 	RootUIObject = LuaGetLightUserdatai(L, 1);
-#endif
 	return 0;
 }
 
