@@ -1,6 +1,7 @@
 #include <SDL3/SDL.h>
 #include <Supergoon/Input/mouse.h>
 #include <Supergoon/window.h>
+#include <Supergoon/Platform/sdl/sdlWindow.h>
 #include <math.h>
 
 extern int _logicalX;

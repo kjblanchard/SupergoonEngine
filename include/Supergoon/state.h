@@ -22,10 +22,8 @@ extern float DeltaTimeSeconds;
 extern float DeltaTimeMilliseconds;
 // Directory used for loading from buffers
 extern struct Directory* AssetDirectory;
-#ifdef imgui
 // used to draw the imgui root ui if it is set.
 extern struct UIObject* RootUIObject;
-#endif
 #ifdef __cplusplus
 }
 #endif

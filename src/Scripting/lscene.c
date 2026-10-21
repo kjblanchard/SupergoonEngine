@@ -1,9 +1,9 @@
+#include <Supergoon/Platform/sdl/sdlWindow.h>
 #include <Supergoon/Scripting/lscene.h>
 #include <Supergoon/lua.h>
 #include <Supergoon/map.h>
 #include <Supergoon/state.h>
 #include <Supergoon/string.h>
-#include <Supergoon/window.h>
 #include <assert.h>
 #include <sgforge/unpack.h>
 #include <sgtools/log.h>
