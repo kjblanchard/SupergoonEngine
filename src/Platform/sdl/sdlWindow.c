@@ -66,7 +66,7 @@ void CreateWindowImpl(void) {
 #ifdef sdlglbackend
 	flags |= SDL_WINDOW_OPENGL;
 #endif
-#ifdef __IPHONEOS__
+#ifdef SDL_PLATFORM_IOS
 	flags |= SDL_WINDOW_FULLSCREEN;
 	SDL_SetHint(SDL_HINT_ORIENTATIONS, "LandscapeLeft LandscapeRight");
 	sgLogDebug("[WIN] Set orientation hint: LandscapeLeft LandscapeRight");

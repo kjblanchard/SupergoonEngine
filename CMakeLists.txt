@@ -11,12 +11,13 @@ set(BUILD_SHARED_LIBS
     CACHE BOOL "Build libraries as static" FORCE)
 
 # Build system Specific
-if(CMAKE_GENERATOR STREQUAL "Xcode")
+# iOS gets its arch from the command line (arm64), x86_64 doesn't exist for iphoneos
+if(CMAKE_GENERATOR STREQUAL "Xcode" AND NOT CMAKE_SYSTEM_NAME STREQUAL "iOS")
     message(STATUS "Setting Build to Universal Binary")
     set(CMAKE_OSX_ARCHITECTURES
         "x86_64;arm64"
         CACHE STRING "" FORCE)
-endif(CMAKE_GENERATOR STREQUAL "Xcode")
+endif()
 
 if(DEBUG_ASAN AND CMAKE_BUILD_TYPE STREQUAL "Debug")
     if(NOT (APPLE AND (CMAKE_SYSTEM_NAME STREQUAL "iOS" OR CMAKE_SYSTEM_NAME STREQUAL "iossimulator")) AND NOT (CMAKE_SYSTEM_NAME STREQUAL "Emscripten") AND NOT ANDROID)
@@ -276,6 +277,7 @@ if(NOT LIB_LUA)
       lua
       GIT_REPOSITORY "https://github.com/marovira/lua"
       GIT_TAG master
+      EXCLUDE_FROM_ALL
   )
   FetchContent_MakeAvailable(lua)
   target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC lua::lua)
@@ -430,7 +432,13 @@ if(DEBUG_CMAKE_VARIABLES)
 endif(DEBUG_CMAKE_VARIABLES)
 
 target_compile_options(${LIBRARY_TARGET_NAME} PUBLIC ${COMPILE_OPTIONS})
-target_link_directories(${LIBRARY_TARGET_NAME} PUBLIC /usr/local/lib)
+# Host paths hold macOS libs/headers, never use them when cross compiling for iOS
+if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
+    set(HOST_INCLUDE_DIRS)
+else()
+    set(HOST_INCLUDE_DIRS /usr/local/include)
+    target_link_directories(${LIBRARY_TARGET_NAME} PUBLIC /usr/local/lib)
+endif()
 
 # if(LINK_M)
 #     target_link_libraries(${LIBRARY_TARGET_NAME} PUBLIC m)
@@ -481,7 +489,7 @@ endif()
   # System is for blocking out the warnings, these are mostly external libs
 target_include_directories(
         ${LIBRARY_TARGET_NAME} SYSTEM
-        PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include /usr/local/include
+        PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include ${HOST_INCLUDE_DIRS}
         PRIVATE
         ${lib_ogg_SOURCE_DIR}/include ${lib_ogg_BINARY_DIR}/include)
 if(IMGUI_DEBUGGING)
@@ -492,5 +500,8 @@ endif(IMGUI_DEBUGGING)
 target_include_directories(${LIBRARY_TARGET_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/external)
 target_include_directories(
     ${LIBRARY_TARGET_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src/engine/include ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}_
-    /emsdk/upstream/emscripten/cache/sysroot/include /usr/local/include/freetype2) # Add the freetype2 specific include
+    /emsdk/upstream/emscripten/cache/sysroot/include)
+if(NOT CMAKE_SYSTEM_NAME STREQUAL "iOS")
+    target_include_directories(${LIBRARY_TARGET_NAME} PRIVATE /usr/local/include/freetype2) # Add the freetype2 specific include
+endif()
 
