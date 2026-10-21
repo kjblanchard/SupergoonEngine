@@ -38,11 +38,14 @@ struct UIType {
 	void (*Dirty)(UIObject* o);
 	void (*Draw)(UIObject* o);
 	void (*Destroy)(UIObject* o);
+	// Called every tick while active, keep last so positional initializers can omit it
+	void (*Update)(UIObject* o);
 };
 
 UIObject* UIObjectCreate(void);
 void UIObjectDraw(UIObject* o, Vector2* parentPos);
 void UIObjectDirty(UIObject* o);
+void UIObjectUpdate(UIObject* o);
 void UIObjectDestroy(UIObject* o);
 // Vector2 UIObjectGetAbsolutePosition(UIObject* o);
 void UIObjectSetAbsolutePosition(UIObject* o, Vector2 pos);

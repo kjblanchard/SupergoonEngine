@@ -1,5 +1,6 @@
 #include <SDL3/SDL_events.h>
 #include <Supergoon/Graphics/graphics.h>
+#include <Supergoon/Input/mouse.h>
 #include <Supergoon/Platform/sdl/sdlWindow.h>
 #include <Supergoon/window.h>
 #include <imconfig.h>
@@ -137,6 +138,8 @@ void DebugSystemDraw() {
 #endif
 	ImGui_ImplSDL3_NewFrame();
 	ImGui::NewFrame();
+	// Game window re-sets this if it draws, so a closed/collapsed one reads as not hovered
+	MouseSetGameViewRect(0, 0, 0, 0, 0);
 	ImGui::ShowDemoWindow();
 	debugWindowDrawWindows();
 }

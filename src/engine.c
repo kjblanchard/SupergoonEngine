@@ -94,6 +94,7 @@ static void update(void) {
 		if (inputFunc) inputFunc();
 		UpdateAnimatorSystem();
 		if (RootUIObject) UIObjectDirty(RootUIObject);
+		if (RootUIObject) UIObjectUpdate(RootUIObject);
 		if (updateFunc) updateFunc();
 		UpdateCameraSystem();
 		UpdateControllerSystem();

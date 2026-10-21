@@ -25,9 +25,44 @@ void UpdateMouseSystem(void) {
 	}
 }
 
+#ifdef imgui
+static float _gameViewX = 0;
+static float _gameViewY = 0;
+static float _gameViewW = 0;
+static float _gameViewH = 0;
+static int _gameViewHovered = 0;
+
+void MouseSetGameViewRect(float x, float y, float width, float height, int hovered) {
+	_gameViewX = x;
+	_gameViewY = y;
+	_gameViewW = width;
+	_gameViewH = height;
+	_gameViewHovered = hovered;
+}
+#endif
+
 void GetGameMousePos(float* x, float* y) {
+	// Window points, same units imgui uses
 	float mouseX, mouseY;
 	SDL_GetMouseState(&mouseX, &mouseY);
+#ifdef imgui
+	float viewRelX = mouseX - _gameViewX;
+	float viewRelY = mouseY - _gameViewY;
+	if (!_gameViewHovered || _gameViewW <= 0 || _gameViewH <= 0 ||
+		viewRelX < 0 || viewRelY < 0 || viewRelX >= _gameViewW || viewRelY >= _gameViewH) {
+		*x = -1;
+		*y = -1;
+		return;
+	}
+	*x = viewRelX / _gameViewW * _logicalX;
+	*y = viewRelY / _gameViewH * _logicalY;
+#else
+	// Window size is in pixels, so convert the mouse to match on high-DPI displays
+	float density = SDL_GetWindowPixelDensity(WindowGet()->Handle);
+	if (density > 0) {
+		mouseX *= density;
+		mouseY *= density;
+	}
 	int winW = WindowWidth();
 	int winH = WindowHeight();
 	int scaleX = winW / _logicalX;
@@ -47,18 +82,15 @@ void GetGameMousePos(float* x, float* y) {
 	}
 	*x = relX / scale;
 	*y = relY / scale;
+#endif
 }
 
-int IsMouseOverlapRect(int x, int y, int width, int height) {
+int IsMouseOverlapRect(float x, float y, float width, float height) {
 	float mouseX, mouseY;
 	GetGameMousePos(&mouseX, &mouseY);
 	if (mouseX < 0 || mouseY < 0) return 0;
-
-	int logicX = (int)mouseX;
-	int logicY = (int)mouseY;
-
-	return (logicX >= x && logicX < x + width &&
-			logicY >= y && logicY < y + height);
+	return (mouseX >= x && mouseX < x + width &&
+			mouseY >= y && mouseY < y + height);
 }
 
 int IsMouseButtonJustPressed(int button) {

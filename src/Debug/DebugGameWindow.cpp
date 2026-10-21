@@ -1,5 +1,6 @@
 #include <Supergoon/Graphics/graphics.h>
 #include <Supergoon/Graphics/texture.h>
+#include <Supergoon/Input/mouse.h>
 #include <imgui.h>
 
 #include <DebugGameWindow.hpp>
@@ -39,4 +40,8 @@ void DebugGameWindowDraw() {
 	if (!tex) return;
 	// SDL render targets are top-down, same as the window, so no V flip.
 	ImGui::Image(tex, size, ImVec2(0, 0), ImVec2(1, 1));
+	// imgui units are SDL window points, same as SDL_GetMouseState
+	ImVec2 imageMin = ImGui::GetItemRectMin();
+	ImVec2 imageSize = ImGui::GetItemRectSize();
+	MouseSetGameViewRect(imageMin.x, imageMin.y, imageSize.x, imageSize.y, ImGui::IsItemHovered());
 }

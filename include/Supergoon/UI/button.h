@@ -1,26 +1,37 @@
-
+/**
+ * @file button.h
+ * @brief UI button, hit area that tracks mouse overlap each tick
+ * @author Kevin Blanchard
+ * @version 0.1.0
+ * @date 2026-10-21
+ */
 #pragma once
-#include <Supergoon/Primitives/Color.h>
 #include <Supergoon/UI/object.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-struct Text;
+typedef enum UIButtonMouseStatus {
+	UIButtonMouseStatusNone,
+	// First tick the mouse is over the button
+	UIButtonMouseStatusJustOverlap,
+	UIButtonMouseStatusOverlap,
+	// First tick after the mouse left the button
+	UIButtonMouseStatusJustLeftOverlap,
+} UIButtonMouseStatus;
 
-typedef struct UITextData {
-	struct Text* Text;
-	Color Color;
+typedef struct UIButtonData {
+	unsigned int ButtonActive : 1;
+	UIButtonMouseStatus CurrentMouseStatus;
+} UIButtonData;
 
-} UITextData;
-
-typedef struct UITextArgs {
+typedef struct UIButtonArgs {
 	UIObject* Object;
-	struct Text* Text;
-	Color Color;
-} UITextArgs;
+} UIButtonArgs;
 
-UIObject* CreateUIText(UITextArgs* args);
+UIObject* CreateUIButton(UIButtonArgs* args);
+void UIButtonSetActive(UIObject* o, int active);
+UIButtonMouseStatus UIButtonGetMouseStatus(UIObject* o);
 
 #ifdef __cplusplus
 }

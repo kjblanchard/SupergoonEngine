@@ -1,5 +1,6 @@
 #include <Supergoon/Scripting/lui.h>
 #include <Supergoon/UI/animation.h>
+#include <Supergoon/UI/button.h>
 #include <Supergoon/UI/image.h>
 #include <Supergoon/UI/nineslice.h>
 #include <Supergoon/UI/object.h>
@@ -144,6 +145,39 @@ static int setUIObjectVisible(LuaState L) {
 	return 0;
 }
 
+// uiobject
+static int createUIButton(LuaState L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 1, LuaFunctionParameterTypeUserdata)) {
+		sgLogWarn("Bad params for create uibutton");
+		return 0;
+	}
+	UIObject* o = CreateUIButton(&(UIButtonArgs){
+		.Object = LuaGetLightUserdatai(L, 1),
+	});
+	LuaPushLightUserdata(L, o);
+	return 1;
+}
+
+// uiobject
+static int getButtonMouseStatus(LuaState L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 1, LuaFunctionParameterTypeUserdata)) {
+		sgLogWarn("Bad params for get button mouse status");
+		return 0;
+	}
+	LuaPushInt(L, (int)UIButtonGetMouseStatus(LuaGetLightUserdatai(L, 1)));
+	return 1;
+}
+
+// uiobject, active
+static int setButtonActive(LuaState L) {
+	if (!LuaCheckFunctionCallParamsAndTypes(L, 2, LuaFunctionParameterTypeUserdata, LuaFunctionParameterTypeBoolean)) {
+		sgLogWarn("Bad params for set button active");
+		return 0;
+	}
+	UIButtonSetActive(LuaGetLightUserdatai(L, 1), LuaGetBooli(L, 2));
+	return 0;
+}
+
 static const LuaCFuncRegister uiLib[] = {
 	{"CreateUIObject", createUIObjectL},
 	{"CreateUIImage", createUiImage},
@@ -153,6 +187,9 @@ static const LuaCFuncRegister uiLib[] = {
 	{"SetUIObjectVisible", setUIObjectVisible},
 	{"CreateNineSlice", createUINineSlice},
 	{"CreateUIText", createUIText},
+	{"CreateUIButton", createUIButton},
+	{"GetButtonMouseStatus", getButtonMouseStatus},
+	{"SetButtonActive", setButtonActive},
 };
 
 void RegisterLuaUIFunctions(void) {

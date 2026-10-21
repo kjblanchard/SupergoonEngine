@@ -46,6 +46,18 @@ void UIObjectDirty(UIObject* o) {
 	}
 }
 
+void UIObjectUpdate(UIObject* o) {
+	if (!o->Active) {
+		return;
+	}
+	if (o->Type && o->Type->Update) {
+		o->Type->Update(o);
+	}
+	for (UIObject* child = o->Child; child; child = child->Sibling) {
+		UIObjectUpdate(child);
+	}
+}
+
 void UIObjectDestroy(UIObject* o) {
 	if (o->Parent) {
 		UIObjectRemoveChild(o->Parent, o);
